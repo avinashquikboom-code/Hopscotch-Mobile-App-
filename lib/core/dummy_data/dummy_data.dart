@@ -1,0 +1,341 @@
+class DummyData {
+  static const Map<String, dynamic> dummyUser = {
+    'id': 'usr_998822',
+    'email': 'customer@luxestyle.com',
+    'name': 'Aria Sterling',
+    'phoneNumber': '+1 (555) 019-2834',
+    'avatarUrl': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
+    'address': '742 Evergreen Terrace',
+    'city': 'Beverly Hills',
+    'zipCode': '90210'
+  };
+
+  static const List<Map<String, dynamic>> dummyCategories = [
+    {
+      'id': 'cat_womens',
+      'name': 'Women\'s Couture',
+      'imageUrl': 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=600&q=80',
+      'icon': 'woman',
+      'subcategories': ['Dresses', 'Knitwear', 'Outerwear', 'Blouses'],
+      'isFeatured': true,
+    },
+    {
+      'id': 'cat_mens',
+      'name': 'Men\'s Tailored',
+      'imageUrl': 'https://images.unsplash.com/photo-1488161628813-04466f872be2?auto=format&fit=crop&w=600&q=80',
+      'icon': 'man',
+      'subcategories': ['Suits', 'Shirts', 'Casual', 'Jackets'],
+      'isFeatured': true,
+    },
+    {
+      'id': 'cat_kids',
+      'name': 'Tiny-Tots',
+      'imageUrl': 'https://images.unsplash.com/photo-1519457431-44ccd64a579b?auto=format&fit=crop&w=600&q=80',
+      'icon': 'child_care',
+      'subcategories': ['Infants', 'Playwear', 'Organic Cotton', 'Sleepwear'],
+      'isFeatured': true,
+    },
+    {
+      'id': 'cat_footwear',
+      'name': 'Footwear',
+      'imageUrl': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=600&q=80',
+      'icon': 'ice_skating',
+      'subcategories': ['Heels', 'Loafers', 'Sneakers', 'Boots'],
+      'isFeatured': true,
+    },
+    {
+      'id': 'cat_accessories',
+      'name': 'Accessories',
+      'imageUrl': 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80',
+      'icon': 'watch',
+      'subcategories': ['Bags', 'Jewelry', 'Sunglasses', 'Belts'],
+      'isFeatured': false,
+    }
+  ];
+
+  static const List<Map<String, dynamic>> dummyProducts = [
+    {
+      'id': 'prod_001',
+      'title': 'Elysian Silk Wrap Dress',
+      'description': 'Crafted from 100% pure Mulberry silk, this wrap dress features an elegant drape, self-tie waist belt, and pleated cuffs. An absolute masterpiece for evening soirées and upscale brunch gatherings alike.',
+      'price': 249.99,
+      'originalPrice': 320.00,
+      'discountPercentage': 22.0,
+      'imageUrl': 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=600&q=80',
+      'additionalImages': [
+        'https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=600&q=80'
+      ],
+      'categoryId': 'cat_womens',
+      'subcategory': 'Dresses',
+      'rating': 4.8,
+      'reviewCount': 124,
+      'sizes': ['XS', 'S', 'M', 'L', 'XL'],
+      'colors': ['#2B2E4A', '#E0A96D', '#1B1A17'], // Hex codes as colors
+      'isAvailable': true,
+      'isTrending': true,
+      'isNewArrival': true,
+      'isFeatured': true,
+      'reviews': [
+        {
+          'id': 'rev_1',
+          'userName': 'Sophia Lauren',
+          'rating': 5.0,
+          'comment': 'Stunning drape and absolutely premium material. Feels like water against the skin!',
+          'date': 'May 12, 2026',
+          'userAvatarUrl': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'
+        },
+        {
+          'id': 'rev_2',
+          'userName': 'Gwen Stacy',
+          'rating': 4.5,
+          'comment': 'Fits perfectly. True to size. Deducted half star only because of delivery delay.',
+          'date': 'Jun 02, 2026',
+          'userAvatarUrl': 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80'
+        }
+      ]
+    },
+    {
+      'id': 'prod_002',
+      'title': 'Monarch Wool Trench Coat',
+      'description': 'An enduring winter icon, this double-breasted trench is tailored from extra-fine Merino wool blend, offering unmatched warmth and structure. Finished with premium horn buttons.',
+      'price': 389.50,
+      'originalPrice': 450.00,
+      'discountPercentage': 13.0,
+      'imageUrl': 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=600&q=80',
+      'additionalImages': [
+        'https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&w=600&q=80'
+      ],
+      'categoryId': 'cat_womens',
+      'subcategory': 'Outerwear',
+      'rating': 4.9,
+      'reviewCount': 89,
+      'sizes': ['S', 'M', 'L', 'XL'],
+      'colors': ['#8B5E3C', '#2C302E', '#D9D7C9'],
+      'isAvailable': true,
+      'isTrending': true,
+      'isNewArrival': false,
+      'isFeatured': true,
+      'reviews': [
+        {
+          'id': 'rev_3',
+          'userName': 'Victoria B.',
+          'rating': 5.0,
+          'comment': 'Incredibly warm and very stylish. I get compliments every time I wear it!',
+          'date': 'Mar 10, 2026',
+          'userAvatarUrl': 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80'
+        }
+      ]
+    },
+    {
+      'id': 'prod_003',
+      'title': 'Heritage Cashmere Knitwear',
+      'description': 'Made of ultra-soft 100% pure Himalayan cashmere. Breathable, exceptionally insulating, and featuring a timeless crewneck silhouette that elevates any casual or formal outfit.',
+      'price': 179.00,
+      'originalPrice': 179.00,
+      'discountPercentage': 0.0,
+      'imageUrl': 'https://images.unsplash.com/photo-1574164904299-3a102b110380?auto=format&fit=crop&w=600&q=80',
+      'additionalImages': [],
+      'categoryId': 'cat_womens',
+      'subcategory': 'Knitwear',
+      'rating': 4.7,
+      'reviewCount': 42,
+      'sizes': ['XS', 'S', 'M', 'L'],
+      'colors': ['#E3D7D5', '#3C2A35', '#24527A'],
+      'isAvailable': true,
+      'isTrending': false,
+      'isNewArrival': true,
+      'isFeatured': false,
+      'reviews': []
+    },
+    {
+      'id': 'prod_004',
+      'title': 'Savile Row Double-Breasted Suit',
+      'description': 'A tailored slim-fit double-breasted suit crafted from English worsted wool. Features peak lapels, double-vent back, and unstructured shoulders for a modern yet commanding appearance.',
+      'price': 599.00,
+      'originalPrice': 750.00,
+      'discountPercentage': 20.0,
+      'imageUrl': 'https://images.unsplash.com/photo-1593032465175-481ac7f401a0?auto=format&fit=crop&w=600&q=80',
+      'additionalImages': [
+        'https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=600&q=80'
+      ],
+      'categoryId': 'cat_mens',
+      'subcategory': 'Suits',
+      'rating': 4.9,
+      'reviewCount': 56,
+      'sizes': ['38R', '40R', '42R', '44R'],
+      'colors': ['#121B2B', '#2E2F38', '#424244'],
+      'isAvailable': true,
+      'isTrending': true,
+      'isNewArrival': true,
+      'isFeatured': true,
+      'reviews': [
+        {
+          'id': 'rev_4',
+          'userName': 'Charles Xavier',
+          'rating': 5.0,
+          'comment': 'Unbelievable fit. Fits like custom bespoke tailoring. The lining detail is superb.',
+          'date': 'Jan 15, 2026',
+          'userAvatarUrl': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80'
+        }
+      ]
+    },
+    {
+      'id': 'prod_005',
+      'title': 'Urban Suede bomber Jacket',
+      'description': 'A contemporary classic. Crafted from ultra-supple sheepskin suede, featuring a relaxed athletic cut, ribbed wool trims, and heavy-duty brushed steel zippers.',
+      'price': 320.00,
+      'originalPrice': 320.00,
+      'discountPercentage': 0.0,
+      'imageUrl': 'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=600&q=80',
+      'additionalImages': [],
+      'categoryId': 'cat_mens',
+      'subcategory': 'Jackets',
+      'rating': 4.6,
+      'reviewCount': 34,
+      'sizes': ['S', 'M', 'L', 'XL', 'XXL'],
+      'colors': ['#7A431D', '#1E1E24'],
+      'isAvailable': true,
+      'isTrending': false,
+      'isNewArrival': true,
+      'isFeatured': false,
+      'reviews': []
+    },
+    {
+      'id': 'prod_006',
+      'title': 'Organic Cotton Romper',
+      'description': 'Envelop your little one in comfort. Made from 100% GOTS-certified organic cotton, featuring easy-snap nickel-free buttons for stress-free changing. Soft, hyper-allergenic, and breathable.',
+      'price': 34.99,
+      'originalPrice': 45.00,
+      'discountPercentage': 22.0,
+      'imageUrl': 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=600&q=80',
+      'additionalImages': [],
+      'categoryId': 'cat_kids',
+      'subcategory': 'Organic Cotton',
+      'rating': 4.8,
+      'reviewCount': 72,
+      'sizes': ['3M', '6M', '12M', '18M', '24M'],
+      'colors': ['#EAF2F8', '#FCE4D6', '#FFF9E6'],
+      'isAvailable': true,
+      'isTrending': true,
+      'isNewArrival': true,
+      'isFeatured': true,
+      'reviews': []
+    },
+    {
+      'id': 'prod_007',
+      'title': 'Sorrento Leather Loafers',
+      'description': 'Handcrafted in Tuscany, Italy. These penny loafers are cut from high-grade full-grain calf leather and finished with a flexible hand-stitched leather sole for ultimate casual elegance.',
+      'price': 210.00,
+      'originalPrice': 280.00,
+      'discountPercentage': 25.0,
+      'imageUrl': 'https://images.unsplash.com/photo-1533867617858-e7b97e060509?auto=format&fit=crop&w=600&q=80',
+      'additionalImages': [
+        'https://images.unsplash.com/photo-1614252369475-531eba835eb1?auto=format&fit=crop&w=600&q=80'
+      ],
+      'categoryId': 'cat_footwear',
+      'subcategory': 'Loafers',
+      'rating': 4.9,
+      'reviewCount': 98,
+      'sizes': ['8', '9', '10', '11', '12'],
+      'colors': ['#4A2E1B', '#111111', '#8C1F1F'],
+      'isAvailable': true,
+      'isTrending': true,
+      'isNewArrival': false,
+      'isFeatured': true,
+      'reviews': []
+    },
+    {
+      'id': 'prod_008',
+      'title': 'AeroKnit Tech Sneakers',
+      'description': 'Engineered comfort. Engineered mesh knit upper provides perfect ventilation, and the proprietary bouncy dual-density foam sole keeps your stride exceptionally light and responsive.',
+      'price': 135.00,
+      'originalPrice': 150.00,
+      'discountPercentage': 10.0,
+      'imageUrl': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80',
+      'additionalImages': [],
+      'categoryId': 'cat_footwear',
+      'subcategory': 'Sneakers',
+      'rating': 4.5,
+      'reviewCount': 148,
+      'sizes': ['7', '8', '9', '10', '11', '12'],
+      'colors': ['#FFFFFF', '#18181B', '#E11D48'],
+      'isAvailable': true,
+      'isTrending': false,
+      'isNewArrival': true,
+      'isFeatured': false,
+      'reviews': []
+    },
+    {
+      'id': 'prod_009',
+      'title': 'Milano Leather Satchel Bag',
+      'description': 'A sleek, structured cross-body satchel constructed from vegetable-tanned Italian leather. Features structured brass hardware, adjustable shoulder strap, and multi-pocket internal organization.',
+      'price': 275.00,
+      'originalPrice': 350.00,
+      'discountPercentage': 21.0,
+      'imageUrl': 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80',
+      'additionalImages': [
+        'https://images.unsplash.com/photo-1598532187856-327a4ae11aa7?auto=format&fit=crop&w=600&q=80'
+      ],
+      'categoryId': 'cat_accessories',
+      'subcategory': 'Bags',
+      'rating': 4.8,
+      'reviewCount': 112,
+      'sizes': ['One Size'],
+      'colors': ['#5C4033', '#1C1C1C', '#E2D1B2'],
+      'isAvailable': true,
+      'isTrending': true,
+      'isNewArrival': false,
+      'isFeatured': true,
+      'reviews': []
+    },
+    {
+      'id': 'prod_010',
+      'title': 'Aero Aviator Sunglasses',
+      'description': 'Lightweight aeronautical alloy frame with polarized 24k gold-reflective lenses offering 100% UV400 block. Complete with soft silicone nose pads for all-day comfort.',
+      'price': 115.00,
+      'originalPrice': 115.00,
+      'discountPercentage': 0.0,
+      'imageUrl': 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=600&q=80',
+      'additionalImages': [],
+      'categoryId': 'cat_accessories',
+      'subcategory': 'Sunglasses',
+      'rating': 4.7,
+      'reviewCount': 65,
+      'sizes': ['One Size'],
+      'colors': ['#D4AF37', '#1E293B'],
+      'isAvailable': true,
+      'isTrending': false,
+      'isNewArrival': true,
+      'isFeatured': false,
+      'reviews': []
+    }
+  ];
+
+  static const List<Map<String, dynamic>> dummyNotifications = [
+    {
+      'id': 'not_1',
+      'title': 'VIP Pre-Access Sale!',
+      'body': 'Enjoy 20% off our new Savile Row Autumn Tailored Suit Line with coupon code SAVILE20.',
+      'createdAt': '2 hours ago',
+      'isRead': false,
+      'type': 'Promo',
+    },
+    {
+      'id': 'not_2',
+      'title': 'Order Dispatched 📦',
+      'body': 'Your order #ORD-882201 has been hand-packed and dispatched! Tracking number is tracking_US922044.',
+      'createdAt': '1 day ago',
+      'isRead': true,
+      'type': 'OrderState',
+    },
+    {
+      'id': 'not_3',
+      'title': 'Security Alert',
+      'body': 'Your LuxeStyle account was logged into from a new device (Mac Safari) near Beverly Hills, CA.',
+      'createdAt': '3 days ago',
+      'isRead': true,
+      'type': 'Info',
+    }
+  ];
+}

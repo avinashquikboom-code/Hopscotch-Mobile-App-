@@ -1,0 +1,298 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/custom_button.dart';
+
+class OnboardingScreen extends StatefulWidget {
+  const OnboardingScreen({super.key});
+
+  @override
+  State<OnboardingScreen> createState() => _OnboardingScreenState();
+}
+
+class _OnboardingScreenState extends State<OnboardingScreen> {
+  late final PageController _pageController;
+  double _pageOffset = 0.0;
+  int _currentIndex = 0;
+
+  final List<Map<String, String>> _slides = [
+    {
+      'title': 'Curated Elite Wear',
+      'subtitle': 'AURA COUTURE',
+      'description': 'Browse hand-selected luxury items tailored specifically to your discerning fashion tastes. Pure materials, handcrafted details, timeless styles.',
+      'imageUrl': 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1000&q=80',
+    },
+    {
+      'title': 'Bespoke Tailoring',
+      'subtitle': 'SAVILE ROW DIRECT',
+      'description': 'Elevate your wardrobe with personalized fit recommendation software and customized sizing options direct from European design houses.',
+      'imageUrl': 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1000&q=80',
+    },
+    {
+      'title': 'Express Logistics',
+      'subtitle': 'WHITE-GLOVE DELIVERY',
+      'description': 'Uncompromising speed. Your hand-wrapped garments are dispatched with secure elite courier delivery straight to your doorstep.',
+      'imageUrl': 'https://images.unsplash.com/photo-1479064555552-3ef4979f8908?auto=format&fit=crop&w=1000&q=80',
+    }
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    _pageController.addListener(() {
+      if (_pageController.hasClients) {
+        setState(() {
+          _pageOffset = _pageController.page ?? 0.0;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final double screenHeight = MediaQuery.of(context).size.height;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC), // Elegant soft slate ivory light background
+      body: SafeArea(
+        child: Stack(
+          children: [
+            // 1. Sliding Image Card Frame (Centered in upper area)
+            Positioned(
+              top: screenHeight * 0.02,
+              left: 0,
+              right: 0,
+              height: screenHeight * 0.48,
+              child: Stack(
+                children: List.generate(_slides.length, (index) {
+                  final double offsetDiff = index - _pageOffset;
+                  final double opacity = (1.0 - offsetDiff.abs()).clamp(0.0, 1.0);
+                  // Dynamic subtle horizontal translation of the image inside the frame (internal parallax!)
+                  final double translationX = offsetDiff * -140.0;
+
+                  return Opacity(
+                    opacity: opacity,
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Container(
+                        width: MediaQuery.of(context).size.width - (AppTheme.spaceXL * 2),
+                        height: screenHeight * 0.45,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xff0f172a).withOpacity(0.08),
+                              blurRadius: 32,
+                              offset: const Offset(0, 16),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Transform.translate(
+                                offset: Offset(translationX, 0),
+                                child: Transform.scale(
+                                  scale: 1.12, // Keeps image beautifully proportioned
+                                  child: Image.network(
+                                    _slides[index]['imageUrl']!,
+                                    fit: BoxFit.cover,
+                                    loadingBuilder: (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Container(color: const Color(0xFFE2E8F0));
+                                    },
+                                    errorBuilder: (context, error, stackTrace) => Container(
+                                      decoration: const BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [Color(0xFFE2E8F0), Color(0xFFCBD5E1)],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        Icons.checkroom_rounded,
+                                        color: Color(0xFF94A3B8),
+                                        size: 48,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              // Elegant subtle light gradient overlay to soften image contrast
+                              Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.transparent,
+                                      Colors.black.withOpacity(0.15),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+
+            // 2. High-Fashion Typography Panel
+            Positioned(
+              bottom: 120, // Clean separation from indicators and buttons
+              left: 0,
+              right: 0,
+              height: 180,
+              child: PageView.builder(
+                controller: _pageController,
+                onPageChanged: (index) {
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                },
+                itemCount: _slides.length,
+                itemBuilder: (context, index) {
+                  final double offsetDiff = index - _pageOffset;
+                  final double textOpacity = (1.0 - offsetDiff.abs() * 1.5).clamp(0.0, 1.0);
+                  final double textTranslationY = offsetDiff * 32.0;
+
+                  return Opacity(
+                    opacity: textOpacity,
+                    child: Transform.translate(
+                      offset: Offset(0, textTranslationY),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceXL),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              _slides[index]['subtitle']!,
+                              style: const TextStyle(
+                                color: AppTheme.primaryColor,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 3,
+                              ),
+                            ),
+                            const SizedBox(height: AppTheme.spaceS),
+                            Text(
+                              _slides[index]['title']!,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontFamily: 'Playfair Display',
+                                color: AppTheme.textPrimaryColor,
+                                fontSize: 30,
+                                height: 1.1,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: AppTheme.spaceM),
+                            Text(
+                              _slides[index]['description']!,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: AppTheme.textSecondaryColor,
+                                height: 1.5,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            // 3. Header Skip Button (Clean and dark)
+            Positioned(
+              top: AppTheme.spaceS,
+              right: AppTheme.spaceXL,
+              child: TextButton(
+                onPressed: () => context.go('/login'),
+                child: const Text(
+                  'SKIP',
+                  style: TextStyle(
+                    color: AppTheme.textSecondaryColor,
+                    letterSpacing: 2,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+            ),
+
+            // 4. Elite Custom Footer Controls (Dots & Button)
+            Positioned(
+              bottom: 24,
+              left: AppTheme.spaceXL,
+              right: AppTheme.spaceXL,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Elastic Indicator Dots (Styled with Indigo colors)
+                  Row(
+                    children: List.generate(
+                      _slides.length,
+                      (index) {
+                        final double activeDiff = (index - _pageOffset).abs();
+                        final double widthFactor = (1.0 - activeDiff).clamp(0.0, 1.0);
+                        final double dotWidth = 8.0 + (16.0 * widthFactor);
+
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          margin: const EdgeInsets.only(right: 6),
+                          width: dotWidth,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: _currentIndex == index 
+                                ? AppTheme.primaryColor 
+                                : AppTheme.borderColor,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  // Premium Indigo Styled Navigation Button
+                  SizedBox(
+                    width: 135,
+                    child: CustomButton(
+                      text: _currentIndex == _slides.length - 1 ? 'BEGIN' : 'NEXT',
+                      onPressed: () {
+                        if (_currentIndex < _slides.length - 1) {
+                          _pageController.nextPage(
+                            duration: const Duration(milliseconds: 500),
+                            curve: Curves.fastOutSlowIn,
+                          );
+                        } else {
+                          context.go('/login');
+                        }
+                      },
+                      isFullWidth: true,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
