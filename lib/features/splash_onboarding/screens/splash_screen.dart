@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/responsive_text.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -54,6 +55,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final responsive = context.responsive;
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC), // Premium light ivory background matching Onboarding
       body: Stack(
@@ -72,8 +74,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                       children: [
                         // Ultra-Fine Gold Line Circular Monogram
                         Container(
-                          width: 100,
-                          height: 100,
+                          width: responsive.spacing(100),
+                          height: responsive.spacing(100),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
@@ -82,36 +84,34 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                             ),
                           ),
                           alignment: Alignment.center,
-                          child: const Text(
+                          child: Text(
                             'A',
                             style: TextStyle(
-                              fontFamily: 'Playfair Display',
                               color: Color(0xFFC59F3E), // Pure luxury gold
-                              fontSize: 48,
+                              fontSize: responsive.fontSize48,
                               fontWeight: FontWeight.w300,
                               letterSpacing: 0,
                             ),
                           ),
                         ),
-                        const SizedBox(height: AppTheme.spaceXXL),
+                        SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
                         
                         // Crisp Minimal Typography
-                        const Text(
+                        Text(
                           'AURA COUTURE',
                           style: TextStyle(
-                            fontFamily: 'Playfair Display',
                             color: AppTheme.textPrimaryColor,
-                            fontSize: 32,
+                            fontSize: responsive.fontSize32,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 6.0,
                           ),
                         ),
-                        const SizedBox(height: AppTheme.spaceS),
+                        SizedBox(height: responsive.spacing(AppTheme.spaceS)),
                         Text(
                           'THE EPITOME OF PREMIUM FASHION',
                           style: TextStyle(
                             color: AppTheme.textSecondaryColor.withOpacity(0.7),
-                            fontSize: 10,
+                            fontSize: responsive.fontSize10,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 3.0,
                           ),
@@ -126,17 +126,17 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           
           // Subtle Fine-Line Linear Loading Indicator (luxury and slow)
           Positioned(
-            bottom: 60,
-            left: 80,
-            right: 80,
+            bottom: responsive.spacing(60),
+            left: responsive.spacing(80),
+            right: responsive.spacing(80),
             child: Opacity(
               opacity: 0.35,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(1),
-                child: const SizedBox(
+                child: SizedBox(
                   height: 1.0,
                   child: LinearProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFC59F3E)),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFC59F3E)),
                     backgroundColor: Color(0xFFE2E8F0),
                   ),
                 ),

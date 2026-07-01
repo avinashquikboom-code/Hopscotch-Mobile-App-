@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/responsive_text.dart';
 import 'package:hopscotch/features/product/repositories/product_repository.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/skeleton_loaders.dart';
@@ -126,6 +127,7 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
   }
 
   void _showFilterSortSheet() {
+    final responsive = context.responsive;
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFFF8FAFC), // Premium light ivory backdrop
@@ -140,7 +142,7 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
           builder: (context, setSheetState) {
             return SafeArea(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceXL, vertical: AppTheme.spaceL),
+                padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL), vertical: responsive.spacing(AppTheme.spaceL)),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,43 +150,42 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                     // Delicate Champagne Gold Handle Indicator
                     Center(
                       child: Container(
-                        width: 36,
-                        height: 4,
+                        width: responsive.spacing(36),
+                        height: responsive.spacing(4),
                         decoration: BoxDecoration(
                           color: const Color(0xFFC59F3E).withOpacity(0.4),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
                     ),
-                    const SizedBox(height: AppTheme.spaceXL),
+                    SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
                     
                     // Serif Luxury Title
-                    const Text(
+                    Text(
                       'FILTER & SORT',
                       style: TextStyle(
-                        fontFamily: 'Playfair Display',
-                        fontSize: 20,
+                        fontSize: responsive.fontSize20,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 2.0,
                         color: AppTheme.textPrimaryColor,
                       ),
                     ),
-                    const SizedBox(height: AppTheme.spaceXL),
+                    SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
                     
                     // Sorting options
-                    const Text(
+                    Text(
                       'SORT BY',
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: responsive.fontSize10,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.textSecondaryColor,
                         letterSpacing: 1.5,
                       ),
                     ),
-                    const SizedBox(height: AppTheme.spaceS),
+                    SizedBox(height: responsive.spacing(AppTheme.spaceS)),
                     Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+                      spacing: responsive.spacing(8),
+                      runSpacing: responsive.spacing(8),
                       children: [
                         _buildChip(
                           label: 'Recommended',
@@ -208,22 +209,22 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: AppTheme.spaceXL),
+                    SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
 
                     // Sizing filters
-                    const Text(
+                    Text(
                       'SIZE',
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: responsive.fontSize10,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.textSecondaryColor,
                         letterSpacing: 1.5,
                       ),
                     ),
-                    const SizedBox(height: AppTheme.spaceS),
+                    SizedBox(height: responsive.spacing(AppTheme.spaceS)),
                     Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+                      spacing: responsive.spacing(8),
+                      runSpacing: responsive.spacing(8),
                       children: ['XS', 'S', 'M', 'L', 'XL'].map((sz) {
                         return _buildChip(
                           label: sz,
@@ -238,7 +239,7 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                         );
                       }).toList(),
                     ),
-                    const SizedBox(height: AppTheme.spaceXXL),
+                    SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
                     Row(
                       children: [
@@ -254,19 +255,19 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                               });
                               context.pop();
                             },
-                            child: const Text('Reset All'),
+                            child: Text('Reset All', style: TextStyle(fontSize: responsive.fontSize14)),
                           ),
                         ),
-                        const SizedBox(width: AppTheme.spaceM),
+                        SizedBox(width: responsive.spacing(AppTheme.spaceM)),
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () => context.pop(),
-                            child: const Text('Apply'),
+                            child: Text('Apply', style: TextStyle(fontSize: responsive.fontSize14)),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: AppTheme.spaceL),
+                    SizedBox(height: responsive.spacing(AppTheme.spaceL)),
                   ],
                 ),
               ),
@@ -278,11 +279,12 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
   }
 
   Widget _buildChip({required String label, required bool isSelected, required VoidCallback onTap}) {
+    final responsive = context.responsive;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: responsive.spacing(14), vertical: responsive.spacing(10)),
         decoration: BoxDecoration(
           color: isSelected ? AppTheme.primaryColor : Colors.white,
           borderRadius: BorderRadius.circular(AppTheme.radiusM),
@@ -303,7 +305,7 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 11,
+            fontSize: responsive.fontSize11,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             color: isSelected ? Colors.white : AppTheme.textSecondaryColor,
           ),
@@ -314,13 +316,14 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final responsive = context.responsive;
     final productsAsync = ref.watch(allProductsProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.categoryName.toUpperCase()),
+        title: Text(widget.categoryName.toUpperCase(), style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: Icon(Icons.arrow_back_rounded, size: responsive.iconSize(24)),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -331,7 +334,7 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.tune_rounded),
+            icon: Icon(Icons.tune_rounded, size: responsive.iconSize(24)),
             onPressed: _showFilterSortSheet,
           ),
         ],
@@ -346,16 +349,16 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.search_off_rounded, size: 64, color: AppTheme.textLightColor),
-                  const SizedBox(height: AppTheme.spaceL),
+                  Icon(Icons.search_off_rounded, size: responsive.iconSize(64), color: AppTheme.textLightColor),
+                  SizedBox(height: responsive.spacing(AppTheme.spaceL)),
                   Text(
                     'No garments found',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: responsive.fontSize20, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: AppTheme.spaceS),
+                  SizedBox(height: responsive.spacing(AppTheme.spaceS)),
                   Text(
                     'Try modifying your filters or sort choices.',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: TextStyle(fontSize: responsive.fontSize14, color: AppTheme.textSecondaryColor),
                   ),
                 ],
               ),
@@ -368,13 +371,13 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
             children: [
               // Dynamic stats bar
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceXL, vertical: AppTheme.spaceS),
+                padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL), vertical: responsive.spacing(AppTheme.spaceS)),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       '${displayProducts.length} Items Available',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                      style: TextStyle(fontSize: responsive.fontSize14, fontWeight: FontWeight.w600),
                     ),
                     GestureDetector(
                       onTap: _showFilterSortSheet,
@@ -382,10 +385,10 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                         children: [
                           Text(
                             _sortBy == 'Recommended' ? 'Recommended' : 'Filtered',
-                            style: const TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold, fontSize: 13),
+                            style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold, fontSize: responsive.fontSize13),
                           ),
-                          const SizedBox(width: 4),
-                          const Icon(Icons.keyboard_arrow_down_rounded, color: AppTheme.primaryColor, size: 16),
+                          SizedBox(width: responsive.spacing(4)),
+                          Icon(Icons.keyboard_arrow_down_rounded, color: AppTheme.primaryColor, size: responsive.iconSize(16)),
                         ],
                       ),
                     ),
@@ -395,7 +398,7 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
               Expanded(
                 child: GridView.builder(
                   controller: _scrollController,
-                  padding: const EdgeInsets.all(AppTheme.spaceXL).copyWith(bottom: 40),
+                  padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)).copyWith(bottom: 40),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: MediaQuery.of(context).size.width < 600 ? 2 : (MediaQuery.of(context).size.width < 900 ? 3 : 5),
                     mainAxisSpacing: AppTheme.spaceL,
@@ -420,7 +423,7 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
           );
         },
         loading: () => GridView.builder(
-          padding: const EdgeInsets.all(AppTheme.spaceXL),
+          padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: MediaQuery.of(context).size.width < 600 ? 2 : (MediaQuery.of(context).size.width < 900 ? 3 : 5),
             mainAxisSpacing: AppTheme.spaceL,
@@ -430,7 +433,7 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
           itemCount: 4,
           itemBuilder: (context, index) => const ProductCardSkeleton(),
         ),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        error: (err, stack) => Center(child: Text('Error: $err', style: TextStyle(fontSize: responsive.fontSize14))),
       ),
     );
   }

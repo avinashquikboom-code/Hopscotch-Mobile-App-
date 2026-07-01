@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/custom_button.dart';
+import '../../../core/utils/responsive_text.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -58,6 +59,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
+    final responsive = context.responsive;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC), // Elegant soft slate ivory light background
@@ -82,7 +84,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: Align(
                       alignment: Alignment.center,
                       child: Container(
-                        width: MediaQuery.of(context).size.width - (AppTheme.spaceXL * 2),
+                        width: MediaQuery.of(context).size.width - (responsive.spacing(AppTheme.spaceXL) * 2),
                         height: screenHeight * 0.45,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(AppTheme.radiusXL),
@@ -118,10 +120,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                           end: Alignment.bottomRight,
                                         ),
                                       ),
-                                      child: const Icon(
+                                      child: Icon(
                                         Icons.checkroom_rounded,
                                         color: Color(0xFF94A3B8),
-                                        size: 48,
+                                        size: responsive.iconSize(48),
                                       ),
                                     ),
                                   ),
@@ -152,10 +154,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
             // 2. High-Fashion Typography Panel
             Positioned(
-              bottom: 120, // Clean separation from indicators and buttons
+              bottom: responsive.spacing(120), // Clean separation from indicators and buttons
               left: 0,
               right: 0,
-              height: 180,
+              height: responsive.spacing(180),
               child: PageView.builder(
                 controller: _pageController,
                 onPageChanged: (index) {
@@ -174,40 +176,39 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: Transform.translate(
                       offset: Offset(0, textTranslationY),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceXL),
+                        padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.end,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
                               _slides[index]['subtitle']!,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppTheme.primaryColor,
-                                fontSize: 11,
+                                fontSize: responsive.fontSize11,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 3,
                               ),
                             ),
-                            const SizedBox(height: AppTheme.spaceS),
+                            SizedBox(height: responsive.spacing(AppTheme.spaceS)),
                             Text(
                               _slides[index]['title']!,
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontFamily: 'Playfair Display',
+                              style: TextStyle(
                                 color: AppTheme.textPrimaryColor,
-                                fontSize: 30,
+                                fontSize: responsive.fontSize24,
                                 height: 1.1,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const SizedBox(height: AppTheme.spaceM),
+                            SizedBox(height: responsive.spacing(AppTheme.spaceM)),
                             Text(
                               _slides[index]['description']!,
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppTheme.textSecondaryColor,
                                 height: 1.5,
-                                fontSize: 13,
+                                fontSize: responsive.fontSize11,
                               ),
                             ),
                           ],
@@ -221,17 +222,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
             // 3. Header Skip Button (Clean and dark)
             Positioned(
-              top: AppTheme.spaceS,
-              right: AppTheme.spaceXL,
+              top: responsive.spacing(AppTheme.spaceS),
+              right: responsive.spacing(AppTheme.spaceXL),
               child: TextButton(
                 onPressed: () => context.go('/login'),
-                child: const Text(
+                child: Text(
                   'SKIP',
                   style: TextStyle(
                     color: AppTheme.textSecondaryColor,
                     letterSpacing: 2,
                     fontWeight: FontWeight.w700,
-                    fontSize: 11,
+                    fontSize: responsive.fontSize11,
                   ),
                 ),
               ),
@@ -239,9 +240,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
             // 4. Elite Custom Footer Controls (Dots & Button)
             Positioned(
-              bottom: 24,
-              left: AppTheme.spaceXL,
-              right: AppTheme.spaceXL,
+              bottom: responsive.spacing(24),
+              left: responsive.spacing(AppTheme.spaceXL),
+              right: responsive.spacing(AppTheme.spaceXL),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -256,14 +257,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                         return AnimatedContainer(
                           duration: const Duration(milliseconds: 150),
-                          margin: const EdgeInsets.only(right: 6),
+                          margin: EdgeInsets.only(right: responsive.spacing(6)),
                           width: dotWidth,
-                          height: 8,
+                          height: responsive.spacing(8),
                           decoration: BoxDecoration(
                             color: _currentIndex == index 
                                 ? AppTheme.primaryColor 
                                 : AppTheme.borderColor,
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: BorderRadius.circular(responsive.spacing(4)),
                           ),
                         );
                       },
@@ -271,7 +272,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                   // Premium Indigo Styled Navigation Button
                   SizedBox(
-                    width: 135,
+                    width: responsive.spacing(135),
                     child: CustomButton(
                       text: _currentIndex == _slides.length - 1 ? 'BEGIN' : 'NEXT',
                       onPressed: () {

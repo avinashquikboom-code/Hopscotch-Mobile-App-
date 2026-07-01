@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/responsive_text.dart';
 
 class LegalPoliciesScreen extends StatefulWidget {
   const LegalPoliciesScreen({super.key});
@@ -72,24 +73,24 @@ class _LegalPoliciesScreenState extends State<LegalPoliciesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final responsive = context.responsive;
     final activePolicy = _policies[_activeTab];
     final List<Map<String, String>> sections = List<Map<String, String>>.from(activePolicy['sections']);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC), // Premium light ivory canvas
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'LEGAL POLICIES',
           style: TextStyle(
-            fontFamily: 'Playfair Display',
             fontWeight: FontWeight.bold,
             letterSpacing: 2.0,
-            fontSize: 14,
+            fontSize: responsive.fontSize14,
           ),
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: Icon(Icons.arrow_back_rounded, size: responsive.iconSize(24)),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -103,14 +104,14 @@ class _LegalPoliciesScreenState extends State<LegalPoliciesScreen> {
         children: [
           // 1. Premium Horizontal Custom Segmented Tabs
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceXL, vertical: AppTheme.spaceM),
+            padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL), vertical: responsive.spacing(AppTheme.spaceM)),
             child: Container(
-              height: 48,
+              height: responsive.spacing(48),
               decoration: BoxDecoration(
                 color: const Color(0xFFE2E8F0).withOpacity(0.5),
                 borderRadius: BorderRadius.circular(AppTheme.radiusM),
               ),
-              padding: const EdgeInsets.all(4),
+              padding: EdgeInsets.all(responsive.spacing(4)),
               child: Row(
                 children: List.generate(_policies.length, (index) {
                   final isSelected = _activeTab == index;
@@ -141,7 +142,7 @@ class _LegalPoliciesScreenState extends State<LegalPoliciesScreen> {
                           _policies[index]['title']!,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: responsive.fontSize11,
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                             color: isSelected ? AppTheme.primaryColor : AppTheme.textSecondaryColor,
                           ),
@@ -157,9 +158,9 @@ class _LegalPoliciesScreenState extends State<LegalPoliciesScreen> {
           // 2. Main Scrollable Editorial Document Reader
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceXL, vertical: AppTheme.spaceM),
+              padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL), vertical: responsive.spacing(AppTheme.spaceM)),
               child: Container(
-                padding: const EdgeInsets.all(AppTheme.spaceXL),
+                padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(AppTheme.radiusXL),
@@ -171,29 +172,28 @@ class _LegalPoliciesScreenState extends State<LegalPoliciesScreen> {
                   children: [
                     Text(
                       activePolicy['title']!.toUpperCase(),
-                      style: const TextStyle(
-                        fontFamily: 'Playfair Display',
-                        fontSize: 18,
+                      style: TextStyle(
+                        fontSize: responsive.fontSize16,
                         fontWeight: FontWeight.bold,
-                        letterSpacing: 1.0,
+                        letterSpacing: 0.8,
                         color: AppTheme.textPrimaryColor,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: responsive.spacing(4)),
                     Text(
                       activePolicy['lastUpdated']!,
-                      style: const TextStyle(
-                        fontSize: 10,
+                      style: TextStyle(
+                        fontSize: responsive.fontSize10,
                         color: AppTheme.textLightColor,
                       ),
                     ),
-                    const Divider(height: AppTheme.spaceXXL, color: AppTheme.borderColor),
+                    Divider(height: responsive.spacing(AppTheme.spaceXXL), color: AppTheme.borderColor),
                     
                     ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: sections.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: AppTheme.spaceXL),
+                      separatorBuilder: (context, index) => SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
                       itemBuilder: (context, index) {
                         final sec = sections[index];
                         return Column(
@@ -201,19 +201,18 @@ class _LegalPoliciesScreenState extends State<LegalPoliciesScreen> {
                           children: [
                             Text(
                               sec['heading']!,
-                              style: const TextStyle(
-                                fontFamily: 'Playfair Display',
-                                fontSize: 13,
+                              style: TextStyle(
+                                fontSize: responsive.fontSize12,
                                 fontWeight: FontWeight.bold,
                                 color: AppTheme.textPrimaryColor,
                               ),
                             ),
-                            const SizedBox(height: AppTheme.spaceS),
+                            SizedBox(height: responsive.spacing(AppTheme.spaceS)),
                             Text(
                               sec['body']!,
-                              style: const TextStyle(
-                                fontSize: 11.5,
-                                height: 1.6,
+                              style: TextStyle(
+                                fontSize: responsive.fontSize10,
+                                height: 1.5,
                                 color: AppTheme.textSecondaryColor,
                               ),
                             ),
@@ -226,7 +225,7 @@ class _LegalPoliciesScreenState extends State<LegalPoliciesScreen> {
               ),
             ),
           ),
-          const SizedBox(height: AppTheme.spaceXL),
+          SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
         ],
       ),
     );

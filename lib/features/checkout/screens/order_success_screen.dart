@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/responsive_text.dart';
 import '../../../core/widgets/custom_button.dart';
 
 class OrderSuccessScreen extends StatefulWidget {
@@ -40,10 +41,11 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> with SingleTick
 
   @override
   Widget build(BuildContext context) {
+    final responsive = context.responsive;
     return Scaffold(
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceXXL),
+          padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXXL)),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -51,43 +53,45 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> with SingleTick
               ScaleTransition(
                 scale: _scaleAnimation,
                 child: Container(
-                  padding: const EdgeInsets.all(AppTheme.spaceXXL),
+                  padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXXL)),
                   decoration: BoxDecoration(
                     color: AppTheme.successColor.withOpacity(0.08),
                     shape: BoxShape.circle,
                     border: Border.all(color: AppTheme.successColor.withOpacity(0.2), width: 2),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.check_circle_rounded,
                     color: AppTheme.successColor,
-                    size: 72,
+                    size: responsive.iconSize(72),
                   ),
                 ),
               ),
-              const SizedBox(height: AppTheme.spaceXXL),
+              SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
               
               // Success Text
               Text(
                 'ORDER PLACED!',
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                style: TextStyle(
+                  fontSize: responsive.fontSize28,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 2.0,
+                  color: AppTheme.textPrimaryColor,
                 ),
               ),
-              const SizedBox(height: AppTheme.spaceM),
+              SizedBox(height: responsive.spacing(AppTheme.spaceM)),
               Text(
                 'Your luxury wardrobe upgrade is locked in. We have sent the invoice and handcraft tracking links to your registered inbox.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                style: responsive.bodyMedium.copyWith(
                   color: AppTheme.textSecondaryColor,
                   height: 1.5,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: AppTheme.spaceXXL),
+              SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
               // Order Code Box
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                padding: EdgeInsets.symmetric(vertical: responsive.spacing(16), horizontal: responsive.spacing(24)),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(AppTheme.radiusM),
@@ -97,34 +101,40 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> with SingleTick
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Order ID',
-                      style: TextStyle(color: AppTheme.textSecondaryColor, fontWeight: FontWeight.w500),
+                      style: TextStyle(color: AppTheme.textSecondaryColor, fontWeight: FontWeight.w500, fontSize: responsive.fontSize14),
                     ),
                     Text(
                       widget.orderId,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontWeight: FontWeight.bold,
-                        fontSize: 15,
+                        fontSize: responsive.fontSize15,
                         letterSpacing: 0.5,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 60),
+              SizedBox(height: responsive.spacing(60)),
 
               // Buttons
-              CustomButton(
-                text: 'CONTINUE SHOPPING',
-                onPressed: () => context.go('/'),
+              SizedBox(
+                height: responsive.spacing(56),
+                child: CustomButton(
+                  text: 'CONTINUE SHOPPING',
+                  onPressed: () => context.go('/'),
+                ),
               ),
-              const SizedBox(height: AppTheme.spaceL),
-              CustomButton(
-                text: 'TRACK MY ORDER',
-                onPressed: () => context.go('/my-orders'),
-                isOutlined: true,
+              SizedBox(height: responsive.spacing(AppTheme.spaceL)),
+              SizedBox(
+                height: responsive.spacing(56),
+                child: CustomButton(
+                  text: 'TRACK MY ORDER',
+                  onPressed: () => context.go('/my-orders'),
+                  isOutlined: true,
+                ),
               ),
             ],
           ),

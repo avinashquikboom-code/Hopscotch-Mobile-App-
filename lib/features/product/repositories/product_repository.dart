@@ -47,6 +47,16 @@ class ProductRepository {
       p.subcategory.toLowerCase().contains(query.toLowerCase())
     ).toList();
   }
+
+  Future<List<ProductModel>> searchProductsByImage(String imagePath) async {
+    final products = await getProducts();
+    // Simulate image processing delay
+    await Future.delayed(const Duration(seconds: 2));
+    
+    // Return a random selection of dummy products to mock the functionality
+    products.shuffle();
+    return products.take(4).toList();
+  }
 }
 
 final productRepositoryProvider = Provider<ProductRepository>((ref) {

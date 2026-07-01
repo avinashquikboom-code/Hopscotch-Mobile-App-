@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/responsive_text.dart';
 import 'package:hopscotch/features/cart_wishlist/repositories/cart_wishlist_repository.dart';
 import 'package:hopscotch/features/checkout/repositories/order_repository.dart';
 import '../../../core/widgets/custom_button.dart';
@@ -155,21 +156,22 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final responsive = context.responsive;
     final cart = ref.watch(cartProvider);
     final cartNotifier = ref.read(cartProvider.notifier);
 
     if (cart.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text('CHECKOUT')),
-        body: const Center(child: Text('Your cart is empty.')),
+        appBar: AppBar(title: Text('CHECKOUT', style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold))),
+        body: Center(child: Text('Your cart is empty.', style: TextStyle(fontSize: responsive.fontSize14))),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SECURE CHECKOUT'),
+        title: Text('SECURE CHECKOUT', style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: Icon(Icons.arrow_back_rounded, size: responsive.iconSize(24)),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -182,7 +184,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       body: Stack(
         children: [
           SingleChildScrollView(
-            padding: const EdgeInsets.all(AppTheme.spaceXL),
+            padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
             child: Form(
               key: _formKey,
               child: Column(
@@ -191,79 +193,79 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               // Shipping Form
               Text(
                 'Shipping Address',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: AppTheme.spaceM),
+              SizedBox(height: responsive.spacing(AppTheme.spaceM)),
               TextFormField(
                 controller: _addressController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Street Address',
-                  prefixIcon: Icon(Icons.home_outlined),
+                  prefixIcon: Icon(Icons.home_outlined, size: responsive.iconSize(20)),
                 ),
                 validator: (value) => value == null || value.trim().isEmpty ? 'Address is required' : null,
               ),
-              const SizedBox(height: AppTheme.spaceL),
+              SizedBox(height: responsive.spacing(AppTheme.spaceL)),
               Row(
                 children: [
                   Expanded(
                     child: TextFormField(
                       controller: _cityController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'City',
-                        prefixIcon: Icon(Icons.location_city_outlined),
+                        prefixIcon: Icon(Icons.location_city_outlined, size: responsive.iconSize(20)),
                       ),
                       validator: (value) => value == null || value.trim().isEmpty ? 'City is required' : null,
                     ),
                   ),
-                  const SizedBox(width: AppTheme.spaceL),
+                  SizedBox(width: responsive.spacing(AppTheme.spaceL)),
                   Expanded(
                     child: TextFormField(
                       controller: _zipController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'ZIP Code',
-                        prefixIcon: Icon(Icons.pin_drop_outlined),
+                        prefixIcon: Icon(Icons.pin_drop_outlined, size: responsive.iconSize(20)),
                       ),
                       validator: (value) => value == null || value.trim().isEmpty ? 'ZIP required' : null,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: AppTheme.spaceL),
+              SizedBox(height: responsive.spacing(AppTheme.spaceL)),
               TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Phone Number',
-                  prefixIcon: Icon(Icons.phone_outlined),
+                  prefixIcon: Icon(Icons.phone_outlined, size: responsive.iconSize(20)),
                 ),
                 validator: (value) => value == null || value.trim().isEmpty ? 'Phone number is required' : null,
               ),
-              const SizedBox(height: AppTheme.spaceXXL),
+              SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
               // Payment Selection
               Text(
                 'Payment Method',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: AppTheme.spaceM),
+              SizedBox(height: responsive.spacing(AppTheme.spaceM)),
               _buildPaymentOption('Credit Card', Icons.credit_card_rounded),
               
               // Dynamic Flipping Credit Card Form Area
               if (_selectedPayment == 'Credit Card') ...[
-                const SizedBox(height: AppTheme.spaceL),
+                SizedBox(height: responsive.spacing(AppTheme.spaceL)),
                 _buildCreditCardInteractiveForm(),
               ],
 
-              const SizedBox(height: AppTheme.spaceM),
+              SizedBox(height: responsive.spacing(AppTheme.spaceM)),
               _buildPaymentOption('Apple Pay', Icons.apple_rounded),
-              const SizedBox(height: AppTheme.spaceM),
+              SizedBox(height: responsive.spacing(AppTheme.spaceM)),
               _buildPaymentOption('PayPal', Icons.payment_rounded),
-              const SizedBox(height: AppTheme.spaceXXL),
+              SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
               // Summary
               Container(
-                padding: const EdgeInsets.all(AppTheme.spaceL),
+                padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(AppTheme.radiusXL),
@@ -272,16 +274,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 child: Column(
                   children: [
                     _buildPricingRow('Subtotal', '₹${cartNotifier.subtotal.toStringAsFixed(2)}'),
-                    const SizedBox(height: AppTheme.spaceS),
+                    SizedBox(height: responsive.spacing(AppTheme.spaceS)),
                     _buildPricingRow('Elite Courier Shipping', '₹15.00'),
-                    const SizedBox(height: AppTheme.spaceS),
+                    SizedBox(height: responsive.spacing(AppTheme.spaceS)),
                     _buildPricingRow('Estimated Tax', '₹${(cartNotifier.subtotal * 0.08).toStringAsFixed(2)}'),
-                    const Divider(height: AppTheme.spaceL),
+                    Divider(height: responsive.spacing(AppTheme.spaceL)),
                     _buildPricingRow('Order Total', '₹${cartNotifier.totalAmount.toStringAsFixed(2)}', isTotal: true),
                   ],
                 ),
               ),
-              const SizedBox(height: AppTheme.spaceXXL),
+              SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
               // Submit Button
               CustomButton(
@@ -289,7 +291,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 onPressed: _handlePlaceOrder,
                 isLoading: _isPlacingOrder,
               ),
-              const SizedBox(height: AppTheme.spaceXL),
+              SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
             ],
           ),
         ),
@@ -302,24 +304,23 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const SizedBox(
-                    width: 54,
-                    height: 54,
+                  SizedBox(
+                    width: responsive.spacing(54),
+                    height: responsive.spacing(54),
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
                     ),
                   ),
-                  const SizedBox(height: AppTheme.spaceXXL),
+                  SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
                     child: Text(
                       _paymentProcessingStep ?? 'PROCESSING SECURE TRANSACTION...',
                       key: ValueKey(_paymentProcessingStep),
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontFamily: 'Playfair Display',
-                        fontSize: 14,
+                      style: TextStyle(
+                        fontSize: responsive.fontSize14,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 2.0,
                         color: AppTheme.textPrimaryColor,
@@ -337,6 +338,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   Widget _buildPaymentOption(String name, IconData icon) {
+    final responsive = context.responsive;
     final isSelected = _selectedPayment == name;
     return GestureDetector(
       onTap: () {
@@ -345,7 +347,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.all(AppTheme.spaceL),
+        padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
         decoration: BoxDecoration(
           color: isSelected ? AppTheme.primaryColor.withOpacity(0.04) : Colors.white,
           borderRadius: BorderRadius.circular(AppTheme.radiusM),
@@ -359,11 +361,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           children: [
             Row(
               children: [
-                Icon(icon, color: isSelected ? AppTheme.primaryColor : AppTheme.textSecondaryColor),
-                const SizedBox(width: AppTheme.spaceM),
+                Icon(icon, size: responsive.iconSize(24), color: isSelected ? AppTheme.primaryColor : AppTheme.textSecondaryColor),
+                SizedBox(width: responsive.spacing(AppTheme.spaceM)),
                 Text(
                   name,
                   style: TextStyle(
+                    fontSize: responsive.fontSize14,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     color: isSelected ? AppTheme.primaryColor : AppTheme.textPrimaryColor,
                   ),
@@ -371,11 +374,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               ],
             ),
             if (isSelected)
-              const Icon(Icons.check_circle_rounded, color: AppTheme.primaryColor)
+              Icon(Icons.check_circle_rounded, size: responsive.iconSize(20), color: AppTheme.primaryColor)
             else
               Container(
-                width: 20,
-                height: 20,
+                width: responsive.spacing(20),
+                height: responsive.spacing(20),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(color: AppTheme.borderColor),
@@ -388,6 +391,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   Widget _buildPricingRow(String label, String value, {bool isTotal = false}) {
+    final responsive = context.responsive;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -396,7 +400,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           style: TextStyle(
             color: isTotal ? AppTheme.textPrimaryColor : AppTheme.textSecondaryColor,
             fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-            fontSize: isTotal ? 15 : 13,
+            fontSize: isTotal ? responsive.fontSize15 : responsive.fontSize13,
           ),
         ),
         Text(
@@ -404,7 +408,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           style: TextStyle(
             color: isTotal ? AppTheme.primaryColor : AppTheme.textPrimaryColor,
             fontWeight: isTotal ? FontWeight.bold : FontWeight.w600,
-            fontSize: isTotal ? 16 : 13,
+            fontSize: isTotal ? responsive.fontSize16 : responsive.fontSize13,
           ),
         ),
       ],
@@ -413,8 +417,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   // Breathtaking 3D Interactive Card Layout
   Widget _buildCreditCardInteractiveForm() {
+    final responsive = context.responsive;
     return Container(
-      padding: const EdgeInsets.all(AppTheme.spaceL),
+      padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
       decoration: BoxDecoration(
         color: AppTheme.borderColor.withOpacity(0.12),
         borderRadius: BorderRadius.circular(AppTheme.radiusXL),
@@ -444,7 +449,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               );
             },
           ),
-          const SizedBox(height: AppTheme.spaceXL),
+          SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
 
           // Inputs Form Fields
           TextFormField(
@@ -452,9 +457,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             keyboardType: TextInputType.number,
             maxLength: 19,
             onChanged: _onCardNumberChanged,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Card Number',
-              prefixIcon: Icon(Icons.credit_card),
+              prefixIcon: Icon(Icons.credit_card, size: responsive.iconSize(20)),
               counterText: '',
             ),
             validator: (value) {
@@ -465,14 +470,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               return null;
             },
           ),
-          const SizedBox(height: AppTheme.spaceL),
+          SizedBox(height: responsive.spacing(AppTheme.spaceL)),
           TextFormField(
             controller: _cardNameController,
             textCapitalization: TextCapitalization.words,
             onChanged: (_) => setState(() {}),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Cardholder Name',
-              prefixIcon: Icon(Icons.person_outline),
+              prefixIcon: Icon(Icons.person_outline, size: responsive.iconSize(20)),
             ),
             validator: (value) {
               if (_selectedPayment != 'Credit Card') return null;
@@ -482,7 +487,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               return null;
             },
           ),
-          const SizedBox(height: AppTheme.spaceL),
+          SizedBox(height: responsive.spacing(AppTheme.spaceL)),
           Row(
             children: [
               Expanded(
@@ -491,9 +496,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   keyboardType: TextInputType.number,
                   maxLength: 5,
                   onChanged: _onExpiryChanged,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Expiry (MM/YY)',
-                    prefixIcon: Icon(Icons.calendar_today_outlined),
+                    prefixIcon: Icon(Icons.calendar_today_outlined, size: responsive.iconSize(20)),
                     counterText: '',
                   ),
                   validator: (value) {
@@ -505,7 +510,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   },
                 ),
               ),
-              const SizedBox(width: AppTheme.spaceL),
+              SizedBox(width: responsive.spacing(AppTheme.spaceL)),
               Expanded(
                 child: TextFormField(
                   controller: _cardCvvController,
@@ -513,9 +518,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   keyboardType: TextInputType.number,
                   maxLength: 4,
                   onChanged: (_) => setState(() {}),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'CVV',
-                    prefixIcon: Icon(Icons.lock_outline_rounded),
+                    prefixIcon: Icon(Icons.lock_outline_rounded, size: responsive.iconSize(20)),
                     counterText: '',
                   ),
                   validator: (value) {
@@ -535,6 +540,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   Widget _buildCreditCardFront() {
+    final responsive = context.responsive;
     final number = _cardNumberController.text.isEmpty ? '•••• •••• •••• ••••' : _cardNumberController.text;
     final name = _cardNameController.text.isEmpty ? 'ARIA STERLING' : _cardNameController.text.toUpperCase();
     final expiry = _cardExpiryController.text.isEmpty ? 'MM/YY' : _cardExpiryController.text;
@@ -544,9 +550,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final isMastercard = _cardNumberController.text.startsWith('5');
 
     return Container(
-      height: 190,
+      height: responsive.spacing(190),
       width: double.infinity,
-      padding: const EdgeInsets.all(AppTheme.spaceXL),
+      padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         gradient: const LinearGradient(
@@ -574,8 +580,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             children: [
               // Premium Gold Metallic Contact Chip
               Container(
-                width: 42,
-                height: 32,
+                width: responsive.spacing(42),
+                height: responsive.spacing(32),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(6),
                   gradient: const LinearGradient(
@@ -588,11 +594,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               // Card brand / Signature branding
               Text(
                 isVisa ? 'VISA' : (isMastercard ? 'MASTERCARD' : 'AURA ELITE'),
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 2,
-                  fontSize: 13,
+                  fontSize: responsive.fontSize13,
                 ),
               ),
             ],
@@ -601,9 +607,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           // Real-time Number Display
           Text(
             number,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 19,
+              fontSize: responsive.fontSize19,
               fontWeight: FontWeight.bold,
               letterSpacing: 3,
             ),
@@ -616,18 +622,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'CARDHOLDER',
-                    style: TextStyle(color: Colors.white54, fontSize: 8, letterSpacing: 1.5),
+                    style: TextStyle(color: Colors.white54, fontSize: responsive.fontSize8, letterSpacing: 1.5),
                   ),
-                  const SizedBox(height: 2),
+                  SizedBox(height: responsive.spacing(2)),
                   Text(
                     name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 12,
+                      fontSize: responsive.fontSize12,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 1,
                     ),
@@ -637,16 +643,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const Text(
+                  Text(
                     'EXPIRES',
-                    style: TextStyle(color: Colors.white54, fontSize: 8, letterSpacing: 1.5),
+                    style: TextStyle(color: Colors.white54, fontSize: responsive.fontSize8, letterSpacing: 1.5),
                   ),
-                  const SizedBox(height: 2),
+                  SizedBox(height: responsive.spacing(2)),
                   Text(
                     expiry,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 12,
+                      fontSize: responsive.fontSize12,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 1,
                     ),

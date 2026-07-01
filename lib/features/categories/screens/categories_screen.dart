@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/responsive_text.dart';
 import 'package:hopscotch/features/categories/repositories/category_repository.dart';
 import '../../../core/widgets/category_card.dart';
 import '../../../core/widgets/skeleton_loaders.dart';
@@ -11,10 +12,11 @@ class CategoriesScreen extends ConsumerWidget {
   const CategoriesScreen({super.key});
 
   void _showSubcategoriesSheet(BuildContext context, CategoryModel category) {
+    final responsive = context.responsive;
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFFF8FAFC), // Premium light ivory canvas
-      shape: const RoundedRectangleBorder(
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(AppTheme.radiusXXL),
           topRight: Radius.circular(AppTheme.radiusXXL),
@@ -23,7 +25,7 @@ class CategoriesScreen extends ConsumerWidget {
       builder: (context) {
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceXL, vertical: AppTheme.spaceL),
+            padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL), vertical: responsive.spacing(AppTheme.spaceL)),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -31,44 +33,43 @@ class CategoriesScreen extends ConsumerWidget {
                 // Delicate Champagne Gold Handle Indicator
                 Center(
                   child: Container(
-                    width: 36,
-                    height: 4,
+                    width: responsive.spacing(36),
+                    height: responsive.spacing(4),
                     decoration: BoxDecoration(
                       color: const Color(0xFFC59F3E).withOpacity(0.4),
-                      borderRadius: BorderRadius.circular(2),
+                      borderRadius: BorderRadius.circular(responsive.spacing(2)),
                     ),
                   ),
                 ),
-                const SizedBox(height: AppTheme.spaceXL),
+                SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
                 
                 // Serif Luxury Title & Description
                 Text(
                   category.name.toUpperCase(),
-                  style: const TextStyle(
-                    fontFamily: 'Playfair Display',
-                    fontSize: 20,
+                  style: TextStyle(
+                    fontSize: responsive.fontSize(20),
                     fontWeight: FontWeight.bold,
                     letterSpacing: 2.0,
                     color: AppTheme.textPrimaryColor,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: responsive.spacing(4)),
                 Text(
                   'Explore hand-curated luxury subdivisions.',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: responsive.fontSize12,
                     color: AppTheme.textSecondaryColor.withOpacity(0.85),
                     letterSpacing: 0.2,
                   ),
                 ),
-                const SizedBox(height: AppTheme.spaceXL),
+                SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
                 
                 // Premium borderless subcategories list
                 Flexible(
                   child: ListView.separated(
                     shrinkWrap: true,
                     itemCount: category.subcategories.length + 1, // +1 for "Shop All"
-                    separatorBuilder: (context, index) => const Divider(height: 1, color: AppTheme.borderColor),
+                    separatorBuilder: (context, index) => Divider(height: 1, color: AppTheme.borderColor),
                     itemBuilder: (context, index) {
                       final isAll = index == 0;
                       final subcat = isAll ? 'Shop All ${category.name}' : category.subcategories[index - 1];
@@ -83,22 +84,22 @@ class CategoriesScreen extends ConsumerWidget {
                           }
                         },
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          padding: EdgeInsets.symmetric(vertical: responsive.spacing(16)),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
                                 subcat,
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: responsive.fontSize14,
                                   fontWeight: isAll ? FontWeight.bold : FontWeight.w500,
                                   color: isAll ? AppTheme.primaryColor : AppTheme.textPrimaryColor,
                                   letterSpacing: isAll ? 0.5 : 0.0,
                                 ),
                               ),
-                              const Icon(
+                              Icon(
                                 Icons.arrow_forward_rounded,
-                                size: 16,
+                                size: responsive.iconSize(16),
                                 color: AppTheme.textLightColor,
                               ),
                             ],
@@ -119,10 +120,11 @@ class CategoriesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final categoriesAsync = ref.watch(allCategoriesProvider);
+    final responsive = context.responsive;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('COUTURE DEPARTMENTS'),
+        title: Text('COUTURE DEPARTMENTS', style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold)),
         elevation: 0,
       ),
       body: categoriesAsync.when(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../utils/responsive_text.dart';
 
 class CustomButton extends StatefulWidget {
   final String text;
@@ -69,44 +70,49 @@ class _CustomButtonState extends State<CustomButton> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final responsive = context.responsive;
     
-    Widget buttonChild = Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (widget.isLoading) ...[
-          SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                widget.isOutlined ? AppTheme.primaryColor : Colors.white,
+    Widget buttonChild = FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (widget.isLoading) ...[
+            SizedBox(
+              width: responsive.iconSize(20),
+              height: responsive.iconSize(20),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  widget.isOutlined ? AppTheme.primaryColor : Colors.white,
+                ),
               ),
             ),
+            SizedBox(width: responsive.spacing(AppTheme.spaceM)),
+          ] else if (widget.icon != null) ...[
+            Icon(
+              widget.icon,
+              size: responsive.iconSize(18),
+              color: widget.isOutlined
+                  ? (widget.textColor ?? AppTheme.textPrimaryColor)
+                  : Colors.white,
+            ),
+            SizedBox(width: responsive.spacing(AppTheme.spaceS)),
+          ],
+          Text(
+            widget.text.toUpperCase(),
+            style: TextStyle(
+              color: widget.isOutlined
+                  ? (widget.textColor ?? AppTheme.textPrimaryColor)
+                  : (widget.textColor ?? Colors.white),
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+              fontSize: responsive.fontSize14,
+            ),
           ),
-          const SizedBox(width: AppTheme.spaceM),
-        ] else if (widget.icon != null) ...[
-          Icon(
-            widget.icon,
-            size: 18,
-            color: widget.isOutlined
-                ? (widget.textColor ?? AppTheme.textPrimaryColor)
-                : Colors.white,
-          ),
-          const SizedBox(width: AppTheme.spaceS),
         ],
-        Text(
-          widget.text,
-          style: theme.textTheme.titleMedium?.copyWith(
-            color: widget.isOutlined
-                ? (widget.textColor ?? AppTheme.textPrimaryColor)
-                : (widget.textColor ?? Colors.white),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
+      ),
     );
 
     Widget buttonBody;
@@ -119,10 +125,21 @@ class _CustomButtonState extends State<CustomButton> with SingleTickerProviderSt
             color: widget.backgroundColor ?? AppTheme.borderColor,
             width: 1.5,
           ),
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+          padding: EdgeInsets.symmetric(vertical: responsive.spacing(12), horizontal: responsive.spacing(28)),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppTheme.radiusM),
           ),
+          elevation: 0,
+        ).copyWith(
+          overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
+            if (states.contains(WidgetState.pressed)) {
+              return (widget.backgroundColor ?? AppTheme.primaryColor).withOpacity(0.1);
+            }
+            if (states.contains(WidgetState.hovered)) {
+              return (widget.backgroundColor ?? AppTheme.primaryColor).withOpacity(0.05);
+            }
+            return null;
+          }),
         ),
         child: buttonChild,
       );
@@ -132,10 +149,21 @@ class _CustomButtonState extends State<CustomButton> with SingleTickerProviderSt
         style: ElevatedButton.styleFrom(
           backgroundColor: widget.backgroundColor ?? AppTheme.primaryColor,
           elevation: 0,
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+          shadowColor: (widget.backgroundColor ?? AppTheme.primaryColor).withOpacity(0.3),
+          padding: EdgeInsets.symmetric(vertical: responsive.spacing(12), horizontal: responsive.spacing(28)),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppTheme.radiusM),
           ),
+        ).copyWith(
+          overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
+            if (states.contains(WidgetState.pressed)) {
+              return Colors.white.withOpacity(0.2);
+            }
+            if (states.contains(WidgetState.hovered)) {
+              return Colors.white.withOpacity(0.1);
+            }
+            return null;
+          }),
         ),
         child: buttonChild,
       );

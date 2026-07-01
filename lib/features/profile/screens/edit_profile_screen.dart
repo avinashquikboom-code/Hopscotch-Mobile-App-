@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/responsive_text.dart';
 import '../../auth/repositories/auth_repository.dart';
 import '../../../core/widgets/custom_button.dart';
 
@@ -68,8 +69,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Aura Couture profile successfully updated! ✨'),
+            SnackBar(
+              content: Text('Aura Couture profile successfully updated! ✨', style: TextStyle(fontSize: context.responsive.fontSize14)),
               behavior: SnackBarBehavior.floating,
               backgroundColor: AppTheme.primaryColor,
             ),
@@ -81,7 +82,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to update profile: $e'),
+            content: Text('Failed to update profile: $e', style: TextStyle(fontSize: context.responsive.fontSize14)),
             behavior: SnackBarBehavior.floating,
             backgroundColor: AppTheme.errorColor,
           ),
@@ -99,12 +100,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(authNotifierProvider);
+    final responsive = context.responsive;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('EDIT PROFILE'),
+        title: Text('EDIT PROFILE', style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: Icon(Icons.arrow_back_rounded, size: responsive.iconSize(24)),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -115,7 +117,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppTheme.spaceXL),
+        padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
         child: Form(
           key: _formKey,
           child: Column(
@@ -125,7 +127,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               Stack(
                 children: [
                   CircleAvatar(
-                    radius: 54,
+                    radius: responsive.iconSize(54),
                     backgroundColor: AppTheme.primaryColor.withOpacity(0.08),
                     backgroundImage: user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty
                         ? NetworkImage(user.avatarUrl!)
@@ -133,11 +135,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     child: user?.avatarUrl == null || user!.avatarUrl!.isEmpty
                         ? Text(
                             user?.name.substring(0, 1).toUpperCase() ?? 'U',
-                            style: const TextStyle(
-                              fontSize: 32,
+                            style: TextStyle(
+                              fontSize: responsive.fontSize32,
                               fontWeight: FontWeight.bold,
                               color: AppTheme.primaryColor,
-                              fontFamily: 'Playfair Display',
                             ),
                           )
                         : null,
@@ -146,91 +147,107 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     bottom: 0,
                     right: 0,
                     child: Container(
-                      padding: const EdgeInsets.all(6),
+                      padding: EdgeInsets.all(responsive.spacing(6)),
                       decoration: const BoxDecoration(
                         color: AppTheme.primaryColor,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.camera_alt_outlined,
                         color: Colors.white,
-                        size: 16,
+                        size: responsive.iconSize(16),
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: AppTheme.spaceXXL),
+              SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
               // Fields
               TextFormField(
                 controller: _nameController,
                 textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(
+                style: TextStyle(fontSize: responsive.fontSize14),
+                decoration: InputDecoration(
                   labelText: 'Full Name',
-                  prefixIcon: Icon(Icons.person_outline_rounded),
+                  prefixIcon: Icon(Icons.person_outline_rounded, size: responsive.iconSize(20)),
+                  labelStyle: TextStyle(fontSize: responsive.fontSize14),
                 ),
                 validator: (value) => value == null || value.trim().isEmpty ? 'Name is required' : null,
               ),
-              const SizedBox(height: AppTheme.spaceL),
+              SizedBox(height: responsive.spacing(AppTheme.spaceL)),
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
+                style: TextStyle(fontSize: responsive.fontSize14),
+                decoration: InputDecoration(
                   labelText: 'Email Address',
-                  prefixIcon: Icon(Icons.email_outlined),
+                  prefixIcon: Icon(Icons.email_outlined, size: responsive.iconSize(20)),
+                  labelStyle: TextStyle(fontSize: responsive.fontSize14),
                 ),
                 validator: (value) => value == null || value.trim().isEmpty ? 'Email is required' : null,
               ),
-              const SizedBox(height: AppTheme.spaceL),
+              SizedBox(height: responsive.spacing(AppTheme.spaceL)),
               TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
+                style: TextStyle(fontSize: responsive.fontSize14),
+                decoration: InputDecoration(
                   labelText: 'Phone Number',
-                  prefixIcon: Icon(Icons.phone_outlined),
+                  prefixIcon: Icon(Icons.phone_outlined, size: responsive.iconSize(20)),
+                  labelStyle: TextStyle(fontSize: responsive.fontSize14),
                 ),
               ),
-              const SizedBox(height: AppTheme.spaceL),
+              SizedBox(height: responsive.spacing(AppTheme.spaceL)),
               TextFormField(
                 controller: _addressController,
-                decoration: const InputDecoration(
+                style: TextStyle(fontSize: responsive.fontSize14),
+                decoration: InputDecoration(
                   labelText: 'Street Address',
-                  prefixIcon: Icon(Icons.home_outlined),
+                  prefixIcon: Icon(Icons.home_outlined, size: responsive.iconSize(20)),
+                  labelStyle: TextStyle(fontSize: responsive.fontSize14),
                 ),
               ),
-              const SizedBox(height: AppTheme.spaceL),
+              SizedBox(height: responsive.spacing(AppTheme.spaceL)),
               Row(
                 children: [
                   Expanded(
                     child: TextFormField(
                       controller: _cityController,
-                      decoration: const InputDecoration(
+                      style: TextStyle(fontSize: responsive.fontSize14),
+                      decoration: InputDecoration(
                         labelText: 'City',
-                        prefixIcon: Icon(Icons.location_city_outlined),
+                        prefixIcon: Icon(Icons.location_city_outlined, size: responsive.iconSize(20)),
+                        labelStyle: TextStyle(fontSize: responsive.fontSize14),
                       ),
                     ),
                   ),
-                  const SizedBox(width: AppTheme.spaceL),
+                  SizedBox(width: responsive.spacing(AppTheme.spaceL)),
                   Expanded(
                     child: TextFormField(
                       controller: _zipController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
+                      style: TextStyle(fontSize: responsive.fontSize14),
+                      decoration: InputDecoration(
                         labelText: 'ZIP Code',
-                        prefixIcon: Icon(Icons.pin_drop_outlined),
+                        prefixIcon: Icon(Icons.pin_drop_outlined, size: responsive.iconSize(20)),
+                        labelStyle: TextStyle(fontSize: responsive.fontSize14),
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: AppTheme.spaceXXL),
+              SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
               // Save Button
-              CustomButton(
-                text: 'SAVE PROFILE CHANGES',
-                onPressed: _handleSaveProfile,
-                isLoading: _isSaving,
+              SizedBox(
+                width: double.infinity,
+                height: responsive.spacing(56),
+                child: CustomButton(
+                  text: 'SAVE PROFILE CHANGES',
+                  onPressed: _handleSaveProfile,
+                  isLoading: _isSaving,
+                ),
               ),
             ],
           ),

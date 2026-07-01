@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/responsive_text.dart';
 import 'package:hopscotch/features/cart_wishlist/repositories/cart_wishlist_repository.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/state_widgets.dart';
@@ -12,10 +13,11 @@ class WishlistScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final wishlist = ref.watch(wishlistProvider);
+    final responsive = context.responsive;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('MY WISHLIST'),
+        title: Text('MY WISHLIST', style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold)),
         elevation: 0,
       ),
       body: wishlist.isEmpty
@@ -27,11 +29,11 @@ class WishlistScreen extends ConsumerWidget {
               onButtonPressed: () => context.go('/categories'),
             )
           : GridView.builder(
-              padding: const EdgeInsets.all(AppTheme.spaceXL).copyWith(bottom: 120),
+              padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)).copyWith(bottom: 120),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: MediaQuery.of(context).size.width < 600 ? 2 : (MediaQuery.of(context).size.width < 900 ? 3 : 5),
-                mainAxisSpacing: AppTheme.spaceL,
-                crossAxisSpacing: AppTheme.spaceL,
+                mainAxisSpacing: responsive.spacing(AppTheme.spaceL),
+                crossAxisSpacing: responsive.spacing(AppTheme.spaceL),
                 childAspectRatio: 0.58,
               ),
               itemCount: wishlist.length,

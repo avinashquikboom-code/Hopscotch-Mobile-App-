@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/responsive_text.dart';
 import '../../../core/widgets/custom_button.dart';
 
 class HelpCenterScreen extends StatefulWidget {
@@ -34,9 +35,10 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
   ];
 
   void _triggerConciergeAction(String action) {
+    final responsive = context.responsive;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$action... 📞'),
+        content: Text('$action... 📞', style: TextStyle(fontSize: responsive.fontSize14)),
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppTheme.primaryColor,
       ),
@@ -45,21 +47,21 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final responsive = context.responsive;
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC), // Premium light ivory canvas
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'COUTURE CONCIERGE',
           style: TextStyle(
-            fontFamily: 'Playfair Display',
             fontWeight: FontWeight.bold,
             letterSpacing: 2.0,
-            fontSize: 14,
+            fontSize: responsive.fontSize14,
           ),
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: Icon(Icons.arrow_back_rounded, size: responsive.iconSize(24)),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -70,13 +72,13 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppTheme.spaceXL),
+        padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 1. Personal Stylist Header Card
             Container(
-              padding: const EdgeInsets.all(AppTheme.spaceXL),
+              padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(AppTheme.radiusXL),
@@ -90,7 +92,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                       Stack(
                         children: [
                           CircleAvatar(
-                            radius: 30,
+                            radius: responsive.iconSize(30),
                             backgroundColor: AppTheme.primaryColor.withOpacity(0.08),
                             backgroundImage: const NetworkImage(
                               'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
@@ -100,8 +102,8 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                             bottom: 0,
                             right: 0,
                             child: Container(
-                              width: 12,
-                              height: 12,
+                              width: responsive.spacing(12),
+                              height: responsive.spacing(12),
                               decoration: BoxDecoration(
                                 color: AppTheme.successColor,
                                 shape: BoxShape.circle,
@@ -111,25 +113,24 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(width: AppTheme.spaceL),
+                      SizedBox(width: responsive.spacing(AppTheme.spaceL)),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Aria Sterling',
                               style: TextStyle(
-                                fontFamily: 'Playfair Display',
-                                fontSize: 18,
+                                fontSize: responsive.fontSize18,
                                 fontWeight: FontWeight.bold,
                                 color: AppTheme.textPrimaryColor,
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            SizedBox(height: responsive.spacing(2)),
                             Text(
                               'Elite Personal Stylist',
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: responsive.fontSize12,
                                 color: AppTheme.textSecondaryColor.withOpacity(0.85),
                               ),
                             ),
@@ -138,38 +139,44 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: AppTheme.spaceXL),
-                  const Text(
+                  SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+                  Text(
                     'Our dedicated global styling concierges are available 24/7 to assist with bespoke sizing, order adjustments, or private key security.',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: responsive.fontSize12,
                       height: 1.5,
                       color: AppTheme.textSecondaryColor,
                     ),
                   ),
-                  const SizedBox(height: AppTheme.spaceXL),
+                  SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
                   Row(
                     children: [
                       Expanded(
-                        child: CustomButton(
-                          text: 'CHAT NOW',
-                          onPressed: () => _triggerConciergeAction('Connecting with Aria'),
+                        child: SizedBox(
+                          height: responsive.spacing(56),
+                          child: CustomButton(
+                            text: 'CHAT NOW',
+                            onPressed: () => _triggerConciergeAction('Connecting with Aria'),
+                          ),
                         ),
                       ),
-                      const SizedBox(width: AppTheme.spaceM),
+                      SizedBox(width: responsive.spacing(AppTheme.spaceM)),
                       Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () => _triggerConciergeAction('Initiating secure concierge call'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppTheme.primaryColor,
-                            side: const BorderSide(color: AppTheme.primaryColor, width: 1.5),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                        child: SizedBox(
+                          height: responsive.spacing(56),
+                          child: OutlinedButton.icon(
+                            onPressed: () => _triggerConciergeAction('Initiating secure concierge call'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppTheme.primaryColor,
+                              side: const BorderSide(color: AppTheme.primaryColor, width: 1.5),
+                              padding: EdgeInsets.symmetric(vertical: responsive.spacing(16)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                              ),
                             ),
+                            icon: Icon(Icons.phone_outlined, size: responsive.iconSize(16)),
+                            label: Text('CALL NOW', style: TextStyle(fontWeight: FontWeight.bold, fontSize: responsive.fontSize14)),
                           ),
-                          icon: const Icon(Icons.phone_outlined, size: 16),
-                          label: const Text('CALL NOW', style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
                       ),
                     ],
@@ -177,26 +184,26 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: AppTheme.spaceXXL),
+            SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
             // 2. FAQ section header
-            const Text(
+            Text(
               'FREQUENTLY ASKED QUERIES',
               style: TextStyle(
-                fontSize: 11,
+                fontSize: responsive.fontSize11,
                 fontWeight: FontWeight.bold,
                 color: AppTheme.textSecondaryColor,
                 letterSpacing: 1.5,
               ),
             ),
-            const SizedBox(height: AppTheme.spaceL),
+            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
 
             // 3. Expandable FAQ Cards List
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _faqs.length,
-              separatorBuilder: (context, index) => const SizedBox(height: AppTheme.spaceL),
+              separatorBuilder: (context, index) => SizedBox(height: responsive.spacing(AppTheme.spaceL)),
               itemBuilder: (context, index) {
                 final faq = _faqs[index];
                 final isExpanded = _expandedFaqIndex == index;
@@ -208,7 +215,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                     });
                   },
                   child: Container(
-                    padding: const EdgeInsets.all(AppTheme.spaceL),
+                    padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(AppTheme.radiusXL),
@@ -227,9 +234,8 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                             Expanded(
                               child: Text(
                                 faq['question']!,
-                                style: const TextStyle(
-                                  fontFamily: 'Playfair Display',
-                                  fontSize: 14,
+                                style: TextStyle(
+                                  fontSize: responsive.fontSize14,
                                   fontWeight: FontWeight.bold,
                                   color: AppTheme.textPrimaryColor,
                                 ),
@@ -238,9 +244,9 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                             AnimatedRotation(
                               duration: const Duration(milliseconds: 200),
                               turns: isExpanded ? 0.25 : 0.0,
-                              child: const Icon(
+                              child: Icon(
                                 Icons.arrow_forward_ios_rounded,
-                                size: 14,
+                                size: responsive.iconSize(14),
                                 color: AppTheme.textLightColor,
                               ),
                             ),
@@ -255,11 +261,11 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                                 : const BoxConstraints(maxHeight: 0),
                             child: isExpanded
                                 ? Padding(
-                                    padding: const EdgeInsets.only(top: AppTheme.spaceM),
+                                    padding: EdgeInsets.only(top: responsive.spacing(AppTheme.spaceM)),
                                     child: Text(
                                       faq['answer']!,
                                       style: TextStyle(
-                                        fontSize: 12,
+                                        fontSize: responsive.fontSize12,
                                         height: 1.6,
                                         color: AppTheme.textSecondaryColor.withOpacity(0.95),
                                       ),
@@ -274,7 +280,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                 );
               },
             ),
-            const SizedBox(height: AppTheme.spaceXXL),
+            SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
           ],
         ),
       ),

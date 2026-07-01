@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
-import 'package:hopscotch/features/checkout/repositories/order_repository.dart';
+import '../../../core/utils/responsive_text.dart';
+import '../../../features/checkout/repositories/order_repository.dart';
 import '../../../core/widgets/state_widgets.dart';
 
 class MyOrdersScreen extends ConsumerWidget {
@@ -24,12 +25,13 @@ class MyOrdersScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final orders = ref.watch(orderProvider);
+    final responsive = context.responsive;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ORDER HISTORY'),
+        title: Text('ORDER HISTORY', style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: Icon(Icons.arrow_back_rounded, size: responsive.iconSize(24)),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -48,15 +50,15 @@ class MyOrdersScreen extends ConsumerWidget {
               onButtonPressed: () => context.go('/'),
             )
           : ListView.separated(
-              padding: const EdgeInsets.all(AppTheme.spaceXL),
+              padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
               itemCount: orders.length,
-              separatorBuilder: (context, index) => const SizedBox(height: AppTheme.spaceL),
+              separatorBuilder: (context, index) => SizedBox(height: responsive.spacing(AppTheme.spaceL)),
               itemBuilder: (context, index) {
                 final order = orders[index];
                 final statusColor = _getStatusColor(order.status);
 
                 return Container(
-                  padding: const EdgeInsets.all(AppTheme.spaceL),
+                  padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(AppTheme.radiusXL),
@@ -75,21 +77,22 @@ class MyOrdersScreen extends ConsumerWidget {
                             children: [
                               Text(
                                 order.id,
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                style: TextStyle(
+                                  fontSize: responsive.fontSize16,
                                   color: AppTheme.primaryColor,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              const SizedBox(height: 2),
+                              SizedBox(height: responsive.spacing(2)),
                               Text(
                                 order.orderDate,
-                                style: const TextStyle(color: AppTheme.textLightColor, fontSize: 11),
+                                style: TextStyle(color: AppTheme.textLightColor, fontSize: responsive.fontSize11),
                               ),
                             ],
                           ),
                           // Status Badge
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            padding: EdgeInsets.symmetric(horizontal: responsive.spacing(10), vertical: responsive.spacing(6)),
                             decoration: BoxDecoration(
                               color: statusColor.withOpacity(0.08),
                               borderRadius: BorderRadius.circular(AppTheme.radiusS),
@@ -99,31 +102,31 @@ class MyOrdersScreen extends ConsumerWidget {
                               style: TextStyle(
                                 color: statusColor,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 10,
+                                fontSize: responsive.fontSize10,
                                 letterSpacing: 0.5,
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const Divider(height: AppTheme.spaceXL),
+                      Divider(height: responsive.spacing(AppTheme.spaceXL)),
 
                       // Horizontal item images
                       SizedBox(
-                        height: 60,
+                        height: responsive.spacing(60),
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
                           itemCount: order.items.length,
                           itemBuilder: (context, index) {
                             final item = order.items[index];
                             return Padding(
-                              padding: const EdgeInsets.only(right: AppTheme.spaceM),
+                              padding: EdgeInsets.only(right: responsive.spacing(AppTheme.spaceM)),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(AppTheme.radiusS),
                                 child: Image.network(
                                   item.product.imageUrl,
-                                  width: 60,
-                                  height: 60,
+                                  width: responsive.spacing(60),
+                                  height: responsive.spacing(60),
                                   fit: BoxFit.cover,
                                 ),
                               ),
@@ -131,7 +134,7 @@ class MyOrdersScreen extends ConsumerWidget {
                           },
                         ),
                       ),
-                      const Divider(height: AppTheme.spaceXL),
+                      Divider(height: responsive.spacing(AppTheme.spaceXL)),
 
                       // Footer Row
                       Row(
@@ -140,14 +143,15 @@ class MyOrdersScreen extends ConsumerWidget {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'TOTAL AMOUNT',
-                                style: TextStyle(color: AppTheme.textLightColor, fontSize: 10, fontWeight: FontWeight.bold),
+                                style: TextStyle(color: AppTheme.textLightColor, fontSize: responsive.fontSize10, fontWeight: FontWeight.bold),
                               ),
-                              const SizedBox(height: 2),
+                              SizedBox(height: responsive.spacing(2)),
                               Text(
                                 '₹${order.totalAmount.toStringAsFixed(2)}',
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                style: TextStyle(
+                                  fontSize: responsive.fontSize20,
                                   fontWeight: FontWeight.bold,
                                   color: AppTheme.textPrimaryColor,
                                 ),
@@ -159,17 +163,17 @@ class MyOrdersScreen extends ConsumerWidget {
                               onPressed: () {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('Courier reference copied: ${order.trackingNumber} 📋'),
+                                    content: Text('Courier reference copied: ${order.trackingNumber} 📋', style: TextStyle(fontSize: responsive.fontSize14)),
                                     behavior: SnackBarBehavior.floating,
                                   ),
                                 );
                               },
                               style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                padding: EdgeInsets.symmetric(horizontal: responsive.spacing(12), vertical: responsive.spacing(8)),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusM)),
                               ),
-                              icon: const Icon(Icons.qr_code_scanner_rounded, size: 14),
-                              label: const Text('Track', style: TextStyle(fontSize: 12)),
+                              icon: Icon(Icons.qr_code_scanner_rounded, size: responsive.iconSize(14)),
+                              label: Text('Track', style: TextStyle(fontSize: responsive.fontSize12)),
                             ),
                         ],
                       ),

@@ -24,7 +24,18 @@ class AppRoutes {
   static const String editProfile = '/edit-profile';
   static const String helpCenter = '/help-center';
   static const String legalPolicies = '/legal-policies';
+  
+  // New screens
+  static const String offers = '/offers';
+  static const String coupons = '/coupons';
+  static const String trackOrder = '/track-order';
+  static const String addresses = '/addresses';
+  static const String about = '/about';
+  static const String privacyPolicy = '/privacy-policy';
+  static const String terms = '/terms';
+  static const String contactUs = '/contact-us';
 
   // Direct dynamic path helpers
   static String getProductDetailRoute(String id) => '/product/$id';
+  static String getTrackOrderRoute(String orderId) => '/track-order/$orderId';
 }

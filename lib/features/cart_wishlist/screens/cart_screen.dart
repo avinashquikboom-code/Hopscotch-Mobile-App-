@@ -2,8 +2,8 @@ import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/responsive_text.dart';
 import 'package:hopscotch/features/cart_wishlist/repositories/cart_wishlist_repository.dart';
 import '../../../core/widgets/state_widgets.dart';
 
@@ -32,6 +32,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   Widget build(BuildContext context) {
     final cart = ref.watch(cartProvider);
     final cartNotifier = ref.read(cartProvider.notifier);
+    final responsive = context.responsive;
 
     final double subtotal = cartNotifier.subtotal;
     final double shipping = 150.00;
@@ -44,10 +45,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       appBar: AppBar(
         title: Text(
           'YOUR BAG',
-          style: GoogleFonts.playfairDisplay(
+          style: TextStyle(
             fontWeight: FontWeight.bold,
             letterSpacing: 2.0,
-            fontSize: 18,
+            fontSize: responsive.fontSize18,
           ),
         ),
         elevation: 0,
@@ -55,13 +56,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         actions: [
           if (cart.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(right: AppTheme.spaceL),
+              padding: EdgeInsets.only(right: responsive.spacing(AppTheme.spaceL)),
               child: TextButton(
                 onPressed: () => cartNotifier.clearCart(),
                 child: Text(
                   'CLEAR',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 12,
+                  style: TextStyle(
+                    fontSize: responsive.fontSize12,
                     fontWeight: FontWeight.bold,
                     color: AppTheme.primaryColor,
                     letterSpacing: 1.0,
@@ -88,11 +89,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                     children: [
                       // Items Count Header
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceXL, vertical: AppTheme.spaceM),
+                        padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL), vertical: responsive.spacing(AppTheme.spaceM)),
                         child: Text(
                           '${cart.length} ITEM${cart.length > 1 ? 'S' : ''}',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
+                          style: TextStyle(
+                            fontSize: responsive.fontSize12,
                             fontWeight: FontWeight.w600,
                             color: AppTheme.textSecondaryColor,
                             letterSpacing: 1.5,
@@ -104,9 +105,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                       ListView.separated(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceXL),
+                        padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
                         itemCount: cart.length,
-                        separatorBuilder: (context, index) => const SizedBox(height: AppTheme.spaceL),
+                        separatorBuilder: (context, index) => SizedBox(height: responsive.spacing(AppTheme.spaceL)),
                         itemBuilder: (context, index) {
                           final item = cart[index];
                           final product = item.product;
@@ -124,7 +125,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                               ],
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.all(AppTheme.spaceL),
+                              padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -134,8 +135,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                     child: Hero(
                                       tag: 'cart_product_image_${product.id}',
                                       child: Container(
-                                        width: 100,
-                                        height: 100,
+                                        width: responsive.spacing(100),
+                                        height: responsive.spacing(100),
                                         decoration: BoxDecoration(
                                           borderRadius: BorderRadius.circular(AppTheme.radiusM),
                                           image: DecorationImage(
@@ -146,7 +147,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: AppTheme.spaceL),
+                                  SizedBox(width: responsive.spacing(AppTheme.spaceL)),
 
                                   // Product Details
                                   Expanded(
@@ -159,8 +160,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                           children: [
                                             Text(
                                               product.subcategory.toUpperCase(),
-                                              style: GoogleFonts.plusJakartaSans(
-                                                fontSize: 10,
+                                              style: TextStyle(
+                                                fontSize: responsive.fontSize10,
                                                 fontWeight: FontWeight.bold,
                                                 color: AppTheme.primaryColor,
                                                 letterSpacing: 1.0,
@@ -168,37 +169,37 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                             ),
                                             GestureDetector(
                                               onTap: () => cartNotifier.removeFromCart(item.id),
-                                              child: const Icon(
+                                              child: Icon(
                                                 Icons.close_rounded,
-                                                size: 20,
+                                                size: responsive.iconSize(20),
                                                 color: AppTheme.textLightColor,
                                               ),
                                             ),
                                           ],
                                         ),
-                                        const SizedBox(height: AppTheme.spaceS),
+                                        SizedBox(height: responsive.spacing(AppTheme.spaceS)),
 
                                         // Product Name
                                         Text(
                                           product.title,
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
-                                          style: GoogleFonts.playfairDisplay(
+                                          style: TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 16,
+                                            fontSize: responsive.fontSize16,
                                             color: AppTheme.textPrimaryColor,
                                           ),
                                         ),
-                                        const SizedBox(height: AppTheme.spaceS),
+                                        SizedBox(height: responsive.spacing(AppTheme.spaceS)),
 
                                         // Size & Color
                                         Row(
                                           children: [
                                             if (item.selectedSize != null) ...[
                                               Container(
-                                                padding: const EdgeInsets.symmetric(
-                                                  horizontal: AppTheme.spaceS,
-                                                  vertical: 4,
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: responsive.spacing(AppTheme.spaceS),
+                                                  vertical: responsive.spacing(4),
                                                 ),
                                                 decoration: BoxDecoration(
                                                   color: const Color(0xFFF1F5F9),
@@ -206,19 +207,19 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                                 ),
                                                 child: Text(
                                                   item.selectedSize!,
-                                                  style: GoogleFonts.plusJakartaSans(
-                                                    fontSize: 10,
+                                                  style: TextStyle(
+                                                    fontSize: responsive.fontSize10,
                                                     fontWeight: FontWeight.bold,
                                                     color: AppTheme.textPrimaryColor,
                                                   ),
                                                 ),
                                               ),
-                                              const SizedBox(width: AppTheme.spaceS),
+                                              SizedBox(width: responsive.spacing(AppTheme.spaceS)),
                                             ],
                                             if (item.selectedColor != null) ...[
                                               Container(
-                                                width: 16,
-                                                height: 16,
+                                                width: responsive.spacing(16),
+                                                height: responsive.spacing(16),
                                                 decoration: BoxDecoration(
                                                   color: _parseColor(item.selectedColor),
                                                   shape: BoxShape.circle,
@@ -234,7 +235,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                             ],
                                           ],
                                         ),
-                                        const SizedBox(height: AppTheme.spaceM),
+                                        SizedBox(height: responsive.spacing(AppTheme.spaceM)),
 
                                         // Price & Quantity
                                         Row(
@@ -242,9 +243,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                           children: [
                                             Text(
                                               '₹${(product.price * item.quantity).toStringAsFixed(0)}',
-                                              style: GoogleFonts.playfairDisplay(
+                                              style: TextStyle(
                                                 fontWeight: FontWeight.bold,
-                                                fontSize: 18,
+                                                fontSize: responsive.fontSize18,
                                                 color: AppTheme.textPrimaryColor,
                                               ),
                                             ),
@@ -258,14 +259,15 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                                   _buildQtyButton(
                                                     icon: Icons.remove_rounded,
                                                     onTap: () => cartNotifier.updateQuantity(item.id, item.quantity - 1),
+                                                    responsive: responsive,
                                                   ),
                                                   SizedBox(
-                                                    width: 40,
+                                                    width: responsive.spacing(40),
                                                     child: Text(
                                                       item.quantity.toString(),
                                                       textAlign: TextAlign.center,
-                                                      style: GoogleFonts.plusJakartaSans(
-                                                        fontSize: 14,
+                                                      style: TextStyle(
+                                                        fontSize: responsive.fontSize14,
                                                         fontWeight: FontWeight.bold,
                                                         color: AppTheme.textPrimaryColor,
                                                       ),
@@ -274,6 +276,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                                   _buildQtyButton(
                                                     icon: Icons.add_rounded,
                                                     onTap: () => cartNotifier.updateQuantity(item.id, item.quantity + 1),
+                                                    responsive: responsive,
                                                   ),
                                                 ],
                                               ),
@@ -289,13 +292,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           );
                         },
                       ),
-                      const SizedBox(height: AppTheme.spaceXL),
+                      SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
 
                       // Gift Wrapping
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceXL),
+                        padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
                         child: Container(
-                          padding: const EdgeInsets.all(AppTheme.spaceL),
+                          padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(AppTheme.radiusL),
@@ -304,36 +307,36 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           child: Row(
                             children: [
                               Container(
-                                width: 44,
-                                height: 44,
+                                width: responsive.spacing(44),
+                                height: responsive.spacing(44),
                                 decoration: BoxDecoration(
                                   color: AppTheme.primaryColor.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(AppTheme.radiusM),
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.card_giftcard_rounded,
                                   color: AppTheme.primaryColor,
-                                  size: 24,
+                                  size: responsive.iconSize(24),
                                 ),
                               ),
-                              const SizedBox(width: AppTheme.spaceL),
+                              SizedBox(width: responsive.spacing(AppTheme.spaceL)),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       'Gift Wrapping',
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 14,
+                                      style: TextStyle(
+                                        fontSize: responsive.fontSize14,
                                         fontWeight: FontWeight.bold,
                                         color: AppTheme.textPrimaryColor,
                                       ),
                                     ),
-                                    const SizedBox(height: 2),
+                                    SizedBox(height: responsive.spacing(2)),
                                     Text(
                                       'Premium boxed wrap with note card',
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 11,
+                                      style: TextStyle(
+                                        fontSize: responsive.fontSize11,
                                         color: AppTheme.textSecondaryColor,
                                       ),
                                     ),
@@ -354,13 +357,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: AppTheme.spaceXL),
+                      SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
 
                       // Order Summary
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceXL),
+                        padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
                         child: Container(
-                          padding: const EdgeInsets.all(AppTheme.spaceXL),
+                          padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(AppTheme.radiusL),
@@ -371,44 +374,44 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             children: [
                               Text(
                                 'ORDER SUMMARY',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 11,
+                                style: TextStyle(
+                                  fontSize: responsive.fontSize11,
                                   fontWeight: FontWeight.bold,
                                   color: AppTheme.textSecondaryColor,
                                   letterSpacing: 1.5,
                                 ),
                               ),
-                              const SizedBox(height: AppTheme.spaceL),
-                              _buildSummaryRow('Subtotal', '₹${subtotal.toStringAsFixed(0)}'),
-                              const SizedBox(height: AppTheme.spaceS),
-                              _buildSummaryRow('Shipping', '₹${shipping.toStringAsFixed(0)}'),
-                              const SizedBox(height: AppTheme.spaceS),
-                              _buildSummaryRow('Tax (8%)', '₹${tax.toStringAsFixed(0)}'),
+                              SizedBox(height: responsive.spacing(AppTheme.spaceL)),
+                              _buildSummaryRow('Subtotal', '₹${subtotal.toStringAsFixed(0)}', responsive),
+                              SizedBox(height: responsive.spacing(AppTheme.spaceS)),
+                              _buildSummaryRow('Shipping', '₹${shipping.toStringAsFixed(0)}', responsive),
+                              SizedBox(height: responsive.spacing(AppTheme.spaceS)),
+                              _buildSummaryRow('Tax (8%)', '₹${tax.toStringAsFixed(0)}', responsive),
                               if (_includeGiftWrapping) ...[
-                                const SizedBox(height: AppTheme.spaceS),
-                                _buildSummaryRow('Gift Wrapping', '₹${_giftWrappingCost.toStringAsFixed(0)}'),
+                                SizedBox(height: responsive.spacing(AppTheme.spaceS)),
+                                _buildSummaryRow('Gift Wrapping', '₹${_giftWrappingCost.toStringAsFixed(0)}', responsive),
                               ],
-                              const Divider(height: AppTheme.spaceXL),
-                              _buildSummaryRow('Total', '₹${totalAmount.toStringAsFixed(0)}', isTotal: true),
+                              Divider(height: responsive.spacing(AppTheme.spaceXL)),
+                              _buildSummaryRow('Total', '₹${totalAmount.toStringAsFixed(0)}', responsive, isTotal: true),
                             ],
                           ),
                         ),
                       ),
-                      const SizedBox(height: AppTheme.spaceXXL),
+                      SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
                     ],
                   ),
                 ),
 
                 // Bottom Panel
                 Positioned(
-                  bottom: 25,
+                  bottom: responsive.spacing(25),
                   left: 0,
                   right: 0,
                   child: ClipRRect(
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                       child: Container(
-                        padding: const EdgeInsets.all(AppTheme.spaceXL).copyWith(bottom: 40),
+                        padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)).copyWith(bottom: responsive.spacing(40)),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.9),
                           border: const Border(
@@ -423,8 +426,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                               children: [
                                 Text(
                                   'TOTAL',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 12,
+                                  style: TextStyle(
+                                    fontSize: responsive.fontSize12,
                                     fontWeight: FontWeight.bold,
                                     color: AppTheme.textSecondaryColor,
                                     letterSpacing: 1.5,
@@ -432,20 +435,20 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 ),
                                 Text(
                                   '₹${totalAmount.toStringAsFixed(0)}',
-                                  style: GoogleFonts.playfairDisplay(
-                                    fontSize: 24,
+                                  style: TextStyle(
+                                    fontSize: responsive.fontSize24,
                                     fontWeight: FontWeight.bold,
                                     color: AppTheme.textPrimaryColor,
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: AppTheme.spaceL),
+                            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
                             GestureDetector(
                               onTap: () => context.push('/checkout'),
                               child: Container(
                                 width: double.infinity,
-                                height: 56,
+                                height: responsive.spacing(56),
                                 decoration: BoxDecoration(
                                   color: AppTheme.primaryColor,
                                   borderRadius: BorderRadius.circular(AppTheme.radiusM),
@@ -453,8 +456,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 child: Center(
                                   child: Text(
                                     'PROCEED TO CHECKOUT',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 14,
+                                    style: TextStyle(
+                                      fontSize: responsive.fontSize14,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                       letterSpacing: 1.0,
@@ -474,35 +477,35 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     );
   }
 
-  Widget _buildQtyButton({required IconData icon, required VoidCallback onTap}) {
+  Widget _buildQtyButton({required IconData icon, required VoidCallback onTap, required ResponsiveText responsive}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Container(
-        width: 32,
-        height: 32,
+        width: responsive.spacing(32),
+        height: responsive.spacing(32),
         alignment: Alignment.center,
-        child: Icon(icon, size: 18, color: AppTheme.textPrimaryColor),
+        child: Icon(icon, size: responsive.iconSize(18), color: AppTheme.textPrimaryColor),
       ),
     );
   }
 
-  Widget _buildSummaryRow(String label, String value, {bool isTotal = false}) {
+  Widget _buildSummaryRow(String label, String value, ResponsiveText responsive, {bool isTotal = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           label,
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: isTotal ? 14 : 13,
+          style: TextStyle(
+            fontSize: isTotal ? responsive.fontSize14 : responsive.fontSize13,
             fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
             color: isTotal ? AppTheme.textPrimaryColor : AppTheme.textSecondaryColor,
           ),
         ),
         Text(
           value,
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: isTotal ? 16 : 13,
+          style: TextStyle(
+            fontSize: isTotal ? responsive.fontSize16 : responsive.fontSize13,
             fontWeight: isTotal ? FontWeight.bold : FontWeight.w600,
             color: isTotal ? AppTheme.primaryColor : AppTheme.textPrimaryColor,
           ),

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
-import 'package:hopscotch/features/product/repositories/product_repository.dart';
-import 'package:hopscotch/features/cart_wishlist/repositories/cart_wishlist_repository.dart';
+import '../../../core/utils/responsive_text.dart';
+import '../../../features/product/repositories/product_repository.dart';
+import '../../../features/cart_wishlist/repositories/cart_wishlist_repository.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/skeleton_loaders.dart';
 import '../../../core/widgets/animated_heart_button.dart';
@@ -31,6 +33,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
 
   void _triggerAddToCart(product) async {
     if (_isAddingToCart || _showCartSuccess) return;
+    HapticFeedback.mediumImpact();
     setState(() {
       _isAddingToCart = true;
     });
@@ -51,6 +54,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           size: _selectedSize,
           color: _selectedColor,
         );
+
+    HapticFeedback.lightImpact();
 
     // Dynamic success timeout
     await Future.delayed(const Duration(milliseconds: 1200));
@@ -76,13 +81,14 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   Widget build(BuildContext context) {
     final productAsync = ref.watch(productDetailProvider(widget.productId));
     final wishlist = ref.watch(wishlistProvider);
+    final responsive = context.responsive;
 
     return Scaffold(
       body: productAsync.when(
         data: (product) {
           if (product == null) {
-            return const Scaffold(
-              body: Center(child: Text('Product not found')),
+            return Scaffold(
+              body: Center(child: Text('Product not found', style: TextStyle(fontSize: responsive.fontSize16))),
             );
           }
 
@@ -111,15 +117,15 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                         elevation: 0,
                         scrolledUnderElevation: 0,
                         backgroundColor: AppTheme.backgroundColor,
-                        leadingWidth: 64,
+                        leadingWidth: responsive.spacing(64),
                         leading: Container(
-                          margin: const EdgeInsets.all(8),
+                          margin: EdgeInsets.all(responsive.spacing(8)),
                           decoration: const BoxDecoration(
                             color: Colors.white,
                             shape: BoxShape.circle,
                           ),
                           child: IconButton(
-                            icon: const Icon(Icons.arrow_back_rounded, size: 20, color: AppTheme.textPrimaryColor),
+                            icon: Icon(Icons.arrow_back_rounded, size: responsive.iconSize(20), color: AppTheme.textPrimaryColor),
                             onPressed: () {
                               if (context.canPop()) {
                                 context.pop();
@@ -131,20 +137,21 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                         ),
                         actions: [
                           Container(
-                            margin: const EdgeInsets.all(8),
+                            margin: EdgeInsets.all(responsive.spacing(8)),
                             decoration: const BoxDecoration(
                               color: Colors.white,
                               shape: BoxShape.circle,
                             ),
                             child: AnimatedHeartButton(
                               isFav: isFav,
-                              size: 20,
+                              size: responsive.iconSize(20),
                               onTap: () {
+                                HapticFeedback.lightImpact();
                                 ref.read(wishlistProvider.notifier).toggleWishlist(product);
                               },
                             ),
                           ),
-                          const SizedBox(width: AppTheme.spaceM),
+                          SizedBox(width: responsive.spacing(AppTheme.spaceM)),
                         ],
                         flexibleSpace: FlexibleSpaceBar(
                           background: Stack(
@@ -173,10 +180,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                         if (loadingProgress == null) return child;
                                         return Container(
                                           color: AppTheme.borderColor.withOpacity(0.2),
-                                          child: const Center(
+                                          child: Center(
                                             child: CircularProgressIndicator(
                                               strokeWidth: 2,
-                                              valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                                              valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
                                             ),
                                           ),
                                         );
@@ -187,7 +194,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                           child: Icon(
                                             Icons.checkroom_rounded,
                                             color: AppTheme.primaryColor.withOpacity(0.15),
-                                            size: 80,
+                                            size: responsive.iconSize(80),
                                           ),
                                         ),
                                       ),
@@ -198,7 +205,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                               // Gallery dots
                               if (imageList.length > 1)
                                 Positioned(
-                                  bottom: AppTheme.spaceXL,
+                                  bottom: responsive.spacing(AppTheme.spaceXL),
                                   left: 0,
                                   right: 0,
                                   child: Row(
@@ -206,9 +213,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                     children: List.generate(
                                       imageList.length,
                                       (index) => Container(
-                                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                                        width: _activeImageIndex == index ? 18 : 8,
-                                        height: 8,
+                                        margin: EdgeInsets.symmetric(horizontal: responsive.spacing(4)),
+                                        width: _activeImageIndex == index ? responsive.spacing(18) : responsive.spacing(8),
+                                        height: responsive.spacing(8),
                                         decoration: BoxDecoration(
                                           color: _activeImageIndex == index ? AppTheme.primaryColor : Colors.white.withOpacity(0.5),
                                           borderRadius: BorderRadius.circular(4),
@@ -224,41 +231,44 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                     ];
                   },
                   body: SingleChildScrollView(
-                    padding: const EdgeInsets.only(bottom: 120),
+                    padding: EdgeInsets.only(bottom: responsive.spacing(120)),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Information Section
                         Padding(
-                          padding: const EdgeInsets.all(AppTheme.spaceXL),
+                          padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               // Tag & Title
                               Text(
                                 product.subcategory.toUpperCase(),
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                style: TextStyle(
+                                  fontSize: responsive.fontSize11,
                                   color: AppTheme.primaryColor,
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: 1.5,
                                 ),
                               ),
-                              const SizedBox(height: AppTheme.spaceS),
+                              SizedBox(height: responsive.spacing(AppTheme.spaceS)),
                               Text(
                                 product.title,
-                                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                style: TextStyle(
+                                  fontSize: responsive.fontSize20,
                                   fontWeight: FontWeight.bold,
-                                  height: 1.2,
+                                  height: 1.15,
+                                  color: AppTheme.textPrimaryColor,
                                 ),
                               ),
-                              const SizedBox(height: AppTheme.spaceM),
+                              SizedBox(height: responsive.spacing(AppTheme.spaceM)),
 
                               // Ratings & Price Wrap
                               Wrap(
                                 alignment: WrapAlignment.spaceBetween,
                                 crossAxisAlignment: WrapCrossAlignment.center,
-                                runSpacing: AppTheme.spaceM,
-                                spacing: AppTheme.spaceM,
+                                runSpacing: responsive.spacing(AppTheme.spaceM),
+                                spacing: responsive.spacing(AppTheme.spaceM),
                                 children: [
                                   // Prices
                                   Row(
@@ -268,16 +278,18 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                     children: [
                                       Text(
                                         '₹${product.price.toStringAsFixed(2)}',
-                                        style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                                        style: TextStyle(
+                                          fontSize: responsive.fontSize20,
                                           color: AppTheme.primaryColor,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                       if (product.originalPrice > product.price) ...[
-                                        const SizedBox(width: AppTheme.spaceM),
+                                        SizedBox(width: responsive.spacing(AppTheme.spaceM)),
                                         Text(
                                           '₹${product.originalPrice.toStringAsFixed(2)}',
-                                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                          style: TextStyle(
+                                            fontSize: responsive.fontSize14,
                                             color: AppTheme.textLightColor,
                                             decoration: TextDecoration.lineThrough,
                                           ),
@@ -287,7 +299,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                   ),
                                   // Rating summary
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    padding: EdgeInsets.symmetric(horizontal: responsive.spacing(12), vertical: responsive.spacing(6)),
                                     decoration: BoxDecoration(
                                       color: AppTheme.accentColor.withOpacity(0.08),
                                       borderRadius: BorderRadius.circular(AppTheme.radiusM),
@@ -295,66 +307,85 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        const Icon(Icons.star_rounded, color: AppTheme.accentColor, size: 18),
-                                        const SizedBox(width: 4),
+                                        Icon(Icons.star_rounded, color: AppTheme.accentColor, size: responsive.iconSize(18)),
+                                        SizedBox(width: responsive.spacing(4)),
                                         Text(
                                           product.rating.toString(),
-                                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textPrimaryColor),
+                                          style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textPrimaryColor, fontSize: responsive.fontSize14),
                                         ),
-                                        const SizedBox(width: 4),
+                                        SizedBox(width: responsive.spacing(4)),
                                         Text(
                                           '(${product.reviewCount} Reviews)',
-                                          style: const TextStyle(color: AppTheme.textSecondaryColor, fontSize: 11),
+                                          style: TextStyle(color: AppTheme.textSecondaryColor, fontSize: responsive.fontSize11),
                                         ),
                                       ],
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: AppTheme.spaceXL),
+                              SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
 
                               // Description
                               Text(
                                 'Description',
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontSize: responsive.fontSize16,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.textPrimaryColor,
+                                ),
                               ),
-                              const SizedBox(height: AppTheme.spaceS),
+                              SizedBox(height: responsive.spacing(AppTheme.spaceS)),
                               Text(
                                 product.description,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                style: responsive.bodyMedium.copyWith(
                                   color: AppTheme.textSecondaryColor,
                                   height: 1.6,
                                 ),
                               ),
-                              const SizedBox(height: AppTheme.spaceXL),
+                              SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
 
                               // Size Selection
                               if (product.sizes.isNotEmpty) ...[
                                 Text(
                                   'Select Size',
-                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    fontSize: responsive.fontSize16,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textPrimaryColor,
+                                  ),
                                 ),
-                                const SizedBox(height: AppTheme.spaceM),
+                                SizedBox(height: responsive.spacing(AppTheme.spaceM)),
                                 Row(
                                   children: product.sizes.map((sz) {
                                     final isSelected = _selectedSize == sz;
                                     return GestureDetector(
                                       onTap: () {
+                                        HapticFeedback.lightImpact();
                                         setState(() {
                                           _selectedSize = sz;
                                         });
                                       },
-                                      child: Container(
-                                        width: 45,
-                                        height: 45,
-                                        margin: const EdgeInsets.only(right: AppTheme.spaceM),
+                                      child: AnimatedContainer(
+                                        duration: const Duration(milliseconds: 200),
+                                        width: responsive.spacing(45),
+                                        height: responsive.spacing(45),
+                                        margin: EdgeInsets.only(right: responsive.spacing(AppTheme.spaceM)),
                                         decoration: BoxDecoration(
                                           color: isSelected ? AppTheme.primaryColor : Colors.white,
                                           borderRadius: BorderRadius.circular(AppTheme.radiusM),
                                           border: Border.all(
                                             color: isSelected ? AppTheme.primaryColor : AppTheme.borderColor,
-                                            width: 1.5,
+                                            width: isSelected ? 2 : 1.5,
                                           ),
+                                          boxShadow: isSelected
+                                              ? [
+                                                  BoxShadow(
+                                                    color: AppTheme.primaryColor.withOpacity(0.3),
+                                                    blurRadius: 8,
+                                                    offset: const Offset(0, 2),
+                                                  ),
+                                                ]
+                                              : AppTheme.softShadow,
                                         ),
                                         alignment: Alignment.center,
                                         child: Text(
@@ -362,75 +393,94 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                           style: TextStyle(
                                             color: isSelected ? Colors.white : AppTheme.textPrimaryColor,
                                             fontWeight: FontWeight.bold,
+                                            fontSize: responsive.fontSize14,
                                           ),
                                         ),
                                       ),
                                     );
                                   }).toList(),
                                 ),
-                                const SizedBox(height: AppTheme.spaceXL),
+                                SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
                               ],
 
                               // Color Selection
                               if (product.colors.isNotEmpty) ...[
                                 Text(
                                   'Select Color',
-                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    fontSize: responsive.fontSize16,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textPrimaryColor,
+                                  ),
                                 ),
-                                const SizedBox(height: AppTheme.spaceM),
+                                SizedBox(height: responsive.spacing(AppTheme.spaceM)),
                                 Row(
                                   children: product.colors.map((hex) {
                                     final isSelected = _selectedColor == hex;
                                     final colorVal = _parseColor(hex);
                                     return GestureDetector(
                                       onTap: () {
+                                        HapticFeedback.lightImpact();
                                         setState(() {
                                           _selectedColor = hex;
                                         });
                                       },
-                                      child: Container(
-                                        width: 45,
-                                        height: 45,
-                                        margin: const EdgeInsets.only(right: AppTheme.spaceM),
+                                      child: AnimatedContainer(
+                                        duration: const Duration(milliseconds: 200),
+                                        width: responsive.spacing(45),
+                                        height: responsive.spacing(45),
+                                        margin: EdgeInsets.only(right: responsive.spacing(AppTheme.spaceM)),
                                         decoration: BoxDecoration(
                                           color: colorVal,
                                           shape: BoxShape.circle,
                                           border: Border.all(
                                             color: isSelected ? AppTheme.primaryColor : Colors.white,
-                                            width: isSelected ? 4 : 1,
+                                            width: isSelected ? 4 : 2,
                                           ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black.withOpacity(0.1),
-                                              blurRadius: 4,
-                                            ),
-                                          ],
+                                          boxShadow: isSelected
+                                              ? [
+                                                  BoxShadow(
+                                                    color: colorVal.withOpacity(0.5),
+                                                    blurRadius: 12,
+                                                    offset: const Offset(0, 2),
+                                                  ),
+                                                ]
+                                              : [
+                                                  BoxShadow(
+                                                    color: Colors.black.withOpacity(0.1),
+                                                    blurRadius: 4,
+                                                  ),
+                                                ],
                                         ),
                                       ),
                                     );
                                   }).toList(),
                                 ),
-                                const SizedBox(height: AppTheme.spaceXL),
+                                SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
                               ],
 
                               // Reviews list
                               if (product.reviews.isNotEmpty) ...[
                                 const Divider(),
-                                const SizedBox(height: AppTheme.spaceXL),
+                                SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
                                 Text(
                                   'Customer Reviews (${product.reviews.length})',
-                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    fontSize: responsive.fontSize16,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textPrimaryColor,
+                                  ),
                                 ),
-                                const SizedBox(height: AppTheme.spaceL),
+                                SizedBox(height: responsive.spacing(AppTheme.spaceL)),
                                 ListView.separated(
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
                                   itemCount: product.reviews.length,
-                                  separatorBuilder: (context, index) => const SizedBox(height: AppTheme.spaceL),
+                                  separatorBuilder: (context, index) => SizedBox(height: responsive.spacing(AppTheme.spaceL)),
                                   itemBuilder: (context, index) {
                                     final rev = product.reviews[index];
                                     return Container(
-                                      padding: const EdgeInsets.all(AppTheme.spaceL),
+                                      padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
                                       decoration: BoxDecoration(
                                         color: Colors.white,
                                         borderRadius: BorderRadius.circular(AppTheme.radiusM),
@@ -445,66 +495,70 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                               Row(
                                                 children: [
                                                   CircleAvatar(
-                                                    radius: 18,
+                                                    radius: responsive.iconSize(18),
                                                     backgroundImage: rev.userAvatarUrl != null
                                                         ? NetworkImage(rev.userAvatarUrl!)
                                                         : null,
                                                     child: rev.userAvatarUrl == null
-                                                        ? const Icon(Icons.person, size: 18)
+                                                        ? Icon(Icons.person, size: responsive.iconSize(18))
                                                         : null,
                                                   ),
-                                                  const SizedBox(width: AppTheme.spaceM),
+                                                  SizedBox(width: responsive.spacing(AppTheme.spaceM)),
                                                   Text(
                                                     rev.userName,
-                                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: responsive.fontSize14),
                                                   ),
                                                 ],
                                               ),
                                               Text(
                                                 rev.date,
-                                                style: const TextStyle(color: AppTheme.textLightColor, fontSize: 11),
+                                                style: TextStyle(color: AppTheme.textLightColor, fontSize: responsive.fontSize11),
                                               ),
                                             ],
                                           ),
-                                          const SizedBox(height: AppTheme.spaceS),
+                                          SizedBox(height: responsive.spacing(AppTheme.spaceS)),
                                           Row(
                                             children: List.generate(
                                               5,
                                               (i) => Icon(
                                                 Icons.star_rounded,
                                                 color: i < rev.rating.toInt() ? AppTheme.accentColor : AppTheme.borderColor,
-                                                size: 16,
+                                                size: responsive.iconSize(16),
                                               ),
                                             ),
                                           ),
-                                          const SizedBox(height: AppTheme.spaceS),
+                                          SizedBox(height: responsive.spacing(AppTheme.spaceS)),
                                           Text(
                                             rev.comment,
-                                            style: const TextStyle(color: AppTheme.textSecondaryColor, height: 1.4),
+                                            style: TextStyle(color: AppTheme.textSecondaryColor, height: 1.4, fontSize: responsive.fontSize14),
                                           ),
                                         ],
                                       ),
                                     );
                                   },
                                 ),
-                                const SizedBox(height: AppTheme.spaceXL),
+                                SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
                               ],
 
                               // Similar Products
                               const Divider(),
-                              const SizedBox(height: AppTheme.spaceXL),
+                              SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
                               Text(
                                 'You May Also Elite',
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontSize: responsive.fontSize16,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.textPrimaryColor,
+                                ),
                               ),
-                              const SizedBox(height: AppTheme.spaceL),
+                              SizedBox(height: responsive.spacing(AppTheme.spaceL)),
                               SizedBox(
-                                height: 290,
+                                height: responsive.spacing(290),
                                 child: similarProductsAsync.when(
                                   data: (products) {
                                     final filtered = products.where((p) => p.id != product.id).toList();
                                     if (filtered.isEmpty) {
-                                      return const Center(child: Text('No recommendations available'));
+                                      return Center(child: Text('No recommendations available', style: TextStyle(fontSize: responsive.fontSize14)));
                                     }
                                     return ListView.builder(
                                       scrollDirection: Axis.horizontal,
@@ -512,8 +566,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                       itemBuilder: (context, index) {
                                         final p = filtered[index];
                                         return Container(
-                                          width: 175,
-                                          margin: const EdgeInsets.only(right: AppTheme.spaceL),
+                                          width: responsive.spacing(175),
+                                          margin: EdgeInsets.only(right: responsive.spacing(AppTheme.spaceL)),
                                           child: ProductCard(
                                             product: p,
                                             heroTagPrefix: 'similar',
@@ -529,12 +583,12 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                     scrollDirection: Axis.horizontal,
                                     itemCount: 3,
                                     itemBuilder: (context, index) => Container(
-                                      width: 175,
-                                      margin: const EdgeInsets.only(right: AppTheme.spaceL),
+                                      width: responsive.spacing(175),
+                                      margin: EdgeInsets.only(right: responsive.spacing(AppTheme.spaceL)),
                                       child: const ProductCardSkeleton(),
                                     ),
                                   ),
-                                  error: (err, stack) => Center(child: Text('Error: $err')),
+                                  error: (err, stack) => Center(child: Text('Error: $err', style: TextStyle(fontSize: responsive.fontSize14))),
                                 ),
                               ),
                             ],
@@ -551,7 +605,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   left: 0,
                   right: 0,
                   child: Container(
-                    padding: const EdgeInsets.all(AppTheme.spaceXL),
+                    padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.9),
                       border: const Border(top: BorderSide(color: AppTheme.borderColor)),
@@ -567,7 +621,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppTheme.primaryColor,
                               side: const BorderSide(color: AppTheme.primaryColor, width: 1.5),
-                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              padding: EdgeInsets.symmetric(vertical: responsive.spacing(16)),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(AppTheme.radiusM),
                               ),
@@ -575,32 +629,33 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                             child: AnimatedSize(
                               duration: const Duration(milliseconds: 250),
                               child: _isAddingToCart
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
+                                  ? SizedBox(
+                                      width: responsive.spacing(20),
+                                      height: responsive.spacing(20),
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                                        valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
                                       ),
                                     )
                                   : (_showCartSuccess
-                                      ? const Row(
+                                      ? Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
-                                            Icon(Icons.check_rounded, size: 18, color: AppTheme.primaryColor),
-                                            SizedBox(width: 6),
-                                            Text('ADDED', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryColor)),
+                                            Icon(Icons.check_rounded, size: responsive.iconSize(18), color: AppTheme.primaryColor),
+                                            SizedBox(width: responsive.spacing(6)),
+                                            Text('ADDED', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryColor, fontSize: responsive.fontSize14)),
                                           ],
                                         )
-                                      : const Text('ADD TO CART', style: TextStyle(fontWeight: FontWeight.bold))),
+                                      : Text('ADD TO CART', style: TextStyle(fontWeight: FontWeight.bold, fontSize: responsive.fontSize14))),
                             ),
                           ),
                         ),
-                        const SizedBox(width: AppTheme.spaceL),
+                        SizedBox(width: responsive.spacing(AppTheme.spaceL)),
                         // Buy Now (Solid)
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () {
+                              HapticFeedback.heavyImpact();
                               ref.read(cartProvider.notifier).addToCart(
                                     product,
                                     size: _selectedSize,
@@ -611,12 +666,12 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.primaryColor,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              padding: EdgeInsets.symmetric(vertical: responsive.spacing(16)),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(AppTheme.radiusM),
                               ),
                             ),
-                            child: const Text('BUY NOW', style: TextStyle(fontWeight: FontWeight.bold)),
+                            child: Text('BUY NOW', style: TextStyle(fontWeight: FontWeight.bold, fontSize: responsive.fontSize14)),
                           ),
                         ),
                       ],
@@ -627,11 +682,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             ),
           );
         },
-        loading: () => const Scaffold(
+        loading: () => Scaffold(
           body: Center(child: CircularProgressIndicator()),
         ),
         error: (err, stack) => Scaffold(
-          body: Center(child: Text('Error: $err')),
+          body: Center(child: Text('Error: $err', style: TextStyle(fontSize: responsive.fontSize14))),
         ),
       ),
     );

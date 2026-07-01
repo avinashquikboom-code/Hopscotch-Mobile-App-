@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
-import 'package:hopscotch/features/product/repositories/product_repository.dart';
+import '../../../core/utils/responsive_text.dart';
+import '../../../features/product/repositories/product_repository.dart';
 import '../../../core/widgets/product_card.dart';
-import 'package:hopscotch/features/product/models/product_model.dart';
+import '../../../features/product/models/product_model.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
@@ -79,22 +80,24 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final responsive = context.responsive;
     return Scaffold(
       appBar: AppBar(
         title: TextField(
           controller: _searchController,
           focusNode: _focusNode,
           onChanged: _performSearch,
-          style: Theme.of(context).textTheme.bodyLarge,
+          style: TextStyle(fontSize: responsive.fontSize16),
           decoration: InputDecoration(
             hintText: 'Search garments, accessories...',
+            hintStyle: TextStyle(fontSize: responsive.fontSize14),
             border: InputBorder.none,
             enabledBorder: InputBorder.none,
             focusedBorder: InputBorder.none,
             contentPadding: EdgeInsets.zero,
             suffixIcon: _searchController.text.isNotEmpty
                 ? IconButton(
-                    icon: const Icon(Icons.clear_rounded, color: AppTheme.textSecondaryColor),
+                    icon: Icon(Icons.clear_rounded, color: AppTheme.textSecondaryColor, size: responsive.iconSize(20)),
                     onPressed: () {
                       _searchController.clear();
                       _performSearch('');
@@ -104,7 +107,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: Icon(Icons.arrow_back_rounded, size: responsive.iconSize(24)),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -121,8 +124,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   Widget _buildSuggestionsView() {
+    final responsive = context.responsive;
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppTheme.spaceXL),
+      padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -130,9 +134,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           if (_recentSearches.isNotEmpty) ...[
             Text(
               'Recent Searches',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: responsive.fontSize18,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimaryColor,
+              ),
             ),
-            const SizedBox(height: AppTheme.spaceM),
+            SizedBox(height: responsive.spacing(AppTheme.spaceM)),
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -141,9 +149,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 final query = _recentSearches[index];
                 return ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.history_rounded, color: AppTheme.textLightColor),
-                  title: Text(query, style: const TextStyle(color: AppTheme.textPrimaryColor)),
-                  trailing: const Icon(Icons.north_west_rounded, size: 16, color: AppTheme.textLightColor),
+                  leading: Icon(Icons.history_rounded, color: AppTheme.textLightColor, size: responsive.iconSize(20)),
+                  title: Text(query, style: TextStyle(color: AppTheme.textPrimaryColor, fontSize: responsive.fontSize14)),
+                  trailing: Icon(Icons.north_west_rounded, size: responsive.iconSize(16), color: AppTheme.textLightColor),
                   onTap: () {
                     _searchController.text = query;
                     _performSearch(query);
@@ -151,18 +159,22 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 );
               },
             ),
-            const SizedBox(height: AppTheme.spaceXXL),
+            SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
           ],
 
           // Trending Searches
           Text(
             'Trending Searches',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: responsive.fontSize18,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textPrimaryColor,
+            ),
           ),
-          const SizedBox(height: AppTheme.spaceM),
+          SizedBox(height: responsive.spacing(AppTheme.spaceM)),
           Wrap(
-            spacing: 10,
-            runSpacing: 10,
+            spacing: responsive.spacing(10),
+            runSpacing: responsive.spacing(10),
             children: _trendingSearches.map((term) {
               return GestureDetector(
                 onTap: () {
@@ -170,7 +182,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   _performSearch(term);
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: EdgeInsets.symmetric(horizontal: responsive.spacing(14), vertical: responsive.spacing(8)),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(AppTheme.radiusM),
@@ -179,11 +191,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.trending_up_rounded, size: 16, color: AppTheme.secondaryColor),
-                      const SizedBox(width: 6),
+                      Icon(Icons.trending_up_rounded, size: responsive.iconSize(16), color: AppTheme.secondaryColor),
+                      SizedBox(width: responsive.spacing(6)),
                       Text(
                         term,
-                        style: const TextStyle(color: AppTheme.textPrimaryColor, fontSize: 13, fontWeight: FontWeight.w500),
+                        style: TextStyle(color: AppTheme.textPrimaryColor, fontSize: responsive.fontSize13, fontWeight: FontWeight.w500),
                       ),
                     ],
                   ),
@@ -197,6 +209,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   Widget _buildSearchResultsView() {
+    final responsive = context.responsive;
     if (_isSearching) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -204,20 +217,24 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     if (_searchResults.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(AppTheme.spaceXL),
+          padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.search_off_rounded, size: 64, color: AppTheme.textLightColor),
-              const SizedBox(height: AppTheme.spaceL),
+              Icon(Icons.search_off_rounded, size: responsive.iconSize(64), color: AppTheme.textLightColor),
+              SizedBox(height: responsive.spacing(AppTheme.spaceL)),
               Text(
                 'No Search Results',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: responsive.fontSize20,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimaryColor,
+                ),
               ),
-              const SizedBox(height: AppTheme.spaceS),
+              SizedBox(height: responsive.spacing(AppTheme.spaceS)),
               Text(
                 'We couldn\'t find any couture matching "${_searchController.text}".',
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: responsive.bodyMedium,
                 textAlign: TextAlign.center,
               ),
             ],
@@ -227,11 +244,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.all(AppTheme.spaceXL),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        mainAxisSpacing: AppTheme.spaceL,
-        crossAxisSpacing: AppTheme.spaceL,
+        mainAxisSpacing: responsive.spacing(AppTheme.spaceL),
+        crossAxisSpacing: responsive.spacing(AppTheme.spaceL),
         childAspectRatio: 0.58,
       ),
       itemCount: _searchResults.length,

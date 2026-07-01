@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/custom_button.dart';
+import '../../../core/utils/responsive_text.dart';
 import 'package:hopscotch/features/auth/repositories/auth_repository.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -13,7 +14,6 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
@@ -27,8 +27,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
-
     setState(() {
       _isLoading = true;
     });
@@ -62,13 +60,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final responsive = context.responsive;
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Container(
-          height: MediaQuery.of(context).size.height,
-          padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceXL),
-          child: Form(
-            key: _formKey,
+      backgroundColor: AppTheme.backgroundColor,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Container(
+            height: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top,
+            padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -76,66 +75,129 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 // Top Header logo or icon
                 Center(
                   child: Container(
-                    padding: const EdgeInsets.all(AppTheme.spaceL),
+                    padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withOpacity(0.08),
+                      gradient: LinearGradient(
+                        colors: [
+                          AppTheme.primaryColor.withOpacity(0.1),
+                          AppTheme.primaryColor.withOpacity(0.05),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                       shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.primaryColor.withOpacity(0.2),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.auto_awesome_rounded,
                       color: AppTheme.primaryColor,
-                      size: 40,
+                      size: responsive.iconSize(48),
                     ),
                   ),
                 ),
-                const SizedBox(height: AppTheme.spaceXXL),
-                
+                SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
+
                 // Greeting
-                Text(
-                  'Welcome Back',
-                  style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                Center(
+                  child: Text(
+                    'Welcome Back',
+                    style: responsive.headline4.copyWith(
+                      color: AppTheme.textPrimaryColor,
+                    ),
                   ),
                 ),
-                const SizedBox(height: AppTheme.spaceS),
-                Text(
-                  'Sign in to access your custom couture selections.',
-                  style: Theme.of(context).textTheme.bodyMedium,
+                SizedBox(height: responsive.spacing(AppTheme.spaceM)),
+                Center(
+                  child: Text(
+                    'Sign in to access your custom couture selections.',
+                    style: responsive.bodyMedium.copyWith(
+                      color: AppTheme.textSecondaryColor,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-                const SizedBox(height: AppTheme.spaceXXL),
+                SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
                 // Email
-                TextFormField(
+                TextField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    hintText: 'Enter your email address',
-                    labelText: 'Email Address',
-                    prefixIcon: Icon(Icons.email_outlined),
+                  style: TextStyle(
+                    color: AppTheme.textPrimaryColor,
+                    fontSize: responsive.fontSize14,
                   ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Email is required';
-                    }
-                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                      return 'Enter a valid email address';
-                    }
-                    return null;
-                  },
+                  decoration: InputDecoration(
+                    hintText: 'Enter your email address',
+                    hintStyle: TextStyle(
+                      color: AppTheme.textSecondaryColor.withOpacity(0.6),
+                      fontSize: responsive.fontSize14,
+                    ),
+                    labelText: 'Email Address',
+                    labelStyle: TextStyle(
+                      color: AppTheme.primaryColor,
+                      fontSize: responsive.fontSize14,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.email_outlined,
+                      color: AppTheme.primaryColor,
+                      size: responsive.iconSize(20),
+                    ),
+                    filled: true,
+                    fillColor: AppTheme.surfaceColor,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                      borderSide: BorderSide(
+                        color: AppTheme.primaryColor,
+                        width: 2,
+                      ),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: responsive.spacing(AppTheme.spaceL),
+                      vertical: responsive.spacing(AppTheme.spaceM),
+                    ),
+                  ),
                 ),
-                const SizedBox(height: AppTheme.spaceL),
+                SizedBox(height: responsive.spacing(AppTheme.spaceL)),
 
                 // Password
-                TextFormField(
+                TextField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
+                  style: TextStyle(
+                    color: AppTheme.textPrimaryColor,
+                    fontSize: responsive.fontSize14,
+                  ),
                   decoration: InputDecoration(
                     hintText: 'Enter your password',
+                    hintStyle: TextStyle(
+                      color: AppTheme.textSecondaryColor.withOpacity(0.6),
+                      fontSize: responsive.fontSize14,
+                    ),
                     labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock_outline_rounded),
+                    labelStyle: TextStyle(
+                      color: AppTheme.primaryColor,
+                      fontSize: responsive.fontSize14,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.lock_outline_rounded,
+                      color: AppTheme.primaryColor,
+                      size: responsive.iconSize(20),
+                    ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                        color: AppTheme.textSecondaryColor,
+                        size: responsive.iconSize(20),
                       ),
                       onPressed: () {
                         setState(() {
@@ -143,18 +205,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         });
                       },
                     ),
+                    filled: true,
+                    fillColor: AppTheme.surfaceColor,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                      borderSide: BorderSide(
+                        color: AppTheme.primaryColor,
+                        width: 2,
+                      ),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: responsive.spacing(AppTheme.spaceL),
+                      vertical: responsive.spacing(AppTheme.spaceM),
+                    ),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Password is required';
-                    }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-                    return null;
-                  },
                 ),
-                const SizedBox(height: AppTheme.spaceS),
+                SizedBox(height: responsive.spacing(AppTheme.spaceS)),
 
                 // Forgot Password Link
                 Align(
@@ -164,38 +234,53 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.zero,
                     ),
-                    child: const Text('Forgot Password?'),
-                  ),
-                ),
-                const SizedBox(height: AppTheme.spaceXL),
-
-                // Sign In Button
-                CustomButton(
-                  text: 'Sign In',
-                  onPressed: _handleLogin,
-                  isLoading: _isLoading,
-                ),
-                const SizedBox(height: AppTheme.spaceXXL),
-
-                // Sign Up Redirection
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Don\'t have an account? ',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    GestureDetector(
-                      onTap: () => context.push('/signup'),
-                      child: Text(
-                        'Create Account',
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: AppTheme.primaryColor,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    child: Text(
+                      'Forgot Password?',
+                      style: TextStyle(
+                        color: AppTheme.primaryColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: responsive.fontSize14,
                       ),
                     ),
-                  ],
+                  ),
+                ),
+                SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+
+                // Sign In Button
+                SizedBox(
+                  width: double.infinity,
+                  height: responsive.spacing(48),
+                  child: CustomButton(
+                    text: 'Sign In',
+                    onPressed: _handleLogin,
+                    isLoading: _isLoading,
+                  ),
+                ),
+                SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+
+                // Sign Up Redirection
+                Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Don\'t have an account? ',
+                        style: responsive.bodyMedium.copyWith(
+                          color: AppTheme.textSecondaryColor,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => context.push('/signup'),
+                        child: Text(
+                          'Create Account',
+                          style: responsive.label.copyWith(
+                            color: AppTheme.primaryColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

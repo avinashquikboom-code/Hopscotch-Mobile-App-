@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/responsive_text.dart';
 import 'package:hopscotch/features/auth/repositories/auth_repository.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -10,17 +11,18 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authNotifierProvider);
+    final responsive = context.responsive;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('MY PORTFOLIO'),
+        title: Text('MY PORTFOLIO', style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold)),
         elevation: 0,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 120),
+        padding: EdgeInsets.only(bottom: 120),
         child: Column(
           children: [
-            const SizedBox(height: AppTheme.spaceL),
+            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
             // 1. User Header Details
             Center(
               child: Column(
@@ -30,18 +32,18 @@ class ProfileScreen extends ConsumerWidget {
                     child: Stack(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(4),
+                          padding: EdgeInsets.all(responsive.spacing(4)),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(color: AppTheme.primaryColor, width: 2),
                           ),
                           child: CircleAvatar(
-                            radius: 54,
+                            radius: responsive.iconSize(54),
                             backgroundImage: user?.avatarUrl != null
                                 ? NetworkImage(user!.avatarUrl!)
                                 : null,
                             child: user?.avatarUrl == null
-                                ? const Icon(Icons.person, size: 54)
+                                ? Icon(Icons.person, size: responsive.iconSize(54))
                                 : null,
                           ),
                         ),
@@ -49,48 +51,46 @@ class ProfileScreen extends ConsumerWidget {
                           bottom: 0,
                           right: 0,
                           child: Container(
-                            padding: const EdgeInsets.all(6),
+                            padding: EdgeInsets.all(responsive.spacing(6)),
                             decoration: const BoxDecoration(
                               color: AppTheme.primaryColor,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.edit_rounded,
                               color: Colors.white,
-                              size: 16,
+                              size: responsive.iconSize(16),
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: AppTheme.spaceL),
+                  SizedBox(height: responsive.spacing(AppTheme.spaceL)),
                   Text(
                     user?.name ?? 'Aura Member',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: responsive.headline4,
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: responsive.spacing(4)),
                   Text(
                     user?.email ?? 'member@auracouture.com',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    style: responsive.bodyMedium.copyWith(
                           color: AppTheme.textSecondaryColor,
                         ),
                   ),
-                  const SizedBox(height: AppTheme.spaceM),
+                  SizedBox(height: responsive.spacing(AppTheme.spaceM)),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    padding: EdgeInsets.symmetric(horizontal: responsive.spacing(14), vertical: responsive.spacing(6)),
                     decoration: BoxDecoration(
                       color: AppTheme.accentColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                     ),
-                    child: const Text(
+                    child: Text(
                       'ELITE MEMBER',
                       style: TextStyle(
                         color: AppTheme.accentColor,
                         fontWeight: FontWeight.bold,
-                        fontSize: 10,
+                        fontSize: responsive.fontSize10,
                         letterSpacing: 1.0,
                       ),
                     ),
@@ -98,11 +98,11 @@ class ProfileScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            const SizedBox(height: AppTheme.spaceXXL),
+            SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
             // 2. Profile Options List
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceXL),
+              padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppTheme.radiusXL),
@@ -122,7 +122,7 @@ class ProfileScreen extends ConsumerWidget {
                         subtitle: 'Track status and view purchases',
                         onTap: () => context.push('/my-orders'),
                       ),
-                      const Divider(),
+                      const Divider(height: 1),
                       _buildOptionTile(
                         context: context,
                         icon: Icons.notifications_none_rounded,
@@ -130,7 +130,7 @@ class ProfileScreen extends ConsumerWidget {
                         subtitle: 'Offers, discounts, and dispatch logs',
                         onTap: () => context.push('/notifications'),
                       ),
-                      const Divider(),
+                      const Divider(height: 1),
                       _buildOptionTile(
                         context: context,
                         icon: Icons.settings_outlined,
@@ -143,11 +143,11 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            const SizedBox(height: AppTheme.spaceL),
+            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
 
             // 3. Support Box
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceXL),
+              padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppTheme.radiusXL),
@@ -167,7 +167,7 @@ class ProfileScreen extends ConsumerWidget {
                         subtitle: '24/7 dedicated elite concierge chat',
                         onTap: () => context.push('/help-center'),
                       ),
-                      const Divider(),
+                      const Divider(height: 1),
                       _buildOptionTile(
                         context: context,
                         icon: Icons.gavel_rounded,
@@ -180,11 +180,11 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            const SizedBox(height: AppTheme.spaceXXL),
+            SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
             // 4. Log Out Button
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceXL),
+              padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
               child: OutlinedButton.icon(
                 onPressed: () {
                   ref.read(authNotifierProvider.notifier).logout();
@@ -193,14 +193,14 @@ class ProfileScreen extends ConsumerWidget {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppTheme.errorColor,
                   side: const BorderSide(color: AppTheme.errorColor, width: 1.5),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: EdgeInsets.symmetric(vertical: responsive.spacing(16)),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppTheme.radiusM),
                   ),
-                  minimumSize: const Size(double.infinity, 50),
+                  minimumSize: Size(double.infinity, responsive.spacing(50)),
                 ),
-                icon: const Icon(Icons.logout_rounded, size: 18),
-                label: const Text('LOG OUT FROM APP', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.0)),
+                icon: Icon(Icons.logout_rounded, size: responsive.iconSize(18)),
+                label: Text('LOG OUT FROM APP', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.0, fontSize: responsive.fontSize14)),
               ),
             ),
           ],
@@ -216,24 +216,26 @@ class ProfileScreen extends ConsumerWidget {
     required String subtitle,
     required VoidCallback onTap,
   }) {
+    final responsive = context.responsive;
     return ListTile(
+      contentPadding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceL), vertical: responsive.spacing(8)),
       leading: Container(
-        padding: const EdgeInsets.all(8),
+        padding: EdgeInsets.all(responsive.spacing(8)),
         decoration: BoxDecoration(
           color: AppTheme.primaryColor.withOpacity(0.04),
           shape: BoxShape.circle,
         ),
-        child: Icon(icon, color: AppTheme.primaryColor, size: 20),
+        child: Icon(icon, color: AppTheme.primaryColor, size: responsive.iconSize(20)),
       ),
       title: Text(
         title,
-        style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textPrimaryColor, fontSize: 14),
+        style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textPrimaryColor, fontSize: responsive.fontSize14),
       ),
       subtitle: Text(
         subtitle,
-        style: const TextStyle(color: AppTheme.textSecondaryColor, fontSize: 11),
+        style: TextStyle(color: AppTheme.textSecondaryColor, fontSize: responsive.fontSize11),
       ),
-      trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppTheme.textLightColor),
+      trailing: Icon(Icons.arrow_forward_ios_rounded, size: responsive.iconSize(14), color: AppTheme.textLightColor),
       onTap: onTap,
     );
   }

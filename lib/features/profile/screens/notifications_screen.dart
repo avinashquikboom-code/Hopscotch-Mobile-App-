@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/responsive_text.dart';
 import 'package:hopscotch/features/profile/repositories/notification_repository.dart';
 import '../../../core/widgets/state_widgets.dart';
 
@@ -36,12 +37,13 @@ class NotificationsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final notifications = ref.watch(notificationProvider);
     final notifier = ref.read(notificationProvider.notifier);
+    final responsive = context.responsive;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('NOTIFICATIONS'),
+        title: Text('NOTIFICATIONS', style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: Icon(Icons.arrow_back_rounded, size: responsive.iconSize(24)),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -56,13 +58,13 @@ class NotificationsScreen extends ConsumerWidget {
               onPressed: () {
                 notifier.markAllAsRead();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('All alerts marked as read! ✔️'),
+                  SnackBar(
+                    content: Text('All alerts marked as read! ✔️', style: TextStyle(fontSize: responsive.fontSize14)),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
               },
-              child: const Text('Mark Read', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text('Mark Read', style: TextStyle(fontWeight: FontWeight.bold, fontSize: responsive.fontSize14)),
             ),
         ],
       ),
@@ -73,9 +75,9 @@ class NotificationsScreen extends ConsumerWidget {
               description: 'You have no new notifications. We will alert you here when new collections drop or orders dispatch.',
             )
           : ListView.separated(
-              padding: const EdgeInsets.all(AppTheme.spaceXL),
+              padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
               itemCount: notifications.length,
-              separatorBuilder: (context, index) => const SizedBox(height: AppTheme.spaceM),
+              separatorBuilder: (context, index) => SizedBox(height: responsive.spacing(AppTheme.spaceM)),
               itemBuilder: (context, index) {
                 final notif = notifications[index];
                 final icon = _getIconForType(notif.type);
@@ -86,7 +88,7 @@ class NotificationsScreen extends ConsumerWidget {
                     notifier.markAsRead(notif.id);
                   },
                   child: Container(
-                    padding: const EdgeInsets.all(AppTheme.spaceL),
+                    padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
                     decoration: BoxDecoration(
                       color: notif.isRead ? Colors.white : color.withOpacity(0.02),
                       borderRadius: BorderRadius.circular(AppTheme.radiusL),
@@ -99,17 +101,15 @@ class NotificationsScreen extends ConsumerWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Icon circle
                         Container(
-                          padding: const EdgeInsets.all(10),
+                          padding: EdgeInsets.all(responsive.spacing(10)),
                           decoration: BoxDecoration(
                             color: color.withOpacity(0.08),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(icon, color: color, size: 22),
+                          child: Icon(icon, color: color, size: responsive.iconSize(22)),
                         ),
-                        const SizedBox(width: AppTheme.spaceL),
-                        // Text body
+                        SizedBox(width: responsive.spacing(AppTheme.spaceL)),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,15 +122,15 @@ class NotificationsScreen extends ConsumerWidget {
                                       notif.title,
                                       style: TextStyle(
                                         fontWeight: notif.isRead ? FontWeight.w600 : FontWeight.bold,
-                                        fontSize: 14,
+                                        fontSize: responsive.fontSize14,
                                         color: AppTheme.textPrimaryColor,
                                       ),
                                     ),
                                   ),
                                   if (!notif.isRead)
                                     Container(
-                                      width: 8,
-                                      height: 8,
+                                      width: responsive.spacing(8),
+                                      height: responsive.spacing(8),
                                       decoration: const BoxDecoration(
                                         color: AppTheme.accentColor,
                                         shape: BoxShape.circle,
@@ -138,18 +138,18 @@ class NotificationsScreen extends ConsumerWidget {
                                     ),
                                 ],
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(height: responsive.spacing(4)),
                               Text(
                                 notif.body,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                style: responsive.bodyMedium.copyWith(
                                       color: AppTheme.textSecondaryColor,
                                       height: 1.4,
                                     ),
                               ),
-                              const SizedBox(height: AppTheme.spaceS),
+                              SizedBox(height: responsive.spacing(AppTheme.spaceS)),
                               Text(
                                 notif.createdAt,
-                                style: const TextStyle(color: AppTheme.textLightColor, fontSize: 10),
+                                style: TextStyle(color: AppTheme.textLightColor, fontSize: responsive.fontSize10),
                               ),
                             ],
                           ),

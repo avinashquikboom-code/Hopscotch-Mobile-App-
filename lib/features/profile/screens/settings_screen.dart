@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_provider.dart';
+import '../../../core/utils/responsive_text.dart';
 import '../../../core/widgets/custom_button.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -49,10 +50,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
+    final responsive = context.responsive;
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(AppTheme.spaceL),
+        padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
         decoration: BoxDecoration(
           color: isSelected 
               ? AppTheme.primaryColor.withOpacity(0.1)
@@ -77,7 +79,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(AppTheme.spaceM),
+              padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceM)),
               decoration: BoxDecoration(
                 color: isSelected 
                     ? AppTheme.primaryColor
@@ -89,27 +91,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: isSelected 
                     ? Colors.white
                     : Theme.of(context).colorScheme.onSurface,
-                size: 24,
+                size: responsive.iconSize(24),
               ),
             ),
-            const SizedBox(width: AppTheme.spaceL),
+            SizedBox(width: responsive.spacing(AppTheme.spaceL)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     label,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
+                      fontSize: responsive.fontSize12,
                       color: isSelected 
                           ? AppTheme.primaryColor
                           : Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
-                  const SizedBox(height: AppTheme.spaceXS),
+                  SizedBox(height: responsive.spacing(AppTheme.spaceXS)),
                   Text(
                     description,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    style: TextStyle(
+                      fontSize: responsive.fontSize10,
                       color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                     ),
                   ),
@@ -118,15 +122,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             if (isSelected)
               Container(
-                padding: const EdgeInsets.all(AppTheme.spaceXS),
+                padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXS)),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryColor,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.check_rounded,
                   color: Colors.white,
-                  size: 16,
+                  size: responsive.iconSize(16),
                 ),
               ),
           ],
@@ -137,11 +141,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final responsive = context.responsive;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SETTINGS & FIT PROFILE'),
+        title: Text('SETTINGS & FIT PROFILE', style: TextStyle(fontSize: responsive.fontSize16, fontWeight: FontWeight.bold)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: Icon(Icons.arrow_back_rounded, size: responsive.iconSize(24)),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -152,23 +157,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppTheme.spaceXL),
+        padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 1. Bespoke Size Profile Section
             Text(
               'Bespoke Tailoring Profile',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: responsive.fontSize16,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimaryColor,
+              ),
             ),
-            const SizedBox(height: AppTheme.spaceS),
+            SizedBox(height: responsive.spacing(AppTheme.spaceS)),
             Text(
               'Input your measurements below. Our European design mills will recommend customized garments based on your exact structure.',
-              style: Theme.of(context).textTheme.bodySmall,
+              style: responsive.bodySmall,
             ),
-            const SizedBox(height: AppTheme.spaceM),
+            SizedBox(height: responsive.spacing(AppTheme.spaceM)),
             Container(
-              padding: const EdgeInsets.all(AppTheme.spaceL),
+              padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(AppTheme.radiusXL),
@@ -183,45 +192,55 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         child: TextFormField(
                           controller: _heightController,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
+                          style: TextStyle(fontSize: responsive.fontSize12),
+                          decoration: InputDecoration(
                             labelText: 'Height (cm)',
-                            prefixIcon: Icon(Icons.height_rounded),
+                            labelStyle: TextStyle(fontSize: responsive.fontSize12),
+                            prefixIcon: Icon(Icons.height_rounded, size: responsive.iconSize(20)),
                           ),
                         ),
                       ),
-                      const SizedBox(width: AppTheme.spaceL),
+                      SizedBox(width: responsive.spacing(AppTheme.spaceL)),
                       Expanded(
                         child: TextFormField(
                           controller: _chestController,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
+                          style: TextStyle(fontSize: responsive.fontSize12),
+                          decoration: InputDecoration(
                             labelText: 'Chest (cm)',
-                            prefixIcon: Icon(Icons.accessibility_new_rounded),
+                            labelStyle: TextStyle(fontSize: responsive.fontSize12),
+                            prefixIcon: Icon(Icons.accessibility_new_rounded, size: responsive.iconSize(20)),
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: AppTheme.spaceL),
+                  SizedBox(height: responsive.spacing(AppTheme.spaceL)),
                   TextFormField(
                     controller: _waistController,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
+                    style: TextStyle(fontSize: responsive.fontSize12),
+                    decoration: InputDecoration(
                       labelText: 'Waist (cm)',
-                      prefixIcon: Icon(Icons.straighten_rounded),
+                      labelStyle: TextStyle(fontSize: responsive.fontSize12),
+                      prefixIcon: Icon(Icons.straighten_rounded, size: responsive.iconSize(20)),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: AppTheme.spaceXXL),
+            SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
             // 2. Alert Prefs
             Text(
               'Notification Preferences',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: responsive.fontSize16,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimaryColor,
+              ),
             ),
-            const SizedBox(height: AppTheme.spaceM),
+            SizedBox(height: responsive.spacing(AppTheme.spaceM)),
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppTheme.radiusXL),
@@ -235,8 +254,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 child: Column(
                   children: [
                     SwitchListTile(
-                      title: const Text('Push Alerts', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                      subtitle: const Text('Order dispatches, shipping status', style: TextStyle(fontSize: 11)),
+                      title: Text('Push Alerts', style: TextStyle(fontWeight: FontWeight.bold, fontSize: responsive.fontSize12)),
+                      subtitle: Text('Order dispatches, shipping status', style: TextStyle(fontSize: responsive.fontSize10)),
                       value: _pushNotifications,
                       activeColor: AppTheme.primaryColor,
                       onChanged: (val) {
@@ -245,10 +264,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         });
                       },
                     ),
-                    const Divider(),
+                    Divider(height: 1),
                     SwitchListTile(
-                      title: const Text('Exclusive Drops', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                      subtitle: const Text('Limited runs, VIP sales, designer news', style: TextStyle(fontSize: 11)),
+                      title: Text('Exclusive Drops', style: TextStyle(fontWeight: FontWeight.bold, fontSize: responsive.fontSize12)),
+                      subtitle: Text('Limited runs, VIP sales, designer news', style: TextStyle(fontSize: responsive.fontSize10)),
                       value: _emailPromo,
                       activeColor: AppTheme.primaryColor,
                       onChanged: (val) {
@@ -261,14 +280,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: AppTheme.spaceXXL),
+            SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
             // 3. Security Prefs
             Text(
               'Security Preferences',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: responsive.fontSize16,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimaryColor,
+              ),
             ),
-            const SizedBox(height: AppTheme.spaceM),
+            SizedBox(height: responsive.spacing(AppTheme.spaceM)),
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppTheme.radiusXL),
@@ -280,8 +303,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                 clipBehavior: Clip.antiAlias,
                 child: SwitchListTile(
-                  title: const Text('Biometric Authentication', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                  subtitle: const Text('Access billing and purchase secure keys instantly', style: TextStyle(fontSize: 11)),
+                  title: Text('Biometric Authentication', style: TextStyle(fontWeight: FontWeight.bold, fontSize: responsive.fontSize12)),
+                  subtitle: Text('Access billing and purchase secure keys instantly', style: TextStyle(fontSize: responsive.fontSize10)),
                   value: _biometricLogin,
                   activeColor: AppTheme.primaryColor,
                   onChanged: (val) {
@@ -292,14 +315,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: AppTheme.spaceXXL),
+            SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
             // 4. Theme Selection
             Text(
               'Appearance',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: responsive.fontSize16,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimaryColor,
+              ),
             ),
-            const SizedBox(height: AppTheme.spaceM),
+            SizedBox(height: responsive.spacing(AppTheme.spaceM)),
             Column(
               children: [
                 _buildThemeOption(
@@ -311,7 +338,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   isSelected: ref.watch(themeProvider) == ThemeModeOption.system,
                   onTap: () => ref.read(themeProvider.notifier).setThemeMode(ThemeModeOption.system),
                 ),
-                const SizedBox(height: AppTheme.spaceM),
+                SizedBox(height: responsive.spacing(AppTheme.spaceM)),
                 _buildThemeOption(
                   context: context,
                   option: ThemeModeOption.light,
@@ -321,7 +348,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   isSelected: ref.watch(themeProvider) == ThemeModeOption.light,
                   onTap: () => ref.read(themeProvider.notifier).setThemeMode(ThemeModeOption.light),
                 ),
-                const SizedBox(height: AppTheme.spaceM),
+                SizedBox(height: responsive.spacing(AppTheme.spaceM)),
                 _buildThemeOption(
                   context: context,
                   option: ThemeModeOption.dark,
@@ -333,14 +360,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 60),
+            SizedBox(height: responsive.spacing(60)),
 
             // 5. Save Button
-            CustomButton(
-              text: 'SAVE PREFERENCES',
-              onPressed: _handleSaveSettings,
+            SizedBox(
+              width: double.infinity,
+              height: responsive.spacing(48),
+              child: CustomButton(
+                text: 'SAVE PREFERENCES',
+                onPressed: _handleSaveSettings,
+              ),
             ),
-            const SizedBox(height: AppTheme.spaceXL),
+            SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
           ],
         ),
       ),
