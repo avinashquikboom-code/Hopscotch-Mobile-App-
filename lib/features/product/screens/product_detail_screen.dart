@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/responsive_text.dart';
 import '../../../features/product/repositories/product_repository.dart';
@@ -64,6 +65,40 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
         _showCartSuccess = false;
       });
     }
+  }
+
+  void _shareProductDetails(product) {
+    final discountText = product.discountPercentage > 0
+        ? ' (${product.discountPercentage.toStringAsFixed(0)}% OFF)'
+        : '';
+    final originalPriceText = product.originalPrice > product.price
+        ? ' (Original: ₹${product.originalPrice.toStringAsFixed(2)})'
+        : '';
+
+    final sizesText = product.sizes.isNotEmpty
+        ? '\n📏 Sizes: ${product.sizes.join(", ")}'
+        : '';
+
+    final colorsText = product.colors.isNotEmpty
+        ? '\n🎨 Colors: ${product.colors.join(", ")}'
+        : '';
+
+    final shareText = '''
+✨ Check out this product on Hopscotch! ✨
+
+📦 ${product.title}
+🏷️ Category: ${product.subcategory}
+💰 Price: ₹${product.price.toStringAsFixed(2)}$originalPriceText$discountText
+⭐ Rating: ${product.rating} (${product.reviewCount} Reviews)
+
+📝 Description:
+${product.description}
+$sizesText$colorsText
+
+🔗 View Product Image: ${product.imageUrl}
+''';
+
+    Share.share(shareText, subject: product.title);
   }
 
   // Custom helper to parse hex colors to Flutter Color objects
@@ -146,6 +181,24 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           ),
                         ),
                         actions: [
+                          Container(
+                            margin: EdgeInsets.all(responsive.spacing(8)),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              icon: Icon(
+                                Icons.share_rounded,
+                                size: responsive.iconSize(20),
+                                color: AppTheme.textPrimaryColor,
+                              ),
+                              onPressed: () {
+                                HapticFeedback.lightImpact();
+                                _shareProductDetails(product);
+                              },
+                            ),
+                          ),
                           Container(
                             margin: EdgeInsets.all(responsive.spacing(8)),
                             decoration: const BoxDecoration(
