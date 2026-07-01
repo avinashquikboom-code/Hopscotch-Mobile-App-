@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:dio/dio.dart';
+import 'package:path_provider/path_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/responsive_text.dart';
 import '../../../features/product/repositories/product_repository.dart';
@@ -10,6 +12,7 @@ import '../../../features/cart_wishlist/repositories/cart_wishlist_repository.da
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/skeleton_loaders.dart';
 import '../../../core/widgets/animated_heart_button.dart';
+import '../../../core/widgets/animated_share_button.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
@@ -67,23 +70,35 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     }
   }
 
-  void _shareProductDetails(product) {
-    final discountText = product.discountPercentage > 0
-        ? ' (${product.discountPercentage.toStringAsFixed(0)}% OFF)'
-        : '';
-    final originalPriceText = product.originalPrice > product.price
-        ? ' (Original: ₹${product.originalPrice.toStringAsFixed(2)})'
-        : '';
+  void _shareProductDetails(product) async {
+    // Show a premium loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+        ),
+      ),
+    );
 
-    final sizesText = product.sizes.isNotEmpty
-        ? '\n📏 Sizes: ${product.sizes.join(", ")}'
-        : '';
+    try {
+      final discountText = product.discountPercentage > 0
+          ? ' (${product.discountPercentage.toStringAsFixed(0)}% OFF)'
+          : '';
+      final originalPriceText = product.originalPrice > product.price
+          ? ' (Original: ₹${product.originalPrice.toStringAsFixed(2)})'
+          : '';
 
-    final colorsText = product.colors.isNotEmpty
-        ? '\n🎨 Colors: ${product.colors.join(", ")}'
-        : '';
+      final sizesText = product.sizes.isNotEmpty
+          ? '\n📏 Sizes: ${product.sizes.join(", ")}'
+          : '';
 
-    final shareText = '''
+      final colorsText = product.colors.isNotEmpty
+          ? '\n🎨 Colors: ${product.colors.join(", ")}'
+          : '';
+
+      final shareText = '''
 ✨ Check out this product on Hopscotch! ✨
 
 📦 ${product.title}
@@ -94,11 +109,37 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
 📝 Description:
 ${product.description}
 $sizesText$colorsText
-
-🔗 View Product Image: ${product.imageUrl}
 ''';
 
-    Share.share(shareText, subject: product.title);
+      // Download image from imageUrl to a temporary file path
+      final tempDir = await getTemporaryDirectory();
+      final tempPath = '${tempDir.path}/shared_product_image.jpg';
+      
+      await Dio().download(product.imageUrl, tempPath);
+
+      // Dismiss the loading dialog
+      if (mounted) Navigator.of(context).pop();
+
+      // Share the file along with the text details
+      await Share.shareXFiles(
+        [XFile(tempPath)],
+        text: shareText,
+        subject: product.title,
+      );
+    } catch (e) {
+      // Dismiss the loading dialog in case of failure
+      if (mounted) Navigator.of(context).pop();
+      
+      // Fallback: share the details and the image url as text
+      final fallbackText = '''
+✨ Check out this product on Hopscotch! ✨
+
+📦 ${product.title}
+💰 Price: ₹${product.price.toStringAsFixed(2)}
+🔗 Link: ${product.imageUrl}
+''';
+      await Share.share(fallbackText, subject: product.title);
+    }
   }
 
   // Custom helper to parse hex colors to Flutter Color objects
@@ -183,17 +224,20 @@ $sizesText$colorsText
                         actions: [
                           Container(
                             margin: EdgeInsets.all(responsive.spacing(8)),
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               color: Colors.white,
-                              shape: BoxShape.circle,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.08),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
-                            child: IconButton(
-                              icon: Icon(
-                                Icons.share_rounded,
-                                size: responsive.iconSize(20),
-                                color: AppTheme.textPrimaryColor,
-                              ),
-                              onPressed: () {
+                            child: AnimatedShareButton(
+                              size: responsive.iconSize(20),
+                              onTap: () {
                                 HapticFeedback.lightImpact();
                                 _shareProductDetails(product);
                               },
@@ -201,9 +245,16 @@ $sizesText$colorsText
                           ),
                           Container(
                             margin: EdgeInsets.all(responsive.spacing(8)),
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               color: Colors.white,
-                              shape: BoxShape.circle,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.08),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
                             child: AnimatedHeartButton(
                               isFav: isFav,

@@ -2,25 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:remixicon/remixicon.dart';
 import '../theme/app_theme.dart';
 
-class AnimatedHeartButton extends StatefulWidget {
-  final bool isFav;
+class AnimatedShareButton extends StatefulWidget {
   final VoidCallback onTap;
   final double size;
-  final Color? baseColor;
+  final Color? color;
 
-  const AnimatedHeartButton({
+  const AnimatedShareButton({
     super.key,
-    required this.isFav,
     required this.onTap,
-    this.size = 22,
-    this.baseColor,
+    this.size = 20,
+    this.color,
   });
 
   @override
-  State<AnimatedHeartButton> createState() => _AnimatedHeartButtonState();
+  State<AnimatedShareButton> createState() => _AnimatedShareButtonState();
 }
 
-class _AnimatedHeartButtonState extends State<AnimatedHeartButton> with SingleTickerProviderStateMixin {
+class _AnimatedShareButtonState extends State<AnimatedShareButton> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _scaleAnimation;
 
@@ -66,8 +64,8 @@ class _AnimatedHeartButtonState extends State<AnimatedHeartButton> with SingleTi
         child: Container(
           padding: const EdgeInsets.all(8),
           child: Icon(
-            widget.isFav ? Remix.heart_add_fill : Remix.heart_add_line,
-            color: widget.isFav ? Colors.redAccent : (widget.baseColor ?? AppTheme.textPrimaryColor),
+            Remix.send_plane_2_line,
+            color: widget.color ?? AppTheme.textPrimaryColor,
             size: widget.size,
           ),
         ),
