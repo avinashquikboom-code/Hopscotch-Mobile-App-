@@ -1,10 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../../core/api/api_service.dart';
 import '../data/datasources/database_helper.dart';
 import '../data/datasources/local_product_datasource.dart';
 import '../data/datasources/asset_seed_loader.dart';
+import '../data/datasources/visual_search_remote_datasource.dart';
 import '../data/matchers/image_matcher.dart';
 import '../data/matchers/perceptual_hash_matcher.dart';
-import '../data/repositories/local_image_matching_repository.dart';
+import '../data/repositories/remote_image_matching_repository.dart';
 import '../domain/repositories/image_matching_repository.dart';
 import 'visual_search_controller.dart';
 import 'visual_search_state.dart';
@@ -31,15 +33,30 @@ final imageMatcherProvider = Provider<ImageMatcher>((ref) {
   return PerceptualHashMatcher();
 });
 
+// API service provider
+final apiServiceProvider = Provider<ApiService>((ref) {
+  return ApiService();
+});
+
+// Visual search remote data source provider
+final visualSearchRemoteDataSourceProvider = Provider<VisualSearchRemoteDataSource>((ref) {
+  final apiService = ref.watch(apiServiceProvider);
+  return VisualSearchRemoteDataSource(apiService);
+});
+
 // Image matching repository - THE SWAP POINT
-// To swap for Gemini implementation, only change this provider
+// To swap for remote API implementation, change this provider
 final imageMatchingRepositoryProvider = Provider<ImageMatchingRepository>((ref) {
-  final dataSource = ref.watch(localProductDataSourceProvider);
-  final matcher = ref.watch(imageMatcherProvider);
-  return LocalImageMatchingRepository(
-    dataSource: dataSource,
-    matcher: matcher,
-  );
+  final remoteDataSource = ref.watch(visualSearchRemoteDataSourceProvider);
+  return RemoteImageMatchingRepository(remoteDataSource);
+  
+  // Comment out above and uncomment below to use local implementation
+  // final dataSource = ref.watch(localProductDataSourceProvider);
+  // final matcher = ref.watch(imageMatcherProvider);
+  // return LocalImageMatchingRepository(
+  //   dataSource: dataSource,
+  //   matcher: matcher,
+  // );
 });
 
 // Visual search controller

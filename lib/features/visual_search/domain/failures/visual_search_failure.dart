@@ -24,3 +24,8 @@ class EmptyCatalog extends VisualSearchFailure {
 class UnknownFailure extends VisualSearchFailure {
   UnknownFailure([String message = 'An unexpected error occurred']) : super(message);
 }
+
+/// Network or API failure
+class NetworkFailure extends VisualSearchFailure {
+  NetworkFailure([String message = 'Failed to connect to service']) : super(message);
+}
