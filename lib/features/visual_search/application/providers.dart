@@ -8,6 +8,7 @@ import '../data/matchers/image_matcher.dart';
 import '../data/matchers/perceptual_hash_matcher.dart';
 import '../data/repositories/remote_image_matching_repository.dart';
 import '../data/repositories/local_image_matching_repository.dart';
+import '../data/services/local_image_matching_service.dart';
 import '../domain/repositories/image_matching_repository.dart';
 import 'visual_search_controller.dart';
 import 'visual_search_state.dart';
@@ -45,11 +46,16 @@ final visualSearchRemoteDataSourceProvider = Provider<VisualSearchRemoteDataSour
   return VisualSearchRemoteDataSource(apiService);
 });
 
+// Local image matching service provider
+final localImageMatchingServiceProvider = Provider<LocalImageMatchingService>((ref) {
+  return LocalImageMatchingService();
+});
+
 // Image matching repository - THE SWAP POINT
 // To swap for remote API implementation, change this provider
 final imageMatchingRepositoryProvider = Provider<ImageMatchingRepository>((ref) {
-  final remoteDataSource = ref.watch(visualSearchRemoteDataSourceProvider);
-  return RemoteImageMatchingRepository(remoteDataSource);
+  final localService = ref.watch(localImageMatchingServiceProvider);
+  return LocalImageMatchingRepository(matchingService: localService);
 });
 
 // Visual search controller
