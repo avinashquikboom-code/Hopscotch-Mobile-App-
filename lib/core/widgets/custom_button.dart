@@ -28,7 +28,8 @@ class CustomButton extends StatefulWidget {
   State<CustomButton> createState() => _CustomButtonState();
 }
 
-class _CustomButtonState extends State<CustomButton> with SingleTickerProviderStateMixin {
+class _CustomButtonState extends State<CustomButton>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
@@ -38,9 +39,10 @@ class _CustomButtonState extends State<CustomButton> with SingleTickerProviderSt
       vsync: this,
       duration: const Duration(milliseconds: 100),
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.96).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.96,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
     super.initState();
   }
 
@@ -71,7 +73,7 @@ class _CustomButtonState extends State<CustomButton> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
-    
+
     Widget buttonChild = FittedBox(
       fit: BoxFit.scaleDown,
       child: Row(
@@ -120,51 +122,62 @@ class _CustomButtonState extends State<CustomButton> with SingleTickerProviderSt
     if (widget.isOutlined) {
       buttonBody = OutlinedButton(
         onPressed: widget.isLoading ? null : widget.onPressed,
-        style: OutlinedButton.styleFrom(
-          side: BorderSide(
-            color: widget.backgroundColor ?? AppTheme.borderColor,
-            width: 1.5,
-          ),
-          padding: EdgeInsets.symmetric(vertical: responsive.spacing(12), horizontal: responsive.spacing(28)),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppTheme.radiusM),
-          ),
-          elevation: 0,
-        ).copyWith(
-          overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
-            if (states.contains(WidgetState.pressed)) {
-              return (widget.backgroundColor ?? AppTheme.primaryColor).withOpacity(0.1);
-            }
-            if (states.contains(WidgetState.hovered)) {
-              return (widget.backgroundColor ?? AppTheme.primaryColor).withOpacity(0.05);
-            }
-            return null;
-          }),
-        ),
+        style:
+            OutlinedButton.styleFrom(
+              side: BorderSide(
+                color: widget.backgroundColor ?? AppTheme.borderColor,
+                width: 1.5,
+              ),
+              padding: EdgeInsets.symmetric(
+                vertical: responsive.spacing(12),
+                horizontal: responsive.spacing(28),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusM),
+              ),
+              elevation: 0,
+            ).copyWith(
+              overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
+                if (states.contains(WidgetState.pressed)) {
+                  return (widget.backgroundColor ?? AppTheme.primaryColor)
+                      .withValues(alpha: 0.1);
+                }
+                if (states.contains(WidgetState.hovered)) {
+                  return (widget.backgroundColor ?? AppTheme.primaryColor)
+                      .withValues(alpha: 0.05);
+                }
+                return null;
+              }),
+            ),
         child: buttonChild,
       );
     } else {
       buttonBody = ElevatedButton(
         onPressed: widget.isLoading ? null : widget.onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: widget.backgroundColor ?? AppTheme.primaryColor,
-          elevation: 0,
-          shadowColor: (widget.backgroundColor ?? AppTheme.primaryColor).withOpacity(0.3),
-          padding: EdgeInsets.symmetric(vertical: responsive.spacing(12), horizontal: responsive.spacing(28)),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppTheme.radiusM),
-          ),
-        ).copyWith(
-          overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
-            if (states.contains(WidgetState.pressed)) {
-              return Colors.white.withOpacity(0.2);
-            }
-            if (states.contains(WidgetState.hovered)) {
-              return Colors.white.withOpacity(0.1);
-            }
-            return null;
-          }),
-        ),
+        style:
+            ElevatedButton.styleFrom(
+              backgroundColor: widget.backgroundColor ?? AppTheme.primaryColor,
+              elevation: 0,
+              shadowColor: (widget.backgroundColor ?? AppTheme.primaryColor)
+                  .withValues(alpha: 0.3),
+              padding: EdgeInsets.symmetric(
+                vertical: responsive.spacing(12),
+                horizontal: responsive.spacing(28),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusM),
+              ),
+            ).copyWith(
+              overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
+                if (states.contains(WidgetState.pressed)) {
+                  return Colors.white.withValues(alpha: 0.2);
+                }
+                if (states.contains(WidgetState.hovered)) {
+                  return Colors.white.withValues(alpha: 0.1);
+                }
+                return null;
+              }),
+            ),
         child: buttonChild,
       );
     }

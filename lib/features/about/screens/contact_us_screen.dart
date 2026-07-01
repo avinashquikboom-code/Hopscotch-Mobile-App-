@@ -33,10 +33,13 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
       HapticFeedback.mediumImpact();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Message sent successfully!', style: TextStyle(fontSize: context.responsive.fontSize14)),
+          content: Text(
+            'Message sent successfully!',
+            style: TextStyle(fontSize: context.responsive.fontSize14),
+          ),
           backgroundColor: AppTheme.primaryColor,
           behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 2),
         ),
       );
       _formKey.currentState!.reset();
@@ -52,7 +55,13 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: Text('Contact Us', style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold)),
+        title: Text(
+          'Contact Us',
+          style: TextStyle(
+            fontSize: responsive.fontSize18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -131,7 +140,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     SizedBox(height: responsive.spacing(AppTheme.spaceL)),
                     // Category Dropdown
                     DropdownButtonFormField<String>(
-                      value: _selectedCategory,
+                      initialValue: _selectedCategory,
                       decoration: InputDecoration(
                         labelText: 'Category',
                         hintText: 'Select a category',
@@ -158,10 +167,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                           value: 'Feedback',
                           child: Text('Feedback'),
                         ),
-                        DropdownMenuItem(
-                          value: 'Other',
-                          child: Text('Other'),
-                        ),
+                        DropdownMenuItem(value: 'Other', child: Text('Other')),
                       ],
                       onChanged: (value) {
                         setState(() {
@@ -280,7 +286,12 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     );
   }
 
-  Widget _buildContactCard(BuildContext context, IconData icon, String title, String value) {
+  Widget _buildContactCard(
+    BuildContext context,
+    IconData icon,
+    String title,
+    String value,
+  ) {
     final responsive = context.responsive;
     return Container(
       padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceM)),
@@ -309,9 +320,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
           SizedBox(height: responsive.spacing(2)),
           Text(
             value,
-            style: responsive.bodyMedium.copyWith(
-              fontWeight: FontWeight.w500,
-            ),
+            style: responsive.bodyMedium.copyWith(fontWeight: FontWeight.w500),
           ),
         ],
       ),
@@ -327,7 +336,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
           HapticFeedback.lightImpact();
         },
         borderRadius: BorderRadius.circular(AppTheme.radiusM),
-        splashColor: AppTheme.primaryColor.withOpacity(0.1),
+        splashColor: AppTheme.primaryColor.withValues(alpha: 0.1),
         child: Container(
           width: responsive.spacing(50),
           height: responsive.spacing(50),

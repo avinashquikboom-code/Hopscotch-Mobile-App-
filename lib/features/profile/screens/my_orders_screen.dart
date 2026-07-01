@@ -29,7 +29,13 @@ class MyOrdersScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('ORDER HISTORY', style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold)),
+        title: Text(
+          'ORDER HISTORY',
+          style: TextStyle(
+            fontSize: responsive.fontSize18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded, size: responsive.iconSize(24)),
           onPressed: () {
@@ -45,14 +51,16 @@ class MyOrdersScreen extends ConsumerWidget {
           ? EmptyState(
               icon: Icons.receipt_long_outlined,
               title: 'No Orders Placed Yet',
-              description: 'When you purchase elite designs, your handcrafted order tracking records will appear here.',
+              description:
+                  'When you purchase elite designs, your handcrafted order tracking records will appear here.',
               buttonText: 'Browse Catalog',
               onButtonPressed: () => context.go('/'),
             )
           : ListView.separated(
               padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
               itemCount: orders.length,
-              separatorBuilder: (context, index) => SizedBox(height: responsive.spacing(AppTheme.spaceL)),
+              separatorBuilder: (context, index) =>
+                  SizedBox(height: responsive.spacing(AppTheme.spaceL)),
               itemBuilder: (context, index) {
                 final order = orders[index];
                 final statusColor = _getStatusColor(order.status);
@@ -86,16 +94,24 @@ class MyOrdersScreen extends ConsumerWidget {
                               SizedBox(height: responsive.spacing(2)),
                               Text(
                                 order.orderDate,
-                                style: TextStyle(color: AppTheme.textLightColor, fontSize: responsive.fontSize11),
+                                style: TextStyle(
+                                  color: AppTheme.textLightColor,
+                                  fontSize: responsive.fontSize11,
+                                ),
                               ),
                             ],
                           ),
                           // Status Badge
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: responsive.spacing(10), vertical: responsive.spacing(6)),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: responsive.spacing(10),
+                              vertical: responsive.spacing(6),
+                            ),
                             decoration: BoxDecoration(
-                              color: statusColor.withOpacity(0.08),
-                              borderRadius: BorderRadius.circular(AppTheme.radiusS),
+                              color: statusColor.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusS,
+                              ),
                             ),
                             child: Text(
                               order.status.toUpperCase(),
@@ -120,9 +136,13 @@ class MyOrdersScreen extends ConsumerWidget {
                           itemBuilder: (context, index) {
                             final item = order.items[index];
                             return Padding(
-                              padding: EdgeInsets.only(right: responsive.spacing(AppTheme.spaceM)),
+                              padding: EdgeInsets.only(
+                                right: responsive.spacing(AppTheme.spaceM),
+                              ),
                               child: ClipRRect(
-                                borderRadius: BorderRadius.circular(AppTheme.radiusS),
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusS,
+                                ),
                                 child: Image.network(
                                   item.product.imageUrl,
                                   width: responsive.spacing(60),
@@ -145,7 +165,11 @@ class MyOrdersScreen extends ConsumerWidget {
                             children: [
                               Text(
                                 'TOTAL AMOUNT',
-                                style: TextStyle(color: AppTheme.textLightColor, fontSize: responsive.fontSize10, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  color: AppTheme.textLightColor,
+                                  fontSize: responsive.fontSize10,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               SizedBox(height: responsive.spacing(2)),
                               Text(
@@ -163,17 +187,37 @@ class MyOrdersScreen extends ConsumerWidget {
                               onPressed: () {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('Courier reference copied: ${order.trackingNumber} 📋', style: TextStyle(fontSize: responsive.fontSize14)),
+                                    content: Text(
+                                      'Courier reference copied: ${order.trackingNumber} 📋',
+                                      style: TextStyle(
+                                        fontSize: responsive.fontSize14,
+                                      ),
+                                    ),
                                     behavior: SnackBarBehavior.floating,
                                   ),
                                 );
                               },
                               style: OutlinedButton.styleFrom(
-                                padding: EdgeInsets.symmetric(horizontal: responsive.spacing(12), vertical: responsive.spacing(8)),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusM)),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: responsive.spacing(12),
+                                  vertical: responsive.spacing(8),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusM,
+                                  ),
+                                ),
                               ),
-                              icon: Icon(Icons.qr_code_scanner_rounded, size: responsive.iconSize(14)),
-                              label: Text('Track', style: TextStyle(fontSize: responsive.fontSize12)),
+                              icon: Icon(
+                                Icons.qr_code_scanner_rounded,
+                                size: responsive.iconSize(14),
+                              ),
+                              label: Text(
+                                'Track',
+                                style: TextStyle(
+                                  fontSize: responsive.fontSize12,
+                                ),
+                              ),
                             ),
                         ],
                       ),

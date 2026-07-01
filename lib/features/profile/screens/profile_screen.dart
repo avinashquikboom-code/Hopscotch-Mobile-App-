@@ -15,11 +15,17 @@ class ProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('MY PORTFOLIO', style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold)),
+        title: Text(
+          'MY PORTFOLIO',
+          style: TextStyle(
+            fontSize: responsive.fontSize18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         elevation: 0,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.only(bottom: 120),
+        padding: const EdgeInsets.only(bottom: 120),
         child: Column(
           children: [
             SizedBox(height: responsive.spacing(AppTheme.spaceL)),
@@ -35,7 +41,10 @@ class ProfileScreen extends ConsumerWidget {
                           padding: EdgeInsets.all(responsive.spacing(4)),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: AppTheme.primaryColor, width: 2),
+                            border: Border.all(
+                              color: AppTheme.primaryColor,
+                              width: 2,
+                            ),
                           ),
                           child: CircleAvatar(
                             radius: responsive.iconSize(54),
@@ -43,7 +52,10 @@ class ProfileScreen extends ConsumerWidget {
                                 ? NetworkImage(user!.avatarUrl!)
                                 : null,
                             child: user?.avatarUrl == null
-                                ? Icon(Icons.person, size: responsive.iconSize(54))
+                                ? Icon(
+                                    Icons.person,
+                                    size: responsive.iconSize(54),
+                                  )
                                 : null,
                           ),
                         ),
@@ -75,14 +87,17 @@ class ProfileScreen extends ConsumerWidget {
                   Text(
                     user?.email ?? 'member@auracouture.com',
                     style: responsive.bodyMedium.copyWith(
-                          color: AppTheme.textSecondaryColor,
-                        ),
+                      color: AppTheme.textSecondaryColor,
+                    ),
                   ),
                   SizedBox(height: responsive.spacing(AppTheme.spaceM)),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: responsive.spacing(14), vertical: responsive.spacing(6)),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: responsive.spacing(14),
+                      vertical: responsive.spacing(6),
+                    ),
                     decoration: BoxDecoration(
-                      color: AppTheme.accentColor.withOpacity(0.1),
+                      color: AppTheme.accentColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                     ),
                     child: Text(
@@ -102,7 +117,9 @@ class ProfileScreen extends ConsumerWidget {
 
             // 2. Profile Options List
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
+              padding: EdgeInsets.symmetric(
+                horizontal: responsive.spacing(AppTheme.spaceXL),
+              ),
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppTheme.radiusXL),
@@ -147,7 +164,9 @@ class ProfileScreen extends ConsumerWidget {
 
             // 3. Support Box
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
+              padding: EdgeInsets.symmetric(
+                horizontal: responsive.spacing(AppTheme.spaceXL),
+              ),
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppTheme.radiusXL),
@@ -184,7 +203,9 @@ class ProfileScreen extends ConsumerWidget {
 
             // 4. Log Out Button
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
+              padding: EdgeInsets.symmetric(
+                horizontal: responsive.spacing(AppTheme.spaceXL),
+              ),
               child: OutlinedButton.icon(
                 onPressed: () {
                   ref.read(authNotifierProvider.notifier).logout();
@@ -192,15 +213,27 @@ class ProfileScreen extends ConsumerWidget {
                 },
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppTheme.errorColor,
-                  side: const BorderSide(color: AppTheme.errorColor, width: 1.5),
-                  padding: EdgeInsets.symmetric(vertical: responsive.spacing(16)),
+                  side: const BorderSide(
+                    color: AppTheme.errorColor,
+                    width: 1.5,
+                  ),
+                  padding: EdgeInsets.symmetric(
+                    vertical: responsive.spacing(16),
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppTheme.radiusM),
                   ),
                   minimumSize: Size(double.infinity, responsive.spacing(50)),
                 ),
                 icon: Icon(Icons.logout_rounded, size: responsive.iconSize(18)),
-                label: Text('LOG OUT FROM APP', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.0, fontSize: responsive.fontSize14)),
+                label: Text(
+                  'LOG OUT FROM APP',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.0,
+                    fontSize: responsive.fontSize14,
+                  ),
+                ),
               ),
             ),
           ],
@@ -218,24 +251,42 @@ class ProfileScreen extends ConsumerWidget {
   }) {
     final responsive = context.responsive;
     return ListTile(
-      contentPadding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceL), vertical: responsive.spacing(8)),
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: responsive.spacing(AppTheme.spaceL),
+        vertical: responsive.spacing(8),
+      ),
       leading: Container(
         padding: EdgeInsets.all(responsive.spacing(8)),
         decoration: BoxDecoration(
-          color: AppTheme.primaryColor.withOpacity(0.04),
+          color: AppTheme.primaryColor.withValues(alpha: 0.04),
           shape: BoxShape.circle,
         ),
-        child: Icon(icon, color: AppTheme.primaryColor, size: responsive.iconSize(20)),
+        child: Icon(
+          icon,
+          color: AppTheme.primaryColor,
+          size: responsive.iconSize(20),
+        ),
       ),
       title: Text(
         title,
-        style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textPrimaryColor, fontSize: responsive.fontSize14),
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: AppTheme.textPrimaryColor,
+          fontSize: responsive.fontSize14,
+        ),
       ),
       subtitle: Text(
         subtitle,
-        style: TextStyle(color: AppTheme.textSecondaryColor, fontSize: responsive.fontSize11),
+        style: TextStyle(
+          color: AppTheme.textSecondaryColor,
+          fontSize: responsive.fontSize11,
+        ),
       ),
-      trailing: Icon(Icons.arrow_forward_ios_rounded, size: responsive.iconSize(14), color: AppTheme.textLightColor),
+      trailing: Icon(
+        Icons.arrow_forward_ios_rounded,
+        size: responsive.iconSize(14),
+        color: AppTheme.textLightColor,
+      ),
       onTap: onTap,
     );
   }

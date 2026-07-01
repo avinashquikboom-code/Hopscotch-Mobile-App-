@@ -70,7 +70,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Aura Couture profile successfully updated! ✨', style: TextStyle(fontSize: context.responsive.fontSize14)),
+              content: Text(
+                'Aura Couture profile successfully updated! ✨',
+                style: TextStyle(fontSize: context.responsive.fontSize14),
+              ),
               behavior: SnackBarBehavior.floating,
               backgroundColor: AppTheme.primaryColor,
             ),
@@ -82,7 +85,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to update profile: $e', style: TextStyle(fontSize: context.responsive.fontSize14)),
+            content: Text(
+              'Failed to update profile: $e',
+              style: TextStyle(fontSize: context.responsive.fontSize14),
+            ),
             behavior: SnackBarBehavior.floating,
             backgroundColor: AppTheme.errorColor,
           ),
@@ -104,7 +110,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('EDIT PROFILE', style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold)),
+        title: Text(
+          'EDIT PROFILE',
+          style: TextStyle(
+            fontSize: responsive.fontSize18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded, size: responsive.iconSize(24)),
           onPressed: () {
@@ -128,8 +140,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 children: [
                   CircleAvatar(
                     radius: responsive.iconSize(54),
-                    backgroundColor: AppTheme.primaryColor.withOpacity(0.08),
-                    backgroundImage: user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty
+                    backgroundColor: AppTheme.primaryColor.withValues(
+                      alpha: 0.08,
+                    ),
+                    backgroundImage:
+                        user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty
                         ? NetworkImage(user.avatarUrl!)
                         : null,
                     child: user?.avatarUrl == null || user!.avatarUrl!.isEmpty
@@ -170,10 +185,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 style: TextStyle(fontSize: responsive.fontSize14),
                 decoration: InputDecoration(
                   labelText: 'Full Name',
-                  prefixIcon: Icon(Icons.person_outline_rounded, size: responsive.iconSize(20)),
+                  prefixIcon: Icon(
+                    Icons.person_outline_rounded,
+                    size: responsive.iconSize(20),
+                  ),
                   labelStyle: TextStyle(fontSize: responsive.fontSize14),
                 ),
-                validator: (value) => value == null || value.trim().isEmpty ? 'Name is required' : null,
+                validator: (value) => value == null || value.trim().isEmpty
+                    ? 'Name is required'
+                    : null,
               ),
               SizedBox(height: responsive.spacing(AppTheme.spaceL)),
               TextFormField(
@@ -182,10 +202,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 style: TextStyle(fontSize: responsive.fontSize14),
                 decoration: InputDecoration(
                   labelText: 'Email Address',
-                  prefixIcon: Icon(Icons.email_outlined, size: responsive.iconSize(20)),
+                  prefixIcon: Icon(
+                    Icons.email_outlined,
+                    size: responsive.iconSize(20),
+                  ),
                   labelStyle: TextStyle(fontSize: responsive.fontSize14),
                 ),
-                validator: (value) => value == null || value.trim().isEmpty ? 'Email is required' : null,
+                validator: (value) => value == null || value.trim().isEmpty
+                    ? 'Email is required'
+                    : null,
               ),
               SizedBox(height: responsive.spacing(AppTheme.spaceL)),
               TextFormField(
@@ -194,7 +219,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 style: TextStyle(fontSize: responsive.fontSize14),
                 decoration: InputDecoration(
                   labelText: 'Phone Number',
-                  prefixIcon: Icon(Icons.phone_outlined, size: responsive.iconSize(20)),
+                  prefixIcon: Icon(
+                    Icons.phone_outlined,
+                    size: responsive.iconSize(20),
+                  ),
                   labelStyle: TextStyle(fontSize: responsive.fontSize14),
                 ),
               ),
@@ -204,7 +232,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 style: TextStyle(fontSize: responsive.fontSize14),
                 decoration: InputDecoration(
                   labelText: 'Street Address',
-                  prefixIcon: Icon(Icons.home_outlined, size: responsive.iconSize(20)),
+                  prefixIcon: Icon(
+                    Icons.home_outlined,
+                    size: responsive.iconSize(20),
+                  ),
                   labelStyle: TextStyle(fontSize: responsive.fontSize14),
                 ),
               ),
@@ -217,7 +248,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       style: TextStyle(fontSize: responsive.fontSize14),
                       decoration: InputDecoration(
                         labelText: 'City',
-                        prefixIcon: Icon(Icons.location_city_outlined, size: responsive.iconSize(20)),
+                        prefixIcon: Icon(
+                          Icons.location_city_outlined,
+                          size: responsive.iconSize(20),
+                        ),
                         labelStyle: TextStyle(fontSize: responsive.fontSize14),
                       ),
                     ),
@@ -230,7 +264,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       style: TextStyle(fontSize: responsive.fontSize14),
                       decoration: InputDecoration(
                         labelText: 'ZIP Code',
-                        prefixIcon: Icon(Icons.pin_drop_outlined, size: responsive.iconSize(20)),
+                        prefixIcon: Icon(
+                          Icons.pin_drop_outlined,
+                          size: responsive.iconSize(20),
+                        ),
                         labelStyle: TextStyle(fontSize: responsive.fontSize14),
                       ),
                     ),

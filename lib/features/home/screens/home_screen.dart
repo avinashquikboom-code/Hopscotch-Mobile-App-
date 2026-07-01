@@ -18,7 +18,8 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with SingleTickerProviderStateMixin {
   late PageController _bannerController;
   late AnimationController _fadeController;
   int _activeBanner = 0;
@@ -28,23 +29,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       'title': 'THE COUTURE SALE',
       'subtitle': 'Up to 30% Off New Autumwear',
       'action': 'Shop Couture',
-      'image': 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=600&q=80',
-      'categoryId': 'cat_womens'
+      'image':
+          'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=600&q=80',
+      'categoryId': 'cat_womens',
     },
     {
       'title': 'GENTLEMAN\'S APPAREL',
       'subtitle': 'English Wool Suits & Coats',
       'action': 'Explore Tailored',
-      'image': 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=600&q=80',
-      'categoryId': 'cat_mens'
+      'image':
+          'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=600&q=80',
+      'categoryId': 'cat_mens',
     },
     {
       'title': 'ITALIAN CRADLE',
       'subtitle': 'Handcrafted Full-Grain Loafers',
       'action': 'View Footwear',
-      'image': 'https://images.unsplash.com/photo-1614252369475-531eba835eb1?auto=format&fit=crop&w=600&q=80',
-      'categoryId': 'cat_footwear'
-    }
+      'image':
+          'https://images.unsplash.com/photo-1614252369475-531eba835eb1?auto=format&fit=crop&w=600&q=80',
+      'categoryId': 'cat_footwear',
+    },
   ];
 
   @override
@@ -86,13 +90,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.only(bottom: 120), // Leave space for floating nav bar
+            padding: const EdgeInsets.only(
+              bottom: 120,
+            ), // Leave space for floating nav bar
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 1. Premium App Bar Row
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL), vertical: responsive.spacing(AppTheme.spaceM)),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: responsive.spacing(AppTheme.spaceXL),
+                    vertical: responsive.spacing(AppTheme.spaceM),
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -101,16 +110,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                         children: [
                           Text(
                             'AURA COUTURE',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.primaryColor,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 2.0,
-                              fontSize: responsive.fontSize12,
-                            ),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: AppTheme.primaryColor,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 2.0,
+                                  fontSize: responsive.fontSize12,
+                                ),
                           ),
                           SizedBox(height: responsive.spacing(2)),
                           Text(
-                            user != null ? 'Hello, ${user.name.split(" ").first}' : 'Discover Luxury',
+                            user != null
+                                ? 'Hello, ${user.name.split(" ").first}'
+                                : 'Discover Luxury',
                             style: responsive.headline4,
                           ),
                         ],
@@ -125,7 +137,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                               border: Border.all(color: AppTheme.borderColor),
                             ),
                             child: IconButton(
-                              icon: Icon(Icons.notifications_none_rounded, color: AppTheme.textPrimaryColor, size: responsive.iconSize(24)),
+                              icon: Icon(
+                                Icons.notifications_none_rounded,
+                                color: AppTheme.textPrimaryColor,
+                                size: responsive.iconSize(24),
+                              ),
                               onPressed: () => context.push('/notifications'),
                             ),
                           ),
@@ -162,11 +178,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
 
                 // 2. Animated Search Bar Row
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL), vertical: responsive.spacing(AppTheme.spaceS)),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: responsive.spacing(AppTheme.spaceXL),
+                    vertical: responsive.spacing(AppTheme.spaceS),
+                  ),
                   child: GestureDetector(
                     onTap: () => context.push('/search'),
                     child: Container(
-                      padding: EdgeInsets.symmetric(vertical: responsive.spacing(14), horizontal: responsive.spacing(20)),
+                      padding: EdgeInsets.symmetric(
+                        vertical: responsive.spacing(14),
+                        horizontal: responsive.spacing(20),
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(AppTheme.radiusM),
@@ -175,7 +197,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.search_rounded, color: AppTheme.textSecondaryColor, size: responsive.iconSize(22)),
+                          Icon(
+                            Icons.search_rounded,
+                            color: AppTheme.textSecondaryColor,
+                            size: responsive.iconSize(22),
+                          ),
                           SizedBox(width: responsive.spacing(AppTheme.spaceM)),
                           Expanded(
                             child: Text(
@@ -201,13 +227,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                     return FadeTransition(
                       opacity: _fadeController,
                       child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0, 0.3),
-                          end: Offset.zero,
-                        ).animate(CurvedAnimation(
-                          parent: _fadeController,
-                          curve: Curves.easeOutCubic,
-                        )),
+                        position:
+                            Tween<Offset>(
+                              begin: const Offset(0, 0.3),
+                              end: Offset.zero,
+                            ).animate(
+                              CurvedAnimation(
+                                parent: _fadeController,
+                                curve: Curves.easeOutCubic,
+                              ),
+                            ),
                         child: SizedBox(
                           height: responsive.spacing(200),
                           child: PageView.builder(
@@ -222,9 +251,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                               final banner = _promoBanners[index];
                               return AnimatedContainer(
                                 duration: const Duration(milliseconds: 300),
-                                margin: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
+                                margin: EdgeInsets.symmetric(
+                                  horizontal: responsive.spacing(
+                                    AppTheme.spaceXL,
+                                  ),
+                                ),
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusXL,
+                                  ),
                                   image: DecorationImage(
                                     image: NetworkImage(banner['image']),
                                     fit: BoxFit.cover,
@@ -234,20 +269,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                                 child: Material(
                                   color: Colors.transparent,
                                   child: InkWell(
-                                    onTap: () => context.push('/products?categoryId=${banner['categoryId']}&categoryName=${banner['title']}'),
-                                    borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-                                    splashColor: Colors.white.withOpacity(0.2),
+                                    onTap: () => context.push(
+                                      '/products?categoryId=${banner['categoryId']}&categoryName=${banner['title']}',
+                                    ),
+                                    borderRadius: BorderRadius.circular(
+                                      AppTheme.radiusXL,
+                                    ),
+                                    splashColor: Colors.white.withValues(
+                                      alpha: 0.2,
+                                    ),
                                     child: Stack(
                                       children: [
                                         Positioned.fill(
                                           child: Container(
                                             decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                    AppTheme.radiusXL,
+                                                  ),
                                               gradient: LinearGradient(
                                                 begin: Alignment.centerLeft,
                                                 end: Alignment.centerRight,
                                                 colors: [
-                                                  Colors.black.withOpacity(0.7),
+                                                  Colors.black.withValues(
+                                                    alpha: 0.7,
+                                                  ),
                                                   Colors.transparent,
                                                 ],
                                               ),
@@ -255,43 +301,70 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                                           ),
                                         ),
                                         Padding(
-                                          padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
+                                          padding: EdgeInsets.all(
+                                            responsive.spacing(
+                                              AppTheme.spaceXL,
+                                            ),
+                                          ),
                                           child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Container(
-                                                padding: EdgeInsets.symmetric(horizontal: responsive.spacing(8), vertical: responsive.spacing(4)),
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: responsive
+                                                      .spacing(8),
+                                                  vertical: responsive.spacing(
+                                                    4,
+                                                  ),
+                                                ),
                                                 decoration: BoxDecoration(
                                                   color: AppTheme.accentColor,
-                                                  borderRadius: BorderRadius.circular(AppTheme.radiusS),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        AppTheme.radiusS,
+                                                      ),
                                                 ),
                                                 child: Text(
                                                   'LIMITED EDITION',
                                                   style: TextStyle(
                                                     color: Colors.white,
                                                     fontWeight: FontWeight.bold,
-                                                    fontSize: responsive.fontSize10,
+                                                    fontSize:
+                                                        responsive.fontSize10,
                                                   ),
                                                 ),
                                               ),
-                                              SizedBox(height: responsive.spacing(AppTheme.spaceS)),
+                                              SizedBox(
+                                                height: responsive.spacing(
+                                                  AppTheme.spaceS,
+                                                ),
+                                              ),
                                               Text(
                                                 banner['title'],
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
-                                                style: responsive.headline1.copyWith(
-                                                  color: Colors.white,
-                                                ),
+                                                style: responsive.headline1
+                                                    .copyWith(
+                                                      color: Colors.white,
+                                                    ),
                                               ),
-                                              SizedBox(height: responsive.spacing(4)),
+                                              SizedBox(
+                                                height: responsive.spacing(4),
+                                              ),
                                               Text(
                                                 banner['subtitle'],
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
-                                                style: responsive.bodySmall.copyWith(
-                                                  color: Colors.white.withOpacity(0.85),
-                                                ),
+                                                style: responsive.bodySmall
+                                                    .copyWith(
+                                                      color: Colors.white
+                                                          .withValues(
+                                                            alpha: 0.85,
+                                                          ),
+                                                    ),
                                               ),
                                             ],
                                           ),
@@ -315,12 +388,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                   children: List.generate(
                     _promoBanners.length,
                     (index) => Container(
-                      margin: EdgeInsets.symmetric(horizontal: responsive.spacing(3)),
-                      width: _activeBanner == index ? responsive.spacing(16) : responsive.spacing(6),
+                      margin: EdgeInsets.symmetric(
+                        horizontal: responsive.spacing(3),
+                      ),
+                      width: _activeBanner == index
+                          ? responsive.spacing(16)
+                          : responsive.spacing(6),
                       height: responsive.spacing(6),
                       decoration: BoxDecoration(
-                        color: _activeBanner == index ? AppTheme.primaryColor : AppTheme.borderColor,
-                        borderRadius: BorderRadius.circular(responsive.spacing(3)),
+                        color: _activeBanner == index
+                            ? AppTheme.primaryColor
+                            : AppTheme.borderColor,
+                        borderRadius: BorderRadius.circular(
+                          responsive.spacing(3),
+                        ),
                       ),
                     ),
                   ),
@@ -338,7 +419,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                       child: Opacity(
                         opacity: value,
                         child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: responsive.spacing(AppTheme.spaceXL),
+                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -348,7 +431,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                               ),
                               TextButton(
                                 onPressed: () => context.go('/categories'),
-                                child: Text('View All', style: TextStyle(fontSize: responsive.fontSize14)),
+                                child: Text(
+                                  'View All',
+                                  style: TextStyle(
+                                    fontSize: responsive.fontSize14,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -363,7 +451,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                   child: categoriesAsync.when(
                     data: (categories) => ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: responsive.spacing(AppTheme.spaceXL),
+                      ),
                       itemCount: categories.length,
                       itemBuilder: (context, index) {
                         final category = categories[index];
@@ -378,11 +468,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                               child: Opacity(
                                 opacity: value,
                                 child: Padding(
-                                  padding: EdgeInsets.only(right: responsive.spacing(AppTheme.spaceXL)),
+                                  padding: EdgeInsets.only(
+                                    right: responsive.spacing(AppTheme.spaceXL),
+                                  ),
                                   child: CategoryCard(
                                     category: category,
                                     isCircular: true,
-                                    onTap: () => context.push('/products?categoryId=${category.id}&categoryName=${category.name}'),
+                                    onTap: () => context.push(
+                                      '/products?categoryId=${category.id}&categoryName=${category.name}',
+                                    ),
                                   ),
                                 ),
                               ),
@@ -393,11 +487,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                     ),
                     loading: () => ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: responsive.spacing(AppTheme.spaceXL),
+                      ),
                       itemCount: 5,
                       itemBuilder: (context, index) => Padding(
-                        padding: EdgeInsets.only(right: responsive.spacing(AppTheme.spaceXL)),
-                        child: SkeletonLoader(width: responsive.spacing(70), height: responsive.spacing(70), borderRadius: responsive.spacing(35)),
+                        padding: EdgeInsets.only(
+                          right: responsive.spacing(AppTheme.spaceXL),
+                        ),
+                        child: SkeletonLoader(
+                          width: responsive.spacing(70),
+                          height: responsive.spacing(70),
+                          borderRadius: responsive.spacing(35),
+                        ),
                       ),
                     ),
                     error: (err, stack) => Center(child: Text('Error: $err')),
@@ -416,7 +518,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                       child: Opacity(
                         opacity: value,
                         child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: responsive.spacing(AppTheme.spaceXL),
+                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -425,8 +529,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                                 style: responsive.headline5,
                               ),
                               TextButton(
-                                onPressed: () => context.push('/products?filter=trending&categoryName=Trending'),
-                                child: Text('See All', style: TextStyle(fontSize: responsive.fontSize14)),
+                                onPressed: () => context.push(
+                                  '/products?filter=trending&categoryName=Trending',
+                                ),
+                                child: Text(
+                                  'See All',
+                                  style: TextStyle(
+                                    fontSize: responsive.fontSize14,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -441,7 +552,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                   child: trendingAsync.when(
                     data: (products) => ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: responsive.spacing(AppTheme.spaceXL),
+                      ),
                       itemCount: products.length,
                       itemBuilder: (context, index) {
                         final product = products[index];
@@ -457,11 +570,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                                 opacity: value,
                                 child: Container(
                                   width: responsive.spacing(175),
-                                  margin: EdgeInsets.only(right: responsive.spacing(AppTheme.spaceL)),
+                                  margin: EdgeInsets.only(
+                                    right: responsive.spacing(AppTheme.spaceL),
+                                  ),
                                   child: ProductCard(
                                     product: product,
                                     heroTagPrefix: 'home_trending',
-                                    onTap: () => context.push('/product/${product.id}?heroTagPrefix=home_trending'),
+                                    onTap: () => context.push(
+                                      '/product/${product.id}?heroTagPrefix=home_trending',
+                                    ),
                                   ),
                                 ),
                               ),
@@ -472,11 +589,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                     ),
                     loading: () => ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: responsive.spacing(AppTheme.spaceXL),
+                      ),
                       itemCount: 3,
                       itemBuilder: (context, index) => Container(
                         width: responsive.spacing(175),
-                        margin: EdgeInsets.only(right: responsive.spacing(AppTheme.spaceL)),
+                        margin: EdgeInsets.only(
+                          right: responsive.spacing(AppTheme.spaceL),
+                        ),
                         child: const ProductCardSkeleton(),
                       ),
                     ),
@@ -496,7 +617,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                       child: Opacity(
                         opacity: value,
                         child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: responsive.spacing(AppTheme.spaceXL),
+                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -505,8 +628,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                                 style: responsive.headline5,
                               ),
                               TextButton(
-                                onPressed: () => context.push('/products?filter=new&categoryName=New Arrivals'),
-                                child: Text('See All', style: TextStyle(fontSize: responsive.fontSize14)),
+                                onPressed: () => context.push(
+                                  '/products?filter=new&categoryName=New Arrivals',
+                                ),
+                                child: Text(
+                                  'See All',
+                                  style: TextStyle(
+                                    fontSize: responsive.fontSize14,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -521,7 +651,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                   child: newArrivalsAsync.when(
                     data: (products) => ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: responsive.spacing(AppTheme.spaceXL),
+                      ),
                       itemCount: products.length,
                       itemBuilder: (context, index) {
                         final product = products[index];
@@ -537,11 +669,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                                 opacity: value,
                                 child: Container(
                                   width: responsive.spacing(175),
-                                  margin: EdgeInsets.only(right: responsive.spacing(AppTheme.spaceL)),
+                                  margin: EdgeInsets.only(
+                                    right: responsive.spacing(AppTheme.spaceL),
+                                  ),
                                   child: ProductCard(
                                     product: product,
                                     heroTagPrefix: 'home_new',
-                                    onTap: () => context.push('/product/${product.id}?heroTagPrefix=home_new'),
+                                    onTap: () => context.push(
+                                      '/product/${product.id}?heroTagPrefix=home_new',
+                                    ),
                                   ),
                                 ),
                               ),
@@ -552,11 +688,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                     ),
                     loading: () => ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: responsive.spacing(AppTheme.spaceXL),
+                      ),
                       itemCount: 3,
                       itemBuilder: (context, index) => Container(
                         width: responsive.spacing(175),
-                        margin: EdgeInsets.only(right: responsive.spacing(AppTheme.spaceL)),
+                        margin: EdgeInsets.only(
+                          right: responsive.spacing(AppTheme.spaceL),
+                        ),
                         child: const ProductCardSkeleton(),
                       ),
                     ),

@@ -7,16 +7,14 @@ import '../../../core/widgets/custom_button.dart';
 class OrderSuccessScreen extends StatefulWidget {
   final String orderId;
 
-  const OrderSuccessScreen({
-    super.key,
-    required this.orderId,
-  });
+  const OrderSuccessScreen({super.key, required this.orderId});
 
   @override
   State<OrderSuccessScreen> createState() => _OrderSuccessScreenState();
 }
 
-class _OrderSuccessScreenState extends State<OrderSuccessScreen> with SingleTickerProviderStateMixin {
+class _OrderSuccessScreenState extends State<OrderSuccessScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
@@ -27,9 +25,10 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> with SingleTick
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
-    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
     _controller.forward();
   }
 
@@ -45,7 +44,9 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> with SingleTick
     return Scaffold(
       body: Center(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXXL)),
+          padding: EdgeInsets.symmetric(
+            horizontal: responsive.spacing(AppTheme.spaceXXL),
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -53,11 +54,16 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> with SingleTick
               ScaleTransition(
                 scale: _scaleAnimation,
                 child: Container(
-                  padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXXL)),
+                  padding: EdgeInsets.all(
+                    responsive.spacing(AppTheme.spaceXXL),
+                  ),
                   decoration: BoxDecoration(
-                    color: AppTheme.successColor.withOpacity(0.08),
+                    color: AppTheme.successColor.withValues(alpha: 0.08),
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppTheme.successColor.withOpacity(0.2), width: 2),
+                    border: Border.all(
+                      color: AppTheme.successColor.withValues(alpha: 0.2),
+                      width: 2,
+                    ),
                   ),
                   child: Icon(
                     Icons.check_circle_rounded,
@@ -67,7 +73,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> with SingleTick
                 ),
               ),
               SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
-              
+
               // Success Text
               Text(
                 'ORDER PLACED!',
@@ -91,7 +97,10 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> with SingleTick
 
               // Order Code Box
               Container(
-                padding: EdgeInsets.symmetric(vertical: responsive.spacing(16), horizontal: responsive.spacing(24)),
+                padding: EdgeInsets.symmetric(
+                  vertical: responsive.spacing(16),
+                  horizontal: responsive.spacing(24),
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(AppTheme.radiusM),
@@ -103,7 +112,11 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> with SingleTick
                   children: [
                     Text(
                       'Order ID',
-                      style: TextStyle(color: AppTheme.textSecondaryColor, fontWeight: FontWeight.w500, fontSize: responsive.fontSize14),
+                      style: TextStyle(
+                        color: AppTheme.textSecondaryColor,
+                        fontWeight: FontWeight.w500,
+                        fontSize: responsive.fontSize14,
+                      ),
                     ),
                     Text(
                       widget.orderId,

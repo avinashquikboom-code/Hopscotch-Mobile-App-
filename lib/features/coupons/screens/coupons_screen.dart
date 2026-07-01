@@ -129,7 +129,10 @@ class _CouponsScreenState extends State<CouponsScreen> {
     Clipboard.setData(ClipboardData(text: code));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Code $code copied!', style: TextStyle(fontSize: responsive.fontSize14)),
+        content: Text(
+          'Code $code copied!',
+          style: TextStyle(fontSize: responsive.fontSize14),
+        ),
         backgroundColor: AppTheme.primaryColor,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
@@ -148,7 +151,10 @@ class _CouponsScreenState extends State<CouponsScreen> {
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(coupon.isApplied ? 'Coupon removed' : 'Coupon applied!', style: TextStyle(fontSize: responsive.fontSize14)),
+        content: Text(
+          coupon.isApplied ? 'Coupon removed' : 'Coupon applied!',
+          style: TextStyle(fontSize: responsive.fontSize14),
+        ),
         backgroundColor: AppTheme.primaryColor,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
@@ -162,7 +168,13 @@ class _CouponsScreenState extends State<CouponsScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: Text('My Coupons', style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold)),
+        title: Text(
+          'My Coupons',
+          style: TextStyle(
+            fontSize: responsive.fontSize18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         centerTitle: true,
         actions: [
           IconButton(
@@ -195,7 +207,9 @@ class _CouponsScreenState extends State<CouponsScreen> {
                       child: Opacity(
                         opacity: value,
                         child: Padding(
-                          padding: EdgeInsets.only(bottom: responsive.spacing(AppTheme.spaceL)),
+                          padding: EdgeInsets.only(
+                            bottom: responsive.spacing(AppTheme.spaceL),
+                          ),
                           child: _buildCouponCard(coupon),
                         ),
                       ),
@@ -214,18 +228,15 @@ class _CouponsScreenState extends State<CouponsScreen> {
     final responsive = context.responsive;
     final activeCoupons = _coupons.where((c) => !c.isApplied).length;
     final appliedCoupons = _coupons.where((c) => c.isApplied).length;
-    
+
     return Container(
       margin: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
       padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppTheme.primaryColor,
-            AppTheme.secondaryColor,
-          ],
+          colors: [AppTheme.primaryColor, AppTheme.secondaryColor],
         ),
         borderRadius: BorderRadius.circular(AppTheme.radiusL),
         boxShadow: AppTheme.intenseShadow,
@@ -237,7 +248,7 @@ class _CouponsScreenState extends State<CouponsScreen> {
           Container(
             width: 1,
             height: responsive.spacing(40),
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
           ),
           _buildStatItem('Applied', appliedCoupons.toString()),
         ],
@@ -279,10 +290,14 @@ class _CouponsScreenState extends State<CouponsScreen> {
         borderRadius: BorderRadius.circular(AppTheme.radiusL),
         color: AppTheme.surfaceColor,
         border: Border.all(
-          color: coupon.isApplied ? AppTheme.primaryColor : AppTheme.borderColor,
+          color: coupon.isApplied
+              ? AppTheme.primaryColor
+              : AppTheme.borderColor,
           width: coupon.isApplied ? 2 : 1,
         ),
-        boxShadow: coupon.isApplied ? AppTheme.intenseShadow : AppTheme.softShadow,
+        boxShadow: coupon.isApplied
+            ? AppTheme.intenseShadow
+            : AppTheme.softShadow,
       ),
       child: Padding(
         padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
@@ -299,13 +314,13 @@ class _CouponsScreenState extends State<CouponsScreen> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        AppTheme.primaryColor.withOpacity(0.1),
-                        AppTheme.secondaryColor.withOpacity(0.1),
+                        AppTheme.primaryColor.withValues(alpha: 0.1),
+                        AppTheme.secondaryColor.withValues(alpha: 0.1),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(AppTheme.radiusM),
                     border: Border.all(
-                      color: AppTheme.primaryColor.withOpacity(0.3),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.3),
                       width: 1,
                     ),
                   ),
@@ -441,11 +456,11 @@ class _CouponsScreenState extends State<CouponsScreen> {
                                 bottomRight: Radius.circular(8),
                               )
                             : i == 7
-                                ? const BorderRadius.only(
-                                    topLeft: Radius.circular(8),
-                                    bottomLeft: Radius.circular(8),
-                                  )
-                                : null,
+                            ? const BorderRadius.only(
+                                topLeft: Radius.circular(8),
+                                bottomLeft: Radius.circular(8),
+                              )
+                            : null,
                       ),
                     ),
                   ),
@@ -464,10 +479,7 @@ class _CouponsScreenState extends State<CouponsScreen> {
                     decoration: BoxDecoration(
                       color: AppTheme.backgroundColor,
                       borderRadius: BorderRadius.circular(AppTheme.radiusS),
-                      border: Border.all(
-                        color: AppTheme.borderColor,
-                        width: 1,
-                      ),
+                      border: Border.all(color: AppTheme.borderColor, width: 1),
                     ),
                     child: Row(
                       children: [
@@ -491,14 +503,14 @@ class _CouponsScreenState extends State<CouponsScreen> {
                   child: InkWell(
                     onTap: () => _copyCode(coupon.code),
                     borderRadius: BorderRadius.circular(AppTheme.radiusS),
-                    splashColor: AppTheme.primaryColor.withOpacity(0.1),
+                    splashColor: AppTheme.primaryColor.withValues(alpha: 0.1),
                     child: Container(
                       padding: EdgeInsets.symmetric(
                         horizontal: responsive.spacing(16),
                         vertical: responsive.spacing(10),
                       ),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.1),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(AppTheme.radiusS),
                       ),
                       child: Icon(
@@ -516,7 +528,7 @@ class _CouponsScreenState extends State<CouponsScreen> {
                   child: InkWell(
                     onTap: () => _applyCoupon(coupon),
                     borderRadius: BorderRadius.circular(AppTheme.radiusS),
-                    splashColor: AppTheme.primaryColor.withOpacity(0.1),
+                    splashColor: AppTheme.primaryColor.withValues(alpha: 0.1),
                     child: Container(
                       padding: EdgeInsets.symmetric(
                         horizontal: responsive.spacing(20),
@@ -525,7 +537,7 @@ class _CouponsScreenState extends State<CouponsScreen> {
                       decoration: BoxDecoration(
                         color: coupon.isApplied
                             ? AppTheme.primaryColor
-                            : AppTheme.primaryColor.withOpacity(0.1),
+                            : AppTheme.primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(AppTheme.radiusS),
                       ),
                       child: Row(
@@ -599,7 +611,9 @@ class _CouponsScreenState extends State<CouponsScreen> {
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryColor,
-                  padding: EdgeInsets.symmetric(vertical: responsive.spacing(16)),
+                  padding: EdgeInsets.symmetric(
+                    vertical: responsive.spacing(16),
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppTheme.radiusM),
                   ),
@@ -632,7 +646,9 @@ class _CouponsScreenState extends State<CouponsScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: isSelected ? AppTheme.primaryColor : AppTheme.borderColor,
+                color: isSelected
+                    ? AppTheme.primaryColor
+                    : AppTheme.borderColor,
                 width: 2,
               ),
               color: isSelected ? AppTheme.primaryColor : Colors.transparent,

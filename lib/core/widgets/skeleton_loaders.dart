@@ -42,7 +42,7 @@ class ProductCardSkeleton extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppTheme.radiusL),
         border: Border.all(color: AppTheme.borderColor),
       ),
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Image
@@ -56,14 +56,17 @@ class ProductCardSkeleton extends StatelessWidget {
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceM, vertical: AppTheme.spaceS),
+              padding: EdgeInsets.symmetric(
+                horizontal: AppTheme.spaceM,
+                vertical: AppTheme.spaceS,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       SkeletonLoader(width: 50, height: 11),
                       SizedBox(height: 4),
                       SkeletonLoader(width: double.infinity, height: 13),
@@ -71,7 +74,7 @@ class ProductCardSkeleton extends StatelessWidget {
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
+                    children: [
                       SkeletonLoader(width: 55, height: 15),
                       SkeletonLoader(width: 35, height: 12),
                     ],
@@ -99,10 +102,10 @@ class CategoryCardSkeleton extends StatelessWidget {
         border: Border.all(color: AppTheme.borderColor),
       ),
       padding: const EdgeInsets.all(AppTheme.spaceL),
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.end,
-        children: const [
+        children: [
           SkeletonLoader(width: 120, height: 20),
           SizedBox(height: AppTheme.spaceS),
           SkeletonLoader(width: 80, height: 14),
@@ -119,7 +122,7 @@ class HomeCarouselSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SkeletonLoader(
+        const SkeletonLoader(
           width: double.infinity,
           height: 180,
           borderRadius: AppTheme.radiusXL,

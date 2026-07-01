@@ -18,27 +18,34 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
   final List<Map<String, String>> _faqs = [
     {
       'question': 'How does Bespoke Sizing work?',
-      'answer': 'Our bespoke tailoring program utilizes advanced sizing recommendation algorithms linked directly to historical European custom measurement charts. When placing an order, simply select your nearest size. Our personal concierge team will contact you for custom shoulder, sleeve, and drape adjustments.'
+      'answer':
+          'Our bespoke tailoring program utilizes advanced sizing recommendation algorithms linked directly to historical European custom measurement charts. When placing an order, simply select your nearest size. Our personal concierge team will contact you for custom shoulder, sleeve, and drape adjustments.',
     },
     {
       'question': 'What are your secure billing parameters?',
-      'answer': 'Aura Couture operates strictly under certified PCI-DSS secure billing standards. If enabled, biometric authentication data resides solely inside your device\'s native hardware secure enclave. No credit card numbers or security credentials are ever cached on our external servers.'
+      'answer':
+          'Aura Couture operates strictly under certified PCI-DSS secure billing standards. If enabled, biometric authentication data resides solely inside your device\'s native hardware secure enclave. No credit card numbers or security credentials are ever cached on our external servers.',
     },
     {
       'question': 'What is your insured courier logistics timeline?',
-      'answer': 'All garments are meticulously hand-wrapped and dispatched with elite, fully-insured couriers (such as DHL Express or FedEx Priority). Shipping generally takes 1-3 business days. All dispatches include full end-to-end tracking references and signature delivery requirements.'
+      'answer':
+          'All garments are meticulously hand-wrapped and dispatched with elite, fully-insured couriers (such as DHL Express or FedEx Priority). Shipping generally takes 1-3 business days. All dispatches include full end-to-end tracking references and signature delivery requirements.',
     },
     {
       'question': 'Are custom garments returnable?',
-      'answer': 'Because our garments are adjusted to individual client measurements, we do not accept standard returns on bespoke tailored items. However, we offer an elite styling guarantee: if a garment does not fit to your absolute satisfaction, we provide complimentary custom adjustment alterations at any of our partner ateliers.'
-    }
+      'answer':
+          'Because our garments are adjusted to individual client measurements, we do not accept standard returns on bespoke tailored items. However, we offer an elite styling guarantee: if a garment does not fit to your absolute satisfaction, we provide complimentary custom adjustment alterations at any of our partner ateliers.',
+    },
   ];
 
   void _triggerConciergeAction(String action) {
     final responsive = context.responsive;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$action... 📞', style: TextStyle(fontSize: responsive.fontSize14)),
+        content: Text(
+          '$action... 📞',
+          style: TextStyle(fontSize: responsive.fontSize14),
+        ),
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppTheme.primaryColor,
       ),
@@ -93,7 +100,9 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                         children: [
                           CircleAvatar(
                             radius: responsive.iconSize(30),
-                            backgroundColor: AppTheme.primaryColor.withOpacity(0.08),
+                            backgroundColor: AppTheme.primaryColor.withValues(
+                              alpha: 0.08,
+                            ),
                             backgroundImage: const NetworkImage(
                               'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
                             ),
@@ -107,7 +116,10 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                               decoration: BoxDecoration(
                                 color: AppTheme.successColor,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2),
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
                               ),
                             ),
                           ),
@@ -131,7 +143,9 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                               'Elite Personal Stylist',
                               style: TextStyle(
                                 fontSize: responsive.fontSize12,
-                                color: AppTheme.textSecondaryColor.withOpacity(0.85),
+                                color: AppTheme.textSecondaryColor.withValues(
+                                  alpha: 0.85,
+                                ),
                               ),
                             ),
                           ],
@@ -156,7 +170,8 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                           height: responsive.spacing(56),
                           child: CustomButton(
                             text: 'CHAT NOW',
-                            onPressed: () => _triggerConciergeAction('Connecting with Aria'),
+                            onPressed: () =>
+                                _triggerConciergeAction('Connecting with Aria'),
                           ),
                         ),
                       ),
@@ -165,17 +180,35 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                         child: SizedBox(
                           height: responsive.spacing(56),
                           child: OutlinedButton.icon(
-                            onPressed: () => _triggerConciergeAction('Initiating secure concierge call'),
+                            onPressed: () => _triggerConciergeAction(
+                              'Initiating secure concierge call',
+                            ),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppTheme.primaryColor,
-                              side: const BorderSide(color: AppTheme.primaryColor, width: 1.5),
-                              padding: EdgeInsets.symmetric(vertical: responsive.spacing(16)),
+                              side: const BorderSide(
+                                color: AppTheme.primaryColor,
+                                width: 1.5,
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                vertical: responsive.spacing(16),
+                              ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusM,
+                                ),
                               ),
                             ),
-                            icon: Icon(Icons.phone_outlined, size: responsive.iconSize(16)),
-                            label: Text('CALL NOW', style: TextStyle(fontWeight: FontWeight.bold, fontSize: responsive.fontSize14)),
+                            icon: Icon(
+                              Icons.phone_outlined,
+                              size: responsive.iconSize(16),
+                            ),
+                            label: Text(
+                              'CALL NOW',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: responsive.fontSize14,
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -203,7 +236,8 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _faqs.length,
-              separatorBuilder: (context, index) => SizedBox(height: responsive.spacing(AppTheme.spaceL)),
+              separatorBuilder: (context, index) =>
+                  SizedBox(height: responsive.spacing(AppTheme.spaceL)),
               itemBuilder: (context, index) {
                 final faq = _faqs[index];
                 final isExpanded = _expandedFaqIndex == index;
@@ -215,12 +249,16 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                     });
                   },
                   child: Container(
-                    padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
+                    padding: EdgeInsets.all(
+                      responsive.spacing(AppTheme.spaceL),
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                       border: Border.all(
-                        color: isExpanded ? AppTheme.primaryColor : AppTheme.borderColor,
+                        color: isExpanded
+                            ? AppTheme.primaryColor
+                            : AppTheme.borderColor,
                         width: isExpanded ? 1.5 : 1.0,
                       ),
                       boxShadow: AppTheme.softShadow,
@@ -261,13 +299,16 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                                 : const BoxConstraints(maxHeight: 0),
                             child: isExpanded
                                 ? Padding(
-                                    padding: EdgeInsets.only(top: responsive.spacing(AppTheme.spaceM)),
+                                    padding: EdgeInsets.only(
+                                      top: responsive.spacing(AppTheme.spaceM),
+                                    ),
                                     child: Text(
                                       faq['answer']!,
                                       style: TextStyle(
                                         fontSize: responsive.fontSize12,
                                         height: 1.6,
-                                        color: AppTheme.textSecondaryColor.withOpacity(0.95),
+                                        color: AppTheme.textSecondaryColor
+                                            .withValues(alpha: 0.95),
                                       ),
                                     ),
                                   )

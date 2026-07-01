@@ -51,12 +51,12 @@ class AppTheme {
   // Soft Shadows
   static List<BoxShadow> softShadow = [
     BoxShadow(
-      color: textPrimaryColor.withOpacity(0.04),
+      color: textPrimaryColor.withValues(alpha: 0.04),
       blurRadius: 16,
       offset: const Offset(0, 4),
     ),
     BoxShadow(
-      color: textPrimaryColor.withOpacity(0.02),
+      color: textPrimaryColor.withValues(alpha: 0.02),
       blurRadius: 4,
       offset: const Offset(0, 2),
     ),
@@ -64,12 +64,12 @@ class AppTheme {
 
   static List<BoxShadow> darkSoftShadow = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.3),
+      color: Colors.black.withValues(alpha: 0.3),
       blurRadius: 16,
       offset: const Offset(0, 4),
     ),
     BoxShadow(
-      color: Colors.black.withOpacity(0.2),
+      color: Colors.black.withValues(alpha: 0.2),
       blurRadius: 4,
       offset: const Offset(0, 2),
     ),
@@ -77,7 +77,7 @@ class AppTheme {
 
   static List<BoxShadow> intenseShadow = [
     BoxShadow(
-      color: primaryColor.withOpacity(0.12),
+      color: primaryColor.withValues(alpha: 0.12),
       blurRadius: 24,
       offset: const Offset(0, 8),
     ),
@@ -85,7 +85,7 @@ class AppTheme {
 
   static List<BoxShadow> darkIntenseShadow = [
     BoxShadow(
-      color: darkPrimaryColor.withOpacity(0.2),
+      color: darkPrimaryColor.withValues(alpha: 0.2),
       blurRadius: 24,
       offset: const Offset(0, 8),
     ),
@@ -105,8 +105,6 @@ class AppTheme {
         onTertiary: Colors.white,
         error: errorColor,
         onError: Colors.white,
-        background: backgroundColor,
-        onBackground: textPrimaryColor,
         surface: surfaceColor,
         onSurface: textPrimaryColor,
         outline: borderColor,
@@ -236,7 +234,10 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 16,
+          horizontal: 20,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusM),
           borderSide: const BorderSide(color: borderColor, width: 1),
@@ -290,8 +291,6 @@ class AppTheme {
         onTertiary: Colors.black,
         error: darkErrorColor,
         onError: Colors.black,
-        background: darkBackgroundColor,
-        onBackground: darkTextPrimaryColor,
         surface: darkSurfaceColor,
         onSurface: darkTextPrimaryColor,
         outline: darkBorderColor,
@@ -421,7 +420,10 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: darkSurfaceColor,
-        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 16,
+          horizontal: 20,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusM),
           borderSide: const BorderSide(color: darkBorderColor, width: 1),

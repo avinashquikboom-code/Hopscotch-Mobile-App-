@@ -32,10 +32,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
 
     try {
-      await ref.read(authNotifierProvider.notifier).login(
-            _emailController.text.trim(),
-            _passwordController.text,
-          );
+      await ref
+          .read(authNotifierProvider.notifier)
+          .login(_emailController.text.trim(), _passwordController.text);
       if (mounted) {
         context.go('/');
       }
@@ -66,8 +65,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Container(
-            height: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top,
-            padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
+            height:
+                MediaQuery.of(context).size.height -
+                MediaQuery.of(context).padding.top,
+            padding: EdgeInsets.symmetric(
+              horizontal: responsive.spacing(AppTheme.spaceXL),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -75,12 +78,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 // Top Header logo or icon
                 Center(
                   child: Container(
-                    padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
+                    padding: EdgeInsets.all(
+                      responsive.spacing(AppTheme.spaceXL),
+                    ),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          AppTheme.primaryColor.withOpacity(0.1),
-                          AppTheme.primaryColor.withOpacity(0.05),
+                          AppTheme.primaryColor.withValues(alpha: 0.1),
+                          AppTheme.primaryColor.withValues(alpha: 0.05),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -88,7 +93,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.primaryColor.withOpacity(0.2),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.2),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -135,7 +140,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   decoration: InputDecoration(
                     hintText: 'Enter your email address',
                     hintStyle: TextStyle(
-                      color: AppTheme.textSecondaryColor.withOpacity(0.6),
+                      color: AppTheme.textSecondaryColor.withValues(alpha: 0.6),
                       fontSize: responsive.fontSize14,
                     ),
                     labelText: 'Email Address',
@@ -156,7 +161,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppTheme.radiusM),
-                      borderSide: BorderSide(
+                      borderSide: const BorderSide(
                         color: AppTheme.primaryColor,
                         width: 2,
                       ),
@@ -180,7 +185,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   decoration: InputDecoration(
                     hintText: 'Enter your password',
                     hintStyle: TextStyle(
-                      color: AppTheme.textSecondaryColor.withOpacity(0.6),
+                      color: AppTheme.textSecondaryColor.withValues(alpha: 0.6),
                       fontSize: responsive.fontSize14,
                     ),
                     labelText: 'Password',
@@ -195,7 +200,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                        _obscurePassword
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
                         color: AppTheme.textSecondaryColor,
                         size: responsive.iconSize(20),
                       ),
@@ -213,7 +220,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppTheme.radiusM),
-                      borderSide: BorderSide(
+                      borderSide: const BorderSide(
                         color: AppTheme.primaryColor,
                         width: 2,
                       ),
@@ -231,9 +238,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () => context.push('/forgot-password'),
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                    ),
+                    style: TextButton.styleFrom(padding: EdgeInsets.zero),
                     child: Text(
                       'Forgot Password?',
                       style: TextStyle(

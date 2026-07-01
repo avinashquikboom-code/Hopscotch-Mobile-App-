@@ -23,7 +23,8 @@ class ProductListingScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ProductListingScreen> createState() => _ProductListingScreenState();
+  ConsumerState<ProductListingScreen> createState() =>
+      _ProductListingScreenState();
 }
 
 class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
@@ -52,7 +53,8 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
   }
 
   void _scrollListener() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 100) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 100) {
       _loadMoreProducts();
     }
   }
@@ -85,7 +87,9 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
 
     // Filter by subcategory
     if (widget.subcategory != null) {
-      result = result.where((p) => p.subcategory == widget.subcategory).toList();
+      result = result
+          .where((p) => p.subcategory == widget.subcategory)
+          .toList();
     }
 
     // Filter by standard filters (trending / new)
@@ -119,7 +123,9 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
       case 'Recommended':
       default:
         // Default sort (e.g. isFeatured first)
-        result.sort((a, b) => (b.isFeatured ? 1 : 0).compareTo(a.isFeatured ? 1 : 0));
+        result.sort(
+          (a, b) => (b.isFeatured ? 1 : 0).compareTo(a.isFeatured ? 1 : 0),
+        );
         break;
     }
 
@@ -142,7 +148,10 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
           builder: (context, setSheetState) {
             return SafeArea(
               child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL), vertical: responsive.spacing(AppTheme.spaceL)),
+                padding: EdgeInsets.symmetric(
+                  horizontal: responsive.spacing(AppTheme.spaceXL),
+                  vertical: responsive.spacing(AppTheme.spaceL),
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,13 +162,13 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                         width: responsive.spacing(36),
                         height: responsive.spacing(4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFC59F3E).withOpacity(0.4),
+                          color: const Color(0xFFC59F3E).withValues(alpha: 0.4),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
                     ),
                     SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
-                    
+
                     // Serif Luxury Title
                     Text(
                       'FILTER & SORT',
@@ -171,7 +180,7 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                       ),
                     ),
                     SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
-                    
+
                     // Sorting options
                     Text(
                       'SORT BY',
@@ -190,22 +199,30 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                         _buildChip(
                           label: 'Recommended',
                           isSelected: _sortBy == 'Recommended',
-                          onTap: () => setSheetState(() => setState(() => _sortBy = 'Recommended')),
+                          onTap: () => setSheetState(
+                            () => setState(() => _sortBy = 'Recommended'),
+                          ),
                         ),
                         _buildChip(
                           label: 'Price: Low to High',
                           isSelected: _sortBy == 'LowToHigh',
-                          onTap: () => setSheetState(() => setState(() => _sortBy = 'LowToHigh')),
+                          onTap: () => setSheetState(
+                            () => setState(() => _sortBy = 'LowToHigh'),
+                          ),
                         ),
                         _buildChip(
                           label: 'Price: High to Low',
                           isSelected: _sortBy == 'HighToLow',
-                          onTap: () => setSheetState(() => setState(() => _sortBy = 'HighToLow')),
+                          onTap: () => setSheetState(
+                            () => setState(() => _sortBy = 'HighToLow'),
+                          ),
                         ),
                         _buildChip(
                           label: 'Top Rated',
                           isSelected: _sortBy == 'Rating',
-                          onTap: () => setSheetState(() => setState(() => _sortBy = 'Rating')),
+                          onTap: () => setSheetState(
+                            () => setState(() => _sortBy = 'Rating'),
+                          ),
                         ),
                       ],
                     ),
@@ -255,14 +272,20 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                               });
                               context.pop();
                             },
-                            child: Text('Reset All', style: TextStyle(fontSize: responsive.fontSize14)),
+                            child: Text(
+                              'Reset All',
+                              style: TextStyle(fontSize: responsive.fontSize14),
+                            ),
                           ),
                         ),
                         SizedBox(width: responsive.spacing(AppTheme.spaceM)),
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () => context.pop(),
-                            child: Text('Apply', style: TextStyle(fontSize: responsive.fontSize14)),
+                            child: Text(
+                              'Apply',
+                              style: TextStyle(fontSize: responsive.fontSize14),
+                            ),
                           ),
                         ),
                       ],
@@ -278,13 +301,20 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
     );
   }
 
-  Widget _buildChip({required String label, required bool isSelected, required VoidCallback onTap}) {
+  Widget _buildChip({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
     final responsive = context.responsive;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(horizontal: responsive.spacing(14), vertical: responsive.spacing(10)),
+        padding: EdgeInsets.symmetric(
+          horizontal: responsive.spacing(14),
+          vertical: responsive.spacing(10),
+        ),
         decoration: BoxDecoration(
           color: isSelected ? AppTheme.primaryColor : Colors.white,
           borderRadius: BorderRadius.circular(AppTheme.radiusM),
@@ -295,7 +325,7 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppTheme.primaryColor.withOpacity(0.12),
+                    color: AppTheme.primaryColor.withValues(alpha: 0.12),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -321,7 +351,13 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.categoryName.toUpperCase(), style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold)),
+        title: Text(
+          widget.categoryName.toUpperCase(),
+          style: TextStyle(
+            fontSize: responsive.fontSize18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded, size: responsive.iconSize(24)),
           onPressed: () {
@@ -349,16 +385,26 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.search_off_rounded, size: responsive.iconSize(64), color: AppTheme.textLightColor),
+                  Icon(
+                    Icons.search_off_rounded,
+                    size: responsive.iconSize(64),
+                    color: AppTheme.textLightColor,
+                  ),
                   SizedBox(height: responsive.spacing(AppTheme.spaceL)),
                   Text(
                     'No garments found',
-                    style: TextStyle(fontSize: responsive.fontSize20, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: responsive.fontSize20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   SizedBox(height: responsive.spacing(AppTheme.spaceS)),
                   Text(
                     'Try modifying your filters or sort choices.',
-                    style: TextStyle(fontSize: responsive.fontSize14, color: AppTheme.textSecondaryColor),
+                    style: TextStyle(
+                      fontSize: responsive.fontSize14,
+                      color: AppTheme.textSecondaryColor,
+                    ),
                   ),
                 ],
               ),
@@ -371,24 +417,40 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
             children: [
               // Dynamic stats bar
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL), vertical: responsive.spacing(AppTheme.spaceS)),
+                padding: EdgeInsets.symmetric(
+                  horizontal: responsive.spacing(AppTheme.spaceXL),
+                  vertical: responsive.spacing(AppTheme.spaceS),
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       '${displayProducts.length} Items Available',
-                      style: TextStyle(fontSize: responsive.fontSize14, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: responsive.fontSize14,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     GestureDetector(
                       onTap: _showFilterSortSheet,
                       child: Row(
                         children: [
                           Text(
-                            _sortBy == 'Recommended' ? 'Recommended' : 'Filtered',
-                            style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold, fontSize: responsive.fontSize13),
+                            _sortBy == 'Recommended'
+                                ? 'Recommended'
+                                : 'Filtered',
+                            style: TextStyle(
+                              color: AppTheme.primaryColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: responsive.fontSize13,
+                            ),
                           ),
                           SizedBox(width: responsive.spacing(4)),
-                          Icon(Icons.keyboard_arrow_down_rounded, color: AppTheme.primaryColor, size: responsive.iconSize(16)),
+                          Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: AppTheme.primaryColor,
+                            size: responsive.iconSize(16),
+                          ),
                         ],
                       ),
                     ),
@@ -398,9 +460,13 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
               Expanded(
                 child: GridView.builder(
                   controller: _scrollController,
-                  padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)).copyWith(bottom: 40),
+                  padding: EdgeInsets.all(
+                    responsive.spacing(AppTheme.spaceXL),
+                  ).copyWith(bottom: 40),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: MediaQuery.of(context).size.width < 600 ? 2 : (MediaQuery.of(context).size.width < 900 ? 3 : 5),
+                    crossAxisCount: MediaQuery.of(context).size.width < 600
+                        ? 2
+                        : (MediaQuery.of(context).size.width < 900 ? 3 : 5),
                     mainAxisSpacing: AppTheme.spaceL,
                     crossAxisSpacing: AppTheme.spaceL,
                     childAspectRatio: 0.58,
@@ -414,7 +480,9 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                     return ProductCard(
                       product: product,
                       heroTagPrefix: 'listing',
-                      onTap: () => context.push('/product/${product.id}?heroTagPrefix=listing'),
+                      onTap: () => context.push(
+                        '/product/${product.id}?heroTagPrefix=listing',
+                      ),
                     );
                   },
                 ),
@@ -425,7 +493,9 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
         loading: () => GridView.builder(
           padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: MediaQuery.of(context).size.width < 600 ? 2 : (MediaQuery.of(context).size.width < 900 ? 3 : 5),
+            crossAxisCount: MediaQuery.of(context).size.width < 600
+                ? 2
+                : (MediaQuery.of(context).size.width < 900 ? 3 : 5),
             mainAxisSpacing: AppTheme.spaceL,
             crossAxisSpacing: AppTheme.spaceL,
             childAspectRatio: 0.58,
@@ -433,7 +503,12 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
           itemCount: 4,
           itemBuilder: (context, index) => const ProductCardSkeleton(),
         ),
-        error: (err, stack) => Center(child: Text('Error: $err', style: TextStyle(fontSize: responsive.fontSize14))),
+        error: (err, stack) => Center(
+          child: Text(
+            'Error: $err',
+            style: TextStyle(fontSize: responsive.fontSize14),
+          ),
+        ),
       ),
     );
   }

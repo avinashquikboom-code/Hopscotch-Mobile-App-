@@ -41,7 +41,13 @@ class NotificationsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('NOTIFICATIONS', style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold)),
+        title: Text(
+          'NOTIFICATIONS',
+          style: TextStyle(
+            fontSize: responsive.fontSize18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded, size: responsive.iconSize(24)),
           onPressed: () {
@@ -59,12 +65,21 @@ class NotificationsScreen extends ConsumerWidget {
                 notifier.markAllAsRead();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('All alerts marked as read! ✔️', style: TextStyle(fontSize: responsive.fontSize14)),
+                    content: Text(
+                      'All alerts marked as read! ✔️',
+                      style: TextStyle(fontSize: responsive.fontSize14),
+                    ),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
               },
-              child: Text('Mark Read', style: TextStyle(fontWeight: FontWeight.bold, fontSize: responsive.fontSize14)),
+              child: Text(
+                'Mark Read',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: responsive.fontSize14,
+                ),
+              ),
             ),
         ],
       ),
@@ -72,12 +87,14 @@ class NotificationsScreen extends ConsumerWidget {
           ? const EmptyState(
               icon: Icons.notifications_none_rounded,
               title: 'All Caught Up!',
-              description: 'You have no new notifications. We will alert you here when new collections drop or orders dispatch.',
+              description:
+                  'You have no new notifications. We will alert you here when new collections drop or orders dispatch.',
             )
           : ListView.separated(
               padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
               itemCount: notifications.length,
-              separatorBuilder: (context, index) => SizedBox(height: responsive.spacing(AppTheme.spaceM)),
+              separatorBuilder: (context, index) =>
+                  SizedBox(height: responsive.spacing(AppTheme.spaceM)),
               itemBuilder: (context, index) {
                 final notif = notifications[index];
                 final icon = _getIconForType(notif.type);
@@ -88,12 +105,18 @@ class NotificationsScreen extends ConsumerWidget {
                     notifier.markAsRead(notif.id);
                   },
                   child: Container(
-                    padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
+                    padding: EdgeInsets.all(
+                      responsive.spacing(AppTheme.spaceL),
+                    ),
                     decoration: BoxDecoration(
-                      color: notif.isRead ? Colors.white : color.withOpacity(0.02),
+                      color: notif.isRead
+                          ? Colors.white
+                          : color.withValues(alpha: 0.02),
                       borderRadius: BorderRadius.circular(AppTheme.radiusL),
                       border: Border.all(
-                        color: notif.isRead ? AppTheme.borderColor : color.withOpacity(0.2),
+                        color: notif.isRead
+                            ? AppTheme.borderColor
+                            : color.withValues(alpha: 0.2),
                         width: notif.isRead ? 1 : 1.5,
                       ),
                       boxShadow: notif.isRead ? null : AppTheme.softShadow,
@@ -104,10 +127,14 @@ class NotificationsScreen extends ConsumerWidget {
                         Container(
                           padding: EdgeInsets.all(responsive.spacing(10)),
                           decoration: BoxDecoration(
-                            color: color.withOpacity(0.08),
+                            color: color.withValues(alpha: 0.08),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(icon, color: color, size: responsive.iconSize(22)),
+                          child: Icon(
+                            icon,
+                            color: color,
+                            size: responsive.iconSize(22),
+                          ),
                         ),
                         SizedBox(width: responsive.spacing(AppTheme.spaceL)),
                         Expanded(
@@ -115,13 +142,16 @@ class NotificationsScreen extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     child: Text(
                                       notif.title,
                                       style: TextStyle(
-                                        fontWeight: notif.isRead ? FontWeight.w600 : FontWeight.bold,
+                                        fontWeight: notif.isRead
+                                            ? FontWeight.w600
+                                            : FontWeight.bold,
                                         fontSize: responsive.fontSize14,
                                         color: AppTheme.textPrimaryColor,
                                       ),
@@ -142,14 +172,19 @@ class NotificationsScreen extends ConsumerWidget {
                               Text(
                                 notif.body,
                                 style: responsive.bodyMedium.copyWith(
-                                      color: AppTheme.textSecondaryColor,
-                                      height: 1.4,
-                                    ),
+                                  color: AppTheme.textSecondaryColor,
+                                  height: 1.4,
+                                ),
                               ),
-                              SizedBox(height: responsive.spacing(AppTheme.spaceS)),
+                              SizedBox(
+                                height: responsive.spacing(AppTheme.spaceS),
+                              ),
                               Text(
                                 notif.createdAt,
-                                style: TextStyle(color: AppTheme.textLightColor, fontSize: responsive.fontSize10),
+                                style: TextStyle(
+                                  color: AppTheme.textLightColor,
+                                  fontSize: responsive.fontSize10,
+                                ),
                               ),
                             ],
                           ),

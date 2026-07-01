@@ -65,7 +65,8 @@ class _OffersScreenState extends State<OffersScreen>
       type: 'percentage',
       minOrder: 999,
       expiry: DateTime.now().add(const Duration(days: 7)),
-      imageUrl: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400',
     ),
     OfferModel(
       id: '2',
@@ -76,7 +77,8 @@ class _OffersScreenState extends State<OffersScreen>
       type: 'flat',
       minOrder: 499,
       expiry: DateTime.now().add(const Duration(days: 30)),
-      imageUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400',
     ),
     OfferModel(
       id: '3',
@@ -87,7 +89,8 @@ class _OffersScreenState extends State<OffersScreen>
       type: 'percentage',
       minOrder: 799,
       expiry: DateTime.now().add(const Duration(days: 2)),
-      imageUrl: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400',
     ),
     OfferModel(
       id: '4',
@@ -98,7 +101,8 @@ class _OffersScreenState extends State<OffersScreen>
       type: 'flat',
       minOrder: 999,
       expiry: DateTime.now().add(const Duration(days: 15)),
-      imageUrl: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=400',
     ),
   ];
 
@@ -124,7 +128,10 @@ class _OffersScreenState extends State<OffersScreen>
     Clipboard.setData(ClipboardData(text: code));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Code $code copied!', style: TextStyle(fontSize: responsive.fontSize14)),
+        content: Text(
+          'Code $code copied!',
+          style: TextStyle(fontSize: responsive.fontSize14),
+        ),
         backgroundColor: AppTheme.primaryColor,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
@@ -143,7 +150,10 @@ class _OffersScreenState extends State<OffersScreen>
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(offer.isApplied ? 'Offer removed' : 'Offer applied!', style: TextStyle(fontSize: responsive.fontSize14)),
+        content: Text(
+          offer.isApplied ? 'Offer removed' : 'Offer applied!',
+          style: TextStyle(fontSize: responsive.fontSize14),
+        ),
         backgroundColor: AppTheme.primaryColor,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
@@ -157,7 +167,13 @@ class _OffersScreenState extends State<OffersScreen>
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: Text('Offers & Deals', style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold)),
+        title: Text(
+          'Offers & Deals',
+          style: TextStyle(
+            fontSize: responsive.fontSize18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         centerTitle: true,
       ),
       body: ListView.builder(
@@ -176,7 +192,9 @@ class _OffersScreenState extends State<OffersScreen>
                 child: Opacity(
                   opacity: value,
                   child: Padding(
-                    padding: EdgeInsets.only(bottom: responsive.spacing(AppTheme.spaceL)),
+                    padding: EdgeInsets.only(
+                      bottom: responsive.spacing(AppTheme.spaceL),
+                    ),
                     child: _buildOfferCard(offer),
                   ),
                 ),
@@ -200,7 +218,9 @@ class _OffersScreenState extends State<OffersScreen>
           color: offer.isApplied ? AppTheme.primaryColor : AppTheme.borderColor,
           width: offer.isApplied ? 2 : 1,
         ),
-        boxShadow: offer.isApplied ? AppTheme.intenseShadow : AppTheme.softShadow,
+        boxShadow: offer.isApplied
+            ? AppTheme.intenseShadow
+            : AppTheme.softShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -226,8 +246,8 @@ class _OffersScreenState extends State<OffersScreen>
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            AppTheme.primaryColor.withOpacity(0.3),
-                            AppTheme.secondaryColor.withOpacity(0.3),
+                            AppTheme.primaryColor.withValues(alpha: 0.3),
+                            AppTheme.secondaryColor.withValues(alpha: 0.3),
                           ],
                         ),
                       ),
@@ -248,7 +268,7 @@ class _OffersScreenState extends State<OffersScreen>
                       borderRadius: BorderRadius.circular(AppTheme.radiusS),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.accentColor.withOpacity(0.3),
+                          color: AppTheme.accentColor.withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -276,7 +296,7 @@ class _OffersScreenState extends State<OffersScreen>
                       vertical: responsive.spacing(5),
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.6),
+                      color: Colors.black.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(AppTheme.radiusS),
                     ),
                     child: Row(
@@ -333,10 +353,7 @@ class _OffersScreenState extends State<OffersScreen>
                   decoration: BoxDecoration(
                     color: AppTheme.backgroundColor,
                     borderRadius: BorderRadius.circular(AppTheme.radiusM),
-                    border: Border.all(
-                      color: AppTheme.borderColor,
-                      width: 1,
-                    ),
+                    border: Border.all(color: AppTheme.borderColor, width: 1),
                   ),
                   child: Row(
                     children: [
@@ -372,15 +389,21 @@ class _OffersScreenState extends State<OffersScreen>
                         child: InkWell(
                           onTap: () => _copyCode(offer.code),
                           borderRadius: BorderRadius.circular(AppTheme.radiusS),
-                          splashColor: AppTheme.primaryColor.withOpacity(0.1),
+                          splashColor: AppTheme.primaryColor.withValues(
+                            alpha: 0.1,
+                          ),
                           child: Container(
                             padding: EdgeInsets.symmetric(
                               horizontal: responsive.spacing(16),
                               vertical: responsive.spacing(10),
                             ),
                             decoration: BoxDecoration(
-                              color: AppTheme.primaryColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(AppTheme.radiusS),
+                              color: AppTheme.primaryColor.withValues(
+                                alpha: 0.1,
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusS,
+                              ),
                             ),
                             child: Row(
                               children: [
@@ -435,8 +458,9 @@ class _OffersScreenState extends State<OffersScreen>
                     text: offer.isApplied ? 'APPLIED' : 'APPLY OFFER',
                     onPressed: () => _applyOffer(offer),
                     isOutlined: !offer.isApplied,
-                    backgroundColor:
-                        offer.isApplied ? AppTheme.primaryColor : null,
+                    backgroundColor: offer.isApplied
+                        ? AppTheme.primaryColor
+                        : null,
                     icon: offer.isApplied ? Icons.check_circle : null,
                   ),
                 ),

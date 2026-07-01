@@ -35,7 +35,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final responsive = context.responsive;
 
     final double subtotal = cartNotifier.subtotal;
-    final double shipping = 150.00;
+    const double shipping = 150.00;
     final double tax = subtotal * 0.08;
     final double giftCost = _includeGiftWrapping ? _giftWrappingCost : 0.0;
     final double totalAmount = subtotal + shipping + tax + giftCost;
@@ -56,7 +56,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         actions: [
           if (cart.isNotEmpty)
             Padding(
-              padding: EdgeInsets.only(right: responsive.spacing(AppTheme.spaceL)),
+              padding: EdgeInsets.only(
+                right: responsive.spacing(AppTheme.spaceL),
+              ),
               child: TextButton(
                 onPressed: () => cartNotifier.clearCart(),
                 child: Text(
@@ -76,7 +78,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           ? EmptyState(
               icon: Icons.shopping_bag_outlined,
               title: 'Your Bag is Empty',
-              description: 'You haven\'t added any garments to your luxury bag yet. Browse our Collections to begin.',
+              description:
+                  'You haven\'t added any garments to your luxury bag yet. Browse our Collections to begin.',
               buttonText: 'Shop New Arrivals',
               onButtonPressed: () => context.go('/'),
             )
@@ -89,7 +92,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                     children: [
                       // Items Count Header
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL), vertical: responsive.spacing(AppTheme.spaceM)),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: responsive.spacing(AppTheme.spaceXL),
+                          vertical: responsive.spacing(AppTheme.spaceM),
+                        ),
                         child: Text(
                           '${cart.length} ITEM${cart.length > 1 ? 'S' : ''}',
                           style: TextStyle(
@@ -105,9 +111,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                       ListView.separated(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: responsive.spacing(AppTheme.spaceXL),
+                        ),
                         itemCount: cart.length,
-                        separatorBuilder: (context, index) => SizedBox(height: responsive.spacing(AppTheme.spaceL)),
+                        separatorBuilder: (context, index) => SizedBox(
+                          height: responsive.spacing(AppTheme.spaceL),
+                        ),
                         itemBuilder: (context, index) {
                           final item = cart[index];
                           final product = item.product;
@@ -115,48 +125,62 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           return Container(
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(AppTheme.radiusL),
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusL,
+                              ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.04),
+                                  color: Colors.black.withValues(alpha: 0.04),
                                   blurRadius: 20,
                                   offset: const Offset(0, 4),
                                 ),
                               ],
                             ),
                             child: Padding(
-                              padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
+                              padding: EdgeInsets.all(
+                                responsive.spacing(AppTheme.spaceL),
+                              ),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   // Product Image
                                   GestureDetector(
-                                    onTap: () => context.push('/product/${product.id}?heroTagPrefix=cart'),
+                                    onTap: () => context.push(
+                                      '/product/${product.id}?heroTagPrefix=cart',
+                                    ),
                                     child: Hero(
                                       tag: 'cart_product_image_${product.id}',
                                       child: Container(
                                         width: responsive.spacing(100),
                                         height: responsive.spacing(100),
                                         decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                                          borderRadius: BorderRadius.circular(
+                                            AppTheme.radiusM,
+                                          ),
                                           image: DecorationImage(
-                                            image: NetworkImage(product.imageUrl),
+                                            image: NetworkImage(
+                                              product.imageUrl,
+                                            ),
                                             fit: BoxFit.cover,
                                           ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                  SizedBox(width: responsive.spacing(AppTheme.spaceL)),
+                                  SizedBox(
+                                    width: responsive.spacing(AppTheme.spaceL),
+                                  ),
 
                                   // Product Details
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         // Category & Remove
                                         Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
                                             Text(
                                               product.subcategory.toUpperCase(),
@@ -168,7 +192,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                               ),
                                             ),
                                             GestureDetector(
-                                              onTap: () => cartNotifier.removeFromCart(item.id),
+                                              onTap: () => cartNotifier
+                                                  .removeFromCart(item.id),
                                               child: Icon(
                                                 Icons.close_rounded,
                                                 size: responsive.iconSize(20),
@@ -177,7 +202,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                             ),
                                           ],
                                         ),
-                                        SizedBox(height: responsive.spacing(AppTheme.spaceS)),
+                                        SizedBox(
+                                          height: responsive.spacing(
+                                            AppTheme.spaceS,
+                                          ),
+                                        ),
 
                                         // Product Name
                                         Text(
@@ -190,7 +219,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                             color: AppTheme.textPrimaryColor,
                                           ),
                                         ),
-                                        SizedBox(height: responsive.spacing(AppTheme.spaceS)),
+                                        SizedBox(
+                                          height: responsive.spacing(
+                                            AppTheme.spaceS,
+                                          ),
+                                        ),
 
                                         // Size & Color
                                         Row(
@@ -198,35 +231,55 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                             if (item.selectedSize != null) ...[
                                               Container(
                                                 padding: EdgeInsets.symmetric(
-                                                  horizontal: responsive.spacing(AppTheme.spaceS),
-                                                  vertical: responsive.spacing(4),
+                                                  horizontal: responsive
+                                                      .spacing(AppTheme.spaceS),
+                                                  vertical: responsive.spacing(
+                                                    4,
+                                                  ),
                                                 ),
                                                 decoration: BoxDecoration(
-                                                  color: const Color(0xFFF1F5F9),
-                                                  borderRadius: BorderRadius.circular(4),
+                                                  color: const Color(
+                                                    0xFFF1F5F9,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(4),
                                                 ),
                                                 child: Text(
                                                   item.selectedSize!,
                                                   style: TextStyle(
-                                                    fontSize: responsive.fontSize10,
+                                                    fontSize:
+                                                        responsive.fontSize10,
                                                     fontWeight: FontWeight.bold,
-                                                    color: AppTheme.textPrimaryColor,
+                                                    color: AppTheme
+                                                        .textPrimaryColor,
                                                   ),
                                                 ),
                                               ),
-                                              SizedBox(width: responsive.spacing(AppTheme.spaceS)),
+                                              SizedBox(
+                                                width: responsive.spacing(
+                                                  AppTheme.spaceS,
+                                                ),
+                                              ),
                                             ],
                                             if (item.selectedColor != null) ...[
                                               Container(
                                                 width: responsive.spacing(16),
                                                 height: responsive.spacing(16),
                                                 decoration: BoxDecoration(
-                                                  color: _parseColor(item.selectedColor),
+                                                  color: _parseColor(
+                                                    item.selectedColor,
+                                                  ),
                                                   shape: BoxShape.circle,
-                                                  border: Border.all(color: Colors.white, width: 2),
+                                                  border: Border.all(
+                                                    color: Colors.white,
+                                                    width: 2,
+                                                  ),
                                                   boxShadow: [
                                                     BoxShadow(
-                                                      color: Colors.black.withOpacity(0.1),
+                                                      color: Colors.black
+                                                          .withValues(
+                                                            alpha: 0.1,
+                                                          ),
                                                       blurRadius: 4,
                                                     ),
                                                   ],
@@ -235,47 +288,68 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                             ],
                                           ],
                                         ),
-                                        SizedBox(height: responsive.spacing(AppTheme.spaceM)),
+                                        SizedBox(
+                                          height: responsive.spacing(
+                                            AppTheme.spaceM,
+                                          ),
+                                        ),
 
                                         // Price & Quantity
                                         Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
                                             Text(
                                               '₹${(product.price * item.quantity).toStringAsFixed(0)}',
                                               style: TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: responsive.fontSize18,
-                                                color: AppTheme.textPrimaryColor,
+                                                color:
+                                                    AppTheme.textPrimaryColor,
                                               ),
                                             ),
                                             Container(
                                               decoration: BoxDecoration(
                                                 color: const Color(0xFFF1F5F9),
-                                                borderRadius: BorderRadius.circular(8),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
                                               ),
                                               child: Row(
                                                 children: [
                                                   _buildQtyButton(
                                                     icon: Icons.remove_rounded,
-                                                    onTap: () => cartNotifier.updateQuantity(item.id, item.quantity - 1),
+                                                    onTap: () => cartNotifier
+                                                        .updateQuantity(
+                                                          item.id,
+                                                          item.quantity - 1,
+                                                        ),
                                                     responsive: responsive,
                                                   ),
                                                   SizedBox(
-                                                    width: responsive.spacing(40),
+                                                    width: responsive.spacing(
+                                                      40,
+                                                    ),
                                                     child: Text(
                                                       item.quantity.toString(),
-                                                      textAlign: TextAlign.center,
+                                                      textAlign:
+                                                          TextAlign.center,
                                                       style: TextStyle(
-                                                        fontSize: responsive.fontSize14,
-                                                        fontWeight: FontWeight.bold,
-                                                        color: AppTheme.textPrimaryColor,
+                                                        fontSize: responsive
+                                                            .fontSize14,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: AppTheme
+                                                            .textPrimaryColor,
                                                       ),
                                                     ),
                                                   ),
                                                   _buildQtyButton(
                                                     icon: Icons.add_rounded,
-                                                    onTap: () => cartNotifier.updateQuantity(item.id, item.quantity + 1),
+                                                    onTap: () => cartNotifier
+                                                        .updateQuantity(
+                                                          item.id,
+                                                          item.quantity + 1,
+                                                        ),
                                                     responsive: responsive,
                                                   ),
                                                 ],
@@ -296,12 +370,18 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 
                       // Gift Wrapping
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: responsive.spacing(AppTheme.spaceXL),
+                        ),
                         child: Container(
-                          padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
+                          padding: EdgeInsets.all(
+                            responsive.spacing(AppTheme.spaceL),
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(AppTheme.radiusL),
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusL,
+                            ),
                             border: Border.all(color: const Color(0xFFE2E8F0)),
                           ),
                           child: Row(
@@ -310,8 +390,12 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 width: responsive.spacing(44),
                                 height: responsive.spacing(44),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.primaryColor.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                                  color: AppTheme.primaryColor.withValues(
+                                    alpha: 0.1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusM,
+                                  ),
                                 ),
                                 child: Icon(
                                   Icons.card_giftcard_rounded,
@@ -319,7 +403,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                   size: responsive.iconSize(24),
                                 ),
                               ),
-                              SizedBox(width: responsive.spacing(AppTheme.spaceL)),
+                              SizedBox(
+                                width: responsive.spacing(AppTheme.spaceL),
+                              ),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -351,7 +437,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                     _includeGiftWrapping = val;
                                   });
                                 },
-                                activeColor: AppTheme.primaryColor,
+                                activeThumbColor: AppTheme.primaryColor,
                               ),
                             ],
                           ),
@@ -361,12 +447,18 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 
                       // Order Summary
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: responsive.spacing(AppTheme.spaceXL),
+                        ),
                         child: Container(
-                          padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
+                          padding: EdgeInsets.all(
+                            responsive.spacing(AppTheme.spaceXL),
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(AppTheme.radiusL),
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusL,
+                            ),
                             border: Border.all(color: const Color(0xFFE2E8F0)),
                           ),
                           child: Column(
@@ -381,18 +473,49 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                   letterSpacing: 1.5,
                                 ),
                               ),
-                              SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-                              _buildSummaryRow('Subtotal', '₹${subtotal.toStringAsFixed(0)}', responsive),
-                              SizedBox(height: responsive.spacing(AppTheme.spaceS)),
-                              _buildSummaryRow('Shipping', '₹${shipping.toStringAsFixed(0)}', responsive),
-                              SizedBox(height: responsive.spacing(AppTheme.spaceS)),
-                              _buildSummaryRow('Tax (8%)', '₹${tax.toStringAsFixed(0)}', responsive),
+                              SizedBox(
+                                height: responsive.spacing(AppTheme.spaceL),
+                              ),
+                              _buildSummaryRow(
+                                'Subtotal',
+                                '₹${subtotal.toStringAsFixed(0)}',
+                                responsive,
+                              ),
+                              SizedBox(
+                                height: responsive.spacing(AppTheme.spaceS),
+                              ),
+                              _buildSummaryRow(
+                                'Shipping',
+                                '₹${shipping.toStringAsFixed(0)}',
+                                responsive,
+                              ),
+                              SizedBox(
+                                height: responsive.spacing(AppTheme.spaceS),
+                              ),
+                              _buildSummaryRow(
+                                'Tax (8%)',
+                                '₹${tax.toStringAsFixed(0)}',
+                                responsive,
+                              ),
                               if (_includeGiftWrapping) ...[
-                                SizedBox(height: responsive.spacing(AppTheme.spaceS)),
-                                _buildSummaryRow('Gift Wrapping', '₹${_giftWrappingCost.toStringAsFixed(0)}', responsive),
+                                SizedBox(
+                                  height: responsive.spacing(AppTheme.spaceS),
+                                ),
+                                _buildSummaryRow(
+                                  'Gift Wrapping',
+                                  '₹${_giftWrappingCost.toStringAsFixed(0)}',
+                                  responsive,
+                                ),
                               ],
-                              Divider(height: responsive.spacing(AppTheme.spaceXL)),
-                              _buildSummaryRow('Total', '₹${totalAmount.toStringAsFixed(0)}', responsive, isTotal: true),
+                              Divider(
+                                height: responsive.spacing(AppTheme.spaceXL),
+                              ),
+                              _buildSummaryRow(
+                                'Total',
+                                '₹${totalAmount.toStringAsFixed(0)}',
+                                responsive,
+                                isTotal: true,
+                              ),
                             ],
                           ),
                         ),
@@ -411,9 +534,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                       child: Container(
-                        padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)).copyWith(bottom: responsive.spacing(40)),
+                        padding: EdgeInsets.all(
+                          responsive.spacing(AppTheme.spaceXL),
+                        ).copyWith(bottom: responsive.spacing(40)),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                           border: const Border(
                             top: BorderSide(color: Color(0xFFE2E8F0)),
                           ),
@@ -443,7 +568,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 ),
                               ],
                             ),
-                            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
+                            SizedBox(
+                              height: responsive.spacing(AppTheme.spaceL),
+                            ),
                             GestureDetector(
                               onTap: () => context.push('/checkout'),
                               child: Container(
@@ -451,7 +578,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 height: responsive.spacing(56),
                                 decoration: BoxDecoration(
                                   color: AppTheme.primaryColor,
-                                  borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusM,
+                                  ),
                                 ),
                                 child: Center(
                                   child: Text(
@@ -477,7 +606,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     );
   }
 
-  Widget _buildQtyButton({required IconData icon, required VoidCallback onTap, required ResponsiveText responsive}) {
+  Widget _buildQtyButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    required ResponsiveText responsive,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
@@ -485,12 +618,21 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         width: responsive.spacing(32),
         height: responsive.spacing(32),
         alignment: Alignment.center,
-        child: Icon(icon, size: responsive.iconSize(18), color: AppTheme.textPrimaryColor),
+        child: Icon(
+          icon,
+          size: responsive.iconSize(18),
+          color: AppTheme.textPrimaryColor,
+        ),
       ),
     );
   }
 
-  Widget _buildSummaryRow(String label, String value, ResponsiveText responsive, {bool isTotal = false}) {
+  Widget _buildSummaryRow(
+    String label,
+    String value,
+    ResponsiveText responsive, {
+    bool isTotal = false,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -499,7 +641,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           style: TextStyle(
             fontSize: isTotal ? responsive.fontSize14 : responsive.fontSize13,
             fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
-            color: isTotal ? AppTheme.textPrimaryColor : AppTheme.textSecondaryColor,
+            color: isTotal
+                ? AppTheme.textPrimaryColor
+                : AppTheme.textSecondaryColor,
           ),
         ),
         Text(

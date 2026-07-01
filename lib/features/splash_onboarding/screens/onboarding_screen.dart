@@ -20,21 +20,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     {
       'title': 'Curated Elite Wear',
       'subtitle': 'AURA COUTURE',
-      'description': 'Browse hand-selected luxury items tailored specifically to your discerning fashion tastes. Pure materials, handcrafted details, timeless styles.',
-      'imageUrl': 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1000&q=80',
+      'description':
+          'Browse hand-selected luxury items tailored specifically to your discerning fashion tastes. Pure materials, handcrafted details, timeless styles.',
+      'imageUrl':
+          'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1000&q=80',
     },
     {
       'title': 'Bespoke Tailoring',
       'subtitle': 'SAVILE ROW DIRECT',
-      'description': 'Elevate your wardrobe with personalized fit recommendation software and customized sizing options direct from European design houses.',
-      'imageUrl': 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1000&q=80',
+      'description':
+          'Elevate your wardrobe with personalized fit recommendation software and customized sizing options direct from European design houses.',
+      'imageUrl':
+          'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1000&q=80',
     },
     {
       'title': 'Express Logistics',
       'subtitle': 'WHITE-GLOVE DELIVERY',
-      'description': 'Uncompromising speed. Your hand-wrapped garments are dispatched with secure elite courier delivery straight to your doorstep.',
-      'imageUrl': 'https://images.unsplash.com/photo-1479064555552-3ef4979f8908?auto=format&fit=crop&w=1000&q=80',
-    }
+      'description':
+          'Uncompromising speed. Your hand-wrapped garments are dispatched with secure elite courier delivery straight to your doorstep.',
+      'imageUrl':
+          'https://images.unsplash.com/photo-1479064555552-3ef4979f8908?auto=format&fit=crop&w=1000&q=80',
+    },
   ];
 
   @override
@@ -62,7 +68,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final responsive = context.responsive;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC), // Elegant soft slate ivory light background
+      backgroundColor: const Color(
+        0xFFF8FAFC,
+      ), // Elegant soft slate ivory light background
       body: SafeArea(
         child: Stack(
           children: [
@@ -75,7 +83,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: Stack(
                 children: List.generate(_slides.length, (index) {
                   final double offsetDiff = index - _pageOffset;
-                  final double opacity = (1.0 - offsetDiff.abs()).clamp(0.0, 1.0);
+                  final double opacity = (1.0 - offsetDiff.abs()).clamp(
+                    0.0,
+                    1.0,
+                  );
                   // Dynamic subtle horizontal translation of the image inside the frame (internal parallax!)
                   final double translationX = offsetDiff * -140.0;
 
@@ -84,48 +95,66 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: Align(
                       alignment: Alignment.center,
                       child: Container(
-                        width: MediaQuery.of(context).size.width - (responsive.spacing(AppTheme.spaceXL) * 2),
+                        width:
+                            MediaQuery.of(context).size.width -
+                            (responsive.spacing(AppTheme.spaceXL) * 2),
                         height: screenHeight * 0.45,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                          borderRadius: BorderRadius.circular(
+                            AppTheme.radiusXL,
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xff0f172a).withOpacity(0.08),
+                              color: const Color(
+                                0xff0f172a,
+                              ).withValues(alpha: 0.08),
                               blurRadius: 32,
                               offset: const Offset(0, 16),
                             ),
                           ],
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                          borderRadius: BorderRadius.circular(
+                            AppTheme.radiusXL,
+                          ),
                           child: Stack(
                             fit: StackFit.expand,
                             children: [
                               Transform.translate(
                                 offset: Offset(translationX, 0),
                                 child: Transform.scale(
-                                  scale: 1.12, // Keeps image beautifully proportioned
+                                  scale:
+                                      1.12, // Keeps image beautifully proportioned
                                   child: Image.network(
                                     _slides[index]['imageUrl']!,
                                     fit: BoxFit.cover,
-                                    loadingBuilder: (context, child, loadingProgress) {
-                                      if (loadingProgress == null) return child;
-                                      return Container(color: const Color(0xFFE2E8F0));
-                                    },
-                                    errorBuilder: (context, error, stackTrace) => Container(
-                                      decoration: const BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: [Color(0xFFE2E8F0), Color(0xFFCBD5E1)],
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                        ),
-                                      ),
-                                      child: Icon(
-                                        Icons.checkroom_rounded,
-                                        color: Color(0xFF94A3B8),
-                                        size: responsive.iconSize(48),
-                                      ),
-                                    ),
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                          if (loadingProgress == null)
+                                            return child;
+                                          return Container(
+                                            color: const Color(0xFFE2E8F0),
+                                          );
+                                        },
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            Container(
+                                              decoration: const BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  colors: [
+                                                    Color(0xFFE2E8F0),
+                                                    Color(0xFFCBD5E1),
+                                                  ],
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                ),
+                                              ),
+                                              child: Icon(
+                                                Icons.checkroom_rounded,
+                                                color: const Color(0xFF94A3B8),
+                                                size: responsive.iconSize(48),
+                                              ),
+                                            ),
                                   ),
                                 ),
                               ),
@@ -137,7 +166,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     end: Alignment.bottomCenter,
                                     colors: [
                                       Colors.transparent,
-                                      Colors.black.withOpacity(0.15),
+                                      Colors.black.withValues(alpha: 0.15),
                                     ],
                                   ),
                                 ),
@@ -154,7 +183,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
             // 2. High-Fashion Typography Panel
             Positioned(
-              bottom: responsive.spacing(120), // Clean separation from indicators and buttons
+              bottom: responsive.spacing(
+                120,
+              ), // Clean separation from indicators and buttons
               left: 0,
               right: 0,
               height: responsive.spacing(180),
@@ -168,7 +199,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 itemCount: _slides.length,
                 itemBuilder: (context, index) {
                   final double offsetDiff = index - _pageOffset;
-                  final double textOpacity = (1.0 - offsetDiff.abs() * 1.5).clamp(0.0, 1.0);
+                  final double textOpacity = (1.0 - offsetDiff.abs() * 1.5)
+                      .clamp(0.0, 1.0);
                   final double textTranslationY = offsetDiff * 32.0;
 
                   return Opacity(
@@ -176,7 +208,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: Transform.translate(
                       offset: Offset(0, textTranslationY),
                       child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: responsive.spacing(AppTheme.spaceXL),
+                        ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.end,
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -190,7 +224,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 letterSpacing: 3,
                               ),
                             ),
-                            SizedBox(height: responsive.spacing(AppTheme.spaceS)),
+                            SizedBox(
+                              height: responsive.spacing(AppTheme.spaceS),
+                            ),
                             Text(
                               _slides[index]['title']!,
                               textAlign: TextAlign.center,
@@ -201,7 +237,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(height: responsive.spacing(AppTheme.spaceM)),
+                            SizedBox(
+                              height: responsive.spacing(AppTheme.spaceM),
+                            ),
                             Text(
                               _slides[index]['description']!,
                               textAlign: TextAlign.center,
@@ -248,33 +286,37 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 children: [
                   // Elastic Indicator Dots (Styled with Indigo colors)
                   Row(
-                    children: List.generate(
-                      _slides.length,
-                      (index) {
-                        final double activeDiff = (index - _pageOffset).abs();
-                        final double widthFactor = (1.0 - activeDiff).clamp(0.0, 1.0);
-                        final double dotWidth = 8.0 + (16.0 * widthFactor);
+                    children: List.generate(_slides.length, (index) {
+                      final double activeDiff = (index - _pageOffset).abs();
+                      final double widthFactor = (1.0 - activeDiff).clamp(
+                        0.0,
+                        1.0,
+                      );
+                      final double dotWidth = 8.0 + (16.0 * widthFactor);
 
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 150),
-                          margin: EdgeInsets.only(right: responsive.spacing(6)),
-                          width: dotWidth,
-                          height: responsive.spacing(8),
-                          decoration: BoxDecoration(
-                            color: _currentIndex == index 
-                                ? AppTheme.primaryColor 
-                                : AppTheme.borderColor,
-                            borderRadius: BorderRadius.circular(responsive.spacing(4)),
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        margin: EdgeInsets.only(right: responsive.spacing(6)),
+                        width: dotWidth,
+                        height: responsive.spacing(8),
+                        decoration: BoxDecoration(
+                          color: _currentIndex == index
+                              ? AppTheme.primaryColor
+                              : AppTheme.borderColor,
+                          borderRadius: BorderRadius.circular(
+                            responsive.spacing(4),
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      );
+                    }),
                   ),
                   // Premium Indigo Styled Navigation Button
                   SizedBox(
                     width: responsive.spacing(135),
                     child: CustomButton(
-                      text: _currentIndex == _slides.length - 1 ? 'BEGIN' : 'NEXT',
+                      text: _currentIndex == _slides.length - 1
+                          ? 'BEGIN'
+                          : 'NEXT',
                       onPressed: () {
                         if (_currentIndex < _slides.length - 1) {
                           _pageController.nextPage(

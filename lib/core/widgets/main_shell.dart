@@ -9,10 +9,7 @@ import '../theme/app_theme.dart';
 class MainShell extends ConsumerWidget {
   final Widget child;
 
-  const MainShell({
-    super.key,
-    required this.child,
-  });
+  const MainShell({super.key, required this.child});
 
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.toString();
@@ -57,21 +54,21 @@ class MainShell extends ConsumerWidget {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
-      extendBody: true, // Content flows beautifully behind translucent navigation bar!
+      extendBody:
+          true, // Content flows beautifully behind translucent navigation bar!
       body: child,
       bottomNavigationBar: Container(
-        height: 60 + bottomPadding, // Standard, native platform height incorporating home indicators
+        height:
+            60 +
+            bottomPadding, // Standard, native platform height incorporating home indicators
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.85),
+          color: Colors.white.withValues(alpha: 0.85),
           border: const Border(
-            top: BorderSide(
-              color: AppTheme.borderColor,
-              width: 0.5,
-            ),
+            top: BorderSide(color: AppTheme.borderColor, width: 0.5),
           ),
           boxShadow: [
             BoxShadow(
-              color: AppTheme.textPrimaryColor.withOpacity(0.04),
+              color: AppTheme.textPrimaryColor.withValues(alpha: 0.04),
               blurRadius: 16,
               offset: const Offset(0, -4),
             ),
@@ -89,7 +86,9 @@ class MainShell extends ConsumerWidget {
                     duration: const Duration(milliseconds: 250),
                     curve: Curves.fastOutSlowIn,
                     alignment: Alignment(
-                      -1.0 + (selectedIndex * 0.5), // Maps 0..4 seamlessly to -1.0..1.0
+                      -1.0 +
+                          (selectedIndex *
+                              0.5), // Maps 0..4 seamlessly to -1.0..1.0
                       0.0,
                     ),
                     child: FractionallySizedBox(
@@ -99,7 +98,9 @@ class MainShell extends ConsumerWidget {
                           width: 50,
                           height: 38,
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryColor.withOpacity(0.08), // Soft luxury Teal tint
+                            color: AppTheme.primaryColor.withValues(
+                              alpha: 0.08,
+                            ), // Soft luxury Teal tint
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
@@ -109,44 +110,66 @@ class MainShell extends ConsumerWidget {
 
                   // 2. Nav Items Icons Row
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceM),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppTheme.spaceM,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         _buildNavItem(
                           context: context,
-                          icon: isAndroid ? Remix.home_line : Icons.home_outlined,
-                          activeIcon: isAndroid ? Remix.home_fill : Icons.home_rounded,
+                          icon: isAndroid
+                              ? Remix.home_line
+                              : Icons.home_outlined,
+                          activeIcon: isAndroid
+                              ? Remix.home_fill
+                              : Icons.home_rounded,
                           isSelected: selectedIndex == 0,
                           onTap: () => _onItemTapped(0, context),
                         ),
                         _buildNavItem(
                           context: context,
-                          icon: isAndroid ? Remix.apps_line : Icons.grid_view_outlined,
-                          activeIcon: isAndroid ? Remix.apps_fill : Icons.grid_view_rounded,
+                          icon: isAndroid
+                              ? Remix.apps_line
+                              : Icons.grid_view_outlined,
+                          activeIcon: isAndroid
+                              ? Remix.apps_fill
+                              : Icons.grid_view_rounded,
                           isSelected: selectedIndex == 1,
                           onTap: () => _onItemTapped(1, context),
                         ),
                         _buildNavItem(
                           context: context,
-                          icon: isAndroid ? Remix.heart_line : Icons.favorite_border_rounded,
-                          activeIcon: isAndroid ? Remix.heart_fill : Icons.favorite_rounded,
+                          icon: isAndroid
+                              ? Remix.heart_line
+                              : Icons.favorite_border_rounded,
+                          activeIcon: isAndroid
+                              ? Remix.heart_fill
+                              : Icons.favorite_rounded,
                           isSelected: selectedIndex == 2,
                           badgeCount: wishlistCount,
                           onTap: () => _onItemTapped(2, context),
                         ),
                         _buildNavItem(
                           context: context,
-                          icon: isAndroid ? Remix.shopping_bag_line : Icons.shopping_bag_outlined,
-                          activeIcon: isAndroid ? Remix.shopping_bag_fill : Icons.shopping_bag_rounded,
+                          icon: isAndroid
+                              ? Remix.shopping_bag_line
+                              : Icons.shopping_bag_outlined,
+                          activeIcon: isAndroid
+                              ? Remix.shopping_bag_fill
+                              : Icons.shopping_bag_rounded,
                           isSelected: selectedIndex == 3,
                           badgeCount: cartCount,
                           onTap: () => _onItemTapped(3, context),
                         ),
                         _buildNavItem(
                           context: context,
-                          icon: isAndroid ? Remix.user_line : Icons.person_outline_rounded,
-                          activeIcon: isAndroid ? Remix.user_fill : Icons.person_rounded,
+                          icon: isAndroid
+                              ? Remix.user_line
+                              : Icons.person_outline_rounded,
+                          activeIcon: isAndroid
+                              ? Remix.user_fill
+                              : Icons.person_rounded,
                           isSelected: selectedIndex == 4,
                           onTap: () => _onItemTapped(4, context),
                         ),
@@ -181,11 +204,16 @@ class MainShell extends ConsumerWidget {
             children: [
               // Individual container pad
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
                 color: Colors.transparent, // Solid click targeting
                 child: Icon(
                   isSelected ? activeIcon : icon,
-                  color: isSelected ? AppTheme.primaryColor : AppTheme.textSecondaryColor,
+                  color: isSelected
+                      ? AppTheme.primaryColor
+                      : AppTheme.textSecondaryColor,
                   size: 22,
                 ),
               ),
@@ -199,10 +227,7 @@ class MainShell extends ConsumerWidget {
                     tween: Tween<double>(begin: 0.3, end: 1.0),
                     curve: Curves.elasticOut,
                     builder: (context, value, child) {
-                      return Transform.scale(
-                        scale: value,
-                        child: child,
-                      );
+                      return Transform.scale(scale: value, child: child);
                     },
                     child: Container(
                       padding: const EdgeInsets.all(4),

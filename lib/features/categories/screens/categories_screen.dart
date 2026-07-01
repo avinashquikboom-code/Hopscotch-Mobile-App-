@@ -16,7 +16,7 @@ class CategoriesScreen extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFFF8FAFC), // Premium light ivory canvas
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(AppTheme.radiusXXL),
           topRight: Radius.circular(AppTheme.radiusXXL),
@@ -25,7 +25,10 @@ class CategoriesScreen extends ConsumerWidget {
       builder: (context) {
         return SafeArea(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL), vertical: responsive.spacing(AppTheme.spaceL)),
+            padding: EdgeInsets.symmetric(
+              horizontal: responsive.spacing(AppTheme.spaceXL),
+              vertical: responsive.spacing(AppTheme.spaceL),
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,13 +39,15 @@ class CategoriesScreen extends ConsumerWidget {
                     width: responsive.spacing(36),
                     height: responsive.spacing(4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFC59F3E).withOpacity(0.4),
-                      borderRadius: BorderRadius.circular(responsive.spacing(2)),
+                      color: const Color(0xFFC59F3E).withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(
+                        responsive.spacing(2),
+                      ),
                     ),
                   ),
                 ),
                 SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
-                
+
                 // Serif Luxury Title & Description
                 Text(
                   category.name.toUpperCase(),
@@ -58,33 +63,43 @@ class CategoriesScreen extends ConsumerWidget {
                   'Explore hand-curated luxury subdivisions.',
                   style: TextStyle(
                     fontSize: responsive.fontSize12,
-                    color: AppTheme.textSecondaryColor.withOpacity(0.85),
+                    color: AppTheme.textSecondaryColor.withValues(alpha: 0.85),
                     letterSpacing: 0.2,
                   ),
                 ),
                 SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
-                
+
                 // Premium borderless subcategories list
                 Flexible(
                   child: ListView.separated(
                     shrinkWrap: true,
-                    itemCount: category.subcategories.length + 1, // +1 for "Shop All"
-                    separatorBuilder: (context, index) => Divider(height: 1, color: AppTheme.borderColor),
+                    itemCount:
+                        category.subcategories.length + 1, // +1 for "Shop All"
+                    separatorBuilder: (context, index) =>
+                        const Divider(height: 1, color: AppTheme.borderColor),
                     itemBuilder: (context, index) {
                       final isAll = index == 0;
-                      final subcat = isAll ? 'Shop All ${category.name}' : category.subcategories[index - 1];
-                      
+                      final subcat = isAll
+                          ? 'Shop All ${category.name}'
+                          : category.subcategories[index - 1];
+
                       return InkWell(
                         onTap: () {
                           context.pop(); // Close bottom sheet
                           if (isAll) {
-                            context.push('/products?categoryId=${category.id}&categoryName=${category.name}');
+                            context.push(
+                              '/products?categoryId=${category.id}&categoryName=${category.name}',
+                            );
                           } else {
-                            context.push('/products?categoryId=${category.id}&subcategory=$subcat&categoryName=$subcat');
+                            context.push(
+                              '/products?categoryId=${category.id}&subcategory=$subcat&categoryName=$subcat',
+                            );
                           }
                         },
                         child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: responsive.spacing(16)),
+                          padding: EdgeInsets.symmetric(
+                            vertical: responsive.spacing(16),
+                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -92,8 +107,12 @@ class CategoriesScreen extends ConsumerWidget {
                                 subcat,
                                 style: TextStyle(
                                   fontSize: responsive.fontSize14,
-                                  fontWeight: isAll ? FontWeight.bold : FontWeight.w500,
-                                  color: isAll ? AppTheme.primaryColor : AppTheme.textPrimaryColor,
+                                  fontWeight: isAll
+                                      ? FontWeight.bold
+                                      : FontWeight.w500,
+                                  color: isAll
+                                      ? AppTheme.primaryColor
+                                      : AppTheme.textPrimaryColor,
                                   letterSpacing: isAll ? 0.5 : 0.0,
                                 ),
                               ),
@@ -124,7 +143,13 @@ class CategoriesScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('COUTURE DEPARTMENTS', style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold)),
+        title: Text(
+          'COUTURE DEPARTMENTS',
+          style: TextStyle(
+            fontSize: responsive.fontSize18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         elevation: 0,
       ),
       body: categoriesAsync.when(
@@ -134,7 +159,9 @@ class CategoriesScreen extends ConsumerWidget {
 
           if (crossAxisCount == 1) {
             return ListView.builder(
-              padding: const EdgeInsets.all(AppTheme.spaceXL).copyWith(bottom: 120),
+              padding: const EdgeInsets.all(
+                AppTheme.spaceXL,
+              ).copyWith(bottom: 120),
               itemCount: categories.length,
               itemBuilder: (context, index) {
                 final category = categories[index];
@@ -150,7 +177,9 @@ class CategoriesScreen extends ConsumerWidget {
             );
           } else {
             return GridView.builder(
-              padding: const EdgeInsets.all(AppTheme.spaceXL).copyWith(bottom: 120),
+              padding: const EdgeInsets.all(
+                AppTheme.spaceXL,
+              ).copyWith(bottom: 120),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: crossAxisCount,
                 crossAxisSpacing: AppTheme.spaceL,

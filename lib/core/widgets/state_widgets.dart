@@ -29,31 +29,27 @@ class EmptyState extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(AppTheme.spaceXL),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.05),
+                color: AppTheme.primaryColor.withValues(alpha: 0.05),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                size: 64,
-                color: AppTheme.primaryColor,
-              ),
+              child: Icon(icon, size: 64, color: AppTheme.primaryColor),
             ),
             const SizedBox(height: AppTheme.spaceXL),
             Text(
               title,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: AppTheme.textPrimaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
+                color: AppTheme.textPrimaryColor,
+                fontWeight: FontWeight.bold,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppTheme.spaceM),
             Text(
               description,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppTheme.textSecondaryColor,
-                    height: 1.5,
-                  ),
+                color: AppTheme.textSecondaryColor,
+                height: 1.5,
+              ),
               textAlign: TextAlign.center,
             ),
             if (buttonText != null && onButtonPressed != null) ...[
@@ -75,11 +71,7 @@ class ErrorState extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
 
-  const ErrorState({
-    super.key,
-    required this.message,
-    required this.onRetry,
-  });
+  const ErrorState({super.key, required this.message, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +84,7 @@ class ErrorState extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(AppTheme.spaceXL),
               decoration: BoxDecoration(
-                color: AppTheme.errorColor.withOpacity(0.05),
+                color: AppTheme.errorColor.withValues(alpha: 0.05),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -105,16 +97,16 @@ class ErrorState extends StatelessWidget {
             Text(
               'Oops! Something Went Wrong',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: AppTheme.textPrimaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
+                color: AppTheme.textPrimaryColor,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: AppTheme.spaceS),
             Text(
               message,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppTheme.textSecondaryColor,
-                  ),
+                color: AppTheme.textSecondaryColor,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppTheme.spaceXXL),

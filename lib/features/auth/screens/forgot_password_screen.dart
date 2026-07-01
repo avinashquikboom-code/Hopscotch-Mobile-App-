@@ -10,7 +10,8 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() =>
+      _ForgotPasswordScreenState();
 }
 
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
@@ -32,7 +33,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     });
 
     try {
-      await ref.read(authRepositoryProvider).forgotPassword(_emailController.text.trim());
+      await ref
+          .read(authRepositoryProvider)
+          .forgotPassword(_emailController.text.trim());
       if (mounted) {
         showDialog(
           context: context,
@@ -84,7 +87,11 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: AppTheme.textPrimaryColor, size: responsive.iconSize(24)),
+          icon: Icon(
+            Icons.arrow_back_rounded,
+            color: AppTheme.textPrimaryColor,
+            size: responsive.iconSize(24),
+          ),
           onPressed: () => context.pop(),
         ),
       ),
@@ -92,7 +99,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       body: SingleChildScrollView(
         child: Container(
           height: MediaQuery.of(context).size.height,
-          padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
+          padding: EdgeInsets.symmetric(
+            horizontal: responsive.spacing(AppTheme.spaceXL),
+          ),
           child: Form(
             key: _formKey,
             child: Column(
@@ -101,12 +110,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               children: [
                 Center(
                   child: Container(
-                    padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceM)),
+                    padding: EdgeInsets.all(
+                      responsive.spacing(AppTheme.spaceM),
+                    ),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          AppTheme.accentColor.withOpacity(0.1),
-                          AppTheme.accentColor.withOpacity(0.05),
+                          AppTheme.accentColor.withValues(alpha: 0.1),
+                          AppTheme.accentColor.withValues(alpha: 0.05),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -114,7 +125,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.accentColor.withOpacity(0.2),
+                          color: AppTheme.accentColor.withValues(alpha: 0.2),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -159,7 +170,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   decoration: InputDecoration(
                     hintText: 'Enter your email address',
                     hintStyle: TextStyle(
-                      color: AppTheme.textSecondaryColor.withOpacity(0.6),
+                      color: AppTheme.textSecondaryColor.withValues(alpha: 0.6),
                       fontSize: responsive.fontSize14,
                     ),
                     labelText: 'Email Address',
@@ -180,7 +191,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppTheme.radiusM),
-                      borderSide: BorderSide(
+                      borderSide: const BorderSide(
                         color: AppTheme.accentColor,
                         width: 2,
                       ),
@@ -194,7 +205,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     if (value == null || value.trim().isEmpty) {
                       return 'Email is required';
                     }
-                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                    if (!RegExp(
+                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                    ).hasMatch(value)) {
                       return 'Enter a valid email address';
                     }
                     return null;

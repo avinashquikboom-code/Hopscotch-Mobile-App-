@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/responsive_text.dart';
 import '../../../features/product/repositories/product_repository.dart';
@@ -17,8 +18,10 @@ class SearchScreen extends ConsumerStatefulWidget {
 class _SearchScreenState extends ConsumerState<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+  final ImagePicker _picker = ImagePicker();
   List<ProductModel> _searchResults = [];
   bool _isSearching = false;
+  bool _isImageSearch = false;
 
   final List<String> _recentSearches = [
     'mulberry silk',
@@ -54,12 +57,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       setState(() {
         _searchResults = [];
         _isSearching = false;
+        _isImageSearch = false;
       });
       return;
     }
 
     setState(() {
       _isSearching = true;
+      _isImageSearch = false;
     });
 
     try {
@@ -76,6 +81,68 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         _isSearching = false;
       });
     }
+  }
+
+  Future<void> _pickImageAndSearch(ImageSource source) async {
+    try {
+      final XFile? image = await _picker.pickImage(source: source);
+      if (image == null) return;
+      
+      setState(() {
+        _searchController.clear();
+        _isSearching = true;
+        _isImageSearch = true;
+        _searchResults = [];
+      });
+
+      final results = await ref.read(productRepositoryProvider).searchProductsByImage(image.path);
+      
+      setState(() {
+        _searchResults = results;
+      });
+    } catch (_) {
+      setState(() {
+        _searchResults = [];
+      });
+    } finally {
+      setState(() {
+        _isSearching = false;
+      });
+    }
+  }
+  
+  void _showImageSourceBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt_rounded),
+                title: const Text('Take a photo'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImageAndSearch(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_rounded),
+                title: const Text('Choose from gallery'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImageAndSearch(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -103,7 +170,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       _performSearch('');
                     },
                   )
-                : null,
+                : IconButton(
+                    icon: Icon(Icons.camera_alt_outlined, color: AppTheme.textSecondaryColor, size: responsive.iconSize(20)),
+                    onPressed: _showImageSourceBottomSheet,
+                  ),
           ),
         ),
         leading: IconButton(
@@ -117,7 +187,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           },
         ),
       ),
-      body: _searchController.text.isEmpty
+      body: (_searchController.text.isEmpty && !_isImageSearch)
           ? _buildSuggestionsView()
           : _buildSearchResultsView(),
     );
@@ -233,7 +303,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
               SizedBox(height: responsive.spacing(AppTheme.spaceS)),
               Text(
-                'We couldn\'t find any couture matching "${_searchController.text}".',
+                _isImageSearch
+                  ? 'We couldn\'t find any couture matching your image.'
+                  : 'We couldn\'t find any couture matching "${_searchController.text}".',
                 style: responsive.bodyMedium,
                 textAlign: TextAlign.center,
               ),

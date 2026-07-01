@@ -2,13 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hopscotch/core/theme/app_theme.dart';
 import 'package:hopscotch/core/utils/responsive_text.dart';
 
-enum OrderStatus {
-  placed,
-  confirmed,
-  shipped,
-  outForDelivery,
-  delivered,
-}
+enum OrderStatus { placed, confirmed, shipped, outForDelivery, delivered }
 
 class TrackOrderScreen extends StatefulWidget {
   final String orderId;
@@ -48,7 +42,13 @@ class _TrackOrderScreenState extends State<TrackOrderScreen>
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: Text('Track Order', style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold)),
+        title: Text(
+          'Track Order',
+          style: TextStyle(
+            fontSize: responsive.fontSize18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -106,7 +106,7 @@ class _TrackOrderScreenState extends State<TrackOrderScreen>
                   vertical: responsive.spacing(4),
                 ),
                 decoration: BoxDecoration(
-                  color: AppTheme.successColor.withOpacity(0.1),
+                  color: AppTheme.successColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppTheme.radiusS),
                 ),
                 child: Text(
@@ -193,7 +193,10 @@ class _TrackOrderScreenState extends State<TrackOrderScreen>
                       child: Container(
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [AppTheme.primaryColor, AppTheme.secondaryColor],
+                            colors: [
+                              AppTheme.primaryColor,
+                              AppTheme.secondaryColor,
+                            ],
                           ),
                           borderRadius: BorderRadius.circular(2),
                         ),
@@ -265,13 +268,15 @@ class _TrackOrderScreenState extends State<TrackOrderScreen>
             height: responsive.spacing(40),
             decoration: BoxDecoration(
               color: isCompleted
-                  ? AppTheme.primaryColor.withOpacity(0.1)
-                  : AppTheme.borderColor.withOpacity(0.3),
+                  ? AppTheme.primaryColor.withValues(alpha: 0.1)
+                  : AppTheme.borderColor.withValues(alpha: 0.3),
               shape: BoxShape.circle,
             ),
             child: Icon(
               icon,
-              color: isCompleted ? AppTheme.primaryColor : AppTheme.textLightColor,
+              color: isCompleted
+                  ? AppTheme.primaryColor
+                  : AppTheme.textLightColor,
               size: responsive.iconSize(20),
             ),
           ),
@@ -285,8 +290,12 @@ class _TrackOrderScreenState extends State<TrackOrderScreen>
                   title,
                   style: TextStyle(
                     fontSize: responsive.fontSize14,
-                    fontWeight: isCompleted ? FontWeight.bold : FontWeight.normal,
-                    color: isCompleted ? AppTheme.textPrimaryColor : AppTheme.textLightColor,
+                    fontWeight: isCompleted
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                    color: isCompleted
+                        ? AppTheme.textPrimaryColor
+                        : AppTheme.textLightColor,
                   ),
                 ),
                 SizedBox(height: responsive.spacing(2)),
@@ -332,7 +341,7 @@ class _TrackOrderScreenState extends State<TrackOrderScreen>
               Container(
                 padding: EdgeInsets.all(responsive.spacing(8)),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withOpacity(0.1),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppTheme.radiusS),
                 ),
                 child: Icon(
@@ -444,7 +453,7 @@ class _TrackOrderScreenState extends State<TrackOrderScreen>
                 width: responsive.spacing(60),
                 height: responsive.spacing(60),
                 decoration: BoxDecoration(
-                  color: AppTheme.borderColor.withOpacity(0.3),
+                  color: AppTheme.borderColor.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(AppTheme.radiusS),
                 ),
               );
@@ -544,11 +553,7 @@ class _TrackOrderScreenState extends State<TrackOrderScreen>
             ],
           ),
           SizedBox(height: responsive.spacing(AppTheme.spaceM)),
-          _buildHelpOption(
-            Icons.email_outlined,
-            'Email support',
-            () {},
-          ),
+          _buildHelpOption(Icons.email_outlined, 'Email support', () {}),
         ],
       ),
     );
@@ -561,7 +566,7 @@ class _TrackOrderScreenState extends State<TrackOrderScreen>
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppTheme.radiusM),
-        splashColor: AppTheme.primaryColor.withOpacity(0.1),
+        splashColor: AppTheme.primaryColor.withValues(alpha: 0.1),
         child: Container(
           padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceM)),
           decoration: BoxDecoration(
@@ -598,8 +603,18 @@ class _TrackOrderScreenState extends State<TrackOrderScreen>
 
   String _getMonthName(int month) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return months[month - 1];
   }

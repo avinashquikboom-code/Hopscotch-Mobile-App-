@@ -27,7 +27,7 @@ class CategoryCard extends StatelessWidget {
               child: InkWell(
                 onTap: onTap,
                 borderRadius: BorderRadius.circular(35),
-                splashColor: AppTheme.primaryColor.withOpacity(0.15),
+                splashColor: AppTheme.primaryColor.withValues(alpha: 0.15),
                 child: Container(
                   width: 70,
                   height: 70,
@@ -68,7 +68,7 @@ class CategoryCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-          splashColor: Colors.white.withOpacity(0.2),
+          splashColor: Colors.white.withValues(alpha: 0.2),
           child: Container(
             height: 140,
             decoration: BoxDecoration(
@@ -91,7 +91,7 @@ class CategoryCard extends StatelessWidget {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          Colors.black.withOpacity(0.6),
+                          Colors.black.withValues(alpha: 0.6),
                         ],
                       ),
                     ),
@@ -117,7 +117,7 @@ class CategoryCard extends StatelessWidget {
                       Text(
                         '${category.subcategories.length} Collections',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                           fontWeight: FontWeight.w500,
                           letterSpacing: 0.3,
                         ),

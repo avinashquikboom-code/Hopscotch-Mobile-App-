@@ -56,20 +56,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       child: Container(
         padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
         decoration: BoxDecoration(
-          color: isSelected 
-              ? AppTheme.primaryColor.withOpacity(0.1)
+          color: isSelected
+              ? AppTheme.primaryColor.withValues(alpha: 0.1)
               : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(AppTheme.radiusL),
           border: Border.all(
-            color: isSelected 
+            color: isSelected
                 ? AppTheme.primaryColor
                 : Theme.of(context).colorScheme.outline,
             width: isSelected ? 2 : 1,
           ),
-          boxShadow: isSelected 
+          boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppTheme.primaryColor.withOpacity(0.2),
+                    color: AppTheme.primaryColor.withValues(alpha: 0.2),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -81,14 +81,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             Container(
               padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceM)),
               decoration: BoxDecoration(
-                color: isSelected 
+                color: isSelected
                     ? AppTheme.primaryColor
-                    : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                    : Theme.of(
+                        context,
+                      ).colorScheme.outline.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(AppTheme.radiusM),
               ),
               child: Icon(
                 icon,
-                color: isSelected 
+                color: isSelected
                     ? Colors.white
                     : Theme.of(context).colorScheme.onSurface,
                 size: responsive.iconSize(24),
@@ -104,7 +106,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: responsive.fontSize12,
-                      color: isSelected 
+                      color: isSelected
                           ? AppTheme.primaryColor
                           : Theme.of(context).colorScheme.onSurface,
                     ),
@@ -114,7 +116,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     description,
                     style: TextStyle(
                       fontSize: responsive.fontSize10,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                   ),
                 ],
@@ -123,7 +127,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             if (isSelected)
               Container(
                 padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXS)),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppTheme.primaryColor,
                   shape: BoxShape.circle,
                 ),
@@ -144,7 +148,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final responsive = context.responsive;
     return Scaffold(
       appBar: AppBar(
-        title: Text('SETTINGS & FIT PROFILE', style: TextStyle(fontSize: responsive.fontSize16, fontWeight: FontWeight.bold)),
+        title: Text(
+          'SETTINGS & FIT PROFILE',
+          style: TextStyle(
+            fontSize: responsive.fontSize16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded, size: responsive.iconSize(24)),
           onPressed: () {
@@ -181,7 +191,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-                border: Border.all(color: Theme.of(context).colorScheme.outline),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
                 boxShadow: AppTheme.softShadow,
               ),
               child: Column(
@@ -195,8 +207,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           style: TextStyle(fontSize: responsive.fontSize12),
                           decoration: InputDecoration(
                             labelText: 'Height (cm)',
-                            labelStyle: TextStyle(fontSize: responsive.fontSize12),
-                            prefixIcon: Icon(Icons.height_rounded, size: responsive.iconSize(20)),
+                            labelStyle: TextStyle(
+                              fontSize: responsive.fontSize12,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.height_rounded,
+                              size: responsive.iconSize(20),
+                            ),
                           ),
                         ),
                       ),
@@ -208,8 +225,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           style: TextStyle(fontSize: responsive.fontSize12),
                           decoration: InputDecoration(
                             labelText: 'Chest (cm)',
-                            labelStyle: TextStyle(fontSize: responsive.fontSize12),
-                            prefixIcon: Icon(Icons.accessibility_new_rounded, size: responsive.iconSize(20)),
+                            labelStyle: TextStyle(
+                              fontSize: responsive.fontSize12,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.accessibility_new_rounded,
+                              size: responsive.iconSize(20),
+                            ),
                           ),
                         ),
                       ),
@@ -223,7 +245,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     decoration: InputDecoration(
                       labelText: 'Waist (cm)',
                       labelStyle: TextStyle(fontSize: responsive.fontSize12),
-                      prefixIcon: Icon(Icons.straighten_rounded, size: responsive.iconSize(20)),
+                      prefixIcon: Icon(
+                        Icons.straighten_rounded,
+                        size: responsive.iconSize(20),
+                      ),
                     ),
                   ),
                 ],
@@ -244,7 +269,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-                border: Border.all(color: Theme.of(context).colorScheme.outline),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
                 boxShadow: AppTheme.softShadow,
               ),
               child: Material(
@@ -254,22 +281,40 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 child: Column(
                   children: [
                     SwitchListTile(
-                      title: Text('Push Alerts', style: TextStyle(fontWeight: FontWeight.bold, fontSize: responsive.fontSize12)),
-                      subtitle: Text('Order dispatches, shipping status', style: TextStyle(fontSize: responsive.fontSize10)),
+                      title: Text(
+                        'Push Alerts',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: responsive.fontSize12,
+                        ),
+                      ),
+                      subtitle: Text(
+                        'Order dispatches, shipping status',
+                        style: TextStyle(fontSize: responsive.fontSize10),
+                      ),
                       value: _pushNotifications,
-                      activeColor: AppTheme.primaryColor,
+                      activeThumbColor: AppTheme.primaryColor,
                       onChanged: (val) {
                         setState(() {
                           _pushNotifications = val;
                         });
                       },
                     ),
-                    Divider(height: 1),
+                    const Divider(height: 1),
                     SwitchListTile(
-                      title: Text('Exclusive Drops', style: TextStyle(fontWeight: FontWeight.bold, fontSize: responsive.fontSize12)),
-                      subtitle: Text('Limited runs, VIP sales, designer news', style: TextStyle(fontSize: responsive.fontSize10)),
+                      title: Text(
+                        'Exclusive Drops',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: responsive.fontSize12,
+                        ),
+                      ),
+                      subtitle: Text(
+                        'Limited runs, VIP sales, designer news',
+                        style: TextStyle(fontSize: responsive.fontSize10),
+                      ),
                       value: _emailPromo,
-                      activeColor: AppTheme.primaryColor,
+                      activeThumbColor: AppTheme.primaryColor,
                       onChanged: (val) {
                         setState(() {
                           _emailPromo = val;
@@ -295,7 +340,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-                border: Border.all(color: Theme.of(context).colorScheme.outline),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
                 boxShadow: AppTheme.softShadow,
               ),
               child: Material(
@@ -303,10 +350,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                 clipBehavior: Clip.antiAlias,
                 child: SwitchListTile(
-                  title: Text('Biometric Authentication', style: TextStyle(fontWeight: FontWeight.bold, fontSize: responsive.fontSize12)),
-                  subtitle: Text('Access billing and purchase secure keys instantly', style: TextStyle(fontSize: responsive.fontSize10)),
+                  title: Text(
+                    'Biometric Authentication',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: responsive.fontSize12,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Access billing and purchase secure keys instantly',
+                    style: TextStyle(fontSize: responsive.fontSize10),
+                  ),
                   value: _biometricLogin,
-                  activeColor: AppTheme.primaryColor,
+                  activeThumbColor: AppTheme.primaryColor,
                   onChanged: (val) {
                     setState(() {
                       _biometricLogin = val;
@@ -335,8 +391,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   icon: Icons.brightness_auto_rounded,
                   label: 'System',
                   description: 'Follow device settings',
-                  isSelected: ref.watch(themeProvider) == ThemeModeOption.system,
-                  onTap: () => ref.read(themeProvider.notifier).setThemeMode(ThemeModeOption.system),
+                  isSelected:
+                      ref.watch(themeProvider) == ThemeModeOption.system,
+                  onTap: () => ref
+                      .read(themeProvider.notifier)
+                      .setThemeMode(ThemeModeOption.system),
                 ),
                 SizedBox(height: responsive.spacing(AppTheme.spaceM)),
                 _buildThemeOption(
@@ -346,7 +405,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   label: 'Light',
                   description: 'Always light mode',
                   isSelected: ref.watch(themeProvider) == ThemeModeOption.light,
-                  onTap: () => ref.read(themeProvider.notifier).setThemeMode(ThemeModeOption.light),
+                  onTap: () => ref
+                      .read(themeProvider.notifier)
+                      .setThemeMode(ThemeModeOption.light),
                 ),
                 SizedBox(height: responsive.spacing(AppTheme.spaceM)),
                 _buildThemeOption(
@@ -356,7 +417,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   label: 'Dark',
                   description: 'Always dark mode',
                   isSelected: ref.watch(themeProvider) == ThemeModeOption.dark,
-                  onTap: () => ref.read(themeProvider.notifier).setThemeMode(ThemeModeOption.dark),
+                  onTap: () => ref
+                      .read(themeProvider.notifier)
+                      .setThemeMode(ThemeModeOption.dark),
                 ),
               ],
             ),

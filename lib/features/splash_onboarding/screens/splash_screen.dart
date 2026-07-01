@@ -10,7 +10,8 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
@@ -57,7 +58,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     final responsive = context.responsive;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC), // Premium light ivory background matching Onboarding
+      backgroundColor: const Color(
+        0xFFF8FAFC,
+      ), // Premium light ivory background matching Onboarding
       body: Stack(
         children: [
           // Elegant Centerpiece: Luxury Serif Monogram & High-Fashion Slogan
@@ -79,7 +82,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: const Color(0xFFC59F3E).withOpacity(0.35), // Delicate champagne gold
+                              color: const Color(0xFFC59F3E).withValues(
+                                alpha: 0.35,
+                              ), // Delicate champagne gold
                               width: 1.0,
                             ),
                           ),
@@ -87,7 +92,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           child: Text(
                             'A',
                             style: TextStyle(
-                              color: Color(0xFFC59F3E), // Pure luxury gold
+                              color: const Color(
+                                0xFFC59F3E,
+                              ), // Pure luxury gold
                               fontSize: responsive.fontSize48,
                               fontWeight: FontWeight.w300,
                               letterSpacing: 0,
@@ -95,7 +102,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           ),
                         ),
                         SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
-                        
+
                         // Crisp Minimal Typography
                         Text(
                           'AURA COUTURE',
@@ -110,7 +117,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         Text(
                           'THE EPITOME OF PREMIUM FASHION',
                           style: TextStyle(
-                            color: AppTheme.textSecondaryColor.withOpacity(0.7),
+                            color: AppTheme.textSecondaryColor.withValues(
+                              alpha: 0.7,
+                            ),
                             fontSize: responsive.fontSize10,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 3.0,
@@ -123,7 +132,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               },
             ),
           ),
-          
+
           // Subtle Fine-Line Linear Loading Indicator (luxury and slow)
           Positioned(
             bottom: responsive.spacing(60),
@@ -133,10 +142,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               opacity: 0.35,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(1),
-                child: SizedBox(
+                child: const SizedBox(
                   height: 1.0,
                   child: LinearProgressIndicator(
-                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFC59F3E)),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Color(0xFFC59F3E),
+                    ),
                     backgroundColor: Color(0xFFE2E8F0),
                   ),
                 ),
