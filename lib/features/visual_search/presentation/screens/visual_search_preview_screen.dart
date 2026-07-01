@@ -5,10 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../application/providers.dart';
 import '../../application/visual_search_state.dart';
-import '../../domain/entities/visual_search_result.dart';
-import '../../domain/entities/scored_product.dart';
 import '../widgets/stage_loader.dart';
-import '../widgets/match_badge.dart';
 
 /// Preview screen showing selected image with an interactive crop box,
 /// animated scanning line, interactive hotspots, and slide-up results.
@@ -76,6 +73,7 @@ class _VisualSearchPreviewScreenState
 
     // Initial search on start
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(visualSearchControllerProvider.notifier).reset();
       _triggerSearch();
     });
   }
@@ -102,6 +100,12 @@ class _VisualSearchPreviewScreenState
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<VisualSearchState>(visualSearchControllerProvider, (previous, next) {
+      if (next is VSSuccess) {
+        context.pushReplacement('/visual-search/results', extra: next.result);
+      }
+    });
+
     final state = ref.watch(visualSearchControllerProvider);
 
     return Scaffold(
@@ -317,8 +321,7 @@ class _VisualSearchPreviewScreenState
                 ),
 
               // 7. Results Panel (Draggable Scrollable Bottom Sheet)
-              if (state is VSSuccess)
-                _buildResultsPanel(context, state.result),
+              // Navigating automatically to Results Screen instead
             ],
           );
         },
@@ -342,179 +345,6 @@ class _VisualSearchPreviewScreenState
           color: Colors.black,
         ),
       ),
-    );
-  }
-
-  Widget _buildResultsPanel(BuildContext context, VisualSearchResult result) {
-    final List<ScoredProduct> matches = result is SimilarMatches
-        ? result.matches
-        : result is ExactMatch
-            ? [ScoredProduct(product: result.product, similarityScore: 1.0)]
-            : [];
-
-    if (matches.isEmpty) {
-      return Align(
-        alignment: Alignment.bottomCenter,
-        child: Container(
-          width: double.infinity,
-          height: 120,
-          margin: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: const Center(
-            child: Text(
-              'No items found. Try adjusting the search frame.',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return DraggableScrollableSheet(
-      initialChildSize: 0.35,
-      minChildSize: 0.20,
-      maxChildSize: 0.85,
-      builder: (context, scrollController) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            boxShadow: [BoxShadow(color: Colors.black38, blurRadius: 10)],
-          ),
-          child: Column(
-            children: [
-              // Bottom sheet drag handle
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '${matches.length} matching items found',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    TextButton(
-                      child: const Text('Try Another'),
-                      onPressed: () => context.pop(),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(height: 1),
-              Expanded(
-                child: GridView.builder(
-                  controller: scrollController,
-                  padding: const EdgeInsets.all(16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 0.65,
-                  ),
-                  itemCount: matches.length,
-                  itemBuilder: (context, index) {
-                    final scoredProduct = matches[index];
-                    final product = scoredProduct.product;
-                    return GestureDetector(
-                      onTap: () {
-                        context.push('/product/${product.id}?heroTagPrefix=visual_search');
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey[200]!),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AspectRatio(
-                              aspectRatio: 1.0,
-                              child: Stack(
-                                children: [
-                                  Positioned.fill(
-                                    child: ClipRRect(
-                                      borderRadius: const BorderRadius.vertical(
-                                          top: Radius.circular(11)),
-                                      child: Container(
-                                        color: const Color(0xFFF5F5F5),
-                                        child: product.primaryImagePath != null
-                                            ? Image.asset(
-                                                product.primaryImagePath!,
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (context, error, stackTrace) {
-                                                  return const Center(
-                                                    child: Icon(Icons.shopping_bag,
-                                                        size: 40, color: Colors.grey),
-                                                  );
-                                                },
-                                              )
-                                            : const Center(
-                                                child: Icon(Icons.shopping_bag,
-                                                    size: 40, color: Colors.grey),
-                                              ),
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: 8,
-                                    left: 8,
-                                    child: MatchBadge.percentage(
-                                        scoredProduct.similarityScore),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    product.name,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w600, fontSize: 13),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    '₹${product.price.toStringAsFixed(0)}',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF00897B)),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

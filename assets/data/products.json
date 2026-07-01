@@ -17,11 +17,11 @@
     "discount": 10.0,
     "keywords": ["cat", "embroidery", "tshirt", "cream", "cotton"],
     "tags": ["casual", "embroidery", "cotton"],
-    "thumbnail": "assets/products/tshirt_cat/img_1.jpg",
+    "thumbnail": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=600&q=80",
     "multipleImages": [
-      "assets/products/tshirt_cat/img_1.jpg",
-      "assets/products/tshirt_cat/img_2.jpg",
-      "assets/products/tshirt_cat/img_3.jpg"
+      "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&w=600&q=80"
     ],
     "relatedProducts": ["prod_3", "prod_4"],
     "similarProducts": ["prod_4"],
@@ -30,17 +30,17 @@
     "images": [
       {
         "id": "img_1_1",
-        "asset_path": "assets/products/tshirt_cat/img_1.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=600&q=80",
         "is_primary": true
       },
       {
         "id": "img_1_2",
-        "asset_path": "assets/products/tshirt_cat/img_2.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=600&q=80",
         "is_primary": false
       },
       {
         "id": "img_1_3",
-        "asset_path": "assets/products/tshirt_cat/img_3.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&w=600&q=80",
         "is_primary": false
       }
     ]
@@ -63,11 +63,11 @@
     "discount": 15.0,
     "keywords": ["floral", "summer", "dress", "pink", "print"],
     "tags": ["summer", "floral", "casual"],
-    "thumbnail": "assets/products/dress_floral/img_1.jpg",
+    "thumbnail": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=600&q=80",
     "multipleImages": [
-      "assets/products/dress_floral/img_1.jpg",
-      "assets/products/dress_floral/img_2.jpg",
-      "assets/products/dress_floral/img_3.jpg"
+      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=600&q=80"
     ],
     "relatedProducts": ["prod_15"],
     "similarProducts": ["prod_15"],
@@ -76,17 +76,17 @@
     "images": [
       {
         "id": "img_2_1",
-        "asset_path": "assets/products/dress_floral/img_1.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=600&q=80",
         "is_primary": true
       },
       {
         "id": "img_2_2",
-        "asset_path": "assets/products/dress_floral/img_2.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=600&q=80",
         "is_primary": false
       },
       {
         "id": "img_2_3",
-        "asset_path": "assets/products/dress_floral/img_3.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=600&q=80",
         "is_primary": false
       }
     ]
@@ -109,10 +109,10 @@
     "discount": 5.0,
     "keywords": ["white", "shirt", "formal", "classic"],
     "tags": ["formal", "classic", "cotton"],
-    "thumbnail": "assets/products/shirt_white/img_1.jpg",
+    "thumbnail": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=600&q=80",
     "multipleImages": [
-      "assets/products/shirt_white/img_1.jpg",
-      "assets/products/shirt_white/img_2.jpg"
+      "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1621072156002-e2fcc103e86e?auto=format&fit=crop&w=600&q=80"
     ],
     "relatedProducts": ["prod_14", "prod_9"],
     "similarProducts": ["prod_14"],
@@ -121,12 +121,12 @@
     "images": [
       {
         "id": "img_3_1",
-        "asset_path": "assets/products/shirt_white/img_1.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=600&q=80",
         "is_primary": true
       },
       {
         "id": "img_3_2",
-        "asset_path": "assets/products/shirt_white/img_2.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1621072156002-e2fcc103e86e?auto=format&fit=crop&w=600&q=80",
         "is_primary": false
       }
     ]
@@ -149,10 +149,10 @@
     "discount": 20.0,
     "keywords": ["denim", "jacket", "blue", "casual"],
     "tags": ["outerwear", "denim", "casual"],
-    "thumbnail": "assets/products/jacket_denim/img_1.jpg",
+    "thumbnail": "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=600&q=80",
     "multipleImages": [
-      "assets/products/jacket_denim/img_1.jpg",
-      "assets/products/jacket_denim/img_2.jpg"
+      "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1611312449412-6cefac5dc3e4?auto=format&fit=crop&w=600&q=80"
     ],
     "relatedProducts": ["prod_9", "prod_12"],
     "similarProducts": ["prod_9"],
@@ -161,12 +161,12 @@
     "images": [
       {
         "id": "img_4_1",
-        "asset_path": "assets/products/jacket_denim/img_1.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=600&q=80",
         "is_primary": true
       },
       {
         "id": "img_4_2",
-        "asset_path": "assets/products/jacket_denim/img_2.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1611312449412-6cefac5dc3e4?auto=format&fit=crop&w=600&q=80",
         "is_primary": false
       }
     ]
@@ -189,10 +189,10 @@
     "discount": 10.0,
     "keywords": ["leather", "handbag", "brown", "bag"],
     "tags": ["bag", "leather", "luxury"],
-    "thumbnail": "assets/products/bag_leather/img_1.jpg",
+    "thumbnail": "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80",
     "multipleImages": [
-      "assets/products/bag_leather/img_1.jpg",
-      "assets/products/bag_leather/img_2.jpg"
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=600&q=80"
     ],
     "relatedProducts": ["prod_10", "prod_11"],
     "similarProducts": ["prod_10"],
@@ -201,12 +201,12 @@
     "images": [
       {
         "id": "img_5_1",
-        "asset_path": "assets/products/bag_leather/img_1.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80",
         "is_primary": true
       },
       {
         "id": "img_5_2",
-        "asset_path": "assets/products/bag_leather/img_2.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=600&q=80",
         "is_primary": false
       }
     ]
@@ -229,10 +229,10 @@
     "discount": 15.0,
     "keywords": ["running", "shoes", "sports", "cushioning"],
     "tags": ["sports", "shoes", "comfort"],
-    "thumbnail": "assets/products/shoes_running/img_1.jpg",
+    "thumbnail": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80",
     "multipleImages": [
-      "assets/products/shoes_running/img_1.jpg",
-      "assets/products/shoes_running/img_2.jpg"
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=600&q=80"
     ],
     "relatedProducts": ["prod_12"],
     "similarProducts": ["prod_12"],
@@ -241,12 +241,12 @@
     "images": [
       {
         "id": "img_6_1",
-        "asset_path": "assets/products/shoes_running/img_1.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80",
         "is_primary": true
       },
       {
         "id": "img_6_2",
-        "asset_path": "assets/products/shoes_running/img_2.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=600&q=80",
         "is_primary": false
       }
     ]
@@ -269,10 +269,10 @@
     "discount": 10.0,
     "keywords": ["kurti", "ethnic", "embroidered", "maroon"],
     "tags": ["ethnic", "kurti", "traditional"],
-    "thumbnail": "assets/products/kurti_embroidered/img_1.jpg",
+    "thumbnail": "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=600&q=80",
     "multipleImages": [
-      "assets/products/kurti_embroidered/img_1.jpg",
-      "assets/products/kurti_embroidered/img_2.jpg"
+      "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1610030469668-93535c17b6b3?auto=format&fit=crop&w=600&q=80"
     ],
     "relatedProducts": ["prod_8"],
     "similarProducts": ["prod_8"],
@@ -281,12 +281,12 @@
     "images": [
       {
         "id": "img_7_1",
-        "asset_path": "assets/products/kurti_embroidered/img_1.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=600&q=80",
         "is_primary": true
       },
       {
         "id": "img_7_2",
-        "asset_path": "assets/products/kurti_embroidered/img_2.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1610030469668-93535c17b6b3?auto=format&fit=crop&w=600&q=80",
         "is_primary": false
       }
     ]
@@ -309,10 +309,10 @@
     "discount": 25.0,
     "keywords": ["saree", "silk", "ethnic", "traditional"],
     "tags": ["ethnic", "saree", "luxury"],
-    "thumbnail": "assets/products/saree_silk/img_1.jpg",
+    "thumbnail": "https://images.unsplash.com/photo-1610030470298-4c3e62557e4e?auto=format&fit=crop&w=600&q=80",
     "multipleImages": [
-      "assets/products/saree_silk/img_1.jpg",
-      "assets/products/saree_silk/img_2.jpg"
+      "https://images.unsplash.com/photo-1610030470298-4c3e62557e4e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=600&q=80"
     ],
     "relatedProducts": ["prod_7"],
     "similarProducts": ["prod_7"],
@@ -321,12 +321,12 @@
     "images": [
       {
         "id": "img_8_1",
-        "asset_path": "assets/products/saree_silk/img_1.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1610030470298-4c3e62557e4e?auto=format&fit=crop&w=600&q=80",
         "is_primary": true
       },
       {
         "id": "img_8_2",
-        "asset_path": "assets/products/saree_silk/img_2.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=600&q=80",
         "is_primary": false
       }
     ]
@@ -349,10 +349,10 @@
     "discount": 10.0,
     "keywords": ["jeans", "slim", "blue", "denim"],
     "tags": ["jeans", "denim", "casual"],
-    "thumbnail": "assets/products/jeans_slim/img_1.jpg",
+    "thumbnail": "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=600&q=80",
     "multipleImages": [
-      "assets/products/jeans_slim/img_1.jpg",
-      "assets/products/jeans_slim/img_2.jpg"
+      "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1582562124811-c09040d0a901?auto=format&fit=crop&w=600&q=80"
     ],
     "relatedProducts": ["prod_4", "prod_12"],
     "similarProducts": ["prod_4"],
@@ -361,12 +361,12 @@
     "images": [
       {
         "id": "img_9_1",
-        "asset_path": "assets/products/jeans_slim/img_1.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=600&q=80",
         "is_primary": true
       },
       {
         "id": "img_9_2",
-        "asset_path": "assets/products/jeans_slim/img_2.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1582562124811-c09040d0a901?auto=format&fit=crop&w=600&q=80",
         "is_primary": false
       }
     ]
@@ -389,10 +389,10 @@
     "discount": 12.0,
     "keywords": ["watch", "gold", "accessory", "leather"],
     "tags": ["watch", "luxury", "accessory"],
-    "thumbnail": "assets/products/watch_gold/img_1.jpg",
+    "thumbnail": "https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?auto=format&fit=crop&w=600&q=80",
     "multipleImages": [
-      "assets/products/watch_gold/img_1.jpg",
-      "assets/products/watch_gold/img_2.jpg"
+      "https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=600&q=80"
     ],
     "relatedProducts": ["prod_5", "prod_11"],
     "similarProducts": ["prod_5"],
@@ -401,12 +401,12 @@
     "images": [
       {
         "id": "img_10_1",
-        "asset_path": "assets/products/watch_gold/img_1.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?auto=format&fit=crop&w=600&q=80",
         "is_primary": true
       },
       {
         "id": "img_10_2",
-        "asset_path": "assets/products/watch_gold/img_2.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=600&q=80",
         "is_primary": false
       }
     ]
@@ -429,9 +429,9 @@
     "discount": 5.0,
     "keywords": ["necklace", "statement", "jewellery", "silver"],
     "tags": ["jewellery", "necklace", "accessory"],
-    "thumbnail": "assets/products/necklace_statement/img_1.jpg",
+    "thumbnail": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80",
     "multipleImages": [
-      "assets/products/necklace_statement/img_1.jpg"
+      "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80"
     ],
     "relatedProducts": ["prod_5", "prod_10"],
     "similarProducts": ["prod_10"],
@@ -440,7 +440,7 @@
     "images": [
       {
         "id": "img_11_1",
-        "asset_path": "assets/products/necklace_statement/img_1.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80",
         "is_primary": true
       }
     ]
@@ -463,10 +463,10 @@
     "discount": 10.0,
     "keywords": ["sneakers", "casual", "shoes", "white"],
     "tags": ["casual", "shoes", "comfort"],
-    "thumbnail": "assets/products/shoes_sneakers/img_1.jpg",
+    "thumbnail": "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=600&q=80",
     "multipleImages": [
-      "assets/products/shoes_sneakers/img_1.jpg",
-      "assets/products/shoes_sneakers/img_2.jpg"
+      "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=600&q=80"
     ],
     "relatedProducts": ["prod_6", "prod_9"],
     "similarProducts": ["prod_6"],
@@ -475,12 +475,12 @@
     "images": [
       {
         "id": "img_12_1",
-        "asset_path": "assets/products/shoes_sneakers/img_1.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=600&q=80",
         "is_primary": true
       },
       {
         "id": "img_12_2",
-        "asset_path": "assets/products/shoes_sneakers/img_2.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=600&q=80",
         "is_primary": false
       }
     ]
@@ -503,9 +503,9 @@
     "discount": 0.0,
     "keywords": ["scarf", "printed", "accessory", "multi"],
     "tags": ["scarf", "accessory", "printed"],
-    "thumbnail": "assets/products/scarf_printed/img_1.jpg",
+    "thumbnail": "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80",
     "multipleImages": [
-      "assets/products/scarf_printed/img_1.jpg"
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80"
     ],
     "relatedProducts": ["prod_5", "prod_11"],
     "similarProducts": ["prod_11"],
@@ -514,7 +514,7 @@
     "images": [
       {
         "id": "img_13_1",
-        "asset_path": "assets/products/scarf_printed/img_1.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80",
         "is_primary": true
       }
     ]
@@ -537,10 +537,10 @@
     "discount": 15.0,
     "keywords": ["blazer", "formal", "jacket", "navy"],
     "tags": ["formal", "outerwear", "classic"],
-    "thumbnail": "assets/products/blazer_formal/img_1.jpg",
+    "thumbnail": "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=600&q=80",
     "multipleImages": [
-      "assets/products/blazer_formal/img_1.jpg",
-      "assets/products/blazer_formal/img_2.jpg"
+      "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?auto=format&fit=crop&w=600&q=80"
     ],
     "relatedProducts": ["prod_3", "prod_9"],
     "similarProducts": ["prod_3"],
@@ -549,12 +549,12 @@
     "images": [
       {
         "id": "img_14_1",
-        "asset_path": "assets/products/blazer_formal/img_1.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=600&q=80",
         "is_primary": true
       },
       {
         "id": "img_14_2",
-        "asset_path": "assets/products/blazer_formal/img_2.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?auto=format&fit=crop&w=600&q=80",
         "is_primary": false
       }
     ]
@@ -577,10 +577,10 @@
     "discount": 10.0,
     "keywords": ["maxi", "dress", "evening", "black"],
     "tags": ["evening", "dress", "maxi"],
-    "thumbnail": "assets/products/dress_maxi/img_1.jpg",
+    "thumbnail": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=600&q=80",
     "multipleImages": [
-      "assets/products/dress_maxi/img_1.jpg",
-      "assets/products/dress_maxi/img_2.jpg"
+      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=600&q=80"
     ],
     "relatedProducts": ["prod_2"],
     "similarProducts": ["prod_2"],
@@ -589,12 +589,12 @@
     "images": [
       {
         "id": "img_15_1",
-        "asset_path": "assets/products/dress_maxi/img_1.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=600&q=80",
         "is_primary": true
       },
       {
         "id": "img_15_2",
-        "asset_path": "assets/products/dress_maxi/img_2.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=600&q=80",
         "is_primary": false
       }
     ]
@@ -617,10 +617,10 @@
     "discount": 20.0,
     "keywords": ["nike", "nike1.jpg", "nike2.jpg", "nike3.jpg", "shoes", "sports", "running"],
     "tags": ["sports", "shoes", "comfort", "nike"],
-    "thumbnail": "assets/products/shoes_running/img_1.jpg",
+    "thumbnail": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80",
     "multipleImages": [
-      "assets/products/shoes_running/img_1.jpg",
-      "assets/products/shoes_sneakers/img_1.jpg"
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=600&q=80"
     ],
     "relatedProducts": ["prod_6", "prod_12"],
     "similarProducts": ["prod_6", "prod_12"],
@@ -629,7 +629,7 @@
     "images": [
       {
         "id": "img_nike_1",
-        "asset_path": "assets/products/shoes_running/img_1.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80",
         "is_primary": true
       }
     ]
@@ -652,9 +652,9 @@
     "discount": 10.0,
     "keywords": ["zara", "zara_shirt.jpg", "shirt", "linen", "oversized"],
     "tags": ["casual", "linen", "summer", "zara"],
-    "thumbnail": "assets/products/shirt_white/img_1.jpg",
+    "thumbnail": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=600&q=80",
     "multipleImages": [
-      "assets/products/shirt_white/img_1.jpg"
+      "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=600&q=80"
     ],
     "relatedProducts": ["prod_3", "prod_1"],
     "similarProducts": ["prod_3"],
@@ -663,7 +663,7 @@
     "images": [
       {
         "id": "img_zara_1",
-        "asset_path": "assets/products/shirt_white/img_1.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=600&q=80",
         "is_primary": true
       }
     ]
@@ -686,10 +686,10 @@
     "discount": 0.0,
     "keywords": ["lv", "lv_bag.jpg", "bag", "tote", "louis vuitton"],
     "tags": ["bag", "luxury", "tote", "monogram"],
-    "thumbnail": "assets/products/bag_leather/img_1.jpg",
+    "thumbnail": "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80",
     "multipleImages": [
-      "assets/products/bag_leather/img_1.jpg",
-      "assets/products/bag_leather/img_2.jpg"
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=600&q=80"
     ],
     "relatedProducts": ["prod_5", "prod_10"],
     "similarProducts": ["prod_5"],
@@ -698,7 +698,109 @@
     "images": [
       {
         "id": "img_lv_1",
-        "asset_path": "assets/products/bag_leather/img_1.jpg",
+        "asset_path": "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80",
+        "is_primary": true
+      }
+    ]
+  },
+  {
+    "id": "prod_nike_shoe_2",
+    "name": "Nike Air Zoom Pegasus Road Shoes",
+    "brand": "Nike",
+    "category": "shoes",
+    "subcategory": "sports",
+    "familyId": "fam_nike_shoe",
+    "variantId": "var_nike_shoe_pegasus",
+    "price": 10999.0,
+    "description": "Extra springy ride for running. High durability and responsive zoom cushioning.",
+    "sizes": ["UK 7", "UK 8", "UK 9", "UK 10", "UK 11"],
+    "colors": ["White/Orange", "Volt Green", "Grey/Blue"],
+    "rating": 4.8,
+    "rating_count": 312,
+    "stock": 15,
+    "discount": 10.0,
+    "keywords": ["nike", "nike2.jpg", "shoes", "running", "pegasus"],
+    "tags": ["sports", "shoes", "nike", "pegasus"],
+    "thumbnail": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80",
+    "multipleImages": [
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80"
+    ],
+    "relatedProducts": ["prod_nike_shoe", "prod_6"],
+    "similarProducts": ["prod_nike_shoe"],
+    "recommendedProducts": ["prod_12"],
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "images": [
+      {
+        "id": "img_nike_2",
+        "asset_path": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80",
+        "is_primary": true
+      }
+    ]
+  },
+  {
+    "id": "prod_zara_shirt_2",
+    "name": "Zara Casual Cotton Slim Shirt",
+    "brand": "Zara",
+    "category": "shirt",
+    "subcategory": "casual",
+    "familyId": "fam_zara_shirt",
+    "variantId": "var_zara_shirt_slim",
+    "price": 2599.0,
+    "description": "Perfect fitted casual shirt with button-down collar and soft breathable cotton weave.",
+    "sizes": ["S", "M", "L", "XL"],
+    "colors": ["Sky Blue", "Light Grey", "Navy Blue"],
+    "rating": 4.5,
+    "rating_count": 140,
+    "stock": 22,
+    "discount": 15.0,
+    "keywords": ["zara", "shirt", "cotton", "slim"],
+    "tags": ["casual", "shirt", "zara"],
+    "thumbnail": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=600&q=80",
+    "multipleImages": [
+      "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=600&q=80"
+    ],
+    "relatedProducts": ["prod_zara_shirt", "prod_3"],
+    "similarProducts": ["prod_zara_shirt"],
+    "recommendedProducts": ["prod_14"],
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "images": [
+      {
+        "id": "img_zara_2",
+        "asset_path": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=600&q=80",
+        "is_primary": true
+      }
+    ]
+  },
+  {
+    "id": "prod_lv_bag_2",
+    "name": "Louis Vuitton Speedy Monogram Bag",
+    "brand": "Louis Vuitton",
+    "category": "bag",
+    "subcategory": "luxury",
+    "familyId": "fam_lv_bag",
+    "variantId": "var_lv_bag_speedy",
+    "price": 125000.0,
+    "description": "Classic cylinder speedy doctor bag with double zip and fine leather handles.",
+    "sizes": ["One Size"],
+    "colors": ["Classic Monogram"],
+    "rating": 4.9,
+    "rating_count": 450,
+    "stock": 3,
+    "discount": 0.0,
+    "keywords": ["lv", "bag", "speedy", "monogram", "louis vuitton"],
+    "tags": ["bag", "luxury", "monogram", "speedy"],
+    "thumbnail": "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80",
+    "multipleImages": [
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80"
+    ],
+    "relatedProducts": ["prod_lv_bag", "prod_5"],
+    "similarProducts": ["prod_lv_bag"],
+    "recommendedProducts": ["prod_10"],
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "images": [
+      {
+        "id": "img_lv_2",
+        "asset_path": "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80",
         "is_primary": true
       }
     ]

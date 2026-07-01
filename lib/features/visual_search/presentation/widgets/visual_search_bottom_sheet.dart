@@ -60,9 +60,8 @@ class VisualSearchBottomSheet extends StatelessWidget {
               ),
               subtitle: const Text('Use camera to capture product'),
               onTap: () async {
-                Navigator.pop(context);
                 final image = await picker.pickImage(source: ImageSource.camera);
-                if (image != null && context.mounted) {
+                if (context.mounted) {
                   Navigator.pop(context, image);
                 }
               },
@@ -90,9 +89,8 @@ class VisualSearchBottomSheet extends StatelessWidget {
               ),
               subtitle: const Text('Select image from photos'),
               onTap: () async {
-                Navigator.pop(context);
                 final image = await picker.pickImage(source: ImageSource.gallery);
-                if (image != null && context.mounted) {
+                if (context.mounted) {
                   Navigator.pop(context, image);
                 }
               },

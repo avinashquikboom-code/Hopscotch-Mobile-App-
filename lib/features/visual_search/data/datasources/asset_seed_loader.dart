@@ -31,14 +31,28 @@ class AssetSeedLoader {
           name: productMap['name'] as String,
           brand: productMap['brand'] as String,
           category: productMap['category'] as String,
+          subcategory: productMap['subcategory'] as String? ?? 'Casual',
+          familyId: productMap['familyId'] as String?,
+          variantId: productMap['variantId'] as String?,
           price: (productMap['price'] as num).toDouble(),
           description: productMap['description'] as String?,
-          sizes: List<String>.from(productMap['sizes'] as List),
-          colors: List<String>.from(productMap['colors'] as List),
+          sizes: List<String>.from(productMap['sizes'] as List? ?? []),
+          colors: List<String>.from(productMap['colors'] as List? ?? []),
           rating: (productMap['rating'] as num?)?.toDouble() ?? 0.0,
           ratingCount: (productMap['rating_count'] as int?) ?? 0,
           stock: (productMap['stock'] as int?) ?? 0,
+          discount: (productMap['discount'] as num?)?.toDouble() ?? 0.0,
+          keywords: List<String>.from(productMap['keywords'] as List? ?? []),
+          tags: List<String>.from(productMap['tags'] as List? ?? []),
+          thumbnail: productMap['thumbnail'] as String?,
+          multipleImages: List<String>.from(productMap['multipleImages'] as List? ?? []),
+          relatedProducts: List<String>.from(productMap['relatedProducts'] as List? ?? []),
+          similarProducts: List<String>.from(productMap['similarProducts'] as List? ?? []),
+          recommendedProducts: List<String>.from(productMap['recommendedProducts'] as List? ?? []),
           createdAt: productMap['created_at'] as String? ?? DateTime.now().toIso8601String(),
+          primaryImagePath: productMap['images'] != null && (productMap['images'] as List).isNotEmpty
+              ? (productMap['images'] as List)[0]['asset_path'] as String?
+              : null,
         );
 
         await _dataSource.insertProduct(product);

@@ -15,7 +15,7 @@ class VisualSearchController extends StateNotifier<VisualSearchState> {
   /// Run visual search with the given image
   /// Plays stage animation concurrently with repository call
   Future<void> runSearch(File image) async {
-    state = VSAnalyzing(AnalysisStage.analyzingProduct);
+    state = VSAnalyzing(AnalysisStage.analyzingImage);
 
     // Start stage animation timer
     final stageTimer = _playStageSequence();
@@ -23,6 +23,7 @@ class VisualSearchController extends StateNotifier<VisualSearchState> {
     // Run actual search
     try {
       final result = await _repository.search(image);
+      result.queryImage = image;
 
       // Wait for minimum perceived duration
       await stageTimer;
@@ -46,20 +47,13 @@ class VisualSearchController extends StateNotifier<VisualSearchState> {
   /// Returns a Future that completes after all stages
   Future<void> _playStageSequence() async {
     const stageDuration = Duration(milliseconds: 500);
-    const totalDuration = Duration(milliseconds: 2000);
-
     final stages = AnalysisStage.values;
 
     for (int i = 0; i < stages.length; i++) {
-      await Future.delayed(stageDuration);
       if (mounted) {
         state = VSAnalyzing(stages[i]);
       }
+      await Future.delayed(stageDuration);
     }
-
-    // Ensure minimum total duration
-    await Future.delayed(
-      totalDuration - (stageDuration * stages.length),
-    );
   }
 }

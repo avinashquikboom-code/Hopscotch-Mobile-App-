@@ -1,9 +1,12 @@
+import 'dart:io';
 import 'product.dart';
 import 'scored_product.dart';
 
 /// Sealed class for visual search results
 /// Represents either an exact match, similar matches, or no match
-sealed class VisualSearchResult {}
+sealed class VisualSearchResult {
+  File? queryImage;
+}
 
 /// Exact match found - single product with 100% match
 class ExactMatch extends VisualSearchResult {

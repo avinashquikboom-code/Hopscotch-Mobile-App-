@@ -60,7 +60,7 @@ final imageMatchingRepositoryProvider = Provider<ImageMatchingRepository>((ref) 
 
 // Visual search controller
 final visualSearchControllerProvider =
-    StateNotifierProvider<VisualSearchController, VisualSearchState>((ref) {
+    StateNotifierProvider.autoDispose<VisualSearchController, VisualSearchState>((ref) {
   final repository = ref.watch(imageMatchingRepositoryProvider);
   return VisualSearchController(repository);
 });

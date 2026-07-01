@@ -33,24 +33,27 @@ class VSFailure extends VisualSearchState {
 
 /// Analysis stages for animation
 enum AnalysisStage {
-  analyzingProduct, // "Analyzing Product..."
-  detectingItem, // "Detecting Fashion Item..."
-  searchingCatalog, // "Searching Catalog..."
+  analyzingImage, // "Analyzing Image..."
+  recognizingProduct, // "Recognizing Product..."
+  searchingCatalog, // "Searching Local Catalog..."
   findingBestMatch, // "Finding Best Match..."
+  matchingSimilar, // "Matching Similar Products..."
 }
 
 /// Get display text for each stage
 extension AnalysisStageExtension on AnalysisStage {
   String get displayText {
     switch (this) {
-      case AnalysisStage.analyzingProduct:
-        return 'Analyzing Product...';
-      case AnalysisStage.detectingItem:
-        return 'Detecting Fashion Item...';
+      case AnalysisStage.analyzingImage:
+        return 'Analyzing Image...';
+      case AnalysisStage.recognizingProduct:
+        return 'Recognizing Product...';
       case AnalysisStage.searchingCatalog:
-        return 'Searching Catalog...';
+        return 'Searching Local Catalog...';
       case AnalysisStage.findingBestMatch:
         return 'Finding Best Match...';
+      case AnalysisStage.matchingSimilar:
+        return 'Matching Similar Products...';
     }
   }
 }

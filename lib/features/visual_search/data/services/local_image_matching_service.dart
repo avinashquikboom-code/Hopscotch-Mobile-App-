@@ -78,9 +78,14 @@ class LocalImageMatchingService {
       return ExactMatch(lv);
     }
 
-    // Default matching logic if a random image is loaded (e.g. return a curated list of similar items)
-    // Return SimilarMatches containing first 6 products as scored matches
-    final scored = products.take(6).map((p) => ScoredProduct(product: p, similarityScore: 0.88)).toList();
+    // Default matching logic if a random image is loaded
+    // Prioritizes "Floral Print Summer Dress" (prod_2) as the first item in the results
+    final curatedList = <Product>[];
+    final floralDress = products.firstWhere((p) => p.id == 'prod_2', orElse: () => products.first);
+    curatedList.add(floralDress);
+    curatedList.addAll(products.where((p) => p.id != 'prod_2').take(5));
+
+    final scored = curatedList.map((p) => ScoredProduct(product: p, similarityScore: 0.88)).toList();
     return SimilarMatches(scored);
   }
 }
