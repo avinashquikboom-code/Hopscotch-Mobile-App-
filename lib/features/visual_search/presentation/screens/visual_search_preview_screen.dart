@@ -459,6 +459,12 @@ class _VisualSearchPreviewScreenState
                                             ? Image.asset(
                                                 product.primaryImagePath!,
                                                 fit: BoxFit.cover,
+                                                errorBuilder: (context, error, stackTrace) {
+                                                  return const Center(
+                                                    child: Icon(Icons.shopping_bag,
+                                                        size: 40, color: Colors.grey),
+                                                  );
+                                                },
                                               )
                                             : const Center(
                                                 child: Icon(Icons.shopping_bag,

@@ -11,6 +11,9 @@ import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/category_card.dart';
 import '../../../core/widgets/skeleton_loaders.dart';
 
+import 'dart:io';
+import '../../../features/visual_search/presentation/widgets/visual_search_bottom_sheet.dart';
+
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -67,6 +70,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     _bannerController.dispose();
     _fadeController.dispose();
     super.dispose();
+  }
+
+  void _showImageSourceBottomSheet() async {
+    final image = await VisualSearchBottomSheet.show(context);
+    if (image != null && mounted) {
+      context.push('/visual-search/preview', extra: File(image.path));
+    }
   }
 
   @override
@@ -211,6 +221,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               style: responsive.bodyMedium.copyWith(
                                 color: AppTheme.textLightColor,
                               ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: _showImageSourceBottomSheet,
+                            child: Icon(
+                              Icons.camera_alt_outlined,
+                              color: AppTheme.textSecondaryColor,
+                              size: responsive.iconSize(22),
                             ),
                           ),
                         ],

@@ -41,6 +41,10 @@ import '../../features/about/screens/about_screen.dart';
 import '../../features/about/screens/privacy_policy_screen.dart';
 import '../../features/about/screens/terms_screen.dart';
 import '../../features/about/screens/contact_us_screen.dart';
+import 'dart:io';
+import '../../features/visual_search/presentation/screens/visual_search_preview_screen.dart';
+import '../../features/visual_search/presentation/screens/visual_search_results_screen.dart';
+import '../../features/visual_search/domain/entities/visual_search_result.dart';
 
 class AppPages {
   static final router = GoRouter(
@@ -293,6 +297,34 @@ class AppPages {
             );
           },
         ),
+      ),
+      GoRoute(
+        path: AppRoutes.visualSearchPreview,
+        pageBuilder: (context, state) {
+          final file = state.extra as File;
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: VisualSearchPreviewScreen(image: file),
+            transitionDuration: const Duration(milliseconds: 400),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.visualSearchResults,
+        pageBuilder: (context, state) {
+          final result = state.extra as VisualSearchResult;
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: VisualSearchResultsScreen(result: result),
+            transitionDuration: const Duration(milliseconds: 400),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.checkout,
