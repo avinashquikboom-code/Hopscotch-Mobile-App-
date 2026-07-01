@@ -150,30 +150,41 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final responsive = context.responsive;
     return Scaffold(
       appBar: AppBar(
-        title: TextField(
-          controller: _searchController,
-          focusNode: _focusNode,
-          onChanged: _performSearch,
-          style: TextStyle(fontSize: responsive.fontSize16),
-          decoration: InputDecoration(
-            hintText: 'Search garments, accessories...',
-            hintStyle: TextStyle(fontSize: responsive.fontSize14),
-            border: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            contentPadding: EdgeInsets.zero,
-            suffixIcon: _searchController.text.isNotEmpty
-                ? IconButton(
-                    icon: Icon(Icons.clear_rounded, color: AppTheme.textSecondaryColor, size: responsive.iconSize(20)),
-                    onPressed: () {
-                      _searchController.clear();
-                      _performSearch('');
-                    },
-                  )
-                : IconButton(
-                    icon: Icon(Icons.camera_alt_outlined, color: AppTheme.textSecondaryColor, size: responsive.iconSize(20)),
-                    onPressed: _showImageSourceBottomSheet,
-                  ),
+        titleSpacing: 0,
+        title: Container(
+          height: 44,
+          margin: EdgeInsets.only(right: responsive.spacing(AppTheme.spaceL)),
+          decoration: BoxDecoration(
+            color: Theme.of(context).brightness == Brightness.light ? Colors.grey[100] : AppTheme.darkSurfaceColor,
+            borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+            border: Border.all(color: AppTheme.borderColor.withValues(alpha: 0.5)),
+          ),
+          child: TextField(
+            controller: _searchController,
+            focusNode: _focusNode,
+            onChanged: _performSearch,
+            style: TextStyle(fontSize: responsive.fontSize14),
+            decoration: InputDecoration(
+              hintText: 'Search garments, accessories...',
+              hintStyle: TextStyle(fontSize: responsive.fontSize14, color: AppTheme.textLightColor),
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+              prefixIcon: Icon(Icons.search_rounded, color: AppTheme.textSecondaryColor, size: responsive.iconSize(20)),
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: Icon(Icons.clear_rounded, color: AppTheme.textSecondaryColor, size: responsive.iconSize(20)),
+                      onPressed: () {
+                        _searchController.clear();
+                        _performSearch('');
+                      },
+                    )
+                  : IconButton(
+                      icon: Icon(Icons.camera_alt_outlined, color: AppTheme.textSecondaryColor, size: responsive.iconSize(20)),
+                      onPressed: _showImageSourceBottomSheet,
+                    ),
+            ),
           ),
         ),
         leading: IconButton(
