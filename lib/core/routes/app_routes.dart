@@ -16,6 +16,7 @@ class AppRoutes {
   static const String products = '/products';
   static const String productDetail = '/product/:id';
   static const String search = '/search';
+  static const String visualSearch = '/visual-search';
   static const String checkout = '/checkout';
   static const String orderSuccess = '/order-success';
   static const String myOrders = '/my-orders';

@@ -88,26 +88,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       final XFile? image = await _picker.pickImage(source: source);
       if (image == null) return;
       
-      setState(() {
-        _searchController.clear();
-        _isSearching = true;
-        _isImageSearch = true;
-        _searchResults = [];
-      });
-
-      final results = await ref.read(productRepositoryProvider).searchProductsByImage(image.path);
-      
-      setState(() {
-        _searchResults = results;
-      });
+      if (mounted) {
+        context.push('/visual-search', extra: image.path);
+      }
     } catch (_) {
-      setState(() {
-        _searchResults = [];
-      });
-    } finally {
-      setState(() {
-        _isSearching = false;
-      });
+      // Handle image pick error
     }
   }
   
