@@ -1,4 +1,5 @@
 import 'dart:io';
+import '../../domain/entities/product.dart';
 import '../../domain/entities/scored_product.dart';
 import '../../domain/entities/visual_search_result.dart';
 import '../../domain/failures/visual_search_failure.dart';
@@ -59,15 +60,56 @@ class RemoteImageMatchingRepository implements ImageMatchingRepository {
   }
   
   /// Convert API response to Product entity
-  dynamic _convertToProduct(dynamic data) {
-    // This is a simplified conversion - you may need to adjust based on your Product entity structure
-    return {
-      'id': data['id'] as String,
-      'name': data['name'] as String? ?? '',
-      'price': data['price'] as num? ?? 0,
-      'images': data['images'] as List<dynamic>? ?? [],
-      'category': data['category'] as Map<String, dynamic>? ?? {},
-      'brand': data['brand'] as Map<String, dynamic>? ?? {},
-    };
+  Product _convertToProduct(dynamic data) {
+    // Extract brand name
+    String brandName = '';
+    if (data['brand'] is Map) {
+      brandName = data['brand']['name'] as String? ?? '';
+    } else if (data['brand'] is String) {
+      brandName = data['brand'] as String;
+    }
+
+    // Extract category name
+    String categoryName = '';
+    if (data['category'] is Map) {
+      categoryName = data['category']['name'] as String? ?? '';
+    } else if (data['category'] is String) {
+      categoryName = data['category'] as String;
+    }
+
+    // Extract primary image path if any
+    String? primaryImagePath;
+    if (data['images'] is List && (data['images'] as List).isNotEmpty) {
+      final firstImage = (data['images'] as List).first;
+      if (firstImage is Map) {
+        primaryImagePath = firstImage['url'] as String?;
+      } else if (firstImage is String) {
+        primaryImagePath = firstImage;
+      }
+    }
+
+    // Parse price
+    double price = 0.0;
+    if (data['price'] is num) {
+      price = (data['price'] as num).toDouble();
+    } else if (data['basePrice'] is num) {
+      price = (data['basePrice'] as num).toDouble();
+    }
+
+    return Product(
+      id: data['id'] as String,
+      name: data['name'] as String? ?? '',
+      brand: brandName,
+      category: categoryName,
+      price: price,
+      description: data['description'] as String?,
+      sizes: data['sizes'] is List ? List<String>.from(data['sizes'] as List) : const [],
+      colors: data['colors'] is List ? List<String>.from(data['colors'] as List) : const [],
+      rating: data['rating'] is num ? (data['rating'] as num).toDouble() : (data['avgRating'] is num ? (data['avgRating'] as num).toDouble() : 0.0),
+      ratingCount: data['ratingCount'] is int ? data['ratingCount'] as int : (data['reviewCount'] is int ? data['reviewCount'] as int : 0),
+      stock: data['stock'] is int ? data['stock'] as int : 10,
+      createdAt: data['createdAt'] as String? ?? DateTime.now().toIso8601String(),
+      primaryImagePath: primaryImagePath,
+    );
   }
 }

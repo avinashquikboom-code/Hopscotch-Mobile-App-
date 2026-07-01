@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:3000'; // Update with your actual backend URL
+  static const String baseUrl = 'http://localhost:5001'; // Update with your actual backend URL
   
   late final Dio _dio;
   

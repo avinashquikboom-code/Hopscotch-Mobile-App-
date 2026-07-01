@@ -7,6 +7,7 @@ import '../data/datasources/visual_search_remote_datasource.dart';
 import '../data/matchers/image_matcher.dart';
 import '../data/matchers/perceptual_hash_matcher.dart';
 import '../data/repositories/remote_image_matching_repository.dart';
+import '../data/repositories/local_image_matching_repository.dart';
 import '../domain/repositories/image_matching_repository.dart';
 import 'visual_search_controller.dart';
 import 'visual_search_state.dart';
@@ -49,14 +50,6 @@ final visualSearchRemoteDataSourceProvider = Provider<VisualSearchRemoteDataSour
 final imageMatchingRepositoryProvider = Provider<ImageMatchingRepository>((ref) {
   final remoteDataSource = ref.watch(visualSearchRemoteDataSourceProvider);
   return RemoteImageMatchingRepository(remoteDataSource);
-  
-  // Comment out above and uncomment below to use local implementation
-  // final dataSource = ref.watch(localProductDataSourceProvider);
-  // final matcher = ref.watch(imageMatcherProvider);
-  // return LocalImageMatchingRepository(
-  //   dataSource: dataSource,
-  //   matcher: matcher,
-  // );
 });
 
 // Visual search controller

@@ -108,53 +108,55 @@ class VisualSearchResultsScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Product image with badge
-            Stack(
-              children: [
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(11),
-                    ),
-                    child: Container(
-                      width: double.infinity,
-                      color: const Color(0xFFF5F5F5),
-                      child: product.primaryImagePath != null
-                          ? Image.asset(
-                              product.primaryImagePath!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: const Color(0xFF00897B).withOpacity(0.1),
-                                  child: Center(
-                                    child: Icon(
-                                      Icons.shopping_bag,
-                                      size: 48,
-                                      color: const Color(0xFF00897B).withOpacity(0.3),
+            AspectRatio(
+              aspectRatio: 1.0,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(11),
+                      ),
+                      child: Container(
+                        color: const Color(0xFFF5F5F5),
+                        child: product.primaryImagePath != null
+                            ? Image.asset(
+                                product.primaryImagePath!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    color: const Color(0xFF00897B).withOpacity(0.1),
+                                    child: Center(
+                                      child: Icon(
+                                        Icons.shopping_bag,
+                                        size: 48,
+                                        color: const Color(0xFF00897B).withOpacity(0.3),
+                                      ),
                                     ),
+                                  );
+                                },
+                              )
+                            : Container(
+                                color: const Color(0xFF00897B).withOpacity(0.1),
+                                child: Center(
+                                  child: Icon(
+                                    Icons.shopping_bag,
+                                    size: 48,
+                                    color: const Color(0xFF00897B).withOpacity(0.3),
                                   ),
-                                );
-                              },
-                            )
-                          : Container(
-                              color: const Color(0xFF00897B).withOpacity(0.1),
-                              child: Center(
-                                child: Icon(
-                                  Icons.shopping_bag,
-                                  size: 48,
-                                  color: const Color(0xFF00897B).withOpacity(0.3),
                                 ),
                               ),
-                            ),
+                      ),
                     ),
                   ),
-                ),
-                // Match badge
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: MatchBadge.percentage(scoredProduct.similarityScore),
-                ),
-              ],
+                  // Match badge
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: MatchBadge.percentage(scoredProduct.similarityScore),
+                  ),
+                ],
+              ),
             ),
             // Product info
             Padding(
