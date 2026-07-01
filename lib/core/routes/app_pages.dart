@@ -23,7 +23,6 @@ import '../../features/profile/screens/profile_screen.dart';
 import '../../features/product/screens/product_listing_screen.dart';
 import '../../features/product/screens/product_detail_screen.dart';
 import '../../features/product/screens/search_screen.dart';
-import '../../features/product/screens/visual_search_screen.dart';
 import '../../features/checkout/screens/checkout_screen.dart';
 import '../../features/checkout/screens/order_success_screen.dart';
 import '../../features/profile/screens/my_orders_screen.dart';
@@ -294,23 +293,6 @@ class AppPages {
             );
           },
         ),
-      ),
-      GoRoute(
-        path: AppRoutes.visualSearch,
-        pageBuilder: (context, state) {
-          final imagePath = state.extra as String;
-          return CustomTransitionPage(
-            key: state.pageKey,
-            child: VisualSearchScreen(imagePath: imagePath),
-            transitionDuration: const Duration(milliseconds: 450),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(
-                opacity: animation,
-                child: child,
-              );
-            },
-          );
-        },
       ),
       GoRoute(
         path: AppRoutes.checkout,

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/responsive_text.dart';
 import '../../../features/product/repositories/product_repository.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../features/product/models/product_model.dart';
+import '../../../features/visual_search/presentation/widgets/camera_search_button.dart';
+import '../../../features/visual_search/presentation/widgets/visual_search_bottom_sheet.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
@@ -18,7 +20,6 @@ class SearchScreen extends ConsumerStatefulWidget {
 class _SearchScreenState extends ConsumerState<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  final ImagePicker _picker = ImagePicker();
   List<ProductModel> _searchResults = [];
   bool _isSearching = false;
   bool _isImageSearch = false;
@@ -83,51 +84,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     }
   }
 
-  Future<void> _pickImageAndSearch(ImageSource source) async {
-    try {
-      final XFile? image = await _picker.pickImage(source: source);
-      if (image == null) return;
-      
-      if (mounted) {
-        context.push('/visual-search', extra: image.path);
-      }
-    } catch (_) {
-      // Handle image pick error
+  void _showImageSourceBottomSheet() async {
+    final image = await VisualSearchBottomSheet.show(context);
+    if (image != null && mounted) {
+      context.push('/visual-search/preview', extra: File(image.path));
     }
-  }
-  
-  void _showImageSourceBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (BuildContext context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt_rounded),
-                title: const Text('Take a photo'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImageAndSearch(ImageSource.camera);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library_rounded),
-                title: const Text('Choose from gallery'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImageAndSearch(ImageSource.gallery);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
   }
 
   @override
@@ -165,8 +126,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         _performSearch('');
                       },
                     )
-                  : IconButton(
-                      icon: Icon(Icons.camera_alt_outlined, color: AppTheme.textSecondaryColor, size: responsive.iconSize(20)),
+                  : CameraSearchButton(
                       onPressed: _showImageSourceBottomSheet,
                     ),
             ),

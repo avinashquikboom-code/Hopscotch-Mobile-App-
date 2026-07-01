@@ -1,0 +1,392 @@
+[
+  {
+    "id": "prod_1",
+    "name": "Cute Cat Embroidery T-Shirt",
+    "brand": "Aura Couture",
+    "category": "tshirt",
+    "price": 899.0,
+    "description": "Premium cotton t-shirt with adorable cat embroidery. Perfect for casual outings.",
+    "sizes": ["S", "M", "L", "XL"],
+    "colors": ["Cream", "White", "Black"],
+    "rating": 4.5,
+    "rating_count": 128,
+    "stock": 50,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "images": [
+      {
+        "id": "img_1_1",
+        "asset_path": "assets/products/tshirt_cat/img_1.jpg",
+        "is_primary": true
+      },
+      {
+        "id": "img_1_2",
+        "asset_path": "assets/products/tshirt_cat/img_2.jpg",
+        "is_primary": false
+      },
+      {
+        "id": "img_1_3",
+        "asset_path": "assets/products/tshirt_cat/img_3.jpg",
+        "is_primary": false
+      }
+    ]
+  },
+  {
+    "id": "prod_2",
+    "name": "Floral Print Summer Dress",
+    "brand": "Aura Couture",
+    "category": "dress",
+    "price": 1499.0,
+    "description": "Beautiful floral print dress perfect for summer days and evening outings.",
+    "sizes": ["S", "M", "L"],
+    "colors": ["Pink", "Blue", "Yellow"],
+    "rating": 4.7,
+    "rating_count": 89,
+    "stock": 30,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "images": [
+      {
+        "id": "img_2_1",
+        "asset_path": "assets/products/dress_floral/img_1.jpg",
+        "is_primary": true
+      },
+      {
+        "id": "img_2_2",
+        "asset_path": "assets/products/dress_floral/img_2.jpg",
+        "is_primary": false
+      },
+      {
+        "id": "img_2_3",
+        "asset_path": "assets/products/dress_floral/img_3.jpg",
+        "is_primary": false
+      }
+    ]
+  },
+  {
+    "id": "prod_3",
+    "name": "Classic White Shirt",
+    "brand": "Aura Couture",
+    "category": "shirt",
+    "price": 1299.0,
+    "description": "Timeless white shirt for formal and casual occasions.",
+    "sizes": ["S", "M", "L", "XL"],
+    "colors": ["White"],
+    "rating": 4.3,
+    "rating_count": 156,
+    "stock": 75,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "images": [
+      {
+        "id": "img_3_1",
+        "asset_path": "assets/products/shirt_white/img_1.jpg",
+        "is_primary": true
+      },
+      {
+        "id": "img_3_2",
+        "asset_path": "assets/products/shirt_white/img_2.jpg",
+        "is_primary": false
+      }
+    ]
+  },
+  {
+    "id": "prod_4",
+    "name": "Denim Jacket",
+    "brand": "Aura Couture",
+    "category": "jacket",
+    "price": 2199.0,
+    "description": "Stylish denim jacket with a modern fit.",
+    "sizes": ["S", "M", "L", "XL"],
+    "colors": ["Blue", "Black"],
+    "rating": 4.6,
+    "rating_count": 92,
+    "stock": 40,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "images": [
+      {
+        "id": "img_4_1",
+        "asset_path": "assets/products/jacket_denim/img_1.jpg",
+        "is_primary": true
+      },
+      {
+        "id": "img_4_2",
+        "asset_path": "assets/products/jacket_denim/img_2.jpg",
+        "is_primary": false
+      }
+    ]
+  },
+  {
+    "id": "prod_5",
+    "name": "Leather Handbag",
+    "brand": "Aura Couture",
+    "category": "bag",
+    "price": 3499.0,
+    "description": "Elegant leather handbag with multiple compartments.",
+    "sizes": ["One Size"],
+    "colors": ["Brown", "Black", "Tan"],
+    "rating": 4.8,
+    "rating_count": 67,
+    "stock": 25,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "images": [
+      {
+        "id": "img_5_1",
+        "asset_path": "assets/products/bag_leather/img_1.jpg",
+        "is_primary": true
+      },
+      {
+        "id": "img_5_2",
+        "asset_path": "assets/products/bag_leather/img_2.jpg",
+        "is_primary": false
+      }
+    ]
+  },
+  {
+    "id": "prod_6",
+    "name": "Running Shoes",
+    "brand": "Aura Couture",
+    "category": "shoes",
+    "price": 3999.0,
+    "description": "Comfortable running shoes with advanced cushioning.",
+    "sizes": ["UK 6", "UK 7", "UK 8", "UK 9", "UK 10"],
+    "colors": ["White", "Black", "Red"],
+    "rating": 4.4,
+    "rating_count": 203,
+    "stock": 60,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "images": [
+      {
+        "id": "img_6_1",
+        "asset_path": "assets/products/shoes_running/img_1.jpg",
+        "is_primary": true
+      },
+      {
+        "id": "img_6_2",
+        "asset_path": "assets/products/shoes_running/img_2.jpg",
+        "is_primary": false
+      }
+    ]
+  },
+  {
+    "id": "prod_7",
+    "name": "Embroidered Kurti",
+    "brand": "Aura Couture",
+    "category": "kurti",
+    "price": 1199.0,
+    "description": "Beautiful embroidered kurti perfect for festive occasions.",
+    "sizes": ["S", "M", "L", "XL"],
+    "colors": ["Maroon", "Navy", "Green"],
+    "rating": 4.5,
+    "rating_count": 178,
+    "stock": 45,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "images": [
+      {
+        "id": "img_7_1",
+        "asset_path": "assets/products/kurti_embroidered/img_1.jpg",
+        "is_primary": true
+      },
+      {
+        "id": "img_7_2",
+        "asset_path": "assets/products/kurti_embroidered/img_2.jpg",
+        "is_primary": false
+      }
+    ]
+  },
+  {
+    "id": "prod_8",
+    "name": "Silk Saree",
+    "brand": "Aura Couture",
+    "category": "saree",
+    "price": 4999.0,
+    "description": "Elegant silk saree with intricate designs.",
+    "sizes": ["One Size"],
+    "colors": ["Red", "Blue", "Gold"],
+    "rating": 4.9,
+    "rating_count": 112,
+    "stock": 20,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "images": [
+      {
+        "id": "img_8_1",
+        "asset_path": "assets/products/saree_silk/img_1.jpg",
+        "is_primary": true
+      },
+      {
+        "id": "img_8_2",
+        "asset_path": "assets/products/saree_silk/img_2.jpg",
+        "is_primary": false
+      }
+    ]
+  },
+  {
+    "id": "prod_9",
+    "name": "Slim Fit Jeans",
+    "brand": "Aura Couture",
+    "category": "jeans",
+    "price": 1799.0,
+    "description": "Comfortable slim fit jeans for everyday wear.",
+    "sizes": ["28", "30", "32", "34", "36"],
+    "colors": ["Blue", "Black", "Grey"],
+    "rating": 4.2,
+    "rating_count": 245,
+    "stock": 80,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "images": [
+      {
+        "id": "img_9_1",
+        "asset_path": "assets/products/jeans_slim/img_1.jpg",
+        "is_primary": true
+      },
+      {
+        "id": "img_9_2",
+        "asset_path": "assets/products/jeans_slim/img_2.jpg",
+        "is_primary": false
+      }
+    ]
+  },
+  {
+    "id": "prod_10",
+    "name": "Gold Watch",
+    "brand": "Aura Couture",
+    "category": "watch",
+    "price": 5999.0,
+    "description": "Elegant gold watch with leather strap.",
+    "sizes": ["One Size"],
+    "colors": ["Gold", "Rose Gold"],
+    "rating": 4.7,
+    "rating_count": 56,
+    "stock": 15,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "images": [
+      {
+        "id": "img_10_1",
+        "asset_path": "assets/products/watch_gold/img_1.jpg",
+        "is_primary": true
+      },
+      {
+        "id": "img_10_2",
+        "asset_path": "assets/products/watch_gold/img_2.jpg",
+        "is_primary": false
+      }
+    ]
+  },
+  {
+    "id": "prod_11",
+    "name": "Statement Necklace",
+    "brand": "Aura Couture",
+    "category": "accessory",
+    "price": 999.0,
+    "description": "Beautiful statement necklace for special occasions.",
+    "sizes": ["One Size"],
+    "colors": ["Silver", "Gold"],
+    "rating": 4.4,
+    "rating_count": 78,
+    "stock": 35,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "images": [
+      {
+        "id": "img_11_1",
+        "asset_path": "assets/products/necklace_statement/img_1.jpg",
+        "is_primary": true
+      }
+    ]
+  },
+  {
+    "id": "prod_12",
+    "name": "Casual Sneakers",
+    "brand": "Aura Couture",
+    "category": "shoes",
+    "price": 2499.0,
+    "description": "Stylish casual sneakers for everyday comfort.",
+    "sizes": ["UK 6", "UK 7", "UK 8", "UK 9", "UK 10"],
+    "colors": ["White", "Grey", "Navy"],
+    "rating": 4.3,
+    "rating_count": 167,
+    "stock": 55,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "images": [
+      {
+        "id": "img_12_1",
+        "asset_path": "assets/products/shoes_sneakers/img_1.jpg",
+        "is_primary": true
+      },
+      {
+        "id": "img_12_2",
+        "asset_path": "assets/products/shoes_sneakers/img_2.jpg",
+        "is_primary": false
+      }
+    ]
+  },
+  {
+    "id": "prod_13",
+    "name": "Printed Scarf",
+    "brand": "Aura Couture",
+    "category": "accessory",
+    "price": 499.0,
+    "description": "Colorful printed scarf to complete any outfit.",
+    "sizes": ["One Size"],
+    "colors": ["Multi", "Blue", "Pink"],
+    "rating": 4.1,
+    "rating_count": 89,
+    "stock": 100,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "images": [
+      {
+        "id": "img_13_1",
+        "asset_path": "assets/products/scarf_printed/img_1.jpg",
+        "is_primary": true
+      }
+    ]
+  },
+  {
+    "id": "prod_14",
+    "name": "Blazer",
+    "brand": "Aura Couture",
+    "category": "jacket",
+    "price": 3299.0,
+    "description": "Professional blazer for formal occasions.",
+    "sizes": ["S", "M", "L", "XL"],
+    "colors": ["Navy", "Black", "Grey"],
+    "rating": 4.5,
+    "rating_count": 134,
+    "stock": 35,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "images": [
+      {
+        "id": "img_14_1",
+        "asset_path": "assets/products/blazer_formal/img_1.jpg",
+        "is_primary": true
+      },
+      {
+        "id": "img_14_2",
+        "asset_path": "assets/products/blazer_formal/img_2.jpg",
+        "is_primary": false
+      }
+    ]
+  },
+  {
+    "id": "prod_15",
+    "name": "Maxi Dress",
+    "brand": "Aura Couture",
+    "category": "dress",
+    "price": 1999.0,
+    "description": "Elegant maxi dress for evening wear.",
+    "sizes": ["S", "M", "L"],
+    "colors": ["Black", "Emerald", "Burgundy"],
+    "rating": 4.6,
+    "rating_count": 98,
+    "stock": 28,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "images": [
+      {
+        "id": "img_15_1",
+        "asset_path": "assets/products/dress_maxi/img_1.jpg",
+        "is_primary": true
+      },
+      {
+        "id": "img_15_2",
+        "asset_path": "assets/products/dress_maxi/img_2.jpg",
+        "is_primary": false
+      }
+    ]
+  }
+]
