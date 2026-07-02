@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/responsive_text.dart';
 import 'package:hopscotch/features/auth/repositories/auth_repository.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -12,11 +13,12 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authNotifierProvider);
     final responsive = context.responsive;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'MY PORTFOLIO',
+          l10n.myPortfolio,
           style: TextStyle(
             fontSize: responsive.fontSize18,
             fontWeight: FontWeight.bold,
@@ -80,7 +82,7 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                   SizedBox(height: responsive.spacing(AppTheme.spaceL)),
                   Text(
-                    user?.name ?? 'Aura Member',
+                    user?.name ?? l10n.auraMember,
                     style: responsive.headline4,
                   ),
                   SizedBox(height: responsive.spacing(4)),
@@ -101,7 +103,7 @@ class ProfileScreen extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                     ),
                     child: Text(
-                      'ELITE MEMBER',
+                      l10n.eliteMember,
                       style: TextStyle(
                         color: AppTheme.accentColor,
                         fontWeight: FontWeight.bold,
@@ -135,24 +137,24 @@ class ProfileScreen extends ConsumerWidget {
                       _buildOptionTile(
                         context: context,
                         icon: Icons.receipt_long_rounded,
-                        title: 'Order History',
-                        subtitle: 'Track status and view purchases',
+                        title: l10n.orderHistory,
+                        subtitle: l10n.orderHistoryDesc,
                         onTap: () => context.push('/my-orders'),
                       ),
                       const Divider(height: 1),
                       _buildOptionTile(
                         context: context,
                         icon: Icons.notifications_none_rounded,
-                        title: 'Notifications',
-                        subtitle: 'Offers, discounts, and dispatch logs',
+                        title: l10n.notifications,
+                        subtitle: l10n.notificationsDesc,
                         onTap: () => context.push('/notifications'),
                       ),
                       const Divider(height: 1),
                       _buildOptionTile(
                         context: context,
                         icon: Icons.settings_outlined,
-                        title: 'Settings',
-                        subtitle: 'Security, privacy, and measurements',
+                        title: l10n.settings,
+                        subtitle: l10n.settingsDesc,
                         onTap: () => context.push('/settings'),
                       ),
                     ],
@@ -182,16 +184,16 @@ class ProfileScreen extends ConsumerWidget {
                       _buildOptionTile(
                         context: context,
                         icon: Icons.help_outline_rounded,
-                        title: 'Help Center',
-                        subtitle: '24/7 dedicated elite concierge chat',
+                        title: l10n.helpCenter,
+                        subtitle: l10n.helpCenterDesc,
                         onTap: () => context.push('/help-center'),
                       ),
                       const Divider(height: 1),
                       _buildOptionTile(
                         context: context,
                         icon: Icons.gavel_rounded,
-                        title: 'Legal Policies',
-                        subtitle: 'Terms of service and privacy rules',
+                        title: l10n.legalPolicies,
+                        subtitle: l10n.legalPoliciesDesc,
                         onTap: () => context.push('/legal-policies'),
                       ),
                     ],
@@ -227,7 +229,7 @@ class ProfileScreen extends ConsumerWidget {
                 ),
                 icon: Icon(Icons.logout_rounded, size: responsive.iconSize(18)),
                 label: Text(
-                  'LOG OUT FROM APP',
+                  l10n.logOut,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.0,

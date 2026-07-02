@@ -10,6 +10,7 @@ import 'package:hopscotch/features/profile/repositories/notification_repository.
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/category_card.dart';
 import '../../../core/widgets/skeleton_loaders.dart';
+import '../../../l10n/app_localizations.dart';
 
 import 'dart:io';
 import '../../../features/visual_search/presentation/widgets/visual_search_bottom_sheet.dart';
@@ -26,33 +27,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   late PageController _bannerController;
   late AnimationController _fadeController;
   int _activeBanner = 0;
-
-  final List<Map<String, dynamic>> _promoBanners = [
-    {
-      'title': 'THE COUTURE SALE',
-      'subtitle': 'Up to 30% Off New Autumwear',
-      'action': 'Shop Couture',
-      'image':
-          'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=600&q=80',
-      'categoryId': 'cat_womens',
-    },
-    {
-      'title': 'GENTLEMAN\'S APPAREL',
-      'subtitle': 'English Wool Suits & Coats',
-      'action': 'Explore Tailored',
-      'image':
-          'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=600&q=80',
-      'categoryId': 'cat_mens',
-    },
-    {
-      'title': 'ITALIAN CRADLE',
-      'subtitle': 'Handcrafted Full-Grain Loafers',
-      'action': 'View Footwear',
-      'image':
-          'https://images.unsplash.com/photo-1614252369475-531eba835eb1?auto=format&fit=crop&w=600&q=80',
-      'categoryId': 'cat_footwear',
-    },
-  ];
 
   @override
   void initState() {
@@ -88,6 +62,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final notifications = ref.watch(notificationProvider);
     final unreadNotifications = notifications.where((n) => !n.isRead).length;
     final responsive = context.responsive;
+    final l10n = AppLocalizations.of(context)!;
+
+    final List<Map<String, dynamic>> _promoBanners = [
+      {
+        'title': l10n.theCoutureSale,
+        'subtitle': l10n.upToOff,
+        'action': l10n.shopCouture,
+        'image':
+            'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=600&q=80',
+        'categoryId': 'cat_womens',
+      },
+      {
+        'title': l10n.gentlemansApparel,
+        'subtitle': l10n.englishWoolSuits,
+        'action': l10n.exploreTailored,
+        'image':
+            'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=600&q=80',
+        'categoryId': 'cat_mens',
+      },
+      {
+        'title': l10n.italianCradle,
+        'subtitle': l10n.handcraftedLoafers,
+        'action': l10n.viewFootwear,
+        'image':
+            'https://images.unsplash.com/photo-1614252369475-531eba835eb1?auto=format&fit=crop&w=600&q=80',
+        'categoryId': 'cat_footwear',
+      },
+    ];
 
     return Scaffold(
       body: SafeArea(
@@ -132,7 +134,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           Text(
                             user != null
                                 ? 'Hello, ${user.name.split(" ").first}'
-                                : 'Discover Luxury',
+                                : l10n.discoverLuxury,
                             style: responsive.headline4,
                           ),
                         ],
@@ -215,7 +217,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           SizedBox(width: responsive.spacing(AppTheme.spaceM)),
                           Expanded(
                             child: Text(
-                              'Search luxury knitwear, suits, silks...',
+                              l10n.searchPlaceholder,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: responsive.bodyMedium.copyWith(
@@ -346,7 +348,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                                       ),
                                                 ),
                                                 child: Text(
-                                                  'LIMITED EDITION',
+                                                  l10n.limitedEdition,
                                                   style: TextStyle(
                                                     color: Colors.white,
                                                     fontWeight: FontWeight.bold,
@@ -444,13 +446,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Couture Collections',
+                                l10n.coutureCollections,
                                 style: responsive.headline5,
                               ),
                               TextButton(
                                 onPressed: () => context.go('/categories'),
                                 child: Text(
-                                  'View All',
+                                  l10n.viewAll,
                                   style: TextStyle(
                                     fontSize: responsive.fontSize14,
                                   ),
@@ -520,7 +522,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         ),
                       ),
                     ),
-                    error: (err, stack) => Center(child: Text('Error: $err')),
+                    error: (err, stack) => Center(child: Text('${l10n.error}: $err')),
                   ),
                 ),
                 SizedBox(height: responsive.spacing(AppTheme.spaceL)),
@@ -543,7 +545,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Trending Highlights',
+                                l10n.trendingHighlights,
                                 style: responsive.headline5,
                               ),
                               TextButton(
@@ -551,7 +553,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                   '/products?filter=trending&categoryName=Trending',
                                 ),
                                 child: Text(
-                                  'See All',
+                                  l10n.seeAll,
                                   style: TextStyle(
                                     fontSize: responsive.fontSize14,
                                   ),
@@ -619,7 +621,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         child: const ProductCardSkeleton(),
                       ),
                     ),
-                    error: (err, stack) => Center(child: Text('Error: $err')),
+                    error: (err, stack) => Center(child: Text('${l10n.error}: $err')),
                   ),
                 ),
                 SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
@@ -642,7 +644,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'The New Guard',
+                                l10n.theNewGuard,
                                 style: responsive.headline5,
                               ),
                               TextButton(
@@ -650,7 +652,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                   '/products?filter=new&categoryName=New Arrivals',
                                 ),
                                 child: Text(
-                                  'See All',
+                                  l10n.seeAll,
                                   style: TextStyle(
                                     fontSize: responsive.fontSize14,
                                   ),
@@ -718,7 +720,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         child: const ProductCardSkeleton(),
                       ),
                     ),
-                    error: (err, stack) => Center(child: Text('Error: $err')),
+                    error: (err, stack) => Center(child: Text('${l10n.error}: $err')),
                   ),
                 ),
               ],

@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/responsive_text.dart';
 import '../../../features/checkout/repositories/order_repository.dart';
 import '../../../core/widgets/state_widgets.dart';
+import '../../../core/providers/currency_provider.dart';
 
 class MyOrdersScreen extends ConsumerWidget {
   const MyOrdersScreen({super.key});
@@ -25,6 +26,7 @@ class MyOrdersScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final orders = ref.watch(orderProvider);
+    final currency = ref.watch(currencyProvider);
     final responsive = context.responsive;
 
     return Scaffold(
@@ -173,7 +175,7 @@ class MyOrdersScreen extends ConsumerWidget {
                               ),
                               SizedBox(height: responsive.spacing(2)),
                               Text(
-                                '₹${order.totalAmount.toStringAsFixed(2)}',
+                                currency.formatPrice(order.totalAmount),
                                 style: TextStyle(
                                   fontSize: responsive.fontSize20,
                                   fontWeight: FontWeight.bold,

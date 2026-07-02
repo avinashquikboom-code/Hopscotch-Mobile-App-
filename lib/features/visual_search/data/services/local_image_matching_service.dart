@@ -79,11 +79,9 @@ class LocalImageMatchingService {
     }
 
     // Default matching logic if a random image is loaded
-    // Prioritizes "Floral Print Summer Dress" (prod_2) as the first item in the results
-    final curatedList = <Product>[];
-    final floralDress = products.firstWhere((p) => p.id == 'prod_2', orElse: () => products.first);
-    curatedList.add(floralDress);
-    curatedList.addAll(products.where((p) => p.id != 'prod_2').take(5));
+    // Return random diverse products from the catalog
+    final shuffled = List<Product>.from(products)..shuffle();
+    final curatedList = shuffled.take(6).toList();
 
     final scored = curatedList.map((p) => ScoredProduct(product: p, similarityScore: 0.88)).toList();
     return SimilarMatches(scored);

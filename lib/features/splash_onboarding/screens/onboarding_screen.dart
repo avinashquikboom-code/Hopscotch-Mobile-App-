@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/utils/responsive_text.dart';
+import '../../../l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -16,31 +18,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   double _pageOffset = 0.0;
   int _currentIndex = 0;
 
-  final List<Map<String, String>> _slides = [
-    {
-      'title': 'Curated Elite Wear',
-      'subtitle': 'AURA COUTURE',
-      'description':
-          'Browse hand-selected luxury items tailored specifically to your discerning fashion tastes. Pure materials, handcrafted details, timeless styles.',
-      'imageUrl':
-          'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1000&q=80',
-    },
-    {
-      'title': 'Bespoke Tailoring',
-      'subtitle': 'SAVILE ROW DIRECT',
-      'description':
-          'Elevate your wardrobe with personalized fit recommendation software and customized sizing options direct from European design houses.',
-      'imageUrl':
-          'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1000&q=80',
-    },
-    {
-      'title': 'Express Logistics',
-      'subtitle': 'WHITE-GLOVE DELIVERY',
-      'description':
-          'Uncompromising speed. Your hand-wrapped garments are dispatched with secure elite courier delivery straight to your doorstep.',
-      'imageUrl':
-          'https://images.unsplash.com/photo-1479064555552-3ef4979f8908?auto=format&fit=crop&w=1000&q=80',
-    },
+  final List<String> _imageUrls = [
+    'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1000&q=80',
+    'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1000&q=80',
+    'https://images.unsplash.com/photo-1479064555552-3ef4979f8908?auto=format&fit=crop&w=1000&q=80',
   ];
 
   @override
@@ -66,6 +47,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
     final responsive = context.responsive;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: const Color(
@@ -81,7 +63,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               right: 0,
               height: screenHeight * 0.48,
               child: Stack(
-                children: List.generate(_slides.length, (index) {
+                children: List.generate(3, (index) {
                   final double offsetDiff = index - _pageOffset;
                   final double opacity = (1.0 - offsetDiff.abs()).clamp(
                     0.0,
@@ -126,7 +108,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   scale:
                                       1.12, // Keeps image beautifully proportioned
                                   child: Image.network(
-                                    _slides[index]['imageUrl']!,
+                                    _imageUrls[index],
                                     fit: BoxFit.cover,
                                     loadingBuilder:
                                         (context, child, loadingProgress) {
@@ -196,12 +178,35 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     _currentIndex = index;
                   });
                 },
-                itemCount: _slides.length,
+                itemCount: 3,
                 itemBuilder: (context, index) {
                   final double offsetDiff = index - _pageOffset;
                   final double textOpacity = (1.0 - offsetDiff.abs() * 1.5)
                       .clamp(0.0, 1.0);
                   final double textTranslationY = offsetDiff * 32.0;
+
+                  String subtitle, title, description;
+                  switch (index) {
+                    case 0:
+                      subtitle = l10n.onboardingSubtitle1;
+                      title = l10n.onboardingTitle1;
+                      description = l10n.onboardingDesc1;
+                      break;
+                    case 1:
+                      subtitle = l10n.onboardingSubtitle2;
+                      title = l10n.onboardingTitle2;
+                      description = l10n.onboardingDesc2;
+                      break;
+                    case 2:
+                      subtitle = l10n.onboardingSubtitle3;
+                      title = l10n.onboardingTitle3;
+                      description = l10n.onboardingDesc3;
+                      break;
+                    default:
+                      subtitle = '';
+                      title = '';
+                      description = '';
+                  }
 
                   return Opacity(
                     opacity: textOpacity,
@@ -216,7 +221,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              _slides[index]['subtitle']!,
+                              subtitle,
                               style: TextStyle(
                                 color: AppTheme.primaryColor,
                                 fontSize: responsive.fontSize11,
@@ -228,7 +233,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               height: responsive.spacing(AppTheme.spaceS),
                             ),
                             Text(
-                              _slides[index]['title']!,
+                              title,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: AppTheme.textPrimaryColor,
@@ -241,7 +246,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               height: responsive.spacing(AppTheme.spaceM),
                             ),
                             Text(
-                              _slides[index]['description']!,
+                              description,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: AppTheme.textSecondaryColor,
@@ -263,9 +268,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               top: responsive.spacing(AppTheme.spaceS),
               right: responsive.spacing(AppTheme.spaceXL),
               child: TextButton(
-                onPressed: () => context.go('/login'),
+                onPressed: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setBool('onboarding_completed', true);
+                  if (mounted) {
+                    context.go('/login');
+                  }
+                },
                 child: Text(
-                  'SKIP',
+                  l10n.skip,
                   style: TextStyle(
                     color: AppTheme.textSecondaryColor,
                     letterSpacing: 2,
@@ -286,7 +297,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 children: [
                   // Elastic Indicator Dots (Styled with Indigo colors)
                   Row(
-                    children: List.generate(_slides.length, (index) {
+                    children: List.generate(3, (index) {
                       final double activeDiff = (index - _pageOffset).abs();
                       final double widthFactor = (1.0 - activeDiff).clamp(
                         0.0,
@@ -314,11 +325,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   SizedBox(
                     width: responsive.spacing(135),
                     child: CustomButton(
-                      text: _currentIndex == _slides.length - 1
-                          ? 'BEGIN'
-                          : 'NEXT',
+                      text: _currentIndex == 2
+                          ? l10n.begin
+                          : l10n.next,
                       onPressed: () {
-                        if (_currentIndex < _slides.length - 1) {
+                        if (_currentIndex < 2) {
                           _pageController.nextPage(
                             duration: const Duration(milliseconds: 500),
                             curve: Curves.fastOutSlowIn,

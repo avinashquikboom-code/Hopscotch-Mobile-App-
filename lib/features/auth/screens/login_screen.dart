@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/utils/responsive_text.dart';
 import 'package:hopscotch/features/auth/repositories/auth_repository.dart';
+import '../../../l10n/app_localizations.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -60,6 +61,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       body: SafeArea(
@@ -111,7 +113,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 // Greeting
                 Center(
                   child: Text(
-                    'Welcome Back',
+                    l10n.welcomeBack,
                     style: responsive.headline4.copyWith(
                       color: AppTheme.textPrimaryColor,
                     ),
@@ -120,7 +122,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 SizedBox(height: responsive.spacing(AppTheme.spaceM)),
                 Center(
                   child: Text(
-                    'Sign in to access your custom couture selections.',
+                    l10n.signInDescription,
                     style: responsive.bodyMedium.copyWith(
                       color: AppTheme.textSecondaryColor,
                     ),
@@ -138,12 +140,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     fontSize: responsive.fontSize14,
                   ),
                   decoration: InputDecoration(
-                    hintText: 'Enter your email address',
+                    hintText: l10n.enterEmail,
                     hintStyle: TextStyle(
                       color: AppTheme.textSecondaryColor.withValues(alpha: 0.6),
                       fontSize: responsive.fontSize14,
                     ),
-                    labelText: 'Email Address',
+                    labelText: l10n.emailAddress,
                     labelStyle: TextStyle(
                       color: AppTheme.primaryColor,
                       fontSize: responsive.fontSize14,
@@ -183,12 +185,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     fontSize: responsive.fontSize14,
                   ),
                   decoration: InputDecoration(
-                    hintText: 'Enter your password',
+                    hintText: l10n.enterPassword,
                     hintStyle: TextStyle(
                       color: AppTheme.textSecondaryColor.withValues(alpha: 0.6),
                       fontSize: responsive.fontSize14,
                     ),
-                    labelText: 'Password',
+                    labelText: l10n.password,
                     labelStyle: TextStyle(
                       color: AppTheme.primaryColor,
                       fontSize: responsive.fontSize14,
@@ -240,7 +242,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     onPressed: () => context.push('/forgot-password'),
                     style: TextButton.styleFrom(padding: EdgeInsets.zero),
                     child: Text(
-                      'Forgot Password?',
+                      l10n.forgotPassword,
                       style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontWeight: FontWeight.w600,
@@ -256,7 +258,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   width: double.infinity,
                   height: responsive.spacing(48),
                   child: CustomButton(
-                    text: 'Sign In',
+                    text: l10n.signIn,
                     onPressed: _handleLogin,
                     isLoading: _isLoading,
                   ),
@@ -269,7 +271,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Don\'t have an account? ',
+                        l10n.dontHaveAccount,
                         style: responsive.bodyMedium.copyWith(
                           color: AppTheme.textSecondaryColor,
                         ),
@@ -277,7 +279,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       GestureDetector(
                         onTap: () => context.push('/signup'),
                         child: Text(
-                          'Create Account',
+                          l10n.createAccount,
                           style: responsive.label.copyWith(
                             color: AppTheme.primaryColor,
                             fontWeight: FontWeight.bold,

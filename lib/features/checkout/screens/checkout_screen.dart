@@ -7,6 +7,7 @@ import '../../../core/utils/responsive_text.dart';
 import 'package:hopscotch/features/cart_wishlist/repositories/cart_wishlist_repository.dart';
 import 'package:hopscotch/features/checkout/repositories/order_repository.dart';
 import '../../../core/widgets/custom_button.dart';
+import '../../../core/providers/currency_provider.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -163,6 +164,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final responsive = context.responsive;
     final cart = ref.watch(cartProvider);
     final cartNotifier = ref.read(cartProvider.notifier);
+    final currency = ref.watch(currencyProvider);
 
     if (cart.isEmpty) {
       return Scaffold(
@@ -328,19 +330,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       children: [
                         _buildPricingRow(
                           'Subtotal',
-                          '₹${cartNotifier.subtotal.toStringAsFixed(2)}',
+                          currency.formatPrice(cartNotifier.subtotal),
                         ),
                         SizedBox(height: responsive.spacing(AppTheme.spaceS)),
-                        _buildPricingRow('Elite Courier Shipping', '₹15.00'),
+                        _buildPricingRow('Elite Courier Shipping', currency.formatPrice(15.00)),
                         SizedBox(height: responsive.spacing(AppTheme.spaceS)),
                         _buildPricingRow(
                           'Estimated Tax',
-                          '₹${(cartNotifier.subtotal * 0.08).toStringAsFixed(2)}',
+                          currency.formatPrice(cartNotifier.subtotal * 0.08),
                         ),
                         Divider(height: responsive.spacing(AppTheme.spaceL)),
                         _buildPricingRow(
                           'Order Total',
-                          '₹${cartNotifier.totalAmount.toStringAsFixed(2)}',
+                          currency.formatPrice(cartNotifier.totalAmount),
                           isTotal: true,
                         ),
                       ],

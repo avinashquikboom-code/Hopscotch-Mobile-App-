@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/utils/responsive_text.dart';
 import 'package:hopscotch/features/auth/repositories/auth_repository.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -37,6 +38,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           .read(authRepositoryProvider)
           .forgotPassword(_emailController.text.trim());
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         showDialog(
           context: context,
           barrierDismissible: false,
@@ -44,17 +46,15 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppTheme.radiusXL),
             ),
-            title: const Text('Recovery Sent ✉️'),
-            content: const Text(
-              'A security link has been sent to your email. Please click the link to reset your secure passcode.',
-            ),
+            title: Text(l10n.recoverySent),
+            content: Text(l10n.recoverySentMessage),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop(); // Dismiss dialogue
                   context.pop(); // Pop forgot-password screen
                 },
-                child: const Text('Got it'),
+                child: Text(l10n.gotIt),
               ),
             ],
           ),
@@ -82,6 +82,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -141,7 +142,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
                 Center(
                   child: Text(
-                    'Password Recovery',
+                    l10n.passwordRecovery,
                     style: responsive.headline4.copyWith(
                       color: AppTheme.textPrimaryColor,
                     ),
@@ -150,7 +151,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 SizedBox(height: responsive.spacing(AppTheme.spaceM)),
                 Center(
                   child: Text(
-                    'Enter your registered email. We\'ll send a secure link to reset your password.',
+                    l10n.recoveryDescription,
                     style: responsive.bodyMedium.copyWith(
                       color: AppTheme.textSecondaryColor,
                     ),
@@ -168,12 +169,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     fontSize: responsive.fontSize14,
                   ),
                   decoration: InputDecoration(
-                    hintText: 'Enter your email address',
+                    hintText: l10n.enterEmail,
                     hintStyle: TextStyle(
                       color: AppTheme.textSecondaryColor.withValues(alpha: 0.6),
                       fontSize: responsive.fontSize14,
                     ),
-                    labelText: 'Email Address',
+                    labelText: l10n.emailAddress,
                     labelStyle: TextStyle(
                       color: AppTheme.accentColor,
                       fontSize: responsive.fontSize14,
@@ -203,12 +204,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Email is required';
+                      return l10n.emailRequired;
                     }
                     if (!RegExp(
                       r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                     ).hasMatch(value)) {
-                      return 'Enter a valid email address';
+                      return l10n.validEmail;
                     }
                     return null;
                   },
@@ -220,7 +221,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   width: double.infinity,
                   height: responsive.spacing(48),
                   child: CustomButton(
-                    text: 'Send Recovery Email',
+                    text: l10n.sendRecoveryEmail,
                     onPressed: _handleReset,
                     isLoading: _isLoading,
                   ),

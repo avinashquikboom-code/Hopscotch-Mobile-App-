@@ -1,0 +1,631 @@
+{
+  "@@locale": "zh",
+  "appName": "Aura Couture",
+  "@appName": {
+    "description": "Application name"
+  },
+  "language": "Language",
+  "@language": {
+    "description": "Language selection label"
+  },
+  "selectLanguage": "Select Language",
+  "@selectLanguage": {
+    "description": "Select language title"
+  },
+  "currency": "Currency",
+  "@currency": {
+    "description": "Currency label"
+  },
+  "english": "English",
+  "@english": {
+    "description": "English language"
+  },
+  "hindi": "Hindi",
+  "@hindi": {
+    "description": "Hindi language"
+  },
+  "marathi": "Marathi",
+  "@marathi": {
+    "description": "Marathi language"
+  },
+  "japanese": "Japanese",
+  "@japanese": {
+    "description": "Japanese language"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings menu"
+  },
+  "home": "Home",
+  "@home": {
+    "description": "Home screen"
+  },
+  "search": "Search",
+  "@search": {
+    "description": "Search label"
+  },
+  "cart": "Cart",
+  "@cart": {
+    "description": "Cart label"
+  },
+  "profile": "Profile",
+  "@profile": {
+    "description": "Profile label"
+  },
+  "price": "Price",
+  "@price": {
+    "description": "Price label"
+  },
+  "total": "Total",
+  "@total": {
+    "description": "Total label"
+  },
+  "addToCart": "Add to Cart",
+  "@addToCart": {
+    "description": "Add to cart button"
+  },
+  "buyNow": "Buy Now",
+  "@buyNow": {
+    "description": "Buy now button"
+  },
+  "checkout": "Checkout",
+  "@checkout": {
+    "description": "Checkout button"
+  },
+  "skip": "SKIP",
+  "@skip": {
+    "description": "Skip onboarding button"
+  },
+  "next": "NEXT",
+  "@next": {
+    "description": "Next button"
+  },
+  "begin": "BEGIN",
+  "@begin": {
+    "description": "Begin button"
+  },
+  "onboardingTitle1": "Curated Elite Wear",
+  "@onboardingTitle1": {
+    "description": "Onboarding slide 1 title"
+  },
+  "onboardingSubtitle1": "AURA COUTURE",
+  "@onboardingSubtitle1": {
+    "description": "Onboarding slide 1 subtitle"
+  },
+  "onboardingDesc1": "Browse hand-selected luxury items tailored specifically to your discerning fashion tastes. Pure materials, handcrafted details, timeless styles.",
+  "@onboardingDesc1": {
+    "description": "Onboarding slide 1 description"
+  },
+  "onboardingTitle2": "Bespoke Tailoring",
+  "@onboardingTitle2": {
+    "description": "Onboarding slide 2 title"
+  },
+  "onboardingSubtitle2": "SAVILE ROW DIRECT",
+  "@onboardingSubtitle2": {
+    "description": "Onboarding slide 2 subtitle"
+  },
+  "onboardingDesc2": "Elevate your wardrobe with personalized fit recommendation software and customized sizing options direct from European design houses.",
+  "@onboardingDesc2": {
+    "description": "Onboarding slide 2 description"
+  },
+  "onboardingTitle3": "Express Logistics",
+  "@onboardingTitle3": {
+    "description": "Onboarding slide 3 title"
+  },
+  "onboardingSubtitle3": "WHITE-GLOVE DELIVERY",
+  "@onboardingSubtitle3": {
+    "description": "Onboarding slide 3 subtitle"
+  },
+  "onboardingDesc3": "Uncompromising speed. Your hand-wrapped garments are dispatched with secure elite courier delivery straight to your doorstep.",
+  "@onboardingDesc3": {
+    "description": "Onboarding slide 3 description"
+  },
+  "welcomeBack": "Welcome Back",
+  "@welcomeBack": {
+    "description": "Login screen title"
+  },
+  "signInDescription": "Sign in to access your custom couture selections.",
+  "@signInDescription": {
+    "description": "Login screen subtitle"
+  },
+  "enterEmail": "Enter your email address",
+  "@enterEmail": {
+    "description": "Email input hint"
+  },
+  "emailAddress": "Email Address",
+  "@emailAddress": {
+    "description": "Email label"
+  },
+  "enterPassword": "Enter your password",
+  "@enterPassword": {
+    "description": "Password input hint"
+  },
+  "password": "Password",
+  "@password": {
+    "description": "Password label"
+  },
+  "forgotPassword": "Forgot Password?",
+  "@forgotPassword": {
+    "description": "Forgot password link"
+  },
+  "signIn": "Sign In",
+  "@signIn": {
+    "description": "Sign in button"
+  },
+  "dontHaveAccount": "Don't have an account? ",
+  "@dontHaveAccount": {
+    "description": "Sign up prompt"
+  },
+  "createAccount": "Create Account",
+  "@createAccount": {
+    "description": "Create account link/button"
+  },
+  "createAccountTitle": "Create Account",
+  "@createAccountTitle": {
+    "description": "Sign up screen title"
+  },
+  "signupDescription": "Join Aura Couture for custom tailor fits, priority shipping, and member pricing.",
+  "@signupDescription": {
+    "description": "Sign up screen subtitle"
+  },
+  "enterFullName": "Enter your full name",
+  "@enterFullName": {
+    "description": "Name input hint"
+  },
+  "fullName": "Full Name",
+  "@fullName": {
+    "description": "Full name label"
+  },
+  "fullNameRequired": "Full name is required",
+  "@fullNameRequired": {
+    "description": "Name validation error"
+  },
+  "emailRequired": "Email is required",
+  "@emailRequired": {
+    "description": "Email validation error"
+  },
+  "validEmail": "Enter a valid email address",
+  "@validEmail": {
+    "description": "Email format validation error"
+  },
+  "choosePassword": "Choose a strong password",
+  "@choosePassword": {
+    "description": "Password input hint for signup"
+  },
+  "passwordRequired": "Password is required",
+  "@passwordRequired": {
+    "description": "Password validation error"
+  },
+  "passwordLength": "Password must be at least 6 characters",
+  "@passwordLength": {
+    "description": "Password length validation error"
+  },
+  "alreadyHaveAccount": "Already have an account? ",
+  "@alreadyHaveAccount": {
+    "description": "Login prompt in signup"
+  },
+  "passwordRecovery": "Password Recovery",
+  "@passwordRecovery": {
+    "description": "Forgot password screen title"
+  },
+  "recoveryDescription": "Enter your registered email. We'll send a secure link to reset your password.",
+  "@recoveryDescription": {
+    "description": "Forgot password screen subtitle"
+  },
+  "sendRecoveryEmail": "Send Recovery Email",
+  "@sendRecoveryEmail": {
+    "description": "Send recovery email button"
+  },
+  "recoverySent": "Recovery Sent ✉️",
+  "@recoverySent": {
+    "description": "Recovery sent dialog title"
+  },
+  "recoverySentMessage": "A security link has been sent to your email. Please click the link to reset your secure passcode.",
+  "@recoverySentMessage": {
+    "description": "Recovery sent dialog message"
+  },
+  "gotIt": "Got it",
+  "@gotIt": {
+    "description": "Got it button"
+  },
+  "yourBag": "YOUR BAG",
+  "@yourBag": {
+    "description": "Cart screen title"
+  },
+  "clear": "CLEAR",
+  "@clear": {
+    "description": "Clear cart button"
+  },
+  "bagEmpty": "Your Bag is Empty",
+  "@bagEmpty": {
+    "description": "Empty cart message"
+  },
+  "bagEmptyDescription": "You haven't added any garments to your luxury bag yet. Browse our Collections to begin.",
+  "@bagEmptyDescription": {
+    "description": "Empty cart description"
+  },
+  "shopNewArrivals": "Shop New Arrivals",
+  "@shopNewArrivals": {
+    "description": "Shop new arrivals button"
+  },
+  "items": "ITEMS",
+  "@items": {
+    "description": "Items label in cart"
+  },
+  "subtotal": "Subtotal",
+  "@subtotal": {
+    "description": "Subtotal label"
+  },
+  "shipping": "Shipping",
+  "@shipping": {
+    "description": "Shipping label"
+  },
+  "tax": "Tax",
+  "@tax": {
+    "description": "Tax label"
+  },
+  "giftWrapping": "Gift Wrapping",
+  "@giftWrapping": {
+    "description": "Gift wrapping option"
+  },
+  "total": "Total",
+  "@total": {
+    "description": "Total label"
+  },
+  "checkout": "Checkout",
+  "@checkout": {
+    "description": "Checkout button"
+  },
+  "exploreSubcategories": "Explore hand-curated luxury subdivisions.",
+  "@exploreSubcategories": {
+    "description": "Subcategories description"
+  },
+  "shopAll": "Shop All",
+  "@shopAll": {
+    "description": "Shop all label"
+  },
+  "orderSummary": "ORDER SUMMARY",
+  "@orderSummary": {
+    "description": "Order summary header"
+  },
+  "giftWrappingDesc": "Premium boxed wrap with note card",
+  "@giftWrappingDesc": {
+    "description": "Gift wrapping description"
+  },
+  "taxPercent": "Tax (8%)",
+  "@taxPercent": {
+    "description": "Tax percentage label"
+  },
+  "totalLabel": "TOTAL",
+  "@totalLabel": {
+    "description": "Total label in checkout"
+  },
+  "proceedToCheckout": "PROCEED TO CHECKOUT",
+  "@proceedToCheckout": {
+    "description": "Proceed to checkout button"
+  },
+  "coutureDepartments": "COUTURE DEPARTMENTS",
+  "@coutureDepartments": {
+    "description": "Categories screen title"
+  },
+  "theCoutureSale": "THE COUTURE SALE",
+  "@theCoutureSale": {
+    "description": "Promo banner 1 title"
+  },
+  "upToOff": "Up to 30% Off New Autumwear",
+  "@upToOff": {
+    "description": "Promo banner 1 subtitle"
+  },
+  "shopCouture": "Shop Couture",
+  "@shopCouture": {
+    "description": "Promo banner 1 action"
+  },
+  "gentlemansApparel": "GENTLEMAN'S APPAREL",
+  "@gentlemansApparel": {
+    "description": "Promo banner 2 title"
+  },
+  "englishWoolSuits": "English Wool Suits & Coats",
+  "@englishWoolSuits": {
+    "description": "Promo banner 2 subtitle"
+  },
+  "exploreTailored": "Explore Tailored",
+  "@exploreTailored": {
+    "description": "Promo banner 2 action"
+  },
+  "italianCradle": "ITALIAN CRADLE",
+  "@italianCradle": {
+    "description": "Promo banner 3 title"
+  },
+  "handcraftedLoafers": "Handcrafted Full-Grain Loafers",
+  "@handcraftedLoafers": {
+    "description": "Promo banner 3 subtitle"
+  },
+  "viewFootwear": "View Footwear",
+  "@viewFootwear": {
+    "description": "Promo banner 3 action"
+  },
+  "myPortfolio": "MY PORTFOLIO",
+  "@myPortfolio": {
+    "description": "Profile screen title"
+  },
+  "auraMember": "Aura Member",
+  "@auraMember": {
+    "description": "Default member name"
+  },
+  "eliteMember": "ELITE MEMBER",
+  "@eliteMember": {
+    "description": "Elite member badge"
+  },
+  "orderHistory": "Order History",
+  "@orderHistory": {
+    "description": "Order history option"
+  },
+  "orderHistoryDesc": "Track status and view purchases",
+  "@orderHistoryDesc": {
+    "description": "Order history description"
+  },
+  "notifications": "Notifications",
+  "@notifications": {
+    "description": "Notifications option"
+  },
+  "notificationsDesc": "Offers, discounts, and dispatch logs",
+  "@notificationsDesc": {
+    "description": "Notifications description"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings option"
+  },
+  "settingsDesc": "Security, privacy, and measurements",
+  "@settingsDesc": {
+    "description": "Settings description"
+  },
+  "helpCenter": "Help Center",
+  "@helpCenter": {
+    "description": "Help center option"
+  },
+  "helpCenterDesc": "24/7 dedicated elite concierge chat",
+  "@helpCenterDesc": {
+    "description": "Help center description"
+  },
+  "legalPolicies": "Legal Policies",
+  "@legalPolicies": {
+    "description": "Legal policies option"
+  },
+  "legalPoliciesDesc": "Terms of service and privacy rules",
+  "@legalPoliciesDesc": {
+    "description": "Legal policies description"
+  },
+  "logOut": "LOG OUT FROM APP",
+  "@logOut": {
+    "description": "Logout button"
+  },
+  "settingsFitProfile": "SETTINGS & FIT PROFILE",
+  "@settingsFitProfile": {
+    "description": "Settings screen title"
+  },
+  "coutureProfileSaved": "Couture profile saved! ✨",
+  "@coutureProfileSaved": {
+    "description": "Profile save success message"
+  },
+  "bespokeTailoringProfile": "Bespoke Tailoring Profile",
+  "@bespokeTailoringProfile": {
+    "description": "Tailoring profile section title"
+  },
+  "bespokeTailoringDesc": "Input your measurements below. Our European design mills will recommend customized garments based on your exact structure.",
+  "@bespokeTailoringDesc": {
+    "description": "Tailoring profile description"
+  },
+  "height": "Height (cm)",
+  "@height": {
+    "description": "Height input label"
+  },
+  "chest": "Chest (cm)",
+  "@chest": {
+    "description": "Chest input label"
+  },
+  "waist": "Waist (cm)",
+  "@waist": {
+    "description": "Waist input label"
+  },
+  "notificationPreferences": "Notification Preferences",
+  "@notificationPreferences": {
+    "description": "Notification section title"
+  },
+  "pushAlerts": "Push Alerts",
+  "@pushAlerts": {
+    "description": "Push alerts option"
+  },
+  "pushAlertsDesc": "Order dispatches, shipping status",
+  "@pushAlertsDesc": {
+    "description": "Push alerts description"
+  },
+  "exclusiveDrops": "Exclusive Drops",
+  "@exclusiveDrops": {
+    "description": "Exclusive drops option"
+  },
+  "exclusiveDropsDesc": "Limited runs, VIP sales, designer news",
+  "@exclusiveDropsDesc": {
+    "description": "Exclusive drops description"
+  },
+  "securityPreferences": "Security Preferences",
+  "@securityPreferences": {
+    "description": "Security section title"
+  },
+  "biometricAuth": "Biometric Authentication",
+  "@biometricAuth": {
+    "description": "Biometric authentication option"
+  },
+  "biometricAuthDesc": "Access billing and purchase secure keys instantly",
+  "@biometricAuthDesc": {
+    "description": "Biometric authentication description"
+  },
+  "languageCurrency": "Language & Currency",
+  "@languageCurrency": {
+    "description": "Language & currency section title"
+  },
+  "appearance": "Appearance",
+  "@appearance": {
+    "description": "Appearance section title"
+  },
+  "system": "System",
+  "@system": {
+    "description": "System theme option"
+  },
+  "systemDesc": "Follow device settings",
+  "@systemDesc": {
+    "description": "System theme description"
+  },
+  "light": "Light",
+  "@light": {
+    "description": "Light theme option"
+  },
+  "lightDesc": "Always light mode",
+  "@lightDesc": {
+    "description": "Light theme description"
+  },
+  "dark": "Dark",
+  "@dark": {
+    "description": "Dark theme option"
+  },
+  "darkDesc": "Always dark mode",
+  "@darkDesc": {
+    "description": "Dark theme description"
+  },
+  "savePreferences": "SAVE PREFERENCES",
+  "@savePreferences": {
+    "description": "Save preferences button"
+  },
+  "discoverLuxury": "Discover Luxury",
+  "@discoverLuxury": {
+    "description": "Home screen greeting when not logged in"
+  },
+  "searchPlaceholder": "Search luxury knitwear, suits, silks...",
+  "@searchPlaceholder": {
+    "description": "Search bar placeholder text"
+  },
+  "limitedEdition": "LIMITED EDITION",
+  "@limitedEdition": {
+    "description": "Limited edition badge on promo banner"
+  },
+  "coutureCollections": "Couture Collections",
+  "@coutureCollections": {
+    "description": "Categories section title"
+  },
+  "viewAll": "View All",
+  "@viewAll": {
+    "description": "View all button"
+  },
+  "trendingHighlights": "Trending Highlights",
+  "@trendingHighlights": {
+    "description": "Trending products section title"
+  },
+  "seeAll": "See All",
+  "@seeAll": {
+    "description": "See all button"
+  },
+  "theNewGuard": "The New Guard",
+  "@theNewGuard": {
+    "description": "New arrivals section title"
+  },
+  "error": "Error",
+  "@error": {
+    "description": "Error message prefix"
+  },
+  "productNotFound": "Product not found",
+  "@productNotFound": {
+    "description": "Product not found message"
+  },
+  "description": "Description",
+  "@description": {
+    "description": "Product description label"
+  },
+  "selectSize": "Select Size",
+  "@selectSize": {
+    "description": "Select size label"
+  },
+  "selectColor": "Select Color",
+  "@selectColor": {
+    "description": "Select color label"
+  },
+  "customerReviews": "Customer Reviews",
+  "@customerReviews": {
+    "description": "Customer reviews section title"
+  },
+  "reviews": "Reviews",
+  "@reviews": {
+    "description": "Reviews label"
+  },
+  "youMayAlsoLike": "You May Also Like",
+  "@youMayAlsoLike": {
+    "description": "Similar products section title"
+  },
+  "noRecommendations": "No recommendations available",
+  "@noRecommendations": {
+    "description": "No recommendations message"
+  },
+  "added": "ADDED",
+  "@added": {
+    "description": "Added to cart button state"
+  },
+  "addToCart": "ADD TO CART",
+  "@addToCart": {
+    "description": "Add to cart button"
+  },
+  "buyNow": "BUY NOW",
+  "@buyNow": {
+    "description": "Buy now button"
+  },
+  "shareProduct": "Check out this product on Hopscotch!",
+  "@shareProduct": {
+    "description": "Share product message"
+  },
+  "category": "Category",
+  "@category": {
+    "description": "Category label"
+  },
+  "price": "Price",
+  "@price": {
+    "description": "Price label"
+  },
+  "rating": "Rating",
+  "@rating": {
+    "description": "Rating label"
+  },
+  "sizes": "Sizes",
+  "@sizes": {
+    "description": "Sizes label"
+  },
+  "colors": "Colors",
+  "@colors": {
+    "description": "Colors label"
+  },
+  "link": "Link",
+  "@link": {
+    "description": "Link label"
+  },
+  "original": "Original",
+  "@original": {
+    "description": "Original price label"
+  },
+  "off": "OFF",
+  "@off": {
+    "description": "Discount off label"
+  },
+  "myWishlist": "MY WISHLIST",
+  "@myWishlist": {
+    "description": "Wishlist screen title"
+  },
+  "wishlistEmpty": "Your Wishlist is Empty",
+  "@wishlistEmpty": {
+    "description": "Empty wishlist message"
+  },
+  "wishlistEmptyDesc": "Tap the heart icon on any design to save your favored luxury items here for later.",
+  "@wishlistEmptyDesc": {
+    "description": "Empty wishlist description"
+  },
+  "exploreDepartments": "Explore Departments",
+  "@exploreDepartments": {
+    "description": "Explore departments button"
+  }
+}

@@ -5,6 +5,8 @@ import 'app_routes.dart';
 
 // Splash & Onboarding
 import '../../features/splash_onboarding/screens/splash_screen.dart';
+import '../../features/splash_onboarding/screens/language_selection_screen.dart';
+import '../../features/splash_onboarding/screens/currency_selection_screen.dart';
 import '../../features/splash_onboarding/screens/onboarding_screen.dart';
 
 // Auth
@@ -66,7 +68,39 @@ class AppPages {
         ),
       ),
 
-      // 2. Onboarding Screen
+      // 2. Language Selection Screen
+      GoRoute(
+        path: AppRoutes.languageSelection,
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const LanguageSelectionScreen(),
+          transitionDuration: const Duration(milliseconds: 500),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+        ),
+      ),
+
+      // 3. Currency Selection Screen
+      GoRoute(
+        path: AppRoutes.currencySelection,
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const CurrencySelectionScreen(),
+          transitionDuration: const Duration(milliseconds: 500),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+        ),
+      ),
+
+      // 4. Onboarding Screen
       GoRoute(
         path: AppRoutes.onboarding,
         pageBuilder: (context, state) => CustomTransitionPage(

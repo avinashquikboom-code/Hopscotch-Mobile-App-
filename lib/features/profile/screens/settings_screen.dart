@@ -5,6 +5,9 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/utils/responsive_text.dart';
 import '../../../core/widgets/custom_button.dart';
+import '../../../features/settings/presentation/currency_selector.dart';
+import '../../../features/settings/presentation/language_selector.dart';
+import '../../../l10n/app_localizations.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -32,9 +35,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _handleSaveSettings() {
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Couture profile saved! ✨'),
+      SnackBar(
+        content: Text(l10n.coutureProfileSaved),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -146,10 +150,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'SETTINGS & FIT PROFILE',
+          l10n.settingsFitProfile,
           style: TextStyle(
             fontSize: responsive.fontSize16,
             fontWeight: FontWeight.bold,
@@ -173,7 +178,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           children: [
             // 1. Bespoke Size Profile Section
             Text(
-              'Bespoke Tailoring Profile',
+              l10n.bespokeTailoringProfile,
               style: TextStyle(
                 fontSize: responsive.fontSize16,
                 fontWeight: FontWeight.bold,
@@ -182,7 +187,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceS)),
             Text(
-              'Input your measurements below. Our European design mills will recommend customized garments based on your exact structure.',
+              l10n.bespokeTailoringDesc,
               style: responsive.bodySmall,
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceM)),
@@ -206,7 +211,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           keyboardType: TextInputType.number,
                           style: TextStyle(fontSize: responsive.fontSize12),
                           decoration: InputDecoration(
-                            labelText: 'Height (cm)',
+                            labelText: l10n.height,
                             labelStyle: TextStyle(
                               fontSize: responsive.fontSize12,
                             ),
@@ -224,7 +229,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           keyboardType: TextInputType.number,
                           style: TextStyle(fontSize: responsive.fontSize12),
                           decoration: InputDecoration(
-                            labelText: 'Chest (cm)',
+                            labelText: l10n.chest,
                             labelStyle: TextStyle(
                               fontSize: responsive.fontSize12,
                             ),
@@ -243,7 +248,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     keyboardType: TextInputType.number,
                     style: TextStyle(fontSize: responsive.fontSize12),
                     decoration: InputDecoration(
-                      labelText: 'Waist (cm)',
+                      labelText: l10n.waist,
                       labelStyle: TextStyle(fontSize: responsive.fontSize12),
                       prefixIcon: Icon(
                         Icons.straighten_rounded,
@@ -258,7 +263,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
             // 2. Alert Prefs
             Text(
-              'Notification Preferences',
+              l10n.notificationPreferences,
               style: TextStyle(
                 fontSize: responsive.fontSize16,
                 fontWeight: FontWeight.bold,
@@ -282,14 +287,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   children: [
                     SwitchListTile(
                       title: Text(
-                        'Push Alerts',
+                        l10n.pushAlerts,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: responsive.fontSize12,
                         ),
                       ),
                       subtitle: Text(
-                        'Order dispatches, shipping status',
+                        l10n.pushAlertsDesc,
                         style: TextStyle(fontSize: responsive.fontSize10),
                       ),
                       value: _pushNotifications,
@@ -303,14 +308,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     const Divider(height: 1),
                     SwitchListTile(
                       title: Text(
-                        'Exclusive Drops',
+                        l10n.exclusiveDrops,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: responsive.fontSize12,
                         ),
                       ),
                       subtitle: Text(
-                        'Limited runs, VIP sales, designer news',
+                        l10n.exclusiveDropsDesc,
                         style: TextStyle(fontSize: responsive.fontSize10),
                       ),
                       value: _emailPromo,
@@ -329,7 +334,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
             // 3. Security Prefs
             Text(
-              'Security Preferences',
+              l10n.securityPreferences,
               style: TextStyle(
                 fontSize: responsive.fontSize16,
                 fontWeight: FontWeight.bold,
@@ -351,14 +356,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 clipBehavior: Clip.antiAlias,
                 child: SwitchListTile(
                   title: Text(
-                    'Biometric Authentication',
+                    l10n.biometricAuth,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: responsive.fontSize12,
                     ),
                   ),
                   subtitle: Text(
-                    'Access billing and purchase secure keys instantly',
+                    l10n.biometricAuthDesc,
                     style: TextStyle(fontSize: responsive.fontSize10),
                   ),
                   value: _biometricLogin,
@@ -373,9 +378,42 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
-            // 4. Theme Selection
+            // 4. Language & Currency Selection
             Text(
-              'Appearance',
+              l10n.languageCurrency,
+              style: TextStyle(
+                fontSize: responsive.fontSize16,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimaryColor,
+              ),
+            ),
+            SizedBox(height: responsive.spacing(AppTheme.spaceM)),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+                boxShadow: AppTheme.softShadow,
+              ),
+              child: Material(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  children: [
+                    const LanguageSelectorButton(),
+                    const Divider(height: 1),
+                    const CurrencySelectorButton(),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
+
+            // 5. Theme Selection
+            Text(
+              l10n.appearance,
               style: TextStyle(
                 fontSize: responsive.fontSize16,
                 fontWeight: FontWeight.bold,
@@ -389,8 +427,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   context: context,
                   option: ThemeModeOption.system,
                   icon: Icons.brightness_auto_rounded,
-                  label: 'System',
-                  description: 'Follow device settings',
+                  label: l10n.system,
+                  description: l10n.systemDesc,
                   isSelected:
                       ref.watch(themeProvider) == ThemeModeOption.system,
                   onTap: () => ref
@@ -402,8 +440,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   context: context,
                   option: ThemeModeOption.light,
                   icon: Icons.light_mode_rounded,
-                  label: 'Light',
-                  description: 'Always light mode',
+                  label: l10n.light,
+                  description: l10n.lightDesc,
                   isSelected: ref.watch(themeProvider) == ThemeModeOption.light,
                   onTap: () => ref
                       .read(themeProvider.notifier)
@@ -414,8 +452,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   context: context,
                   option: ThemeModeOption.dark,
                   icon: Icons.dark_mode_rounded,
-                  label: 'Dark',
-                  description: 'Always dark mode',
+                  label: l10n.dark,
+                  description: l10n.darkDesc,
                   isSelected: ref.watch(themeProvider) == ThemeModeOption.dark,
                   onTap: () => ref
                       .read(themeProvider.notifier)
@@ -430,7 +468,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               width: double.infinity,
               height: responsive.spacing(48),
               child: CustomButton(
-                text: 'SAVE PREFERENCES',
+                text: l10n.savePreferences,
                 onPressed: _handleSaveSettings,
               ),
             ),

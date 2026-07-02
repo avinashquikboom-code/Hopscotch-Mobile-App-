@@ -13,6 +13,8 @@ import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/skeleton_loaders.dart';
 import '../../../core/widgets/animated_heart_button.dart';
 import '../../../core/widgets/animated_share_button.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../core/providers/currency_provider.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
@@ -70,7 +72,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     }
   }
 
-  void _shareProductDetails(product) async {
+  void _shareProductDetails(product, AppLocalizations l10n, AppCurrency currency) async {
     // Show a premium loading indicator
     showDialog(
       context: context,
@@ -84,29 +86,29 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
 
     try {
       final discountText = product.discountPercentage > 0
-          ? ' (${product.discountPercentage.toStringAsFixed(0)}% OFF)'
+          ? ' (${product.discountPercentage.toStringAsFixed(0)}% ${l10n.off})'
           : '';
       final originalPriceText = product.originalPrice > product.price
-          ? ' (Original: ₹${product.originalPrice.toStringAsFixed(2)})'
+          ? ' (${l10n.original}: ${currency.formatPrice(product.originalPrice)})'
           : '';
 
       final sizesText = product.sizes.isNotEmpty
-          ? '\n📏 Sizes: ${product.sizes.join(", ")}'
+          ? '\n📏 ${l10n.sizes}: ${product.sizes.join(", ")}'
           : '';
 
       final colorsText = product.colors.isNotEmpty
-          ? '\n🎨 Colors: ${product.colors.join(", ")}'
+          ? '\n🎨 ${l10n.colors}: ${product.colors.join(", ")}'
           : '';
 
       final shareText = '''
-✨ Check out this product on Hopscotch! ✨
+✨ ${l10n.shareProduct} ✨
 
 📦 ${product.title}
-🏷️ Category: ${product.subcategory}
-💰 Price: ₹${product.price.toStringAsFixed(2)}$originalPriceText$discountText
-⭐ Rating: ${product.rating} (${product.reviewCount} Reviews)
+🏷️ ${l10n.category}: ${product.subcategory}
+💰 ${l10n.price}: ${currency.formatPrice(product.price)}$originalPriceText$discountText
+⭐ ${l10n.rating}: ${product.rating} (${product.reviewCount} ${l10n.reviews})
 
-📝 Description:
+📝 ${l10n.description}:
 ${product.description}
 $sizesText$colorsText
 ''';
@@ -132,11 +134,11 @@ $sizesText$colorsText
       
       // Fallback: share the details and the image url as text
       final fallbackText = '''
-✨ Check out this product on Hopscotch! ✨
+✨ ${l10n.shareProduct} ✨
 
 📦 ${product.title}
-💰 Price: ₹${product.price.toStringAsFixed(2)}
-🔗 Link: ${product.imageUrl}
+💰 ${l10n.price}: ${currency.formatPrice(product.price)}
+🔗 ${l10n.link}: ${product.imageUrl}
 ''';
       await Share.share(fallbackText, subject: product.title);
     }
@@ -156,7 +158,9 @@ $sizesText$colorsText
   Widget build(BuildContext context) {
     final productAsync = ref.watch(productDetailProvider(widget.productId));
     final wishlist = ref.watch(wishlistProvider);
+    final currency = ref.watch(currencyProvider);
     final responsive = context.responsive;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: productAsync.when(
@@ -165,7 +169,7 @@ $sizesText$colorsText
             return Scaffold(
               body: Center(
                 child: Text(
-                  'Product not found',
+                  l10n.productNotFound,
                   style: TextStyle(fontSize: responsive.fontSize16),
                 ),
               ),
@@ -239,7 +243,7 @@ $sizesText$colorsText
                               size: responsive.iconSize(20),
                               onTap: () {
                                 HapticFeedback.lightImpact();
-                                _shareProductDetails(product);
+                                _shareProductDetails(product, l10n, currency);
                               },
                             ),
                           ),
@@ -423,7 +427,7 @@ $sizesText$colorsText
                                     textBaseline: TextBaseline.alphabetic,
                                     children: [
                                       Text(
-                                        '₹${product.price.toStringAsFixed(2)}',
+                                        currency.formatPrice(product.price),
                                         style: TextStyle(
                                           fontSize: responsive.fontSize20,
                                           color: AppTheme.primaryColor,
@@ -438,7 +442,7 @@ $sizesText$colorsText
                                           ),
                                         ),
                                         Text(
-                                          '₹${product.originalPrice.toStringAsFixed(2)}',
+                                          currency.formatPrice(product.originalPrice),
                                           style: TextStyle(
                                             fontSize: responsive.fontSize14,
                                             color: AppTheme.textLightColor,
@@ -482,7 +486,7 @@ $sizesText$colorsText
                                         ),
                                         SizedBox(width: responsive.spacing(4)),
                                         Text(
-                                          '(${product.reviewCount} Reviews)',
+                                          '(${product.reviewCount} ${l10n.reviews})',
                                           style: TextStyle(
                                             color: AppTheme.textSecondaryColor,
                                             fontSize: responsive.fontSize11,
@@ -499,7 +503,7 @@ $sizesText$colorsText
 
                               // Description
                               Text(
-                                'Description',
+                                l10n.description,
                                 style: TextStyle(
                                   fontSize: responsive.fontSize16,
                                   fontWeight: FontWeight.bold,
@@ -523,7 +527,7 @@ $sizesText$colorsText
                               // Size Selection
                               if (product.sizes.isNotEmpty) ...[
                                 Text(
-                                  'Select Size',
+                                  l10n.selectSize,
                                   style: TextStyle(
                                     fontSize: responsive.fontSize16,
                                     fontWeight: FontWeight.bold,
@@ -601,7 +605,7 @@ $sizesText$colorsText
                               // Color Selection
                               if (product.colors.isNotEmpty) ...[
                                 Text(
-                                  'Select Color',
+                                  l10n.selectColor,
                                   style: TextStyle(
                                     fontSize: responsive.fontSize16,
                                     fontWeight: FontWeight.bold,
@@ -676,7 +680,7 @@ $sizesText$colorsText
                                   height: responsive.spacing(AppTheme.spaceXL),
                                 ),
                                 Text(
-                                  'Customer Reviews (${product.reviews.length})',
+                                  '${l10n.customerReviews} (${product.reviews.length})',
                                   style: TextStyle(
                                     fontSize: responsive.fontSize16,
                                     fontWeight: FontWeight.bold,
@@ -816,7 +820,7 @@ $sizesText$colorsText
                                 height: responsive.spacing(AppTheme.spaceXL),
                               ),
                               Text(
-                                'You May Also Elite',
+                                l10n.youMayAlsoLike,
                                 style: TextStyle(
                                   fontSize: responsive.fontSize16,
                                   fontWeight: FontWeight.bold,
@@ -836,7 +840,7 @@ $sizesText$colorsText
                                     if (filtered.isEmpty) {
                                       return Center(
                                         child: Text(
-                                          'No recommendations available',
+                                          l10n.noRecommendations,
                                           style: TextStyle(
                                             fontSize: responsive.fontSize14,
                                           ),
@@ -883,7 +887,7 @@ $sizesText$colorsText
                                   ),
                                   error: (err, stack) => Center(
                                     child: Text(
-                                      'Error: $err',
+                                      '${l10n.error}: $err',
                                       style: TextStyle(
                                         fontSize: responsive.fontSize14,
                                       ),
@@ -965,7 +969,7 @@ $sizesText$colorsText
                                                 width: responsive.spacing(6),
                                               ),
                                               Text(
-                                                'ADDED',
+                                                l10n.added,
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.bold,
                                                   color: AppTheme.primaryColor,
@@ -976,7 +980,7 @@ $sizesText$colorsText
                                             ],
                                           )
                                         : Text(
-                                            'ADD TO CART',
+                                            l10n.addToCart,
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
                                               fontSize: responsive.fontSize14,
@@ -1013,7 +1017,7 @@ $sizesText$colorsText
                               ),
                             ),
                             child: Text(
-                              'BUY NOW',
+                              l10n.buyNow,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: responsive.fontSize14,
@@ -1034,7 +1038,7 @@ $sizesText$colorsText
         error: (err, stack) => Scaffold(
           body: Center(
             child: Text(
-              'Error: $err',
+              '${l10n.error}: $err',
               style: TextStyle(fontSize: responsive.fontSize14),
             ),
           ),

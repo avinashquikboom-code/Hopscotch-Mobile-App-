@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/utils/responsive_text.dart';
 import 'package:hopscotch/features/auth/repositories/auth_repository.dart';
+import '../../../l10n/app_localizations.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -67,6 +68,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -89,12 +91,12 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               children: [
                 SizedBox(height: responsive.spacing(40)),
                 Text(
-                  'Create Account',
+                  l10n.createAccountTitle,
                   style: responsive.headline2,
                 ),
                 SizedBox(height: responsive.spacing(AppTheme.spaceS)),
                 Text(
-                  'Join Aura Couture for custom tailor fits, priority shipping, and member pricing.',
+                  l10n.signupDescription,
                   style: responsive.bodyMedium,
                 ),
                 SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
@@ -105,15 +107,15 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   keyboardType: TextInputType.name,
                   style: TextStyle(fontSize: responsive.fontSize14),
                   decoration: InputDecoration(
-                    hintText: 'Enter your full name',
+                    hintText: l10n.enterFullName,
                     hintStyle: TextStyle(fontSize: responsive.fontSize14),
-                    labelText: 'Full Name',
+                    labelText: l10n.fullName,
                     labelStyle: TextStyle(fontSize: responsive.fontSize14),
                     prefixIcon: Icon(Icons.person_outline_rounded, size: responsive.iconSize(20)),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Full name is required';
+                      return l10n.fullNameRequired;
                     }
                     return null;
                   },
@@ -126,18 +128,18 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   keyboardType: TextInputType.emailAddress,
                   style: TextStyle(fontSize: responsive.fontSize14),
                   decoration: InputDecoration(
-                    hintText: 'Enter your email address',
+                    hintText: l10n.enterEmail,
                     hintStyle: TextStyle(fontSize: responsive.fontSize14),
-                    labelText: 'Email Address',
+                    labelText: l10n.emailAddress,
                     labelStyle: TextStyle(fontSize: responsive.fontSize14),
                     prefixIcon: Icon(Icons.email_outlined, size: responsive.iconSize(20)),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Email is required';
+                      return l10n.emailRequired;
                     }
                     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                      return 'Enter a valid email address';
+                      return l10n.validEmail;
                     }
                     return null;
                   },
@@ -150,9 +152,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   obscureText: _obscurePassword,
                   style: TextStyle(fontSize: responsive.fontSize14),
                   decoration: InputDecoration(
-                    hintText: 'Choose a strong password',
+                    hintText: l10n.choosePassword,
                     hintStyle: TextStyle(fontSize: responsive.fontSize14),
-                    labelText: 'Password',
+                    labelText: l10n.password,
                     labelStyle: TextStyle(fontSize: responsive.fontSize14),
                     prefixIcon: Icon(Icons.lock_outline_rounded, size: responsive.iconSize(20)),
                     suffixIcon: IconButton(
@@ -169,10 +171,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Password is required';
+                      return l10n.passwordRequired;
                     }
                     if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
+                      return l10n.passwordLength;
                     }
                     return null;
                   },
@@ -184,7 +186,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   width: double.infinity,
                   height: responsive.spacing(56),
                   child: CustomButton(
-                    text: 'Create Account',
+                    text: l10n.createAccount,
                     onPressed: _handleSignup,
                     isLoading: _isLoading,
                   ),
@@ -196,13 +198,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Already have an account? ',
+                      l10n.alreadyHaveAccount,
                       style: responsive.bodyMedium,
                     ),
                     GestureDetector(
                       onTap: () => context.pop(),
                       child: Text(
-                        'Sign In',
+                        l10n.signIn,
                         style: responsive.label.copyWith(
                           color: AppTheme.primaryColor,
                           fontWeight: FontWeight.bold,

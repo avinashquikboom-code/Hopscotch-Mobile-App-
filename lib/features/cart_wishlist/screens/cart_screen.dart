@@ -6,6 +6,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/responsive_text.dart';
 import 'package:hopscotch/features/cart_wishlist/repositories/cart_wishlist_repository.dart';
 import '../../../core/widgets/state_widgets.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../core/providers/currency_provider.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -32,7 +34,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   Widget build(BuildContext context) {
     final cart = ref.watch(cartProvider);
     final cartNotifier = ref.read(cartProvider.notifier);
+    final currency = ref.watch(currencyProvider);
     final responsive = context.responsive;
+    final l10n = AppLocalizations.of(context)!;
 
     final double subtotal = cartNotifier.subtotal;
     const double shipping = 150.00;
@@ -44,7 +48,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: Text(
-          'YOUR BAG',
+          l10n.yourBag,
           style: TextStyle(
             fontWeight: FontWeight.bold,
             letterSpacing: 2.0,
@@ -62,7 +66,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               child: TextButton(
                 onPressed: () => cartNotifier.clearCart(),
                 child: Text(
-                  'CLEAR',
+                  l10n.clear,
                   style: TextStyle(
                     fontSize: responsive.fontSize12,
                     fontWeight: FontWeight.bold,
@@ -77,10 +81,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       body: cart.isEmpty
           ? EmptyState(
               icon: Icons.shopping_bag_outlined,
-              title: 'Your Bag is Empty',
-              description:
-                  'You haven\'t added any garments to your luxury bag yet. Browse our Collections to begin.',
-              buttonText: 'Shop New Arrivals',
+              title: l10n.bagEmpty,
+              description: l10n.bagEmptyDescription,
+              buttonText: l10n.shopNewArrivals,
               onButtonPressed: () => context.go('/'),
             )
           : Stack(
@@ -97,7 +100,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           vertical: responsive.spacing(AppTheme.spaceM),
                         ),
                         child: Text(
-                          '${cart.length} ITEM${cart.length > 1 ? 'S' : ''}',
+                          '${cart.length} ${l10n.items}',
                           style: TextStyle(
                             fontSize: responsive.fontSize12,
                             fontWeight: FontWeight.w600,
@@ -300,7 +303,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                               MainAxisAlignment.spaceBetween,
                                           children: [
                                             Text(
-                                              '₹${(product.price * item.quantity).toStringAsFixed(0)}',
+                                              currency.formatPrice(product.price * item.quantity),
                                               style: TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: responsive.fontSize18,
@@ -411,7 +414,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Gift Wrapping',
+                                      l10n.giftWrapping,
                                       style: TextStyle(
                                         fontSize: responsive.fontSize14,
                                         fontWeight: FontWeight.bold,
@@ -420,7 +423,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                     ),
                                     SizedBox(height: responsive.spacing(2)),
                                     Text(
-                                      'Premium boxed wrap with note card',
+                                      l10n.giftWrappingDesc,
                                       style: TextStyle(
                                         fontSize: responsive.fontSize11,
                                         color: AppTheme.textSecondaryColor,
@@ -465,7 +468,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'ORDER SUMMARY',
+                                l10n.orderSummary,
                                 style: TextStyle(
                                   fontSize: responsive.fontSize11,
                                   fontWeight: FontWeight.bold,
@@ -477,24 +480,24 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 height: responsive.spacing(AppTheme.spaceL),
                               ),
                               _buildSummaryRow(
-                                'Subtotal',
-                                '₹${subtotal.toStringAsFixed(0)}',
+                                l10n.subtotal,
+                                currency.formatPrice(subtotal),
                                 responsive,
                               ),
                               SizedBox(
                                 height: responsive.spacing(AppTheme.spaceS),
                               ),
                               _buildSummaryRow(
-                                'Shipping',
-                                '₹${shipping.toStringAsFixed(0)}',
+                                l10n.shipping,
+                                currency.formatPrice(shipping),
                                 responsive,
                               ),
                               SizedBox(
                                 height: responsive.spacing(AppTheme.spaceS),
                               ),
                               _buildSummaryRow(
-                                'Tax (8%)',
-                                '₹${tax.toStringAsFixed(0)}',
+                                l10n.taxPercent,
+                                currency.formatPrice(tax),
                                 responsive,
                               ),
                               if (_includeGiftWrapping) ...[
@@ -502,8 +505,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                   height: responsive.spacing(AppTheme.spaceS),
                                 ),
                                 _buildSummaryRow(
-                                  'Gift Wrapping',
-                                  '₹${_giftWrappingCost.toStringAsFixed(0)}',
+                                  l10n.giftWrapping,
+                                  currency.formatPrice(_giftWrappingCost),
                                   responsive,
                                 ),
                               ],
@@ -511,8 +514,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 height: responsive.spacing(AppTheme.spaceXL),
                               ),
                               _buildSummaryRow(
-                                'Total',
-                                '₹${totalAmount.toStringAsFixed(0)}',
+                                l10n.total,
+                                currency.formatPrice(totalAmount),
                                 responsive,
                                 isTotal: true,
                               ),
@@ -550,7 +553,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'TOTAL',
+                                  l10n.totalLabel,
                                   style: TextStyle(
                                     fontSize: responsive.fontSize12,
                                     fontWeight: FontWeight.bold,
@@ -559,7 +562,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                   ),
                                 ),
                                 Text(
-                                  '₹${totalAmount.toStringAsFixed(0)}',
+                                  currency.formatPrice(totalAmount),
                                   style: TextStyle(
                                     fontSize: responsive.fontSize24,
                                     fontWeight: FontWeight.bold,
@@ -584,7 +587,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 ),
                                 child: Center(
                                   child: Text(
-                                    'PROCEED TO CHECKOUT',
+                                    l10n.proceedToCheckout,
                                     style: TextStyle(
                                       fontSize: responsive.fontSize14,
                                       fontWeight: FontWeight.bold,

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hopscotch/features/product/models/product_model.dart';
 import 'package:hopscotch/features/cart_wishlist/repositories/cart_wishlist_repository.dart';
 import '../theme/app_theme.dart';
+import '../providers/currency_provider.dart';
 import 'animated_heart_button.dart';
 
 class ProductCard extends ConsumerWidget {
@@ -20,6 +21,7 @@ class ProductCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final wishlist = ref.watch(wishlistProvider);
+    final currency = ref.watch(currencyProvider);
     final isFav = wishlist.any((p) => p.id == product.id);
     final heroTag = heroTagPrefix != null
         ? '${heroTagPrefix}_product_image_${product.id}'
@@ -306,7 +308,7 @@ class ProductCard extends ConsumerWidget {
                           textBaseline: TextBaseline.alphabetic,
                           children: [
                             Text(
-                              '₹${product.price.toStringAsFixed(2)}',
+                              currency.formatPrice(product.price),
                               style: Theme.of(context).textTheme.titleMedium
                                   ?.copyWith(
                                     color: AppTheme.primaryColor,
@@ -317,7 +319,7 @@ class ProductCard extends ConsumerWidget {
                             if (product.originalPrice > product.price) ...[
                               const SizedBox(width: AppTheme.spaceS),
                               Text(
-                                '₹${product.originalPrice.toStringAsFixed(2)}',
+                                currency.formatPrice(product.originalPrice),
                                 style: Theme.of(context).textTheme.bodySmall
                                     ?.copyWith(
                                       color: AppTheme.textLightColor,

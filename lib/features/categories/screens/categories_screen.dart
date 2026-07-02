@@ -7,12 +7,14 @@ import 'package:hopscotch/features/categories/repositories/category_repository.d
 import '../../../core/widgets/category_card.dart';
 import '../../../core/widgets/skeleton_loaders.dart';
 import 'package:hopscotch/features/categories/models/category_model.dart';
+import '../../../l10n/app_localizations.dart';
 
 class CategoriesScreen extends ConsumerWidget {
   const CategoriesScreen({super.key});
 
   void _showSubcategoriesSheet(BuildContext context, CategoryModel category) {
     final responsive = context.responsive;
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFFF8FAFC), // Premium light ivory canvas
@@ -60,7 +62,7 @@ class CategoriesScreen extends ConsumerWidget {
                 ),
                 SizedBox(height: responsive.spacing(4)),
                 Text(
-                  'Explore hand-curated luxury subdivisions.',
+                  l10n.exploreSubcategories,
                   style: TextStyle(
                     fontSize: responsive.fontSize12,
                     color: AppTheme.textSecondaryColor.withValues(alpha: 0.85),
@@ -80,7 +82,7 @@ class CategoriesScreen extends ConsumerWidget {
                     itemBuilder: (context, index) {
                       final isAll = index == 0;
                       final subcat = isAll
-                          ? 'Shop All ${category.name}'
+                          ? '${l10n.shopAll} ${category.name}'
                           : category.subcategories[index - 1];
 
                       return InkWell(
@@ -140,11 +142,12 @@ class CategoriesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final categoriesAsync = ref.watch(allCategoriesProvider);
     final responsive = context.responsive;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'COUTURE DEPARTMENTS',
+          l10n.coutureDepartments,
           style: TextStyle(
             fontSize: responsive.fontSize18,
             fontWeight: FontWeight.bold,
@@ -206,7 +209,7 @@ class CategoriesScreen extends ConsumerWidget {
             child: CategoryCardSkeleton(),
           ),
         ),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        error: (err, stack) => Center(child: Text('${l10n.error}: $err')),
       ),
     );
   }

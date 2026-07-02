@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/responsive_text.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
@@ -40,10 +42,27 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    // Direct seamless transition to Onboarding after 2.6s
-    Future.delayed(const Duration(milliseconds: 2600), () {
+    // Check if language and currency are already selected and navigate accordingly
+    Future.delayed(const Duration(milliseconds: 2600), () async {
       if (mounted) {
-        context.go('/onboarding');
+        final prefs = await SharedPreferences.getInstance();
+        final languageCode = prefs.getString('language_code');
+        final currencyCode = prefs.getString('currency_code');
+        final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
+        
+        if (languageCode == null) {
+          // Language not selected, go to language selection
+          context.go('/language-selection');
+        } else if (currencyCode == null) {
+          // Language selected but currency not selected, go to currency selection
+          context.go('/currency-selection');
+        } else if (!onboardingCompleted) {
+          // Both language and currency selected but onboarding not completed
+          context.go('/onboarding');
+        } else {
+          // All completed, go to home
+          context.go('/home');
+        }
       }
     });
   }

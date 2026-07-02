@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/entities/visual_search_result.dart';
 import '../../domain/entities/product.dart';
+import 'package:hopscotch/core/providers/currency_provider.dart';
 
 /// Interactive Visual Search Results Screen
 /// Shows Exact Match, Variants, Similar, More from Brand, Recommended, Frequently Bought, Recently Viewed.
@@ -91,6 +92,8 @@ class _VisualSearchResultsScreenState extends ConsumerState<VisualSearchResultsS
 
   @override
   Widget build(BuildContext context) {
+    final currency = ref.watch(currencyProvider);
+    
     if (_isLoading) {
       return Scaffold(
         backgroundColor: const Color(0xFFF8FAFC),
@@ -141,29 +144,29 @@ class _VisualSearchResultsScreenState extends ConsumerState<VisualSearchResultsS
             _buildUploadedImageHeader(),
 
             // 2. Exact Match Card
-            _buildExactMatchSection(product),
+            _buildExactMatchSection(product, currency),
 
             // 3. More Variants
             if (product.colors.length > 1 || product.sizes.length > 1)
               _buildVariantsSection(product),
 
             // 4. Frequently Bought Together
-            _buildFrequentlyBoughtSection(product),
+            _buildFrequentlyBoughtSection(product, currency),
 
             // 5. Similar Products (Grid Layout)
             if (similarList.isNotEmpty)
-              _buildSimilarProductsGrid(similarList),
+              _buildSimilarProductsGrid(similarList, currency),
 
             // 6. More From Same Brand
             if (sameBrandList.isNotEmpty)
-              _buildHorizontalProductsSection('More from ${product.brand}', sameBrandList),
+              _buildHorizontalProductsSection('More from ${product.brand}', sameBrandList, currency),
 
             // 7. Recommended Products
             if (recommendedList.isNotEmpty)
-              _buildHorizontalProductsSection('Recommended Products', recommendedList.take(6).toList()),
+              _buildHorizontalProductsSection('Recommended Products', recommendedList.take(6).toList(), currency),
 
             // 8. Recently Viewed
-            _buildHorizontalProductsSection('Recently Viewed', _allProducts.take(4).toList()),
+            _buildHorizontalProductsSection('Recently Viewed', _allProducts.take(4).toList(), currency),
 
             const SizedBox(height: 40),
           ],
@@ -218,7 +221,7 @@ class _VisualSearchResultsScreenState extends ConsumerState<VisualSearchResultsS
     );
   }
 
-  Widget _buildExactMatchSection(Product product) {
+  Widget _buildExactMatchSection(Product product, AppCurrency currency) {
     final hasDiscount = product.discount > 0;
     final discountedPrice = product.price * (1 - (product.discount / 100));
 
@@ -242,7 +245,9 @@ class _VisualSearchResultsScreenState extends ConsumerState<VisualSearchResultsS
                 child: SizedBox(
                   width: 120,
                   height: 150,
-                  child: _buildProductImage(product.primaryImagePath),
+                  child: widget.result.queryImage != null
+                      ? Image.file(widget.result.queryImage!, fit: BoxFit.cover)
+                      : _buildProductImage(product.primaryImagePath),
                 ),
               ),
               const SizedBox(width: 16),
@@ -307,20 +312,29 @@ class _VisualSearchResultsScreenState extends ConsumerState<VisualSearchResultsS
                     // Price
                     Row(
                       children: [
-                        Text(
-                          '₹${(hasDiscount ? discountedPrice : product.price).toStringAsFixed(0)}',
-                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20, color: Color(0xFF0D9488)),
+                        Flexible(
+                          child: Text(
+                            currency.formatPrice(hasDiscount ? discountedPrice : product.price),
+                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20, color: Color(0xFF0D9488)),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                         if (hasDiscount) ...[
                           const SizedBox(width: 8),
-                          Text(
-                            '₹${product.price.toStringAsFixed(0)}',
-                            style: const TextStyle(decoration: TextDecoration.lineThrough, color: Color(0xFF94A3B8), fontSize: 14),
+                          Flexible(
+                            child: Text(
+                              currency.formatPrice(product.price),
+                              style: const TextStyle(decoration: TextDecoration.lineThrough, color: Color(0xFF94A3B8), fontSize: 14),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                           const SizedBox(width: 8),
-                          Text(
-                            '${product.discount.toStringAsFixed(0)}% OFF',
-                            style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 12),
+                          Flexible(
+                            child: Text(
+                              '${product.discount.toStringAsFixed(0)}% OFF',
+                              style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 12),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ]
                       ],
@@ -444,7 +458,7 @@ class _VisualSearchResultsScreenState extends ConsumerState<VisualSearchResultsS
     );
   }
 
-  Widget _buildFrequentlyBoughtSection(Product product) {
+  Widget _buildFrequentlyBoughtSection(Product product, AppCurrency currency) {
     final bundleProduct = _allProducts.firstWhere((p) => p.id != product.id, orElse: () => product);
     final totalPrice = product.price + bundleProduct.price;
 
@@ -477,7 +491,7 @@ class _VisualSearchResultsScreenState extends ConsumerState<VisualSearchResultsS
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text('Combo Offer Price', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
-                    Text('₹${totalPrice.toStringAsFixed(0)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+                    Text(currency.formatPrice(totalPrice), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
                     const SizedBox(height: 8),
                     ElevatedButton(
                       onPressed: () {
@@ -518,7 +532,7 @@ class _VisualSearchResultsScreenState extends ConsumerState<VisualSearchResultsS
     );
   }
 
-  Widget _buildSimilarProductsGrid(List<Product> products) {
+  Widget _buildSimilarProductsGrid(List<Product> products, AppCurrency currency) {
     return Container(
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(16),
@@ -543,7 +557,7 @@ class _VisualSearchResultsScreenState extends ConsumerState<VisualSearchResultsS
             itemCount: products.length.clamp(0, 4),
             itemBuilder: (context, index) {
               final p = products[index];
-              return _buildProductCard(p);
+              return _buildProductCard(p, currency);
             },
           )
         ],
@@ -551,7 +565,7 @@ class _VisualSearchResultsScreenState extends ConsumerState<VisualSearchResultsS
     );
   }
 
-  Widget _buildHorizontalProductsSection(String title, List<Product> products) {
+  Widget _buildHorizontalProductsSection(String title, List<Product> products, AppCurrency currency) {
     return Container(
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(16),
@@ -576,7 +590,7 @@ class _VisualSearchResultsScreenState extends ConsumerState<VisualSearchResultsS
                   padding: const EdgeInsets.only(right: 12),
                   child: SizedBox(
                     width: 140,
-                    child: _buildProductCard(p),
+                    child: _buildProductCard(p, currency),
                   ),
                 );
               },
@@ -587,7 +601,7 @@ class _VisualSearchResultsScreenState extends ConsumerState<VisualSearchResultsS
     );
   }
 
-  Widget _buildProductCard(Product p) {
+  Widget _buildProductCard(Product p, AppCurrency currency) {
     return GestureDetector(
       onTap: () {
         context.push('/product/${p.id}?heroTagPrefix=visual_search_results');
@@ -617,7 +631,7 @@ class _VisualSearchResultsScreenState extends ConsumerState<VisualSearchResultsS
                   const SizedBox(height: 2),
                   Text(p.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)), maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 4),
-                  Text('₹${p.price.toStringAsFixed(0)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0D9488))),
+                  Text(currency.formatPrice(p.price), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0D9488))),
                 ],
               ),
             )
