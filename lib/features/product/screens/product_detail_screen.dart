@@ -2,19 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:dio/dio.dart';
-import 'package:path_provider/path_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/responsive_text.dart';
 import '../../../features/product/repositories/product_repository.dart';
 import '../../../features/cart_wishlist/repositories/cart_wishlist_repository.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/skeleton_loaders.dart';
-import '../../../core/widgets/animated_heart_button.dart';
-import '../../../core/widgets/animated_share_button.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../core/providers/currency_provider.dart';
+import 'package:remixicon/remixicon.dart';
+import '../models/product_model.dart';
+import '../widgets/share_earn_bottom_sheet.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
@@ -72,77 +70,6 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     }
   }
 
-  void _shareProductDetails(product, AppLocalizations l10n, AppCurrency currency) async {
-    // Show a premium loading indicator
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
-        ),
-      ),
-    );
-
-    try {
-      final discountText = product.discountPercentage > 0
-          ? ' (${product.discountPercentage.toStringAsFixed(0)}% ${l10n.off})'
-          : '';
-      final originalPriceText = product.originalPrice > product.price
-          ? ' (${l10n.original}: ${currency.formatPrice(product.originalPrice)})'
-          : '';
-
-      final sizesText = product.sizes.isNotEmpty
-          ? '\n📏 ${l10n.sizes}: ${product.sizes.join(", ")}'
-          : '';
-
-      final colorsText = product.colors.isNotEmpty
-          ? '\n🎨 ${l10n.colors}: ${product.colors.join(", ")}'
-          : '';
-
-      final shareText = '''
-✨ ${l10n.shareProduct} ✨
-
-📦 ${product.title}
-🏷️ ${l10n.category}: ${product.subcategory}
-💰 ${l10n.price}: ${currency.formatPrice(product.price)}$originalPriceText$discountText
-⭐ ${l10n.rating}: ${product.rating} (${product.reviewCount} ${l10n.reviews})
-
-📝 ${l10n.description}:
-${product.description}
-$sizesText$colorsText
-''';
-
-      // Download image from imageUrl to a temporary file path
-      final tempDir = await getTemporaryDirectory();
-      final tempPath = '${tempDir.path}/shared_product_image.jpg';
-      
-      await Dio().download(product.imageUrl, tempPath);
-
-      // Dismiss the loading dialog
-      if (mounted) Navigator.of(context).pop();
-
-      // Share the file along with the text details
-      await Share.shareXFiles(
-        [XFile(tempPath)],
-        text: shareText,
-        subject: product.title,
-      );
-    } catch (e) {
-      // Dismiss the loading dialog in case of failure
-      if (mounted) Navigator.of(context).pop();
-      
-      // Fallback: share the details and the image url as text
-      final fallbackText = '''
-✨ ${l10n.shareProduct} ✨
-
-📦 ${product.title}
-💰 ${l10n.price}: ${currency.formatPrice(product.price)}
-🔗 ${l10n.link}: ${product.imageUrl}
-''';
-      await Share.share(fallbackText, subject: product.title);
-    }
-  }
 
   // Custom helper to parse hex colors to Flutter Color objects
   Color _parseColor(String hexCode) {
@@ -152,6 +79,45 @@ $sizesText$colorsText
     } catch (_) {
       return Colors.grey;
     }
+  }
+
+  void _openShareEarnBottomSheet(ProductModel product) {
+    HapticFeedback.mediumImpact();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ShareEarnBottomSheet(product: product),
+    );
+  }
+
+  Widget _buildFloatingCircleButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    Color? color,
+  }) {
+    final responsive = context.responsive;
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.9),
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: IconButton(
+        icon: Icon(
+          icon,
+          color: color ?? AppTheme.textPrimaryColor,
+          size: responsive.iconSize(20),
+        ),
+        onPressed: onTap,
+      ),
+    );
   }
 
   @override
@@ -228,46 +194,19 @@ $sizesText$colorsText
                         actions: [
                           Container(
                             margin: EdgeInsets.all(responsive.spacing(8)),
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.08),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
+                              shape: BoxShape.circle,
                             ),
-                            child: AnimatedShareButton(
-                              size: responsive.iconSize(20),
-                              onTap: () {
+                            child: IconButton(
+                              icon: Icon(
+                                Icons.shopping_cart_outlined,
+                                size: responsive.iconSize(20),
+                                color: AppTheme.textPrimaryColor,
+                              ),
+                              onPressed: () {
                                 HapticFeedback.lightImpact();
-                                _shareProductDetails(product, l10n, currency);
-                              },
-                            ),
-                          ),
-                          Container(
-                            margin: EdgeInsets.all(responsive.spacing(8)),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.08),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: AnimatedHeartButton(
-                              isFav: isFav,
-                              size: responsive.iconSize(20),
-                              onTap: () {
-                                HapticFeedback.lightImpact();
-                                ref
-                                    .read(wishlistProvider.notifier)
-                                    .toggleWishlist(product);
+                                context.push('/cart');
                               },
                             ),
                           ),
@@ -367,6 +306,40 @@ $sizesText$colorsText
                                     ),
                                   ),
                                 ),
+
+                              // Floating Actions (Heart, Share, WhatsApp) Column on the right
+                              Positioned(
+                                right: responsive.spacing(16),
+                                bottom: responsive.spacing(imageList.length > 1 ? 48 : 24),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _buildFloatingCircleButton(
+                                      icon: isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                                      color: isFav ? Colors.red : AppTheme.textPrimaryColor,
+                                      onTap: () {
+                                        HapticFeedback.lightImpact();
+                                        ref.read(wishlistProvider.notifier).toggleWishlist(product);
+                                      },
+                                    ),
+                                    SizedBox(height: responsive.spacing(12)),
+                                    _buildFloatingCircleButton(
+                                      icon: Remix.share_forward_line,
+                                      onTap: () {
+                                        _openShareEarnBottomSheet(product);
+                                      },
+                                    ),
+                                    SizedBox(height: responsive.spacing(12)),
+                                    _buildFloatingCircleButton(
+                                      icon: Remix.whatsapp_line,
+                                      color: const Color(0xFF25D366),
+                                      onTap: () {
+                                        _openShareEarnBottomSheet(product);
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -500,6 +473,8 @@ $sizesText$colorsText
                               SizedBox(
                                 height: responsive.spacing(AppTheme.spaceXL),
                               ),
+
+
 
                               // Description
                               Text(
