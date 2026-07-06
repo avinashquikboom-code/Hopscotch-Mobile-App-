@@ -22,6 +22,14 @@ class AppTheme {
   static const double space48 = 48.0;
   static const double space64 = 64.0;
 
+  // ── BACKWARD COMPATIBLE SPACING ALIASES ──────────────────────
+  static const double spaceXS  = space4;
+  static const double spaceS   = space8;
+  static const double spaceM   = space12;
+  static const double spaceL   = space16;
+  static const double spaceXL  = space24;
+  static const double spaceXXL = space32;
+
   // ── BORDER RADIUS ────────────────────────────────────────────
   static const double radiusXS  =  8.0; // chips / tags
   static const double radiusS   = 12.0; // buttons / inputs
@@ -51,6 +59,7 @@ class AppTheme {
   static const Color textBodyColor         = AppColors.textBody;
   static const Color textSecondaryColor    = AppColors.textSecondary;
   static const Color textDisabledColor     = AppColors.textDisabled;
+  static const Color textLightColor        = AppColors.textLight;
   static const Color borderColor           = AppColors.border;
   static const Color errorColor            = AppColors.error;
 
@@ -62,6 +71,7 @@ class AppTheme {
   static const Color darkTextSecondaryColor = AppColors.darkTextSecondary;
   static const Color darkBorderColor       = AppColors.darkBorder;
   static const Color darkErrorColor        = AppColors.darkError;
+  static const Color darkTextLightColor    = AppColors.darkTextLight;
 
   // ── LUXURY SHADOWS ───────────────────────────────────────────
   static List<BoxShadow> get softShadow => [
@@ -113,6 +123,22 @@ class AppTheme {
       blurRadius: 20,
       spreadRadius: -4,
       offset: const Offset(0, 6),
+    ),
+  ];
+
+  static List<BoxShadow> get intenseShadow => [
+    BoxShadow(
+      color: primaryColor.withValues(alpha: 0.12),
+      blurRadius: 24,
+      offset: const Offset(0, 8),
+    ),
+  ];
+
+  static List<BoxShadow> get darkIntenseShadow => [
+    BoxShadow(
+      color: darkPrimaryColor.withValues(alpha: 0.20),
+      blurRadius: 24,
+      offset: const Offset(0, 8),
     ),
   ];
 

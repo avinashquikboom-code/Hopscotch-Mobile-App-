@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../../core/api/api_service.dart';
+import '../../../../core/api/api_service.dart';
+import '../../../../core/providers/api_provider.dart';
 import '../data/datasources/database_helper.dart';
 import '../data/datasources/local_product_datasource.dart';
 import '../data/datasources/asset_seed_loader.dart';
@@ -35,10 +36,7 @@ final imageMatcherProvider = Provider<ImageMatcher>((ref) {
   return PerceptualHashMatcher();
 });
 
-// API service provider
-final apiServiceProvider = Provider<ApiService>((ref) {
-  return ApiService();
-});
+// API service provider (imported from core/providers/api_provider.dart)
 
 // Visual search remote data source provider
 final visualSearchRemoteDataSourceProvider = Provider<VisualSearchRemoteDataSource>((ref) {
