@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/api/api_service.dart';
 import '../../../../core/providers/api_provider.dart';
-import '../../../../core/dummy_data/dummy_data.dart';
+import '../../../../core/constants/app_urls.dart';
 import '../models/category_model.dart';
 
 class CategoryRepository {
@@ -11,12 +11,12 @@ class CategoryRepository {
 
   Future<List<CategoryModel>> getCategories() async {
     try {
-      final response = await _apiService.get('/api/categories');
+      final response = await _apiService.get(AppUrls.categories);
       if (response.statusCode == 200) {
         final data = response.data;
         final List? rawList = data is Map ? data['data'] : data;
         if (rawList != null) {
-          const apiBase = ApiService.baseUrl;
+          const apiBase = AppUrls.mobileBaseUrl;
           return rawList.map((c) {
             final id = c['id']?.toString() ?? '';
             final name = c['name']?.toString() ?? '';
@@ -39,13 +39,16 @@ class CategoryRepository {
             );
           }).toList();
         }
+      } else if (response.statusCode == 404) {
+        print('[CategoryRepository] Categories endpoint not found');
       }
     } catch (e) {
       print('[CategoryRepository] Error fetching categories: $e');
+      // Return empty list instead of throwing exception
+      return [];
     }
 
-    await Future.delayed(const Duration(milliseconds: 300));
-    return DummyData.dummyCategories.map((e) => CategoryModel.fromJson(e)).toList();
+    return [];
   }
 
   Future<List<CategoryModel>> getFeaturedCategories() async {

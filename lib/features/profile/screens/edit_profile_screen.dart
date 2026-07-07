@@ -1,10 +1,13 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/responsive_text.dart';
-import '../../auth/repositories/auth_repository.dart';
-import '../../../core/widgets/custom_button.dart';
+import '../../../core/api/api_service.dart';
+import '../../../core/api/auth_api.dart';
+import '../../../core/widgets/toast_notification.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -18,21 +21,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   late final TextEditingController _nameController;
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
-  late final TextEditingController _addressController;
-  late final TextEditingController _cityController;
-  late final TextEditingController _zipController;
   bool _isSaving = false;
+  File? _profileImage;
+  final ImagePicker _imagePicker = ImagePicker();
+  Map<String, dynamic>? _userData;
 
   @override
   void initState() {
     super.initState();
-    final user = ref.read(authNotifierProvider);
-    _nameController = TextEditingController(text: user?.name ?? '');
-    _emailController = TextEditingController(text: user?.email ?? '');
-    _phoneController = TextEditingController(text: user?.phoneNumber ?? '');
-    _addressController = TextEditingController(text: user?.address ?? '');
-    _cityController = TextEditingController(text: user?.city ?? '');
-    _zipController = TextEditingController(text: user?.zipCode ?? '');
+    _nameController = TextEditingController();
+    _emailController = TextEditingController();
+    _phoneController = TextEditingController();
+    _loadUserProfile();
   }
 
   @override
@@ -40,10 +40,108 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _nameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
-    _addressController.dispose();
-    _cityController.dispose();
-    _zipController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadUserProfile() async {
+    try {
+      final apiService = ApiService();
+      final authApi = AuthApi(apiService);
+      final response = await authApi.getProfile();
+      if (response.statusCode == 200) {
+        setState(() {
+          _userData = response.data['data'];
+          _nameController.text = _userData?['firstName'] ?? _userData?['name'] ?? '';
+          _emailController.text = _userData?['email'] ?? '';
+          _phoneController.text = _userData?['phone'] ?? '';
+        });
+      }
+    } catch (e) {
+      print('Error loading profile: $e');
+    }
+  }
+
+  Future<void> _pickImageFromGallery() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+        maxWidth: 512,
+        maxHeight: 512,
+      );
+      
+      if (image != null) {
+        setState(() {
+          _profileImage = File(image.path);
+        });
+      }
+    } catch (e) {
+      _showError('Failed to pick image from gallery');
+    }
+  }
+
+  Future<void> _pickImageFromCamera() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 80,
+        maxWidth: 512,
+        maxHeight: 512,
+      );
+      
+      if (image != null) {
+        setState(() {
+          _profileImage = File(image.path);
+        });
+      }
+    } catch (e) {
+      _showError('Failed to pick image from camera');
+    }
+  }
+
+  void _showImagePickerBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from Gallery'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImageFromGallery();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Take Photo'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImageFromCamera();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showError(String message) {
+    ToastNotification.show(
+      context,
+      message: message,
+      isError: true,
+    );
+  }
+
+  void _showSuccess(String message) {
+    ToastNotification.show(
+      context,
+      message: message,
+      isError: false,
+    );
   }
 
   Future<void> _handleSaveProfile() async {
@@ -54,46 +152,26 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     });
 
     try {
-      final currentUser = ref.read(authNotifierProvider);
-      if (currentUser != null) {
-        final updated = currentUser.copyWith(
-          name: _nameController.text.trim(),
-          email: _emailController.text.trim(),
-          phoneNumber: _phoneController.text.trim(),
-          address: _addressController.text.trim(),
-          city: _cityController.text.trim(),
-          zipCode: _zipController.text.trim(),
-        );
+      final apiService = ApiService();
+      final authApi = AuthApi(apiService);
+      
+      final response = await authApi.updateProfile(
+        firstName: _nameController.text.trim(),
+        lastName: '',
+        phone: _phoneController.text.trim(),
+        avatar: _profileImage,
+      );
 
-        await ref.read(authNotifierProvider.notifier).updateProfile(updated);
-
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        _showSuccess('Profile updated successfully');
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Aura Couture profile successfully updated! ✨',
-                style: TextStyle(fontSize: context.responsive.fontSize14),
-              ),
-              behavior: SnackBarBehavior.floating,
-              backgroundColor: AppTheme.primaryColor,
-            ),
-          );
           context.pop();
         }
+      } else {
+        _showError(response.data['message'] ?? 'Failed to update profile');
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Failed to update profile: $e',
-              style: TextStyle(fontSize: context.responsive.fontSize14),
-            ),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: AppTheme.errorColor,
-          ),
-        );
-      }
+      _showError('Failed to update profile: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -105,7 +183,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(authNotifierProvider);
     final responsive = context.responsive;
 
     return Scaffold(
@@ -122,8 +199,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           onPressed: () {
             if (context.canPop()) {
               context.pop();
-            } else {
-              context.go('/profile');
             }
           },
         ),
@@ -136,45 +211,50 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Avatar Selection
-              Stack(
-                children: [
-                  CircleAvatar(
-                    radius: responsive.iconSize(54),
-                    backgroundColor: AppTheme.primaryColor.withValues(
-                      alpha: 0.08,
-                    ),
-                    backgroundImage:
-                        user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty
-                        ? NetworkImage(user.avatarUrl!)
-                        : null,
-                    child: user?.avatarUrl == null || user!.avatarUrl!.isEmpty
-                        ? Text(
-                            user?.name.substring(0, 1).toUpperCase() ?? 'U',
-                            style: TextStyle(
-                              fontSize: responsive.fontSize32,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.primaryColor,
-                            ),
-                          )
-                        : null,
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: EdgeInsets.all(responsive.spacing(6)),
-                      decoration: const BoxDecoration(
-                        color: AppTheme.primaryColor,
-                        shape: BoxShape.circle,
+              GestureDetector(
+                onTap: _showImagePickerBottomSheet,
+                child: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: responsive.iconSize(54),
+                      backgroundColor: AppTheme.primaryColor.withValues(
+                        alpha: 0.08,
                       ),
-                      child: Icon(
-                        Icons.camera_alt_outlined,
-                        color: Colors.white,
-                        size: responsive.iconSize(16),
+                      backgroundImage: _profileImage != null
+                          ? FileImage(_profileImage!)
+                          : (_userData?['avatarUrl'] != null && _userData!['avatarUrl'].isNotEmpty
+                              ? NetworkImage(_userData!['avatarUrl'])
+                              : null),
+                      child: _profileImage == null &&
+                              (_userData?['avatarUrl'] == null || _userData!['avatarUrl'].isEmpty)
+                          ? Text(
+                              (_userData?['firstName'] ?? _userData?['name'] ?? 'U').substring(0, 1).toUpperCase(),
+                              style: TextStyle(
+                                fontSize: responsive.fontSize32,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.primaryColor,
+                              ),
+                            )
+                          : null,
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: EdgeInsets.all(responsive.spacing(6)),
+                        decoration: const BoxDecoration(
+                          color: AppTheme.primaryColor,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.camera_alt_outlined,
+                          color: Colors.white,
+                          size: responsive.iconSize(16),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
@@ -226,64 +306,52 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   labelStyle: TextStyle(fontSize: responsive.fontSize14),
                 ),
               ),
-              SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-              TextFormField(
-                controller: _addressController,
-                style: TextStyle(fontSize: responsive.fontSize14),
-                decoration: InputDecoration(
-                  labelText: 'Street Address',
-                  prefixIcon: Icon(
-                    Icons.home_outlined,
-                    size: responsive.iconSize(20),
-                  ),
-                  labelStyle: TextStyle(fontSize: responsive.fontSize14),
-                ),
-              ),
-              SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _cityController,
-                      style: TextStyle(fontSize: responsive.fontSize14),
-                      decoration: InputDecoration(
-                        labelText: 'City',
-                        prefixIcon: Icon(
-                          Icons.location_city_outlined,
-                          size: responsive.iconSize(20),
-                        ),
-                        labelStyle: TextStyle(fontSize: responsive.fontSize14),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: responsive.spacing(AppTheme.spaceL)),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _zipController,
-                      keyboardType: TextInputType.number,
-                      style: TextStyle(fontSize: responsive.fontSize14),
-                      decoration: InputDecoration(
-                        labelText: 'ZIP Code',
-                        prefixIcon: Icon(
-                          Icons.pin_drop_outlined,
-                          size: responsive.iconSize(20),
-                        ),
-                        labelStyle: TextStyle(fontSize: responsive.fontSize14),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
               SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
               // Save Button
               SizedBox(
                 width: double.infinity,
                 height: responsive.spacing(56),
-                child: CustomButton(
-                  text: 'SAVE PROFILE CHANGES',
-                  onPressed: _handleSaveProfile,
-                  isLoading: _isSaving,
+                child: ElevatedButton(
+                  onPressed: _isSaving ? null : _handleSaveProfile,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryColor,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: AppTheme.textDisabledColor,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusS),
+                    ),
+                  ),
+                  child: _isSaving
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            ),
+                            SizedBox(width: responsive.spacing(AppTheme.spaceS)),
+                            Text(
+                              'Saving...',
+                              style: TextStyle(
+                                fontSize: responsive.fontSize14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Text(
+                          'SAVE PROFILE CHANGES',
+                          style: TextStyle(
+                            fontSize: responsive.fontSize14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
               ),
             ],

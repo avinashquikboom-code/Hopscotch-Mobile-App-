@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/api/api_service.dart';
 import '../../../../core/providers/api_provider.dart';
-import '../../../../core/dummy_data/dummy_data.dart';
+import '../../../../core/constants/app_urls.dart';
 import '../models/notification_model.dart';
 
 class NotificationNotifier extends StateNotifier<List<NotificationModel>> {
@@ -13,7 +13,7 @@ class NotificationNotifier extends StateNotifier<List<NotificationModel>> {
 
   Future<void> _loadNotifications() async {
     try {
-      final response = await _apiService.get('/api/notifications');
+      final response = await _apiService.get(AppUrls.notifications);
       if (response.statusCode == 200) {
         final data = response.data;
         final List? rawList = data is Map ? data['data'] : data;
@@ -35,8 +35,7 @@ class NotificationNotifier extends StateNotifier<List<NotificationModel>> {
       print('[NotificationNotifier] Error loading notifications: $e');
     }
 
-    await Future.delayed(const Duration(milliseconds: 300));
-    state = DummyData.dummyNotifications.map((e) => NotificationModel.fromJson(e)).toList();
+    state = [];
   }
 
   void markAsRead(String notificationId) {

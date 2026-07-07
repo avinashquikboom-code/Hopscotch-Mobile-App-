@@ -7,6 +7,7 @@ import 'package:hopscotch/features/product/repositories/product_repository.dart'
 import 'package:hopscotch/features/categories/repositories/category_repository.dart';
 import 'package:hopscotch/features/auth/repositories/auth_repository.dart';
 import 'package:hopscotch/features/profile/repositories/notification_repository.dart';
+import '../repositories/banner_repository.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/category_card.dart';
 import '../../../core/widgets/skeleton_loaders.dart';
@@ -60,36 +61,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final trendingAsync = ref.watch(trendingProductsProvider);
     final newArrivalsAsync = ref.watch(newArrivalsProvider);
     final notifications = ref.watch(notificationProvider);
+    final bannersAsync = ref.watch(bannersProvider);
     final unreadNotifications = notifications.where((n) => !n.isRead).length;
     final responsive = context.responsive;
     final l10n = AppLocalizations.of(context)!;
-
-    final List<Map<String, dynamic>> _promoBanners = [
-      {
-        'title': l10n.theCoutureSale,
-        'subtitle': l10n.upToOff,
-        'action': l10n.shopCouture,
-        'image':
-            'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=600&q=80',
-        'categoryId': 'cat_womens',
-      },
-      {
-        'title': l10n.gentlemansApparel,
-        'subtitle': l10n.englishWoolSuits,
-        'action': l10n.exploreTailored,
-        'image':
-            'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=600&q=80',
-        'categoryId': 'cat_mens',
-      },
-      {
-        'title': l10n.italianCradle,
-        'subtitle': l10n.handcraftedLoafers,
-        'action': l10n.viewFootwear,
-        'image':
-            'https://images.unsplash.com/photo-1614252369475-531eba835eb1?auto=format&fit=crop&w=600&q=80',
-        'categoryId': 'cat_footwear',
-      },
-    ];
 
     return Scaffold(
       body: SafeArea(
@@ -99,6 +74,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ref.invalidate(allCategoriesProvider);
             ref.invalidate(trendingProductsProvider);
             ref.invalidate(newArrivalsProvider);
+            ref.invalidate(bannersProvider);
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -259,142 +235,153 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             ),
                         child: SizedBox(
                           height: responsive.spacing(200),
-                          child: PageView.builder(
-                            controller: _bannerController,
-                            onPageChanged: (index) {
-                              setState(() {
-                                _activeBanner = index;
-                              });
-                            },
-                            itemCount: _promoBanners.length,
-                            itemBuilder: (context, index) {
-                              final banner = _promoBanners[index];
-                              return AnimatedContainer(
-                                duration: const Duration(milliseconds: 300),
-                                margin: EdgeInsets.symmetric(
-                                  horizontal: responsive.spacing(
-                                    AppTheme.spaceXL,
-                                  ),
-                                ),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(
-                                    AppTheme.radiusXL,
-                                  ),
-                                  image: DecorationImage(
-                                    image: NetworkImage(banner['image']),
-                                    fit: BoxFit.cover,
-                                  ),
-                                  boxShadow: AppTheme.softShadow,
-                                ),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    onTap: () => context.push(
-                                      '/products?categoryId=${banner['categoryId']}&categoryName=${banner['title']}',
+                          child: bannersAsync.when(
+                            data: (banners) {
+                              if (banners.isEmpty) {
+                                return const Center(child: Text('No banners available'));
+                              }
+                              return PageView.builder(
+                                controller: _bannerController,
+                                onPageChanged: (index) {
+                                  setState(() {
+                                    _activeBanner = index;
+                                  });
+                                },
+                                itemCount: banners.length,
+                                itemBuilder: (context, index) {
+                                  final banner = banners[index];
+                                  return AnimatedContainer(
+                                    duration: const Duration(milliseconds: 300),
+                                    margin: EdgeInsets.symmetric(
+                                      horizontal: responsive.spacing(
+                                        AppTheme.spaceXL,
+                                      ),
                                     ),
-                                    borderRadius: BorderRadius.circular(
-                                      AppTheme.radiusXL,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(
+                                        AppTheme.radiusXL,
+                                      ),
+                                      image: DecorationImage(
+                                        image: NetworkImage(banner.imageUrl),
+                                        fit: BoxFit.cover,
+                                      ),
+                                      boxShadow: AppTheme.softShadow,
                                     ),
-                                    splashColor: Colors.white.withValues(
-                                      alpha: 0.2,
-                                    ),
-                                    child: Stack(
-                                      children: [
-                                        Positioned.fill(
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                    AppTheme.radiusXL,
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        onTap: () {
+                                          if (banner.link != null) {
+                                            context.push(banner.link!);
+                                          }
+                                        },
+                                        borderRadius: BorderRadius.circular(
+                                          AppTheme.radiusXL,
+                                        ),
+                                        splashColor: Colors.white.withValues(
+                                          alpha: 0.2,
+                                        ),
+                                        child: Stack(
+                                          children: [
+                                            Positioned.fill(
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        AppTheme.radiusXL,
+                                                      ),
+                                                  gradient: LinearGradient(
+                                                    begin: Alignment.centerLeft,
+                                                    end: Alignment.centerRight,
+                                                    colors: [
+                                                      Colors.black.withValues(
+                                                        alpha: 0.7,
+                                                      ),
+                                                      Colors.transparent,
+                                                    ],
                                                   ),
-                                              gradient: LinearGradient(
-                                                begin: Alignment.centerLeft,
-                                                end: Alignment.centerRight,
-                                                colors: [
-                                                  Colors.black.withValues(
-                                                    alpha: 0.7,
+                                                ),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsets.all(
+                                                responsive.spacing(
+                                                  AppTheme.spaceXL,
+                                                ),
+                                              ),
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Container(
+                                                    padding: EdgeInsets.symmetric(
+                                                      horizontal: responsive
+                                                          .spacing(8),
+                                                      vertical: responsive.spacing(
+                                                        4,
+                                                      ),
+                                                    ),
+                                                    decoration: BoxDecoration(
+                                                      color: AppTheme.accentColor,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                        AppTheme.radiusS,
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      l10n.limitedEdition,
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize:
+                                                            responsive.fontSize10,
+                                                      ),
+                                                    ),
                                                   ),
-                                                  Colors.transparent,
+                                                  SizedBox(
+                                                    height: responsive.spacing(
+                                                      AppTheme.spaceS,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    banner.title,
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: responsive.headline1
+                                                        .copyWith(
+                                                          color: Colors.white,
+                                                        ),
+                                                  ),
+                                                  SizedBox(
+                                                    height: responsive.spacing(4),
+                                                  ),
+                                                  Text(
+                                                    banner.subtitle ?? '',
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: responsive.bodySmall
+                                                        .copyWith(
+                                                          color: Colors.white
+                                                              .withValues(
+                                                            alpha: 0.85,
+                                                          ),
+                                                        ),
+                                                  ),
                                                 ],
                                               ),
                                             ),
-                                          ),
+                                          ],
                                         ),
-                                        Padding(
-                                          padding: EdgeInsets.all(
-                                            responsive.spacing(
-                                              AppTheme.spaceXL,
-                                            ),
-                                          ),
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Container(
-                                                padding: EdgeInsets.symmetric(
-                                                  horizontal: responsive
-                                                      .spacing(8),
-                                                  vertical: responsive.spacing(
-                                                    4,
-                                                  ),
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: AppTheme.accentColor,
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                        AppTheme.radiusS,
-                                                      ),
-                                                ),
-                                                child: Text(
-                                                  l10n.limitedEdition,
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize:
-                                                        responsive.fontSize10,
-                                                  ),
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                height: responsive.spacing(
-                                                  AppTheme.spaceS,
-                                                ),
-                                              ),
-                                              Text(
-                                                banner['title'],
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: responsive.headline1
-                                                    .copyWith(
-                                                      color: Colors.white,
-                                                    ),
-                                              ),
-                                              SizedBox(
-                                                height: responsive.spacing(4),
-                                              ),
-                                              Text(
-                                                banner['subtitle'],
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: responsive.bodySmall
-                                                    .copyWith(
-                                                      color: Colors.white
-                                                          .withValues(
-                                                            alpha: 0.85,
-                                                          ),
-                                                    ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
+                                      ),
                                     ),
-                                  ),
-                                ),
+                                  );
+                                },
                               );
                             },
+                            loading: () => const Center(child: CircularProgressIndicator()),
+                            error: (_, __) => const Center(child: Text('Failed to load banners')),
                           ),
                         ),
                       ),
@@ -403,28 +390,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 ),
                 SizedBox(height: responsive.spacing(AppTheme.spaceM)),
                 // Carousel dots
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(
-                    _promoBanners.length,
-                    (index) => Container(
-                      margin: EdgeInsets.symmetric(
-                        horizontal: responsive.spacing(3),
-                      ),
-                      width: _activeBanner == index
-                          ? responsive.spacing(16)
-                          : responsive.spacing(6),
-                      height: responsive.spacing(6),
-                      decoration: BoxDecoration(
-                        color: _activeBanner == index
-                            ? AppTheme.primaryColor
-                            : AppTheme.borderColor,
-                        borderRadius: BorderRadius.circular(
-                          responsive.spacing(3),
+                bannersAsync.when(
+                  data: (banners) {
+                    if (banners.isEmpty) return const SizedBox.shrink();
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        banners.length,
+                        (index) => Container(
+                          margin: EdgeInsets.symmetric(
+                            horizontal: responsive.spacing(3),
+                          ),
+                          width: _activeBanner == index
+                              ? responsive.spacing(16)
+                              : responsive.spacing(6),
+                          height: responsive.spacing(6),
+                          decoration: BoxDecoration(
+                            color: _activeBanner == index
+                                ? AppTheme.primaryColor
+                                : AppTheme.borderColor,
+                            borderRadius: BorderRadius.circular(
+                              responsive.spacing(3),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, __) => const SizedBox.shrink(),
                 ),
                 SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
 

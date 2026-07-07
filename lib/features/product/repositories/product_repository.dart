@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/api/api_service.dart';
 import '../../../../core/providers/api_provider.dart';
-import '../../../../core/dummy_data/dummy_data.dart';
+import '../../../../core/constants/app_urls.dart';
 import '../models/product_model.dart';
 
 ProductModel mapBackendToMobileProduct(Map<String, dynamic> raw) {
@@ -14,7 +14,7 @@ ProductModel mapBackendToMobileProduct(Map<String, dynamic> raw) {
   
   final discountValue = (raw['discountValue'] as num?)?.toDouble() ?? 0.0;
   
-  const apiBase = ApiService.baseUrl;
+  const apiBase = AppUrls.mobileBaseUrl;
   
   String imageUrl = 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=600&auto=format&fit=crop&q=80';
   List<String> additionalImages = [];
@@ -103,7 +103,7 @@ class ProductRepository {
 
   Future<List<ProductModel>> getProducts() async {
     try {
-      final response = await _apiService.get('/api/products');
+      final response = await _apiService.get(AppUrls.products);
       if (response.statusCode == 200) {
         final data = response.data;
         final List? rawList = data is Map ? data['data'] : data;
@@ -113,10 +113,10 @@ class ProductRepository {
       }
     } catch (e) {
       print('[ProductRepository] Error fetching products: $e');
+      throw Exception('Failed to fetch products');
     }
 
-    await Future.delayed(const Duration(milliseconds: 400));
-    return DummyData.dummyProducts.map((e) => ProductModel.fromJson(e)).toList();
+    return [];
   }
 
   Future<List<ProductModel>> getTrendingProducts() async {

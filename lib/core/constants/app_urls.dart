@@ -1,17 +1,21 @@
 class AppUrls {
-  // Base API URL
-  // Backend integration disabled - using dummy data for now
-  // static const String baseUrl = 'https://api.auracouture.com/v1';
+  // Base API URLs
+  static const String mobileBaseUrl = 'http://192.168.1.103:5001';
 
-  // Auth Gateways
-  // static const String login = '/auth/login';
-  // static const String signup = '/auth/signup';
-  // static const String forgotPassword = '/auth/forgot-password';
-  // static const String updateProfile = '/auth/profile/update';
+  //Auth Gateways
+  static const String login = '/api/auth/login';
+  static const String signup = '/api/auth/register';
+  static const String forgotPassword = '/api/auth/forgot-password';
+  static const String updateProfile = '/api/auth/profile/update';
+  static const String logout = '/api/auth/logout';
+  static const String refreshToken = '/api/auth/refresh';
+  static const String keepMeSignedIn = '/api/auth/keep-me-signed-in';
 
-  // Catalog & Shopping
-  // static const String products = '/products';
-  // static const String categories = '/categories';
-  // static const String orders = '/orders/place';
-  // static const String notifications = '/notifications/list';
+  //Catalog & Shopping
+  static const String products = '/api/products';
+  static const String categories = '/api/categories';
+  static const String orders = '/api/orders/place';
+  static const String notifications = '/api/notifications';
+  static const String banners = '/api/banners';
+  static const String commission = '/api/commission';
 }

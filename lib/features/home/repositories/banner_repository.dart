@@ -1,0 +1,56 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/api/api_service.dart';
+import '../../../../core/providers/api_provider.dart';
+import '../../../../core/constants/app_urls.dart';
+import '../models/banner_model.dart';
+
+class BannerRepository {
+  final ApiService _apiService;
+
+  BannerRepository(this._apiService);
+
+  Future<List<BannerModel>> getBanners() async {
+    try {
+      final response = await _apiService.get(AppUrls.banners);
+      if (response.statusCode == 200) {
+        final data = response.data;
+        final List? rawList = data is Map ? data['data'] : data;
+        if (rawList != null) {
+          const apiBase = AppUrls.mobileBaseUrl;
+          return rawList.map((b) {
+            final id = b['id']?.toString() ?? '';
+            final imageUrl = b['imageUrl']?.toString() ?? b['image']?.toString() ?? '';
+            final fullImageUrl = imageUrl.startsWith('http') 
+                ? imageUrl 
+                : '$apiBase/$imageUrl';
+            
+            return BannerModel(
+              id: id,
+              imageUrl: fullImageUrl,
+              title: b['title']?.toString() ?? '',
+              subtitle: b['subtitle']?.toString(),
+              link: b['link']?.toString(),
+              order: b['order'] as int? ?? 0,
+              isActive: b['isActive'] as bool? ?? b['active'] as bool? ?? true,
+            );
+          }).toList();
+        }
+      } else if (response.statusCode == 404) {
+        print('[BannerRepository] Banners endpoint not found');
+      }
+    } catch (e) {
+      print('[BannerRepository] Error fetching banners: $e');
+    }
+
+    return [];
+  }
+}
+
+final bannerRepositoryProvider = Provider<BannerRepository>((ref) {
+  final apiService = ref.watch(apiServiceProvider);
+  return BannerRepository(apiService);
+});
+
+final bannersProvider = FutureProvider<List<BannerModel>>((ref) {
+  return ref.watch(bannerRepositoryProvider).getBanners();
+});

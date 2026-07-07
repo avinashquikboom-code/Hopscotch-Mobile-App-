@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import '../utils/dev_logger.dart';
 
 class FirebaseAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -21,6 +22,7 @@ class FirebaseAuthService {
     try {
       if (kDebugMode) {
         debugPrint('Sending OTP to phone: $phoneNumber');
+        await DevLogger.logInfo('Sending OTP to phone: $phoneNumber');
       }
       
       await _auth.verifyPhoneNumber(
@@ -29,30 +31,35 @@ class FirebaseAuthService {
           // Auto-sign in on Android
           if (kDebugMode) {
             debugPrint('Auto-verification completed');
+            await DevLogger.logInfo('Auto-verification completed');
           }
           await _auth.signInWithCredential(credential);
         },
         verificationFailed: (FirebaseAuthException e) {
           if (kDebugMode) {
             debugPrint('OTP verification failed: ${e.code} - ${e.message}');
+            DevLogger.logError('${e.code}: ${e.message}', context: 'OTP Verification');
           }
           onError('${e.code}: ${e.message}');
         },
         codeSent: (String verificationId, int? resendToken) {
           if (kDebugMode) {
             debugPrint('OTP code sent, verificationId: $verificationId');
+            DevLogger.logInfo('OTP code sent, verificationId: $verificationId');
           }
           onCodeSent(verificationId);
         },
         codeAutoRetrievalTimeout: (String verificationId) {
           if (kDebugMode) {
             debugPrint('OTP auto-retrieval timeout');
+            DevLogger.logError('OTP auto-retrieval timeout', context: 'OTP Verification');
           }
         },
       );
     } catch (e) {
       if (kDebugMode) {
         debugPrint('OTP send error: $e');
+        DevLogger.logError(e.toString(), context: 'OTP Send');
       }
       onError(e.toString());
     }

@@ -3,15 +3,43 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/responsive_text.dart';
-import 'package:hopscotch/features/auth/repositories/auth_repository.dart';
+import '../repositories/profile_repository.dart';
+import '../../../core/api/api_service.dart';
+import '../../../core/api/auth_api.dart';
+import '../../../core/widgets/toast_notification.dart';
 import '../../../l10n/app_localizations.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
+  Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {
+    try {
+      final apiService = ApiService();
+      final authApi = AuthApi(apiService);
+      await authApi.logout();
+      
+      if (context.mounted) {
+        ToastNotification.show(
+          context,
+          message: 'Logged out successfully',
+          isError: false,
+        );
+        context.go('/login');
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ToastNotification.show(
+          context,
+          message: 'Failed to logout: $e',
+          isError: true,
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authNotifierProvider);
+    final userProfile = ref.watch(profileNotifierProvider);
     final responsive = context.responsive;
     final l10n = AppLocalizations.of(context)!;
 
@@ -50,10 +78,10 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                           child: CircleAvatar(
                             radius: responsive.iconSize(54),
-                            backgroundImage: user?.avatarUrl != null
-                                ? NetworkImage(user!.avatarUrl!)
+                            backgroundImage: userProfile?['avatarUrl'] != null
+                                ? NetworkImage(userProfile!['avatarUrl'])
                                 : null,
-                            child: user?.avatarUrl == null
+                            child: userProfile?['avatarUrl'] == null
                                 ? Icon(
                                     Icons.person,
                                     size: responsive.iconSize(54),
@@ -82,12 +110,12 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                   SizedBox(height: responsive.spacing(AppTheme.spaceL)),
                   Text(
-                    user?.name ?? l10n.auraMember,
+                    userProfile?['firstName'] ?? userProfile?['name'] ?? l10n.auraMember,
                     style: responsive.headline4,
                   ),
                   SizedBox(height: responsive.spacing(4)),
                   Text(
-                    user?.email ?? 'member@auracouture.com',
+                    userProfile?['email'] ?? 'member@auracouture.com',
                     style: responsive.bodyMedium.copyWith(
                       color: AppTheme.textSecondaryColor,
                     ),
@@ -209,10 +237,7 @@ class ProfileScreen extends ConsumerWidget {
                 horizontal: responsive.spacing(AppTheme.spaceXL),
               ),
               child: OutlinedButton.icon(
-                onPressed: () {
-                  ref.read(authNotifierProvider.notifier).logout();
-                  context.go('/login');
-                },
+                onPressed: () => _handleLogout(context, ref),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppTheme.errorColor,
                   side: const BorderSide(

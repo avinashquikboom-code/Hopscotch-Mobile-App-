@@ -31,12 +31,12 @@ class AppTheme {
   static const double spaceXXL = space32;
 
   // ── BORDER RADIUS ────────────────────────────────────────────
-  static const double radiusXS  =  8.0; // chips / tags
-  static const double radiusS   = 12.0; // buttons / inputs
-  static const double radiusM   = 16.0; // cards
-  static const double radiusL   = 18.0; // dialogs / drawers
-  static const double radiusXL  = 20.0; // product cards
-  static const double radiusXXL = 24.0; // hero sections
+  static const double radiusXS  =  4.0; // chips / tags
+  static const double radiusS   =  8.0; // buttons / inputs
+  static const double radiusM   = 12.0; // cards
+  static const double radiusL   = 14.0; // dialogs / drawers
+  static const double radiusXL  = 16.0; // product cards
+  static const double radiusXXL = 18.0; // hero sections
   static const double radiusFull = 9999.0; // pill / circular
 
   // ── ICON SIZE ────────────────────────────────────────────────
