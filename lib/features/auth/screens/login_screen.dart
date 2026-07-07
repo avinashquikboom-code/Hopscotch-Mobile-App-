@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -29,10 +30,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _sendOTP() async {
-    if (_phoneController.text.trim().isEmpty) {
+    final phone = _phoneController.text.trim();
+    
+    if (phone.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please enter phone number'),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    
+    if (!RegExp(r'^[0-9]{10}$').hasMatch(phone)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a valid 10-digit phone number'),
           backgroundColor: AppTheme.errorColor,
           behavior: SnackBarBehavior.floating,
         ),
@@ -45,8 +59,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
 
     try {
+      final phoneNumber = '+91$phone';
+      
+      if (kDebugMode) {
+        debugPrint('Sending OTP to: $phoneNumber');
+      }
+      
       await ref.read(authRepositoryProvider).sendOTP(
-        phoneNumber: _phoneController.text.trim(),
+        phoneNumber: phoneNumber,
         onCodeSent: (verificationId) {
           setState(() {
             _verificationId = verificationId;
@@ -236,6 +256,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         Icons.phone_outlined,
                         color: AppTheme.primaryColor,
                         size: responsive.iconSize(20),
+                      ),
+                      prefix: Container(
+                        padding: EdgeInsets.only(right: 8),
+                        child: Text(
+                          '+91',
+                          style: TextStyle(
+                            fontSize: responsive.fontSize14,
+                            color: AppTheme.textPrimaryColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
                       filled: true,
                       fillColor: AppTheme.surfaceColor,

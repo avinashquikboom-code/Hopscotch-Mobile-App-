@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,6 +19,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _mobileController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
@@ -26,6 +28,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _mobileController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -38,9 +41,17 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     });
 
     try {
+      final mobile = '+91${_mobileController.text.trim()}';
+      
+      // Log mobile in dev mode
+      if (kDebugMode) {
+        debugPrint('Signup attempt - Mobile: $mobile, Email: ${_emailController.text.trim()}');
+      }
+      
       await ref.read(authNotifierProvider.notifier).signup(
             name: _nameController.text.trim(),
             email: _emailController.text.trim(),
+            mobile: mobile,
             password: _passwordController.text,
           );
       if (mounted) {
@@ -140,6 +151,37 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     }
                     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
                       return l10n.validEmail;
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: responsive.spacing(AppTheme.spaceL)),
+
+                // Mobile
+                TextFormField(
+                  controller: _mobileController,
+                  keyboardType: TextInputType.phone,
+                  style: TextStyle(fontSize: responsive.fontSize14),
+                  decoration: InputDecoration(
+                    hintText: 'Enter mobile number',
+                    hintStyle: TextStyle(fontSize: responsive.fontSize14),
+                    labelText: 'Mobile Number',
+                    labelStyle: TextStyle(fontSize: responsive.fontSize14),
+                    prefixIcon: Icon(Icons.phone_outlined, size: responsive.iconSize(20)),
+                    prefix: Container(
+                      padding: EdgeInsets.only(right: 8),
+                      child: Text(
+                        '+91',
+                        style: TextStyle(fontSize: responsive.fontSize14, color: AppTheme.textPrimaryColor, fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Mobile number is required';
+                    }
+                    if (!RegExp(r'^[0-9]{10}$').hasMatch(value.trim())) {
+                      return 'Please enter a valid 10-digit mobile number';
                     }
                     return null;
                   },

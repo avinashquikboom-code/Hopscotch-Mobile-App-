@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 class FirebaseAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -18,23 +19,41 @@ class FirebaseAuthService {
     required Function(String errorMessage) onError,
   }) async {
     try {
+      if (kDebugMode) {
+        debugPrint('Sending OTP to phone: $phoneNumber');
+      }
+      
       await _auth.verifyPhoneNumber(
         phoneNumber: phoneNumber,
         verificationCompleted: (PhoneAuthCredential credential) async {
           // Auto-sign in on Android
+          if (kDebugMode) {
+            debugPrint('Auto-verification completed');
+          }
           await _auth.signInWithCredential(credential);
         },
         verificationFailed: (FirebaseAuthException e) {
-          onError(e.message ?? 'Failed to send OTP');
+          if (kDebugMode) {
+            debugPrint('OTP verification failed: ${e.code} - ${e.message}');
+          }
+          onError('${e.code}: ${e.message}');
         },
         codeSent: (String verificationId, int? resendToken) {
+          if (kDebugMode) {
+            debugPrint('OTP code sent, verificationId: $verificationId');
+          }
           onCodeSent(verificationId);
         },
         codeAutoRetrievalTimeout: (String verificationId) {
-          // Handle timeout
+          if (kDebugMode) {
+            debugPrint('OTP auto-retrieval timeout');
+          }
         },
       );
     } catch (e) {
+      if (kDebugMode) {
+        debugPrint('OTP send error: $e');
+      }
       onError(e.toString());
     }
   }
@@ -121,6 +140,7 @@ class FirebaseAuthService {
   Future<User?> signup({
     required String name,
     required String email,
+    required String mobile,
     required String password,
   }) async {
     try {
@@ -134,7 +154,7 @@ class FirebaseAuthService {
         // Save user data to Firestore
         await saveUserData(
           userId: user.uid,
-          phoneNumber: '',
+          phoneNumber: mobile,
           name: name,
           email: email,
         );

@@ -104,12 +104,14 @@ class AuthRepository {
   Future<UserModel> signup({
     required String name,
     required String email,
+    required String mobile,
     required String password,
   }) async {
     try {
       final user = await _firebaseAuthService.signup(
         name: name,
         email: email,
+        mobile: mobile,
         password: password,
       );
 
@@ -119,7 +121,7 @@ class AuthRepository {
           id: user.uid,
           email: userData?['email'] ?? email,
           name: userData?['name'] ?? name,
-          phoneNumber: userData?['phoneNumber'] ?? '',
+          phoneNumber: userData?['phoneNumber'] ?? mobile,
           avatarUrl: userData?['avatarUrl'],
           address: userData?['address'],
           city: userData?['city'],
@@ -183,12 +185,14 @@ class AuthStateNotifier extends StateNotifier<UserModel?> {
   Future<void> signup({
     required String name,
     required String email,
+    required String mobile,
     required String password,
   }) async {
     try {
       final user = await _repository.signup(
         name: name,
         email: email,
+        mobile: mobile,
         password: password,
       );
       state = user;
