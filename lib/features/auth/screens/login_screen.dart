@@ -15,27 +15,108 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
+  final _phoneController = TextEditingController();
+  final _otpController = TextEditingController();
   bool _isLoading = false;
+  bool _isOtpSent = false;
+  String _verificationId = '';
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    _phoneController.dispose();
+    _otpController.dispose();
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  Future<void> _sendOTP() async {
+    if (_phoneController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter phone number'),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
     try {
-      await ref
-          .read(authNotifierProvider.notifier)
-          .login(_emailController.text.trim(), _passwordController.text);
+      await ref.read(authRepositoryProvider).sendOTP(
+        phoneNumber: _phoneController.text.trim(),
+        onCodeSent: (verificationId) {
+          setState(() {
+            _verificationId = verificationId;
+            _isOtpSent = true;
+            _isLoading = false;
+          });
+        },
+        onError: (errorMessage) {
+          setState(() {
+            _isLoading = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: AppTheme.errorColor,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _verifyOTP() async {
+    final otp = _otpController.text.trim();
+    
+    if (otp.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter OTP'),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    
+    if (otp.length != 4) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a 4-digit OTP'),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await ref.read(authNotifierProvider.notifier).verifyOTP(
+        verificationId: _verificationId,
+        smsCode: otp,
+      );
       if (mounted) {
         context.go('/');
       }
@@ -131,118 +212,128 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
-                // Email
-                TextField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  style: TextStyle(
-                    color: AppTheme.textPrimaryColor,
-                    fontSize: responsive.fontSize14,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: l10n.enterEmail,
-                    hintStyle: TextStyle(
-                      color: AppTheme.textSecondaryColor.withValues(alpha: 0.6),
+                // Phone Number
+                if (!_isOtpSent) ...[
+                  TextField(
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    style: TextStyle(
+                      color: AppTheme.textPrimaryColor,
                       fontSize: responsive.fontSize14,
                     ),
-                    labelText: l10n.emailAddress,
-                    labelStyle: TextStyle(
-                      color: AppTheme.primaryColor,
-                      fontSize: responsive.fontSize14,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.email_outlined,
-                      color: AppTheme.primaryColor,
-                      size: responsive.iconSize(20),
-                    ),
-                    filled: true,
-                    fillColor: AppTheme.surfaceColor,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
-                      borderSide: const BorderSide(
-                        color: AppTheme.primaryColor,
-                        width: 2,
+                    decoration: InputDecoration(
+                      hintText: 'Enter phone number',
+                      hintStyle: TextStyle(
+                        color: AppTheme.textSecondaryColor.withValues(alpha: 0.6),
+                        fontSize: responsive.fontSize14,
                       ),
-                    ),
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: responsive.spacing(AppTheme.spaceL),
-                      vertical: responsive.spacing(AppTheme.spaceM),
-                    ),
-                  ),
-                ),
-                SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-
-                // Password
-                TextField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  style: TextStyle(
-                    color: AppTheme.textPrimaryColor,
-                    fontSize: responsive.fontSize14,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: l10n.enterPassword,
-                    hintStyle: TextStyle(
-                      color: AppTheme.textSecondaryColor.withValues(alpha: 0.6),
-                      fontSize: responsive.fontSize14,
-                    ),
-                    labelText: l10n.password,
-                    labelStyle: TextStyle(
-                      color: AppTheme.primaryColor,
-                      fontSize: responsive.fontSize14,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.lock_outline_rounded,
-                      color: AppTheme.primaryColor,
-                      size: responsive.iconSize(20),
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                        color: AppTheme.textSecondaryColor,
+                      labelText: 'Phone Number',
+                      labelStyle: TextStyle(
+                        color: AppTheme.primaryColor,
+                        fontSize: responsive.fontSize14,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.phone_outlined,
+                        color: AppTheme.primaryColor,
                         size: responsive.iconSize(20),
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
-                    ),
-                    filled: true,
-                    fillColor: AppTheme.surfaceColor,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
-                      borderSide: const BorderSide(
-                        color: AppTheme.primaryColor,
-                        width: 2,
+                      filled: true,
+                      fillColor: AppTheme.surfaceColor,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                        borderSide: const BorderSide(
+                          color: AppTheme.primaryColor,
+                          width: 2,
+                        ),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: responsive.spacing(AppTheme.spaceL),
+                        vertical: responsive.spacing(AppTheme.spaceM),
                       ),
                     ),
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: responsive.spacing(AppTheme.spaceL),
-                      vertical: responsive.spacing(AppTheme.spaceM),
+                  ),
+                  SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+
+                  // Send OTP Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: responsive.spacing(48),
+                    child: CustomButton(
+                      text: 'Send OTP',
+                      onPressed: _sendOTP,
+                      isLoading: _isLoading,
                     ),
                   ),
-                ),
-                SizedBox(height: responsive.spacing(AppTheme.spaceS)),
+                ] else ...[
+                  // OTP Input
+                  TextField(
+                    controller: _otpController,
+                    keyboardType: TextInputType.number,
+                    maxLength: 4,
+                    style: TextStyle(
+                      color: AppTheme.textPrimaryColor,
+                      fontSize: responsive.fontSize14,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Enter 4-digit OTP',
+                      hintStyle: TextStyle(
+                        color: AppTheme.textSecondaryColor.withValues(alpha: 0.6),
+                        fontSize: responsive.fontSize14,
+                      ),
+                      labelText: '4-Digit OTP',
+                      labelStyle: TextStyle(
+                        color: AppTheme.primaryColor,
+                        fontSize: responsive.fontSize14,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.sms_outlined,
+                        color: AppTheme.primaryColor,
+                        size: responsive.iconSize(20),
+                      ),
+                      counterText: '',
+                      filled: true,
+                      fillColor: AppTheme.surfaceColor,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                        borderSide: const BorderSide(
+                          color: AppTheme.primaryColor,
+                          width: 2,
+                        ),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: responsive.spacing(AppTheme.spaceL),
+                        vertical: responsive.spacing(AppTheme.spaceM),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
 
-                // Forgot Password Link
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => context.push('/forgot-password'),
-                    style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                  // Verify OTP Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: responsive.spacing(48),
+                    child: CustomButton(
+                      text: 'Verify OTP',
+                      onPressed: _verifyOTP,
+                      isLoading: _isLoading,
+                    ),
+                  ),
+                  
+                  SizedBox(height: responsive.spacing(AppTheme.spaceM)),
+                  
+                  // Resend OTP
+                  TextButton(
+                    onPressed: _sendOTP,
                     child: Text(
-                      l10n.forgotPassword,
+                      'Resend OTP',
                       style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontWeight: FontWeight.w600,
@@ -250,45 +341,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ),
                   ),
-                ),
-                SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
-
-                // Sign In Button
-                SizedBox(
-                  width: double.infinity,
-                  height: responsive.spacing(48),
-                  child: CustomButton(
-                    text: l10n.signIn,
-                    onPressed: _handleLogin,
-                    isLoading: _isLoading,
-                  ),
-                ),
-                SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
-
-                // Sign Up Redirection
-                Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        l10n.dontHaveAccount,
-                        style: responsive.bodyMedium.copyWith(
-                          color: AppTheme.textSecondaryColor,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () => context.push('/signup'),
-                        child: Text(
-                          l10n.createAccount,
-                          style: responsive.label.copyWith(
-                            color: AppTheme.primaryColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                ]
               ],
             ),
           ),

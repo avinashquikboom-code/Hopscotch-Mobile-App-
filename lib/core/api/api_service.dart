@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   static const String baseUrl = 'http://localhost:5001'; // Update with your actual backend URL
@@ -16,7 +17,7 @@ class ApiService {
     ));
     
     _dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) {
+      onRequest: (options, handler) async {
         final timestamp = DateTime.now().toIso8601String();
         print('[API] 📤 ${options.method.toUpperCase()} ${options.uri}');
         print('[API] 📤 Timestamp: $timestamp');
@@ -26,7 +27,7 @@ class ApiService {
         }
         
         // Add auth token if available
-        final token = _getToken();
+        final token = await _getToken();
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
           print('[API] 📤 Auth token present');
@@ -57,12 +58,31 @@ class ApiService {
     ));
   }
   
-  String? _getToken() {
-    // TODO: Implement token retrieval from secure storage
-    return null;
+  Future<String?> _getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('auth_token');
+  }
+  
+  Future<void> _saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('auth_token', token);
+  }
+  
+  Future<void> _removeToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('auth_token');
   }
   
   Dio get dio => _dio;
+  
+  // Public methods for token management
+  Future<void> saveAuthToken(String token) async {
+    await _saveToken(token);
+  }
+  
+  Future<void> removeAuthToken() async {
+    await _removeToken();
+  }
   
   Future<Response> get(String path, {Map<String, dynamic>? queryParameters}) {
     return _dio.get(path, queryParameters: queryParameters);

@@ -39,9 +39,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
     try {
       await ref.read(authNotifierProvider.notifier).signup(
-            _nameController.text.trim(),
-            _emailController.text.trim(),
-            _passwordController.text,
+            name: _nameController.text.trim(),
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
           );
       if (mounted) {
         context.go('/');

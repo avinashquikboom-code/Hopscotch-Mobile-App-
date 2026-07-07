@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "556594786143",
+    "project_id": "shopping-70c5d",
+    "storage_bucket": "shopping-70c5d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:556594786143:android:b8ffed79db0006101010ea",
+        "android_client_info": {
+          "package_name": "com.example.hopscotch"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfu9IuOb0hWVgHE4feAONpNzQ6QGbjj3s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
