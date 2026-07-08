@@ -2,9 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/auth_api.dart';
 import '../../../core/api/api_service.dart';
 import '../models/user_model.dart';
+import '../../../core/firebase/firebase_auth_service.dart';
 
 class AuthRepository {
   final AuthApi _authApi;
+  final FirebaseAuthService _firebaseAuthService = FirebaseAuthService();
 
   AuthRepository(this._authApi);
 
@@ -81,7 +83,7 @@ class AuthRepository {
         firstName: updatedUser.name,
         lastName: '',
         phone: updatedUser.phoneNumber,
-        avatar: updatedUser.avatarUrl,
+        avatar: null,
       );
 
       if (response.statusCode == 200) {
@@ -120,6 +122,30 @@ class AuthRepository {
       // Return null if user not found
     }
     return null;
+  }
+
+  // Send OTP using Firebase Auth Service
+  Future<void> sendOTP({
+    required String phoneNumber,
+    required Function(String verificationId) onCodeSent,
+    required Function(String errorMessage) onError,
+  }) async {
+    await _firebaseAuthService.sendOTP(
+      phoneNumber: phoneNumber,
+      onCodeSent: onCodeSent,
+      onError: onError,
+    );
+  }
+
+  // Verify OTP using Firebase Auth Service
+  Future<void> verifyOTP({
+    required String verificationId,
+    required String smsCode,
+  }) async {
+    await _firebaseAuthService.verifyOTP(
+      verificationId: verificationId,
+      smsCode: smsCode,
+    );
   }
 }
 
@@ -186,6 +212,21 @@ class AuthStateNotifier extends StateNotifier<UserModel?> {
   Future<void> loadCurrentUser() async {
     final user = await _repository.getCurrentUser();
     state = user;
+  }
+
+  // Verify OTP for forgot password flow
+  Future<void> verifyOTP({
+    required String verificationId,
+    required String smsCode,
+  }) async {
+    try {
+      await _repository.verifyOTP(
+        verificationId: verificationId,
+        smsCode: smsCode,
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 }
 
