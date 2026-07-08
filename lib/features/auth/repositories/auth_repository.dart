@@ -1,59 +1,73 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../../../../core/firebase/firebase_auth_service.dart';
+import '../../../core/api/auth_api.dart';
+import '../../../core/api/api_service.dart';
 import '../models/user_model.dart';
 
 class AuthRepository {
-  final FirebaseAuthService _firebaseAuthService;
+  final AuthApi _authApi;
 
-  AuthRepository(this._firebaseAuthService);
+  AuthRepository(this._authApi);
 
-  // Send OTP to phone number
-  Future<void> sendOTP({
-    required String phoneNumber,
-    required Function(String verificationId) onCodeSent,
-    required Function(String errorMessage) onError,
-  }) async {
-    await _firebaseAuthService.sendOTP(
-      phoneNumber: phoneNumber,
-      onCodeSent: onCodeSent,
-      onError: onError,
-    );
-  }
-
-  // Verify OTP and sign in
-  Future<UserModel> verifyOTP({
-    required String verificationId,
-    required String smsCode,
+  // Login with email and password
+  Future<UserModel> login({
+    required String email,
+    required String password,
   }) async {
     try {
-      final user = await _firebaseAuthService.verifyOTP(
-        verificationId: verificationId,
-        smsCode: smsCode,
+      final response = await _authApi.login(
+        email: email,
+        password: password,
       );
 
-      if (user != null) {
-        // Save user data to Firestore
-        await _firebaseAuthService.saveUserData(
-          userId: user.uid,
-          phoneNumber: user.phoneNumber ?? '',
-        );
-
-        // Get user data from Firestore
-        final userData = await _firebaseAuthService.getUserData(user.uid);
-
+      if (response.statusCode == 200) {
+        final data = response.data;
         return UserModel(
-          id: user.uid,
-          email: userData?['email'] ?? '',
-          name: userData?['name'] ?? 'User',
-          phoneNumber: userData?['phoneNumber'] ?? user.phoneNumber,
-          avatarUrl: userData?['avatarUrl'],
-          address: userData?['address'],
-          city: userData?['city'],
-          zipCode: userData?['zipCode'],
+          id: data['user']['id'] ?? '',
+          email: data['user']['email'] ?? email,
+          name: data['user']['name'] ?? 'User',
+          phoneNumber: data['user']['phone'] ?? '',
+          avatarUrl: data['user']['avatarUrl'],
+          address: data['user']['address'],
+          city: data['user']['city'],
+          zipCode: data['user']['zipCode'],
         );
       } else {
-        throw Exception('Failed to verify OTP');
+        throw Exception('Login failed');
+      }
+    } catch (e) {
+      throw Exception(e.toString().replaceAll('Exception: ', ''));
+    }
+  }
+
+  // Sign up with email and password
+  Future<UserModel> signup({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final response = await _authApi.register(
+        firstName: name,
+        lastName: '',
+        email: email,
+        password: password,
+        phone: '',
+      );
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final data = response.data;
+        return UserModel(
+          id: data['user']['id'] ?? '',
+          email: data['user']['email'] ?? email,
+          name: data['user']['name'] ?? name,
+          phoneNumber: data['user']['phone'] ?? '',
+          avatarUrl: data['user']['avatarUrl'],
+          address: data['user']['address'],
+          city: data['user']['city'],
+          zipCode: data['user']['zipCode'],
+        );
+      } else {
+        throw Exception('Signup failed');
       }
     } catch (e) {
       throw Exception(e.toString().replaceAll('Exception: ', ''));
@@ -63,14 +77,18 @@ class AuthRepository {
   // Update user profile
   Future<UserModel> updateProfile(UserModel updatedUser) async {
     try {
-      await _firebaseAuthService.updateUserProfile(
-        userId: updatedUser.id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        avatarUrl: updatedUser.avatarUrl,
+      final response = await _authApi.updateProfile(
+        firstName: updatedUser.name,
+        lastName: '',
+        phone: updatedUser.phoneNumber,
+        avatar: updatedUser.avatarUrl,
       );
 
-      return updatedUser;
+      if (response.statusCode == 200) {
+        return updatedUser;
+      } else {
+        throw Exception('Failed to update profile');
+      }
     } catch (e) {
       throw Exception(e.toString().replaceAll('Exception: ', ''));
     }
@@ -78,67 +96,37 @@ class AuthRepository {
 
   // Sign out
   Future<void> logout() async {
-    await _firebaseAuthService.signOut();
+    // Implement logout logic if needed
   }
 
   // Get current user
   Future<UserModel?> getCurrentUser() async {
-    final user = _firebaseAuthService.currentUser;
-    if (user != null) {
-      final userData = await _firebaseAuthService.getUserData(user.uid);
-      return UserModel(
-        id: user.uid,
-        email: userData?['email'] ?? '',
-        name: userData?['name'] ?? 'User',
-        phoneNumber: userData?['phoneNumber'] ?? user.phoneNumber,
-        avatarUrl: userData?['avatarUrl'],
-        address: userData?['address'],
-        city: userData?['city'],
-        zipCode: userData?['zipCode'],
-      );
-    }
-    return null;
-  }
-
-  // Sign up with email and password
-  Future<UserModel> signup({
-    required String name,
-    required String email,
-    required String mobile,
-    required String password,
-  }) async {
     try {
-      final user = await _firebaseAuthService.signup(
-        name: name,
-        email: email,
-        mobile: mobile,
-        password: password,
-      );
-
-      if (user != null) {
-        final userData = await _firebaseAuthService.getUserData(user.uid);
+      final response = await _authApi.getProfile();
+      if (response.statusCode == 200) {
+        final data = response.data;
         return UserModel(
-          id: user.uid,
-          email: userData?['email'] ?? email,
-          name: userData?['name'] ?? name,
-          phoneNumber: userData?['phoneNumber'] ?? mobile,
-          avatarUrl: userData?['avatarUrl'],
-          address: userData?['address'],
-          city: userData?['city'],
-          zipCode: userData?['zipCode'],
+          id: data['id'] ?? '',
+          email: data['email'] ?? '',
+          name: data['name'] ?? 'User',
+          phoneNumber: data['phone'] ?? '',
+          avatarUrl: data['avatarUrl'],
+          address: data['address'],
+          city: data['city'],
+          zipCode: data['zipCode'],
         );
-      } else {
-        throw Exception('Failed to create account');
       }
     } catch (e) {
-      throw Exception(e.toString().replaceAll('Exception: ', ''));
+      // Return null if user not found
     }
+    return null;
   }
 }
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  final firebaseAuthService = FirebaseAuthService();
-  return AuthRepository(firebaseAuthService);
+  final apiService = ApiService();
+  final authApi = AuthApi(apiService);
+  return AuthRepository(authApi);
 });
 
 // A StateNotifier to manage user authentication state
@@ -147,14 +135,32 @@ class AuthStateNotifier extends StateNotifier<UserModel?> {
 
   AuthStateNotifier(this._repository) : super(null);
 
-  Future<void> verifyOTP({
-    required String verificationId,
-    required String smsCode,
+  Future<void> login({
+    required String email,
+    required String password,
   }) async {
     try {
-      final user = await _repository.verifyOTP(
-        verificationId: verificationId,
-        smsCode: smsCode,
+      final user = await _repository.login(
+        email: email,
+        password: password,
+      );
+      state = user;
+    } catch (e) {
+      state = null;
+      rethrow;
+    }
+  }
+
+  Future<void> signup({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final user = await _repository.signup(
+        name: name,
+        email: email,
+        password: password,
       );
       state = user;
     } catch (e) {
@@ -180,26 +186,6 @@ class AuthStateNotifier extends StateNotifier<UserModel?> {
   Future<void> loadCurrentUser() async {
     final user = await _repository.getCurrentUser();
     state = user;
-  }
-
-  Future<void> signup({
-    required String name,
-    required String email,
-    required String mobile,
-    required String password,
-  }) async {
-    try {
-      final user = await _repository.signup(
-        name: name,
-        email: email,
-        mobile: mobile,
-        password: password,
-      );
-      state = user;
-    } catch (e) {
-      state = null;
-      rethrow;
-    }
   }
 }
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dio/dio.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/utils/responsive_text.dart';
@@ -35,17 +34,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final password = _passwordController.text.trim();
     
     if (email.isEmpty) {
-      _showError('Please enter email');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter email'),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
       return;
     }
     
     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
-      _showError('Please enter a valid email');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a valid email'),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
       return;
     }
     
     if (password.isEmpty) {
-      _showError('Please enter password');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter password'),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
       return;
     }
 
@@ -64,77 +81,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       
       if (response.statusCode == 200) {
         if (mounted) {
-          _showSuccess('Login successful');
           context.go('/');
         }
-      } else if (response.statusCode == 401) {
-        _showError('Invalid email or password');
-      } else if (response.statusCode == 404) {
-        _showError('User not found. Please sign up first');
-      } else if (response.statusCode == 429) {
-        _showError('Too many attempts. Please try again later');
       } else {
-        final errorMessage = response.data['message'] ?? 'Login failed';
-        _showError(errorMessage);
-      }
-    } on DioException catch (e) {
-      DevLogger.logError(e.toString(), context: 'Login DioError');
-      if (e.type == DioExceptionType.connectionTimeout) {
-        _showError('Connection timeout. Please check your internet');
-      } else if (e.type == DioExceptionType.connectionError) {
-        _showError('No internet connection');
-      } else if (e.type == DioExceptionType.receiveTimeout) {
-        _showError('Server not responding. Please try again');
-      } else if (e.type == DioExceptionType.badResponse) {
-        final statusCode = e.response?.statusCode;
-        if (statusCode == 401) {
-          _showError('Invalid email or password');
-        } else if (statusCode == 404) {
-          _showError('User not found. Please sign up first');
-        } else if (statusCode == 500) {
-          _showError('Server error. Please try again later');
-        } else {
-          final errorMessage = e.response?.data['message'] ?? 'Login failed';
-          _showError(errorMessage);
-        }
-      } else {
-        _showError('An unexpected error occurred');
+        throw Exception('Login failed');
       }
     } catch (e) {
-      DevLogger.logError(e.toString(), context: 'Login General');
-      _showError('An unexpected error occurred');
+      DevLogger.logError(e.toString(), context: 'Login');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
       }
-    }
-  }
-
-  void _showError(String message) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: AppTheme.errorColor,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 3),
-        ),
-      );
-    }
-  }
-
-  void _showSuccess(String message) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: AppTheme.primaryColor,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 2),
-        ),
-      );
     }
   }
 
