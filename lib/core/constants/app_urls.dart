@@ -1,6 +1,6 @@
 class AppUrls {
   // Base API URLs
-  static const String mobileBaseUrl = 'http://192.168.1.103:5001';
+  static const String mobileBaseUrl = 'https://api.fciseller.com';
 
   //Auth Gateways
   static const String login = '/api/auth/login';
