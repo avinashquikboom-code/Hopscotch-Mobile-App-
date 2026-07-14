@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'core/firebase/firebase_config.dart';
-import 'core/routes/app_pages.dart';
-import 'core/theme/app_theme.dart';
-import 'core/providers/language_provider.dart';
-import 'l10n/app_localizations.dart';
+import 'package:hopscotch/firebase/firebase_config.dart';
+import 'package:hopscotch/routes/app_pages.dart';
+import 'package:hopscotch/theme/app_theme.dart';
+import 'package:hopscotch/providers/language_provider.dart';
+import 'package:hopscotch/l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
