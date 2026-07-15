@@ -9,10 +9,31 @@ ProductModel mapBackendToMobileProduct(Map<String, dynamic> raw) {
   final title = raw['name']?.toString() ?? 'Unnamed';
   final description = raw['description']?.toString() ?? '';
   
-  final price = (raw['price'] as num?)?.toDouble() ?? 
-                (raw['basePrice'] as num?)?.toDouble() ?? 0.0;
+  // Safely parse price/basePrice (handles both num and string representation of decimals)
+  double price = 0.0;
+  if (raw['price'] != null) {
+    if (raw['price'] is num) {
+      price = (raw['price'] as num).toDouble();
+    } else {
+      price = double.tryParse(raw['price'].toString()) ?? 0.0;
+    }
+  } else if (raw['basePrice'] != null) {
+    if (raw['basePrice'] is num) {
+      price = (raw['basePrice'] as num).toDouble();
+    } else {
+      price = double.tryParse(raw['basePrice'].toString()) ?? 0.0;
+    }
+  }
   
-  final discountValue = (raw['discountValue'] as num?)?.toDouble() ?? 0.0;
+  // Safely parse discountValue
+  double discountValue = 0.0;
+  if (raw['discountValue'] != null) {
+    if (raw['discountValue'] is num) {
+      discountValue = (raw['discountValue'] as num).toDouble();
+    } else {
+      discountValue = double.tryParse(raw['discountValue'].toString()) ?? 0.0;
+    }
+  }
   
   const apiBase = AppUrls.mobileBaseUrl;
   
@@ -51,8 +72,26 @@ ProductModel mapBackendToMobileProduct(Map<String, dynamic> raw) {
   final isTrending = raw['isTrending'] as bool? ?? false;
   final isNewArrival = raw['isNewArrival'] as bool? ?? false;
   final isFeatured = raw['isFeatured'] as bool? ?? false;
-  final rating = (raw['avgRating'] as num?)?.toDouble() ?? 4.5;
-  final reviewCount = (raw['reviewCount'] as num?)?.toInt() ?? 0;
+  
+  // Safely parse avgRating
+  double rating = 4.5;
+  if (raw['avgRating'] != null) {
+    if (raw['avgRating'] is num) {
+      rating = (raw['avgRating'] as num).toDouble();
+    } else {
+      rating = double.tryParse(raw['avgRating'].toString()) ?? 4.5;
+    }
+  }
+
+  // Safely parse reviewCount
+  int reviewCount = 0;
+  if (raw['reviewCount'] != null) {
+    if (raw['reviewCount'] is num) {
+      reviewCount = (raw['reviewCount'] as num).toInt();
+    } else {
+      reviewCount = int.tryParse(raw['reviewCount'].toString()) ?? 0;
+    }
+  }
   
   final rawVariants = raw['variants'] as List?;
   List<String> sizes = [];
@@ -106,7 +145,15 @@ class ProductRepository {
       final response = await _apiService.get(AppUrls.products);
       if (response.statusCode == 200) {
         final data = response.data;
-        final List? rawList = data is Map ? data['data'] : data;
+        List? rawList;
+        if (data is Map) {
+          final dataField = data['data'];
+          if (dataField is Map) {
+            rawList = dataField['products'] as List?;
+          } else if (dataField is List) {
+            rawList = dataField;
+          }
+        }
         if (rawList != null) {
           return rawList.map((e) => mapBackendToMobileProduct(Map<String, dynamic>.from(e))).toList();
         }

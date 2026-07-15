@@ -206,8 +206,12 @@ class AuthApi {
   }
 
   Future<Response> logout() async {
+    final refreshToken = await _secureStorage.getRefreshToken();
     final response = await _apiService.post(
       AppUrls.logout,
+      data: {
+        if (refreshToken != null) 'refreshToken': refreshToken,
+      },
     );
     
     // Clear all secure storage data regardless of response
