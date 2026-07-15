@@ -20,6 +20,7 @@ class SignupScreen extends ConsumerStatefulWidget {
 class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
@@ -30,6 +31,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -38,6 +40,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   Future<void> _signup() async {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
+    final phone = _phoneController.text.trim();
     final password = _passwordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
     
@@ -67,6 +70,28 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please enter a valid email'),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    if (phone.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter phone number'),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    
+    if (!RegExp(r'^\+?[0-9]{10,15}$').hasMatch(phone)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a valid phone number (10+ digits)'),
           backgroundColor: AppTheme.errorColor,
           behavior: SnackBarBehavior.floating,
         ),
@@ -131,7 +156,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         lastName: '',
         email: email,
         password: password,
-        phone: '',
+        phone: phone,
       );
       
       if (response.statusCode == 201 || response.statusCode == 200) {
@@ -178,11 +203,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Container(
-            height:
-                MediaQuery.of(context).size.height -
-                MediaQuery.of(context).padding.top,
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height -
+                  MediaQuery.of(context).padding.top -
+                  MediaQuery.of(context).padding.bottom,
+            ),
             padding: EdgeInsets.symmetric(
               horizontal: responsive.spacing(AppTheme.spaceXL),
+              vertical: responsive.spacing(AppTheme.spaceL),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -308,6 +336,51 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     ),
                     prefixIcon: Icon(
                       Icons.email_outlined,
+                      color: AppTheme.primaryColor,
+                      size: responsive.iconSize(20),
+                    ),
+                    filled: true,
+                    fillColor: AppTheme.surfaceColor,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                      borderSide: const BorderSide(
+                        color: AppTheme.primaryColor,
+                        width: 2,
+                      ),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: responsive.spacing(AppTheme.spaceL),
+                      vertical: responsive.spacing(AppTheme.spaceM),
+                    ),
+                  ),
+                ),
+                SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+
+                // Phone Number
+                TextField(
+                  controller: _phoneController,
+                  keyboardType: TextInputType.phone,
+                  style: TextStyle(
+                    color: AppTheme.textPrimaryColor,
+                    fontSize: responsive.fontSize14,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Enter phone number',
+                    hintStyle: TextStyle(
+                      color: AppTheme.textSecondaryColor.withValues(alpha: 0.6),
+                      fontSize: responsive.fontSize14,
+                    ),
+                    labelText: 'Phone Number',
+                    labelStyle: TextStyle(
+                      color: AppTheme.primaryColor,
+                      fontSize: responsive.fontSize14,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.phone_outlined,
                       color: AppTheme.primaryColor,
                       size: responsive.iconSize(20),
                     ),
