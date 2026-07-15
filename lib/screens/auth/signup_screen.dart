@@ -5,6 +5,7 @@ import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/widgets/custom_button.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/utils/dev_logger.dart';
+import 'package:hopscotch/utils/error_handler.dart';
 import 'package:hopscotch/api/auth_api.dart';
 import 'package:hopscotch/api/api_service.dart';
 import 'package:hopscotch/l10n/app_localizations.dart';
@@ -150,9 +151,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     } catch (e) {
       DevLogger.logError(e.toString(), context: 'Signup');
       if (mounted) {
+        final errorMessage = ErrorHandler.getErrorMessage(e);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString().replaceAll('Exception: ', '')),
+            content: Text(errorMessage),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),

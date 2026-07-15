@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/widgets/custom_button.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
+import 'package:hopscotch/utils/error_handler.dart';
 import 'package:hopscotch/repositories/auth_repository.dart';
 import 'package:hopscotch/l10n/app_localizations.dart';
 
@@ -75,9 +76,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         _isLoading = false;
       });
       if (mounted) {
+        final errorMessage = ErrorHandler.getErrorMessage(e);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString().replaceAll('Exception: ', '')),
+            content: Text(errorMessage),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -144,9 +146,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final errorMessage = ErrorHandler.getErrorMessage(e);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString().replaceAll('Exception: ', '')),
+            content: Text(errorMessage),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
