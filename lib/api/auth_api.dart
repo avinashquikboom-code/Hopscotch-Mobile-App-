@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:hopscotch/api/api_service.dart';
 import 'package:hopscotch/constants/app_urls.dart';
+import 'package:hopscotch/utils/dev_logger.dart';
 import 'package:hopscotch/services/secure_storage_service.dart';
 import 'package:hopscotch/services/device_info_service.dart';
 
@@ -216,7 +217,7 @@ class AuthApi {
         },
       );
     } catch (e) {
-      print('[AuthApi] Server logout failed (expected if token expired/invalid): $e');
+      DevLogger.logError('Server logout failed (expected if token expired/invalid): $e', context: 'AuthApi');
     } finally {
       // Clear all secure storage data regardless of response
       await _secureStorage.clearAll();

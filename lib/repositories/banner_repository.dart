@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hopscotch/api/api_service.dart';
 import 'package:hopscotch/providers/api_provider.dart';
+import 'package:hopscotch/utils/dev_logger.dart';
 import 'package:hopscotch/constants/app_urls.dart';
 import 'package:hopscotch/models/banner_model.dart';
 
@@ -36,10 +37,10 @@ class BannerRepository {
           }).toList();
         }
       } else if (response.statusCode == 404) {
-        print('[BannerRepository] Banners endpoint not found');
+        DevLogger.logError('Banners endpoint not found', context: 'BannerRepository');
       }
     } catch (e) {
-      print('[BannerRepository] Error fetching banners: $e');
+      DevLogger.logError('Error fetching banners: $e', context: 'BannerRepository');
     }
 
     return [];

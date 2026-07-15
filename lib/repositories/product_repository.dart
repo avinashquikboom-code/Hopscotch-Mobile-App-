@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hopscotch/api/api_service.dart';
 import 'package:hopscotch/providers/api_provider.dart';
+import 'package:hopscotch/utils/dev_logger.dart';
 import 'package:hopscotch/constants/app_urls.dart';
 import 'package:hopscotch/models/product_model.dart';
 
@@ -159,7 +160,7 @@ class ProductRepository {
         }
       }
     } catch (e) {
-      print('[ProductRepository] Error fetching products: $e');
+      DevLogger.logError('Error fetching products: $e', context: 'ProductRepository');
       throw Exception('Failed to fetch products');
     }
 
@@ -197,7 +198,7 @@ class ProductRepository {
         }
       }
     } catch (e) {
-      print('[ProductRepository] Error fetching product details: $e');
+      DevLogger.logError('Error fetching product details: $e', context: 'ProductRepository');
     }
 
     final products = await getProducts();

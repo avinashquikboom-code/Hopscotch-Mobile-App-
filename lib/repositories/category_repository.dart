@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hopscotch/api/api_service.dart';
 import 'package:hopscotch/providers/api_provider.dart';
+import 'package:hopscotch/utils/dev_logger.dart';
 import 'package:hopscotch/constants/app_urls.dart';
 import 'package:hopscotch/models/category_model.dart';
 
@@ -40,10 +41,10 @@ class CategoryRepository {
           }).toList();
         }
       } else if (response.statusCode == 404) {
-        print('[CategoryRepository] Categories endpoint not found');
+        DevLogger.logError('Categories endpoint not found', context: 'CategoryRepository');
       }
     } catch (e) {
-      print('[CategoryRepository] Error fetching categories: $e');
+      DevLogger.logError('Error fetching categories: $e', context: 'CategoryRepository');
       // Return empty list instead of throwing exception
       return [];
     }

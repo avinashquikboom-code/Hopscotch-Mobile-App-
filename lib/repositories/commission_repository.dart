@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hopscotch/api/api_service.dart';
 import 'package:hopscotch/providers/api_provider.dart';
+import 'package:hopscotch/utils/dev_logger.dart';
 import 'package:hopscotch/constants/app_urls.dart';
 import 'package:hopscotch/models/commission_model.dart';
 
@@ -20,7 +21,7 @@ class CommissionRepository {
         }
       }
     } catch (e) {
-      print('[CommissionRepository] Error fetching commission: $e');
+      DevLogger.logError('Error fetching commission: $e', context: 'CommissionRepository');
     }
     return null;
   }

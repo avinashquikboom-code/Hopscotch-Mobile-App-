@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hopscotch/api/api_service.dart';
 import 'package:hopscotch/api/auth_api.dart';
 import 'package:hopscotch/providers/api_provider.dart';
+import 'package:hopscotch/utils/dev_logger.dart';
 
 class ProfileRepository {
   final ApiService _apiService;
@@ -17,7 +18,7 @@ class ProfileRepository {
       }
       return null;
     } catch (e) {
-      print('[ProfileRepository] Error fetching profile: $e');
+      DevLogger.logError('Error fetching profile: $e', context: 'ProfileRepository');
       return null;
     }
   }
