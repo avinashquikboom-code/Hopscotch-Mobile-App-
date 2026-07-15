@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'package:gallery_saver_plus/gallery_saver.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/providers/currency_provider.dart';
