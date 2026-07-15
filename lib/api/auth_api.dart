@@ -170,7 +170,7 @@ class AuthApi {
   }
   
   Future<Response> getProfile() async {
-    return await _apiService.get('/api/auth/profile');
+    return await _apiService.get('/api/auth/me');
   }
   
   Future<Response> updateProfile({
@@ -190,12 +190,12 @@ class AuthApi {
         ),
       });
       return await _apiService.patch(
-        '/api/auth/profile',
+        '/api/users/me',
         data: formData,
       );
     } else {
       return await _apiService.patch(
-        '/api/auth/profile',
+        '/api/users/me',
         data: {
           if (firstName != null) 'firstName': firstName,
           if (lastName != null) 'lastName': lastName,

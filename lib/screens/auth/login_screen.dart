@@ -8,6 +8,7 @@ import 'package:hopscotch/utils/dev_logger.dart';
 import 'package:hopscotch/utils/error_handler.dart';
 import 'package:hopscotch/api/auth_api.dart';
 import 'package:hopscotch/api/api_service.dart';
+import 'package:hopscotch/widgets/toast_notification.dart';
 import 'package:hopscotch/l10n/app_localizations.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -82,6 +83,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       
       if (response.statusCode == 200) {
         if (mounted) {
+          ToastNotification.show(
+            context,
+            message: 'Login successful',
+            isError: false,
+          );
           context.go('/');
         }
       } else {
