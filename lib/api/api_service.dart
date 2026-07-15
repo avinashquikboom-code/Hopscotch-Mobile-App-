@@ -68,7 +68,9 @@ class ApiService {
         }
         
         // Handle 401 errors with token refresh
-        if (error.response?.statusCode == 401 && !_isRefreshing) {
+        final path = error.requestOptions.path;
+        final isAuthEndpoint = path.contains(AppUrls.refreshToken) || path.contains(AppUrls.logout);
+        if (error.response?.statusCode == 401 && !_isRefreshing && !isAuthEndpoint) {
           _isRefreshing = true;
           try {
             final refreshToken = await _secureStorage.getRefreshToken();

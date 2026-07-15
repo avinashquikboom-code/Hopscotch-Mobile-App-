@@ -205,17 +205,22 @@ class AuthApi {
     }
   }
 
-  Future<Response> logout() async {
-    final refreshToken = await _secureStorage.getRefreshToken();
-    final response = await _apiService.post(
-      AppUrls.logout,
-      data: {
-        if (refreshToken != null) 'refreshToken': refreshToken,
-      },
-    );
-    
-    // Clear all secure storage data regardless of response
-    await _secureStorage.clearAll();
+  Future<Response?> logout() async {
+    Response? response;
+    try {
+      final refreshToken = await _secureStorage.getRefreshToken();
+      response = await _apiService.post(
+        AppUrls.logout,
+        data: {
+          if (refreshToken != null) 'refreshToken': refreshToken,
+        },
+      );
+    } catch (e) {
+      print('[AuthApi] Server logout failed (expected if token expired/invalid): $e');
+    } finally {
+      // Clear all secure storage data regardless of response
+      await _secureStorage.clearAll();
+    }
     
     return response;
   }
