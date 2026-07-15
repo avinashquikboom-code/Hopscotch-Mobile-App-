@@ -5,6 +5,8 @@ import 'package:hopscotch/repositories/cart_wishlist_repository.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/providers/currency_provider.dart';
 import 'package:hopscotch/widgets/animated_heart_button.dart';
+import 'package:hopscotch/widgets/share_earn_bottom_sheet.dart';
+import 'package:remixicon/remixicon.dart';
 
 class ProductCard extends ConsumerWidget {
   final ProductModel product;
@@ -224,6 +226,41 @@ class ProductCard extends ConsumerWidget {
                             baseColor: AppTheme.textSecondaryColor,
                             onTap: () {},
                           ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Share Catalog button
+                  Positioned(
+                    bottom: AppTheme.spaceS,
+                    right: AppTheme.spaceS,
+                    child: GestureDetector(
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) => ShareEarnBottomSheet(product: product),
+                        );
+                      },
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Remix.share_forward_line,
+                          color: AppTheme.textPrimaryColor,
+                          size: 20,
                         ),
                       ),
                     ),

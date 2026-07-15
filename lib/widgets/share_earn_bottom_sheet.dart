@@ -179,7 +179,7 @@ https://hopscotch.com/p/${widget.product.id}
     }
   }
 
-  // Mock download images
+  // Download all product images to the device gallery
   Future<void> _downloadImages() async {
     HapticFeedback.mediumImpact();
     if (mounted) {
@@ -203,7 +203,7 @@ https://hopscotch.com/p/${widget.product.id}
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Downloading images...',
+                  'Saving images to gallery...',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -218,24 +218,74 @@ https://hopscotch.com/p/${widget.product.id}
       );
     }
 
-    await Future.delayed(const Duration(milliseconds: 1500));
+    try {
+      final imageUrls = [
+        widget.product.imageUrl,
+        ...widget.product.additionalImages,
+      ];
 
-    if (mounted) {
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Row(
-            children: [
-              Icon(Icons.download_done_rounded, color: Colors.white),
-              SizedBox(width: 8),
-              Text('All images saved to your gallery successfully!'),
-            ],
+      int savedCount = 0;
+      for (final url in imageUrls) {
+        if (url.trim().isEmpty) continue;
+        final success = await GallerySaver.saveImage(
+          url,
+          albumName: 'Aura Couture',
+        );
+        if (success ?? false) savedCount++;
+      }
+
+      if (mounted) {
+        Navigator.of(context).pop();
+        if (savedCount > 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.download_done_rounded, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Text('$savedCount image(s) saved to gallery'),
+                ],
+              ),
+              backgroundColor: Colors.green[700],
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Row(
+                children: [
+                  Icon(Icons.error_outline_rounded, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text('Could not save images. Please try again.'),
+                ],
+              ),
+              backgroundColor: AppTheme.errorColor,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline_rounded, color: Colors.white),
+                const SizedBox(width: 8),
+                Text('Failed to save images: $e'),
+              ],
+            ),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
-          backgroundColor: Colors.green[700],
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-      );
+        );
+      }
     }
   }
 
