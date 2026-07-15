@@ -5,6 +5,19 @@ class ErrorHandler {
     if (error is DioException) {
       if (error.response?.data != null && error.response?.data is Map) {
         final data = error.response!.data as Map;
+        
+        if (data['errors'] != null && data['errors'] is List) {
+          final errorsList = data['errors'] as List;
+          final errorMessages = errorsList
+              .where((e) => e is Map && e['message'] != null)
+              .map((e) => (e as Map)['message'].toString())
+              .toList();
+          
+          if (errorMessages.isNotEmpty) {
+            return errorMessages.join('\n');
+          }
+        }
+        
         final message = data['message']?.toString();
         if (message != null && message.isNotEmpty) {
           return message;
