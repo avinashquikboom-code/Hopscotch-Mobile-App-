@@ -293,9 +293,12 @@ https://hopscotch.com/p/${widget.product.id}
               AnimatedSize(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeInOut,
-                child: _currentStep == ShareEarnStep.shareCatalog
-                    ? _buildShareCatalogStep(responsive, currency)
-                    : _buildSetMarginStep(responsive, currency),
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: _currentStep == ShareEarnStep.shareCatalog
+                      ? _buildShareCatalogStep(responsive, currency)
+                      : _buildSetMarginStep(responsive, currency),
+                ),
               ),
             ],
           ),
