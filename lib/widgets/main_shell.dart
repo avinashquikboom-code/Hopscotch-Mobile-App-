@@ -1,4 +1,3 @@
-import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -56,7 +55,6 @@ class MainShell extends ConsumerWidget {
     final wishlistCount = wishlist.length;
 
     final isAndroid = Theme.of(context).platform == TargetPlatform.android;
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     final icons = <List<IconData>>[
       [
@@ -84,176 +82,60 @@ class MainShell extends ConsumerWidget {
     final badges = <int>[0, 0, wishlistCount, cartCount, 0];
 
     return Scaffold(
-      extendBody: true, // content flows behind the floating dock
       body: child,
-      bottomNavigationBar: SafeArea(
-        top: false,
-        minimum: EdgeInsets.only(bottom: bottomPadding > 0 ? 6 : 14),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(32),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(
-                height: 62,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.88),
-                  borderRadius: BorderRadius.circular(32),
-                  border: Border.all(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.10),
-                    width: 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.textPrimaryColor.withValues(alpha: 0.10),
-                      blurRadius: 28,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: List.generate(5, (i) {
-                    return _DockItem(
-                      icon: icons[i][0],
-                      activeIcon: icons[i][1],
-                      label: _labels[i],
-                      isSelected: selectedIndex == i,
-                      badgeCount: badges[i],
-                      onTap: () => _onItemTapped(i, context),
-                    );
-                  }),
-                ),
-              ),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: AppTheme.borderColor.withValues(alpha: 0.5),
+              width: 0.5,
             ),
           ),
         ),
-      ),
-    );
-  }
-}
+        child: BottomNavigationBar(
+          currentIndex: selectedIndex,
+          onTap: (index) => _onItemTapped(index, context),
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.white,
+          selectedItemColor: AppTheme.primaryColor,
+          unselectedItemColor: AppTheme.textSecondaryColor,
+          selectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 10,
+            letterSpacing: 0.5,
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.normal,
+            fontSize: 10,
+            letterSpacing: 0.5,
+          ),
+          items: List.generate(5, (i) {
+            final count = badges[i];
+            Widget iconWidget = Icon(
+              selectedIndex == i ? icons[i][1] : icons[i][0],
+              size: 22,
+            );
 
-class _DockItem extends StatelessWidget {
-  final IconData icon;
-  final IconData activeIcon;
-  final String label;
-  final bool isSelected;
-  final int badgeCount;
-  final VoidCallback onTap;
-
-  const _DockItem({
-    required this.icon,
-    required this.activeIcon,
-    required this.label,
-    required this.isSelected,
-    required this.badgeCount,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // Active tab takes more room; inactive tabs share the rest evenly.
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 280),
-      curve: Curves.fastOutSlowIn,
-      width: isSelected ? 112 : 52,
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Center(
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 280),
-                curve: Curves.fastOutSlowIn,
-                height: 42,
-                padding: EdgeInsets.symmetric(horizontal: isSelected ? 16 : 10),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppTheme.primaryColor
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(21),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      isSelected ? activeIcon : icon,
-                      color: isSelected
-                          ? Colors.white
-                          : AppTheme.textSecondaryColor,
-                      size: 21,
-                    ),
-                    // Label appears only inside the active capsule —
-                    // uppercase, letterspaced, garment-tag editorial.
-                    AnimatedSize(
-                      duration: const Duration(milliseconds: 280),
-                      curve: Curves.fastOutSlowIn,
-                      child: isSelected
-                          ? Padding(
-                              padding: const EdgeInsets.only(left: 8),
-                              child: Text(
-                                label,
-                                maxLines: 1,
-                                overflow: TextOverflow.fade,
-                                softWrap: false,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 1.6,
-                                ),
-                              ),
-                            )
-                          : const SizedBox.shrink(),
-                    ),
-                  ],
-                ),
-              ),
-              if (badgeCount > 0)
-                Positioned(
-                  top: -3,
-                  right: isSelected ? null : -2,
-                  left: isSelected ? 24 : null,
-                  child: TweenAnimationBuilder<double>(
-                    key: ValueKey(badgeCount),
-                    duration: const Duration(milliseconds: 500),
-                    tween: Tween<double>(begin: 0.3, end: 1.0),
-                    curve: Curves.elasticOut,
-                    builder: (context, value, child) {
-                      return Transform.scale(scale: value, child: child);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 2.5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppTheme.accentColor,
-                        borderRadius: BorderRadius.circular(9),
-                        border: Border.all(color: Colors.white, width: 1.5),
-                      ),
-                      constraints: const BoxConstraints(
-                        minWidth: 17,
-                        minHeight: 17,
-                      ),
-                      child: Text(
-                        badgeCount > 9 ? '9+' : badgeCount.toString(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 8.5,
-                          fontWeight: FontWeight.bold,
-                          height: 1.2,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
+            if (count > 0) {
+              iconWidget = Badge(
+                label: Text(
+                  count > 9 ? '9+' : count.toString(),
+                  style: const TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-            ],
-          ),
+                backgroundColor: AppTheme.accentColor,
+                textColor: Colors.white,
+                child: iconWidget,
+              );
+            }
+
+            return BottomNavigationBarItem(
+              icon: iconWidget,
+              label: _labels[i],
+            );
+          }),
         ),
       ),
     );

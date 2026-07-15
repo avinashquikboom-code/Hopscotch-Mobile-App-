@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
+import 'package:hopscotch/utils/dev_logger.dart';
 import 'package:hopscotch/repositories/product_repository.dart';
 import 'package:hopscotch/repositories/category_repository.dart';
 import 'package:hopscotch/repositories/auth_repository.dart';
@@ -13,14 +16,52 @@ import 'package:hopscotch/models/banner_model.dart';
 import 'package:hopscotch/widgets/product_card.dart';
 import 'package:hopscotch/widgets/skeleton_loaders.dart';
 import 'package:hopscotch/l10n/app_localizations.dart';
-
 import 'dart:io';
 import 'package:hopscotch/widgets/visual_search_bottom_sheet.dart';
 
-// ─── Blinkit-style palette (tune to your brand) ───────────────────────────────
-const _kHeaderTop = Color(0xFF0A1F44); // deep navy
-const _kHeaderBottom = Color(0xFF123A6B); // lighter navy
-const _kOnHeader = Colors.white;
+// ─────────────────────────────────────────────────────────────
+// LOCATION PROVIDER — Geolocates user address details
+// ─────────────────────────────────────────────────────────────
+
+class UserLocation {
+  final String area;    // "Sector 8"
+  final String city;    // "Kopar Khairane, Navi Mumbai"
+  const UserLocation({required this.area, required this.city});
+}
+
+final userLocationProvider = FutureProvider<UserLocation>((ref) async {
+  try {
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      return const UserLocation(area: 'Set location', city: 'Tap to choose');
+    }
+
+    final pos = await Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(accuracy: LocationAccuracy.medium),
+    );
+    final placemarks = await placemarkFromCoordinates(pos.latitude, pos.longitude);
+    if (placemarks.isNotEmpty) {
+      final p = placemarks.first;
+      return UserLocation(
+        area: p.subLocality?.isNotEmpty == true ? p.subLocality! : (p.locality ?? 'Detected Location'),
+        city: [p.locality, p.administrativeArea]
+            .where((e) => e != null && e.isNotEmpty)
+            .join(', '),
+      );
+    }
+  } catch (e) {
+    DevLogger.logError('Error getting location: $e', context: 'UserLocationProvider');
+  }
+  return const UserLocation(area: 'Set location', city: 'Tap to choose');
+});
+
+// ─────────────────────────────────────────────────────────────
+// HOME SCREEN
+// ─────────────────────────────────────────────────────────────
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -29,27 +70,20 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen>
-    with SingleTickerProviderStateMixin {
-  late PageController _bannerController;
-  late AnimationController _fadeController;
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  int _selectedTab = 0;
   int _activeBanner = 0;
+  late PageController _bannerController;
 
   @override
   void initState() {
     super.initState();
     _bannerController = PageController(initialPage: 0);
-    _fadeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-    _fadeController.forward();
   }
 
   @override
   void dispose() {
     _bannerController.dispose();
-    _fadeController.dispose();
     super.dispose();
   }
 
@@ -62,667 +96,673 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(authNotifierProvider);
+    final size = MediaQuery.of(context).size;
+    final width = size.width;
+    
+    // Check viewport category
+    final isDesktop = width > 1200;
+    final isTablet = width > 600 && width <= 1200;
+
+    // Responsive design dimensions
+    final double horizontalPadding = isDesktop ? 64 : (isTablet ? 32 : 20);
+    final double mainAxisSpacing = isDesktop ? 24 : 16;
+    final double crossAxisSpacing = isDesktop ? 24 : 16;
+    final int crossAxisCount = isDesktop ? 5 : (isTablet ? 3 : 2);
+    final double childAspectRatio = isDesktop ? 0.72 : (isTablet ? 0.68 : 0.65);
+    final double bannerHeight = isDesktop ? 350 : (isTablet ? 260 : 180);
+    final double trendingHeight = isDesktop ? 340 : (isTablet ? 310 : 290);
+
+    final location = ref.watch(userLocationProvider);
+    final topPadding = MediaQuery.of(context).padding.top;
+    
     final categoriesAsync = ref.watch(allCategoriesProvider);
+    final categories = categoriesAsync.value ?? [];
+    
     final trendingAsync = ref.watch(trendingProductsProvider);
     final newArrivalsAsync = ref.watch(newArrivalsProvider);
-    final notifications = ref.watch(notificationProvider);
     final bannersAsync = ref.watch(bannersProvider);
-    final unreadNotifications = notifications.where((n) => !n.isRead).length;
+    
     final responsive = context.responsive;
     final l10n = AppLocalizations.of(context)!;
-    final screenH = MediaQuery.of(context).size.height;
 
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
-      child: Scaffold(
-        body: RefreshIndicator(
-          onRefresh: () async {
-            ref.invalidate(allCategoriesProvider);
-            ref.invalidate(trendingProductsProvider);
-            ref.invalidate(newArrivalsProvider);
-            ref.invalidate(bannersProvider);
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.only(
-              bottom: 120,
-            ), // Leave space for floating nav bar
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    // Construct the sliver list dynamically based on selection tab
+    final List<Widget> slivers = [
+      // 1. LOCATION HEADER — scrolls away
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(horizontalPadding, topPadding + 12, horizontalPadding, 4),
+          child: Row(
+            children: [
+              const Icon(Icons.location_on_outlined,
+                  color: AppTheme.primaryColor, size: 22),
+              const SizedBox(width: 8),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    ref.invalidate(userLocationProvider);
+                  },
+                  child: location.when(
+                    loading: () => const _LocationText(
+                        area: 'Detecting…', city: ' '),
+                    error: (_, __) => const _LocationText(
+                        area: 'Set location', city: 'Tap to choose'),
+                    data: (loc) =>
+                        _LocationText(area: loc.area, city: loc.city),
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: () => context.push('/wishlist'),
+                icon: const Icon(Icons.bookmark_border_rounded),
+                color: AppTheme.textPrimaryColor,
+              ),
+              GestureDetector(
+                onTap: () => context.push('/profile'),
+                child: const CircleAvatar(
+                  radius: 17,
+                  backgroundColor: AppTheme.surfaceColor,
+                  child: Icon(Icons.person_outline,
+                      size: 20, color: AppTheme.textSecondaryColor),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+
+      // 2. SEARCH BAR — pinned, always visible
+      SliverPersistentHeader(
+        pinned: true,
+        delegate: _SearchBarDelegate(
+          topPadding: topPadding,
+          horizontalPadding: horizontalPadding,
+          onSearchTap: () => context.push('/search'),
+          onCameraTap: _showImageSourceBottomSheet,
+          placeholderText: l10n.searchPlaceholder,
+        ),
+      ),
+
+      // 3. CATEGORY TABS — pinned; stick under search bar on scroll
+      SliverPersistentHeader(
+        pinned: true,
+        delegate: _CategoryTabsDelegate(
+          categories: categories,
+          selectedIndex: _selectedTab,
+          onChanged: (i) => setState(() {
+            _selectedTab = i;
+          }),
+          horizontalPadding: horizontalPadding,
+        ),
+      ),
+    ];
+
+    // 4. MAIN CONTENT
+    if (_selectedTab == 0) {
+      // Home Feed (All tab selected)
+      slivers.addAll([
+        const SliverToBoxAdapter(child: SizedBox(height: 16)),
+        
+        // Promo Banners Carousel
+        SliverToBoxAdapter(
+          child: SizedBox(
+            height: bannerHeight,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: bannersAsync.when(
+                  data: (banners) {
+                    if (banners.isEmpty) {
+                      return _HeroBannerPlaceholder(responsive: responsive);
+                    }
+                    return _HeroBannerCarousel(
+                      banners: banners,
+                      controller: _bannerController,
+                      activePage: _activeBanner,
+                      onPageChanged: (i) =>
+                          setState(() => _activeBanner = i),
+                      responsive: responsive,
+                      onExplore: (banner) {
+                        final link = banner.link;
+                        if (link != null) context.push(link);
+                      },
+                    );
+                  },
+                  loading: () => Container(
+                    color: const Color(0xFF1A1A2E),
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.white54,
+                      ),
+                    ),
+                  ),
+                  error: (_, __) =>
+                      _HeroBannerPlaceholder(responsive: responsive),
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // Dot indicators
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: bannersAsync.maybeWhen(
+              data: (banners) => banners.isEmpty
+                  ? const SizedBox.shrink()
+                  : Center(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: List.generate(banners.length, (i) {
+                          final isActive = i == _activeBanner;
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeOut,
+                            margin: const EdgeInsets.symmetric(horizontal: 3),
+                            width: isActive ? 20 : 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: isActive
+                                  ? AppTheme.primaryColor
+                                  : Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
+              orElse: () => const SizedBox.shrink(),
+            ),
+          ),
+        ),
+        
+        SliverToBoxAdapter(child: SizedBox(height: responsive.spacing(AppTheme.spaceXL))),
+
+        // Trending Products Header
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // ═══════════════════════════════════════════════════════
-                // BLINKIT-STYLE DARK HEADER
-                // brand block + bell/avatar, search bar, category tabs
-                // ═══════════════════════════════════════════════════════
-                Container(
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [_kHeaderTop, _kHeaderBottom],
-                    ),
+                Text(
+                  l10n.trendingHighlights,
+                  style: responsive.headline5,
+                ),
+                TextButton(
+                  onPressed: () => context.push(
+                    '/products?filter=trending&categoryName=Trending',
                   ),
-                  child: SafeArea(
-                    bottom: false,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // ── Row 1: brand block + actions ──
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(
-                            responsive.spacing(AppTheme.spaceXL),
-                            responsive.spacing(AppTheme.spaceM),
-                            responsive.spacing(AppTheme.spaceXL),
-                            0,
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'AURA COUTURE',
-                                      style: TextStyle(
-                                        color: _kOnHeader,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 2.0,
-                                        fontSize: responsive.fontSize12,
-                                      ),
-                                    ),
-                                    SizedBox(height: responsive.spacing(2.0)),
-                                    // Big Blinkit-style headline
-                                    Text(
-                                      user != null
-                                          ? 'Hello, ${user.name.split(" ").first}'
-                                          : l10n.discoverLuxury,
-                                      style: TextStyle(
-                                        color: _kOnHeader,
-                                        fontWeight: FontWeight.w900,
-                                        fontSize: responsive.fontSize(26.0),
-                                        height: 1.1,
-                                      ),
-                                    ),
-                                    SizedBox(height: responsive.spacing(2.0)),
-                                    Text(
-                                      l10n.discoverLuxury,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color: _kOnHeader.withValues(
-                                          alpha: 0.75,
-                                        ),
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: responsive.fontSize14,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              // Notification bell with badge
-                              Stack(
-                                children: [
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: _kOnHeader.withValues(alpha: 0.12),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: IconButton(
-                                      icon: Icon(
-                                        Icons.notifications_none_rounded,
-                                        color: _kOnHeader,
-                                        size: responsive.iconSize(24.0),
-                                      ),
-                                      onPressed: () =>
-                                          context.push('/notifications'),
-                                    ),
-                                  ),
-                                  if (unreadNotifications > 0)
-                                    Positioned(
-                                      top: 2,
-                                      right: 2,
-                                      child: Container(
-                                        padding: EdgeInsets.all(
-                                          responsive.spacing(4.0),
-                                        ),
-                                        decoration: const BoxDecoration(
-                                          color: AppTheme.accentColor,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        constraints: BoxConstraints(
-                                          minWidth: responsive.iconSize(16.0),
-                                          minHeight: responsive.iconSize(16.0),
-                                        ),
-                                        child: Text(
-                                          unreadNotifications.toString(),
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: responsive.fontSize10,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-
-                            ],
-                          ),
-                        ),
-
-                        // ── Row 2: dark search bar ──
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: responsive.spacing(AppTheme.spaceXL),
-                            vertical: responsive.spacing(AppTheme.spaceM),
-                          ),
-                          child: GestureDetector(
-                            onTap: () => context.push('/search'),
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                vertical: responsive.spacing(14.0),
-                                horizontal: responsive.spacing(18.0),
-                              ),
-                              decoration: BoxDecoration(
-                                color: _kOnHeader.withValues(alpha: 0.10),
-                                borderRadius: BorderRadius.circular(
-                                  AppTheme.radiusM,
-                                ),
-                                border: Border.all(
-                                  color: _kOnHeader.withValues(alpha: 0.18),
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.search_rounded,
-                                    color: _kOnHeader,
-                                    size: responsive.iconSize(22.0),
-                                  ),
-                                  SizedBox(
-                                    width: responsive.spacing(AppTheme.spaceM),
-                                  ),
-                                  Expanded(
-                                    child: Text(
-                                      l10n.searchPlaceholder,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: responsive.bodyMedium.copyWith(
-                                        color: _kOnHeader.withValues(
-                                          alpha: 0.65,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                    width: 1,
-                                    height: responsive.iconSize(22.0),
-                                    color: _kOnHeader.withValues(alpha: 0.25),
-                                  ),
-                                  SizedBox(
-                                    width: responsive.spacing(AppTheme.spaceM),
-                                  ),
-                                  GestureDetector(
-                                    onTap: _showImageSourceBottomSheet,
-                                    child: Icon(
-                                      Icons.camera_alt_outlined,
-                                      color: _kOnHeader,
-                                      size: responsive.iconSize(22.0),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        // ── Row 3: Blinkit-style category tabs ──
-                        // (All + real categories, fashion icons, underline)
-                        SizedBox(
-                          height: responsive.spacing(84.0),
-                          child: categoriesAsync.when(
-                            data: (categories) => ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              padding: EdgeInsets.symmetric(
-                                horizontal: responsive.spacing(AppTheme.spaceL),
-                              ),
-                              itemCount: categories.length + 1,
-                              itemBuilder: (context, index) {
-                                if (index == 0) {
-                                  return _CategoryTab(
-                                    label: 'All',
-                                    icon: Icons.grid_view_rounded,
-                                    isActive: true,
-                                    responsive: responsive,
-                                    onTap: () {},
-                                  );
-                                }
-                                final category = categories[index - 1];
-                                return _CategoryTab(
-                                  label: category.name,
-                                  icon: _fashionIconFor(category.name),
-                                  isActive: false,
-                                  responsive: responsive,
-                                  onTap: () => context.push(
-                                    '/products?categoryId=${category.id}&categoryName=${category.name}',
-                                  ),
-                                );
-                              },
-                            ),
-                            loading: () => ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              padding: EdgeInsets.symmetric(
-                                horizontal: responsive.spacing(AppTheme.spaceL),
-                              ),
-                              itemCount: 5,
-                              itemBuilder: (context, index) => Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: responsive.spacing(
-                                    AppTheme.spaceM,
-                                  ),
-                                ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    SkeletonLoader(
-                                      width: responsive.spacing(32.0),
-                                      height: responsive.spacing(32.0),
-                                      borderRadius: responsive.spacing(16.0),
-                                    ),
-                                    SizedBox(height: responsive.spacing(6.0)),
-                                    SkeletonLoader(
-                                      width: responsive.spacing(48.0),
-                                      height: responsive.spacing(10.0),
-                                      borderRadius: responsive.spacing(5.0),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            error: (_, __) => const SizedBox.shrink(),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // ═══════════════════════════════════════════════════════
-                // HERO BANNER (image only, curved bottom corners)
-                // ═══════════════════════════════════════════════════════
-                SizedBox(
-                  height: screenH * 0.32,
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      bottom: Radius.circular(32),
-                    ),
-                    child: bannersAsync.when(
-                      data: (banners) {
-                        if (banners.isEmpty) {
-                          return _HeroBannerPlaceholder(responsive: responsive);
-                        }
-                        return _HeroBannerCarousel(
-                          banners: banners,
-                          controller: _bannerController,
-                          activePage: _activeBanner,
-                          onPageChanged: (i) =>
-                              setState(() => _activeBanner = i),
-                          responsive: responsive,
-                          onExplore: (banner) {
-                            final link = banner.link;
-                            if (link != null) context.push(link);
-                          },
-                        );
-                      },
-                      loading: () => Container(
-                        color: const Color(0xFF1A1A2E),
-                        child: const Center(
-                          child: CircularProgressIndicator(
-                            color: Colors.white54,
-                          ),
-                        ),
-                      ),
-                      error: (_, __) =>
-                          _HeroBannerPlaceholder(responsive: responsive),
-                    ),
-                  ),
-                ),
-
-                // ── Dot indicators ──
-                const SizedBox(height: 12),
-                bannersAsync.maybeWhen(
-                  data: (banners) => banners.isEmpty
-                      ? const SizedBox.shrink()
-                      : Center(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: List.generate(banners.length, (i) {
-                              final isActive = i == _activeBanner;
-                              return AnimatedContainer(
-                                duration: const Duration(milliseconds: 250),
-                                curve: Curves.easeOut,
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 3,
-                                ),
-                                width: isActive ? 20 : 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: isActive
-                                      ? AppTheme.primaryColor
-                                      : Colors.grey.shade300,
-                                  borderRadius: BorderRadius.circular(3),
-                                ),
-                              );
-                            }),
-                          ),
-                        ),
-                  orElse: () => const SizedBox.shrink(),
-                ),
-                SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
-
-                // 5. Trending Products
-                TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0.0, end: 1.0),
-                  duration: const Duration(milliseconds: 700),
-                  curve: Curves.easeOutCubic,
-                  builder: (context, value, child) {
-                    return Transform.translate(
-                      offset: Offset(30 * (1 - value), 0),
-                      child: Opacity(
-                        opacity: value,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: responsive.spacing(AppTheme.spaceXL),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                l10n.trendingHighlights,
-                                style: responsive.headline5,
-                              ),
-                              TextButton(
-                                onPressed: () => context.push(
-                                  '/products?filter=trending&categoryName=Trending',
-                                ),
-                                child: Text(
-                                  l10n.seeAll,
-                                  style: TextStyle(
-                                    fontSize: responsive.fontSize14,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                SizedBox(height: responsive.spacing(AppTheme.spaceS)),
-                SizedBox(
-                  height: responsive.spacing(290),
-                  child: trendingAsync.when(
-                    data: (products) => ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: responsive.spacing(AppTheme.spaceXL),
-                      ),
-                      itemCount: products.length,
-                      itemBuilder: (context, index) {
-                        final product = products[index];
-                        return TweenAnimationBuilder<double>(
-                          key: ValueKey('trend_$index'),
-                          tween: Tween(begin: 0.0, end: 1.0),
-                          duration: Duration(milliseconds: 500 + (index * 100)),
-                          curve: Curves.easeOutCubic,
-                          builder: (context, value, child) {
-                            return Transform.translate(
-                              offset: Offset(30 * (1 - value), 0),
-                              child: Opacity(
-                                opacity: value,
-                                child: Container(
-                                  width: responsive.spacing(175),
-                                  margin: EdgeInsets.only(
-                                    right: responsive.spacing(AppTheme.spaceL),
-                                  ),
-                                  child: ProductCard(
-                                    product: product,
-                                    heroTagPrefix: 'home_trending',
-                                    onTap: () => context.push(
-                                      '/product/${product.id}?heroTagPrefix=home_trending',
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                    loading: () => ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: responsive.spacing(AppTheme.spaceXL),
-                      ),
-                      itemCount: 3,
-                      itemBuilder: (context, index) => Container(
-                        width: responsive.spacing(175),
-                        margin: EdgeInsets.only(
-                          right: responsive.spacing(AppTheme.spaceL),
-                        ),
-                        child: const ProductCardSkeleton(),
-                      ),
-                    ),
-                    error: (err, stack) =>
-                        Center(child: Text('${l10n.error}: $err')),
-                  ),
-                ),
-                SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
-
-                // 6. New Arrivals
-                TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0.0, end: 1.0),
-                  duration: const Duration(milliseconds: 800),
-                  curve: Curves.easeOutCubic,
-                  builder: (context, value, child) {
-                    return Transform.translate(
-                      offset: Offset(30 * (1 - value), 0),
-                      child: Opacity(
-                        opacity: value,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: responsive.spacing(AppTheme.spaceXL),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                l10n.theNewGuard,
-                                style: responsive.headline5,
-                              ),
-                              TextButton(
-                                onPressed: () => context.push(
-                                  '/products?filter=new&categoryName=New Arrivals',
-                                ),
-                                child: Text(
-                                  l10n.seeAll,
-                                  style: TextStyle(
-                                    fontSize: responsive.fontSize14,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                SizedBox(height: responsive.spacing(AppTheme.spaceS)),
-                SizedBox(
-                  height: responsive.spacing(290),
-                  child: newArrivalsAsync.when(
-                    data: (products) => ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: responsive.spacing(AppTheme.spaceXL),
-                      ),
-                      itemCount: products.length,
-                      itemBuilder: (context, index) {
-                        final product = products[index];
-                        return TweenAnimationBuilder<double>(
-                          key: ValueKey('new_$index'),
-                          tween: Tween(begin: 0.0, end: 1.0),
-                          duration: Duration(milliseconds: 600 + (index * 100)),
-                          curve: Curves.easeOutCubic,
-                          builder: (context, value, child) {
-                            return Transform.translate(
-                              offset: Offset(30 * (1 - value), 0),
-                              child: Opacity(
-                                opacity: value,
-                                child: Container(
-                                  width: responsive.spacing(175),
-                                  margin: EdgeInsets.only(
-                                    right: responsive.spacing(AppTheme.spaceL),
-                                  ),
-                                  child: ProductCard(
-                                    product: product,
-                                    heroTagPrefix: 'home_new',
-                                    onTap: () => context.push(
-                                      '/product/${product.id}?heroTagPrefix=home_new',
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                    loading: () => ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: responsive.spacing(AppTheme.spaceXL),
-                      ),
-                      itemCount: 3,
-                      itemBuilder: (context, index) => Container(
-                        width: responsive.spacing(175),
-                        margin: EdgeInsets.only(
-                          right: responsive.spacing(AppTheme.spaceL),
-                        ),
-                        child: const ProductCardSkeleton(),
-                      ),
-                    ),
-                    error: (err, stack) =>
-                        Center(child: Text('${l10n.error}: $err')),
+                  child: Text(
+                    l10n.seeAll,
+                    style: TextStyle(fontSize: responsive.fontSize14),
                   ),
                 ),
               ],
             ),
           ),
         ),
+        SliverToBoxAdapter(child: SizedBox(height: responsive.spacing(AppTheme.spaceS))),
+        
+        // Trending list
+        SliverToBoxAdapter(
+          child: SizedBox(
+            height: trendingHeight,
+            child: trendingAsync.when(
+              data: (products) => ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                itemCount: products.length,
+                itemBuilder: (context, index) {
+                  final product = products[index];
+                  return Container(
+                    width: responsive.spacing(175),
+                    margin: EdgeInsets.only(
+                      right: responsive.spacing(AppTheme.spaceL),
+                    ),
+                    child: ProductCard(
+                      product: product,
+                      heroTagPrefix: 'home_trending',
+                      onTap: () => context.push(
+                        '/product/${product.id}?heroTagPrefix=home_trending',
+                      ),
+                    ),
+                  );
+                },
+              ),
+              loading: () => ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                itemCount: 3,
+                itemBuilder: (context, index) => Container(
+                  width: responsive.spacing(175),
+                  margin: EdgeInsets.only(
+                    right: responsive.spacing(AppTheme.spaceL),
+                  ),
+                  child: const ProductCardSkeleton(),
+                ),
+              ),
+              error: (err, stack) => Center(child: Text('${l10n.error}: $err')),
+            ),
+          ),
+        ),
+
+        SliverToBoxAdapter(child: SizedBox(height: responsive.spacing(AppTheme.spaceXL))),
+
+        // New Arrivals Header
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  l10n.theNewGuard,
+                  style: responsive.headline5,
+                ),
+                TextButton(
+                  onPressed: () => context.push(
+                    '/products?filter=new&categoryName=New Arrivals',
+                  ),
+                  child: Text(
+                    l10n.seeAll,
+                    style: TextStyle(fontSize: responsive.fontSize14),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        SliverToBoxAdapter(child: SizedBox(height: responsive.spacing(AppTheme.spaceS))),
+
+        // New Arrivals Grid
+        SliverPadding(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+          sliver: newArrivalsAsync.when(
+            data: (products) => SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                mainAxisSpacing: mainAxisSpacing,
+                crossAxisSpacing: crossAxisSpacing,
+                childAspectRatio: childAspectRatio,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final product = products[index];
+                  return ProductCard(
+                    product: product,
+                    heroTagPrefix: 'home_new',
+                    onTap: () => context.push(
+                      '/product/${product.id}?heroTagPrefix=home_new',
+                    ),
+                  );
+                },
+                childCount: products.length,
+              ),
+            ),
+            loading: () => SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                mainAxisSpacing: mainAxisSpacing,
+                crossAxisSpacing: crossAxisSpacing,
+                childAspectRatio: childAspectRatio,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => const ProductCardSkeleton(),
+                childCount: 4,
+              ),
+            ),
+            error: (err, stack) => SliverToBoxAdapter(
+              child: Center(child: Text('${l10n.error}: $err')),
+            ),
+          ),
+        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 120)),
+      ]);
+    } else {
+      // Category Tab Selected
+      final selectedCategory = categories[_selectedTab - 1];
+      final categoryProductsAsync = ref.watch(categoryProductsProvider(selectedCategory.id.toString()));
+
+      slivers.addAll([
+        const SliverToBoxAdapter(child: SizedBox(height: 24)),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+            child: Text(
+              selectedCategory.name,
+              style: responsive.headline5,
+            ),
+          ),
+        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 16)),
+
+        // Category Products Grid
+        SliverPadding(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+          sliver: categoryProductsAsync.when(
+            data: (products) {
+              if (products.isEmpty) {
+                return SliverToBoxAdapter(
+                  child: Container(
+                    height: 200,
+                    alignment: Alignment.center,
+                    child: Text(
+                      'No products found in this category',
+                      style: TextStyle(
+                        color: AppTheme.textSecondaryColor,
+                        fontSize: responsive.fontSize14,
+                      ),
+                    ),
+                  ),
+                );
+              }
+              return SliverGrid(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  mainAxisSpacing: mainAxisSpacing,
+                  crossAxisSpacing: crossAxisSpacing,
+                  childAspectRatio: childAspectRatio,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final product = products[index];
+                    return ProductCard(
+                      product: product,
+                      heroTagPrefix: 'category_${selectedCategory.id}',
+                      onTap: () => context.push(
+                        '/product/${product.id}?heroTagPrefix=category_${selectedCategory.id}',
+                      ),
+                    );
+                  },
+                  childCount: products.length,
+                ),
+              );
+            },
+            loading: () => SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                mainAxisSpacing: mainAxisSpacing,
+                crossAxisSpacing: crossAxisSpacing,
+                childAspectRatio: childAspectRatio,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => const ProductCardSkeleton(),
+                childCount: 4,
+              ),
+            ),
+            error: (err, stack) => SliverToBoxAdapter(
+              child: Center(child: Text('${l10n.error}: $err')),
+            ),
+          ),
+        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 120)),
+      ]);
+    }
+
+    Widget body = CustomScrollView(
+      slivers: slivers,
+    );
+
+    // Limit screen width on large monitors/desktop builds to ensure a premium centered look
+    if (isDesktop) {
+      body = Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          child: body,
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundColor,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(allCategoriesProvider);
+          ref.invalidate(trendingProductsProvider);
+          ref.invalidate(newArrivalsProvider);
+          ref.invalidate(bannersProvider);
+          ref.invalidate(userLocationProvider);
+        },
+        child: body,
       ),
     );
   }
 }
 
-// ─── Fashion icon mapping for category tabs ───────────────────────────────────
-// Maps clothing-brand category names to line icons (Blinkit uses line icons).
-IconData _fashionIconFor(String name) {
-  final n = name.toLowerCase();
-  if (n.contains('women') || n.contains('ladies')) return Icons.woman_rounded;
-  if (n.contains('men')) return Icons.man_rounded;
-  if (n.contains('kid') || n.contains('child') || n.contains('baby')) {
-    return Icons.child_care_rounded;
-  }
-  if (n.contains('shoe') || n.contains('foot')) {
-    return Icons.directions_walk_rounded;
-  }
-  if (n.contains('watch') || n.contains('accessor')) return Icons.watch_rounded;
-  if (n.contains('jewel') || n.contains('gold')) return Icons.diamond_outlined;
-  if (n.contains('bag') || n.contains('handbag')) {
-    return Icons.shopping_bag_outlined;
-  }
-  if (n.contains('beauty') || n.contains('makeup')) return Icons.spa_outlined;
-  if (n.contains('winter') || n.contains('monsoon')) {
-    return Icons.beach_access_rounded; // umbrella
-  }
-  if (n.contains('ethnic') || n.contains('saree') || n.contains('kurta')) {
-    return Icons.auto_awesome_outlined;
-  }
-  return Icons.checkroom_rounded; // hanger — default for clothing
-}
+// ─────────────────────────────────────────────────────────────
+// LOCATION TEXT
+// ─────────────────────────────────────────────────────────────
 
-// ─── Blinkit-style category tab (icon + label + underline) ────────────────────
-class _CategoryTab extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final bool isActive;
-  final VoidCallback onTap;
-  final dynamic responsive;
-
-  const _CategoryTab({
-    required this.label,
-    required this.icon,
-    required this.isActive,
-    required this.onTap,
-    required this.responsive,
-  });
+class _LocationText extends StatelessWidget {
+  final String area;
+  final String city;
+  const _LocationText({required this.area, required this.city});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: responsive.spacing(AppTheme.spaceM),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              color: isActive ? _kOnHeader : _kOnHeader.withValues(alpha: 0.85),
-              size: responsive.iconSize(26.0),
-            ),
-            SizedBox(height: responsive.spacing(6.0)),
-            Text(
-              label,
-              style: TextStyle(
-                color: isActive
-                    ? _kOnHeader
-                    : _kOnHeader.withValues(alpha: 0.85),
-                fontSize: responsive.fontSize12,
-                fontWeight: isActive ? FontWeight.w800 : FontWeight.w500,
-              ),
-            ),
-            SizedBox(height: responsive.spacing(6.0)),
-            // Underline indicator (only on the active tab)
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: isActive ? responsive.spacing(36.0) : 0,
-              height: 3,
-              decoration: BoxDecoration(
-                color: _kOnHeader,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(3),
+            Flexible(
+              child: Text(
+                area,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimaryColor,
                 ),
               ),
+            ),
+            const Icon(Icons.keyboard_arrow_down_rounded,
+                size: 20, color: AppTheme.textPrimaryColor),
+          ],
+        ),
+        if (city.isNotEmpty)
+          Text(
+            city,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppTheme.textSecondaryColor,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// PINNED SEARCH BAR DELEGATE
+// ─────────────────────────────────────────────────────────────
+
+class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
+  final double topPadding;
+  final double horizontalPadding;
+  final VoidCallback onSearchTap;
+  final VoidCallback onCameraTap;
+  final String placeholderText;
+
+  _SearchBarDelegate({
+    required this.topPadding,
+    required this.horizontalPadding,
+    required this.onSearchTap,
+    required this.onCameraTap,
+    required this.placeholderText,
+  });
+
+  @override
+  double get minExtent => 64;
+  @override
+  double get maxExtent => 64;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final pinnedAtTop = shrinkOffset > 0 || overlapsContent;
+    return Container(
+      color: AppTheme.backgroundColor,
+      padding: EdgeInsets.fromLTRB(
+          horizontalPadding, pinnedAtTop ? 0 : 6, horizontalPadding, 8),
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        height: 48,
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceColor,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: AppTheme.borderColor,
+            width: 0.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: onSearchTap,
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.search_rounded,
+                          color: AppTheme.textSecondaryColor, size: 22),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          placeholderText,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          style: const TextStyle(
+                            color: AppTheme.textSecondaryColor,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // AI image search entry point
+            IconButton(
+              padding: const EdgeInsets.only(right: 16),
+              constraints: const BoxConstraints(),
+              onPressed: onCameraTap,
+              icon: const Icon(Icons.camera_alt_outlined,
+                  color: AppTheme.primaryColor, size: 22),
             ),
           ],
         ),
       ),
     );
   }
+
+  @override
+  bool shouldRebuild(covariant _SearchBarDelegate old) =>
+      old.topPadding != topPadding ||
+      old.horizontalPadding != horizontalPadding ||
+      old.placeholderText != placeholderText;
 }
 
-// ─── Full-Bleed Hero Banner Carousel (image only) ─────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// PINNED CATEGORY TABS DELEGATE
+// ─────────────────────────────────────────────────────────────
+
+class _CategoryTabsDelegate extends SliverPersistentHeaderDelegate {
+  final List<dynamic> categories;
+  final int selectedIndex;
+  final ValueChanged<int> onChanged;
+  final double horizontalPadding;
+
+  _CategoryTabsDelegate({
+    required this.categories,
+    required this.selectedIndex,
+    required this.onChanged,
+    required this.horizontalPadding,
+  });
+
+  @override
+  double get minExtent => 48;
+  @override
+  double get maxExtent => 48;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.backgroundColor,
+        border: Border(
+          bottom: BorderSide(
+            color: overlapsContent
+                ? AppTheme.borderColor
+                : Colors.transparent,
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+        itemCount: categories.length + 1,
+        separatorBuilder: (_, __) => const SizedBox(width: 24),
+        itemBuilder: (context, i) {
+          final selected = i == selectedIndex;
+          final String label = i == 0 ? 'All' : categories[i - 1].name;
+          
+          return GestureDetector(
+            onTap: () => onChanged(i),
+            behavior: HitTestBehavior.opaque,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 14,
+                    letterSpacing: 0.3,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    color: selected
+                        ? AppTheme.primaryColor
+                        : AppTheme.textSecondaryColor,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  height: 2.5,
+                  width: selected ? 24 : 0,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _CategoryTabsDelegate old) =>
+      old.selectedIndex != selectedIndex ||
+      old.categories != categories ||
+      old.horizontalPadding != horizontalPadding;
+}
+
+// ─────────────────────────────────────────────────────────────
+// PROMO BANNER CAROUSEL
+// ─────────────────────────────────────────────────────────────
 
 class _HeroBannerCarousel extends StatelessWidget {
   final List<BannerModel> banners;
@@ -741,7 +781,6 @@ class _HeroBannerCarousel extends StatelessWidget {
     required this.responsive,
   });
 
-  // Derive a set of accent chip colors per banner index
   static const List<Color> _chipColors = [
     Color(0xFF7C3AED),
     Color(0xFFDB2777),
@@ -765,15 +804,12 @@ class _HeroBannerCarousel extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // ── Background Image (no color overlay) ──
               Image.network(
                 banner.imageUrl,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) =>
                     Container(color: const Color(0xFF1A1A2E)),
               ),
-
-              // ── Content ──
               Positioned(
                 left: 0,
                 right: 0,
@@ -784,7 +820,6 @@ class _HeroBannerCarousel extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Title (shadow keeps it readable without overlay)
                       Text(
                         banner.title,
                         maxLines: 2,
@@ -817,8 +852,6 @@ class _HeroBannerCarousel extends StatelessWidget {
                         ),
                       ],
                       const SizedBox(height: 16),
-
-                      // ── Chip row + Explore button ──
                       Row(
                         children: [
                           Expanded(
@@ -898,7 +931,9 @@ class _HeroBannerCarousel extends StatelessWidget {
   }
 }
 
-// ─── Placeholder when no banners ──────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// BANNER CAROUSEL FALLBACK PLACEHOLDER
+// ─────────────────────────────────────────────────────────────
 
 class _HeroBannerPlaceholder extends StatelessWidget {
   final dynamic responsive;

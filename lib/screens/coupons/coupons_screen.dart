@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
+import 'package:hopscotch/repositories/coupon_repository.dart';
 
 class CouponModel {
   final String id;
@@ -50,15 +52,19 @@ class CouponModel {
   }
 }
 
-class CouponsScreen extends StatefulWidget {
+class CouponsScreen extends ConsumerStatefulWidget {
   const CouponsScreen({super.key});
 
   @override
-  State<CouponsScreen> createState() => _CouponsScreenState();
+  ConsumerState<CouponsScreen> createState() => _CouponsScreenState();
 }
 
-class _CouponsScreenState extends State<CouponsScreen> {
-  final List<CouponModel> _coupons = [
+class _CouponsScreenState extends ConsumerState<CouponsScreen> {
+  bool _isInitialized = false;
+  bool _isLoading = true;
+  List<CouponModel> _coupons = [];
+
+  final List<CouponModel> _mockCoupons = [
     CouponModel(
       id: '1',
       title: 'Fashion Fiesta',
@@ -165,6 +171,21 @@ class _CouponsScreenState extends State<CouponsScreen> {
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
+    final couponsAsync = ref.watch(couponsProvider);
+
+    if (!_isInitialized) {
+      if (couponsAsync is AsyncData) {
+        final val = couponsAsync.value ?? [];
+        _coupons = val.isNotEmpty ? val : _mockCoupons;
+        _isInitialized = true;
+        _isLoading = false;
+      } else if (couponsAsync is AsyncError) {
+        _coupons = _mockCoupons;
+        _isInitialized = true;
+        _isLoading = false;
+      }
+    }
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
@@ -185,7 +206,9 @@ class _CouponsScreenState extends State<CouponsScreen> {
           ),
         ],
       ),
-      body: Column(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
+          : Column(
         children: [
           // Coupon Stats
           _buildCouponStats(),
