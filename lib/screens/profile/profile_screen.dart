@@ -81,12 +81,13 @@ class ProfileScreen extends ConsumerWidget {
                             backgroundImage: userProfile?['avatarUrl'] != null
                                 ? NetworkImage(userProfile!['avatarUrl'])
                                 : null,
-                            child: userProfile?['avatarUrl'] == null
-                                ? Icon(
-                                    Icons.person,
-                                    size: responsive.iconSize(54),
-                                  )
+                            onBackgroundImageError: userProfile?['avatarUrl'] != null
+                                ? (exception, stackTrace) {}
                                 : null,
+                            child: Icon(
+                              Icons.person,
+                              size: responsive.iconSize(54),
+                            ),
                           ),
                         ),
                         Positioned(

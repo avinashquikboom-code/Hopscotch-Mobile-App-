@@ -18,45 +18,105 @@ import 'package:hopscotch/widgets/skeleton_loaders.dart';
 import 'package:hopscotch/l10n/app_localizations.dart';
 import 'dart:io';
 import 'package:hopscotch/widgets/visual_search_bottom_sheet.dart';
+import 'package:hopscotch/repositories/profile_repository.dart';
 
 // ─────────────────────────────────────────────────────────────
 // LOCATION PROVIDER — Geolocates user address details
 // ─────────────────────────────────────────────────────────────
 
 class UserLocation {
-  final String area;    // "Sector 8"
-  final String city;    // "Kopar Khairane, Navi Mumbai"
+  final String area; // "Sector 8"
+  final String city; // "Kopar Khairane, Navi Mumbai"
   const UserLocation({required this.area, required this.city});
 }
 
 final userLocationProvider = FutureProvider<UserLocation>((ref) async {
   try {
+    // 1. Check if location services are enabled
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return const UserLocation(
+        area: 'Location disabled',
+        city: 'Enable GPS & tap to retry',
+      );
+    }
+
+    // 2. Check & Request permissions
     var permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
-      return const UserLocation(area: 'Set location', city: 'Tap to choose');
-    }
-
-    final pos = await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(accuracy: LocationAccuracy.medium),
-    );
-    final placemarks = await placemarkFromCoordinates(pos.latitude, pos.longitude);
-    if (placemarks.isNotEmpty) {
-      final p = placemarks.first;
-      return UserLocation(
-        area: p.subLocality?.isNotEmpty == true ? p.subLocality! : (p.locality ?? 'Detected Location'),
-        city: [p.locality, p.administrativeArea]
-            .where((e) => e != null && e.isNotEmpty)
-            .join(', '),
+    if (permission == LocationPermission.denied) {
+      return const UserLocation(
+        area: 'Permission denied',
+        city: 'Tap to grant permission',
       );
     }
+    if (permission == LocationPermission.deniedForever) {
+      return const UserLocation(
+        area: 'Permission blocked',
+        city: 'Enable in settings & tap',
+      );
+    }
+
+    // 3. Try to get last known position first (instant)
+    Position? pos = await Geolocator.getLastKnownPosition();
+
+    // 4. If last known is null, request current position with a timeout
+    if (pos == null) {
+      pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.low,
+        ),
+      ).timeout(const Duration(seconds: 4));
+    }
+
+    // 5. Geocode the coordinates with a timeout
+    final placemarks = await placemarkFromCoordinates(
+      pos.latitude,
+      pos.longitude,
+    ).timeout(const Duration(seconds: 4));
+
+    if (placemarks.isNotEmpty) {
+      final p = placemarks.first;
+      final area = p.subLocality?.isNotEmpty == true
+          ? p.subLocality!
+          : (p.locality?.isNotEmpty == true
+              ? p.locality!
+              : (p.subAdministrativeArea ?? 'Detected Location'));
+
+      final city = [p.locality, p.administrativeArea]
+          .where((e) => e != null && e.isNotEmpty)
+          .join(', ');
+
+      return UserLocation(area: area, city: city);
+    }
   } catch (e) {
-    DevLogger.logError('Error getting location: $e', context: 'UserLocationProvider');
+    DevLogger.logError(
+      'Error getting location: $e',
+      context: 'UserLocationProvider',
+    );
+    try {
+      final fallbackPos = await Geolocator.getLastKnownPosition();
+      if (fallbackPos != null) {
+        final placemarks = await placemarkFromCoordinates(
+          fallbackPos.latitude,
+          fallbackPos.longitude,
+        );
+        if (placemarks.isNotEmpty) {
+          final p = placemarks.first;
+          final area = p.subLocality?.isNotEmpty == true
+              ? p.subLocality!
+              : (p.locality ?? 'Detected Location');
+          final city = [p.locality, p.administrativeArea]
+              .where((e) => e != null && e.isNotEmpty)
+              .join(', ');
+          return UserLocation(area: area, city: city);
+        }
+      }
+    } catch (_) {}
   }
-  return const UserLocation(area: 'Set location', city: 'Tap to choose');
+  return const UserLocation(area: 'Set location', city: 'Tap to retry location detection');
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -98,7 +158,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final width = size.width;
-    
+
     // Check viewport category
     final isDesktop = width > 1200;
     final isTablet = width > 600 && width <= 1200;
@@ -114,14 +174,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     final location = ref.watch(userLocationProvider);
     final topPadding = MediaQuery.of(context).padding.top;
-    
+
     final categoriesAsync = ref.watch(allCategoriesProvider);
     final categories = categoriesAsync.value ?? [];
-    
+
     final trendingAsync = ref.watch(trendingProductsProvider);
     final newArrivalsAsync = ref.watch(newArrivalsProvider);
     final bannersAsync = ref.watch(bannersProvider);
-    
+
     final responsive = context.responsive;
     final l10n = AppLocalizations.of(context)!;
 
@@ -130,11 +190,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       // 1. LOCATION HEADER — scrolls away
       SliverToBoxAdapter(
         child: Padding(
-          padding: EdgeInsets.fromLTRB(horizontalPadding, topPadding + 12, horizontalPadding, 4),
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            topPadding + 12,
+            horizontalPadding,
+            4,
+          ),
           child: Row(
             children: [
-              Icon(Icons.location_on_outlined,
-                  color: Theme.of(context).colorScheme.primary, size: 22),
+              Icon(
+                Icons.location_on_outlined,
+                color: Theme.of(context).colorScheme.primary,
+                size: 22,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: GestureDetector(
@@ -142,29 +210,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ref.invalidate(userLocationProvider);
                   },
                   child: location.when(
-                    loading: () => const _LocationText(
-                        area: 'Detecting…', city: ' '),
+                    loading: () =>
+                        const _LocationText(area: 'Detecting…', city: ' '),
                     error: (_, __) => const _LocationText(
-                        area: 'Set location', city: 'Tap to choose'),
+                      area: 'Set location',
+                      city: 'Tap to choose',
+                    ),
                     data: (loc) =>
                         _LocationText(area: loc.area, city: loc.city),
                   ),
                 ),
               ),
-              IconButton(
-                onPressed: () => context.push('/wishlist'),
-                icon: const Icon(Icons.bookmark_border_rounded),
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              GestureDetector(
-                onTap: () => context.push('/profile'),
-                child: CircleAvatar(
-                  radius: 17,
-                  backgroundColor: Theme.of(context).colorScheme.surface,
-                  child: Icon(Icons.person_outline,
-                      size: 20, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
-                ),
-              ),
+
+              const _ProfileAvatarButton(),
             ],
           ),
         ),
@@ -201,7 +259,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       // Home Feed (All tab selected)
       slivers.addAll([
         const SliverToBoxAdapter(child: SizedBox(height: 16)),
-        
+
         // Promo Banners Carousel
         SliverToBoxAdapter(
           child: SizedBox(
@@ -219,8 +277,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       banners: banners,
                       controller: _bannerController,
                       activePage: _activeBanner,
-                      onPageChanged: (i) =>
-                          setState(() => _activeBanner = i),
+                      onPageChanged: (i) => setState(() => _activeBanner = i),
                       responsive: responsive,
                       onExplore: (banner) {
                         final link = banner.link;
@@ -231,9 +288,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   loading: () => Container(
                     color: const Color(0xFF1A1A2E),
                     child: const Center(
-                      child: CircularProgressIndicator(
-                        color: Colors.white54,
-                      ),
+                      child: CircularProgressIndicator(color: Colors.white54),
                     ),
                   ),
                   error: (_, __) =>
@@ -276,8 +331,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
         ),
-        
-        SliverToBoxAdapter(child: SizedBox(height: responsive.spacing(AppTheme.spaceXL))),
+
+        SliverToBoxAdapter(
+          child: SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+        ),
 
         // Trending Products Header
         SliverToBoxAdapter(
@@ -286,10 +343,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  l10n.trendingHighlights,
-                  style: responsive.headline5,
-                ),
+                Text(l10n.trendingHighlights, style: responsive.headline5),
                 TextButton(
                   onPressed: () => context.push(
                     '/products?filter=trending&categoryName=Trending',
@@ -303,8 +357,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
         ),
-        SliverToBoxAdapter(child: SizedBox(height: responsive.spacing(AppTheme.spaceS))),
-        
+        SliverToBoxAdapter(
+          child: SizedBox(height: responsive.spacing(AppTheme.spaceS)),
+        ),
+
         // Trending list
         SliverToBoxAdapter(
           child: SizedBox(
@@ -348,7 +404,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
 
-        SliverToBoxAdapter(child: SizedBox(height: responsive.spacing(AppTheme.spaceXL))),
+        SliverToBoxAdapter(
+          child: SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+        ),
 
         // New Arrivals Header
         SliverToBoxAdapter(
@@ -357,10 +415,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  l10n.theNewGuard,
-                  style: responsive.headline5,
-                ),
+                Text(l10n.theNewGuard, style: responsive.headline5),
                 TextButton(
                   onPressed: () => context.push(
                     '/products?filter=new&categoryName=New Arrivals',
@@ -374,7 +429,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
         ),
-        SliverToBoxAdapter(child: SizedBox(height: responsive.spacing(AppTheme.spaceS))),
+        SliverToBoxAdapter(
+          child: SizedBox(height: responsive.spacing(AppTheme.spaceS)),
+        ),
 
         // New Arrivals Grid
         SliverPadding(
@@ -387,19 +444,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 crossAxisSpacing: crossAxisSpacing,
                 childAspectRatio: childAspectRatio,
               ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final product = products[index];
-                  return ProductCard(
-                    product: product,
-                    heroTagPrefix: 'home_new',
-                    onTap: () => context.push(
-                      '/product/${product.id}?heroTagPrefix=home_new',
-                    ),
-                  );
-                },
-                childCount: products.length,
-              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final product = products[index];
+                return ProductCard(
+                  product: product,
+                  heroTagPrefix: 'home_new',
+                  onTap: () => context.push(
+                    '/product/${product.id}?heroTagPrefix=home_new',
+                  ),
+                );
+              }, childCount: products.length),
             ),
             loading: () => SliverGrid(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -423,17 +477,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     } else {
       // Category Tab Selected
       final selectedCategory = categories[_selectedTab - 1];
-      final categoryProductsAsync = ref.watch(categoryProductsProvider(selectedCategory.id.toString()));
+      final categoryProductsAsync = ref.watch(
+        categoryProductsProvider(selectedCategory.id.toString()),
+      );
 
       slivers.addAll([
         const SliverToBoxAdapter(child: SizedBox(height: 24)),
         SliverToBoxAdapter(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-            child: Text(
-              selectedCategory.name,
-              style: responsive.headline5,
-            ),
+            child: Text(selectedCategory.name, style: responsive.headline5),
           ),
         ),
         const SliverToBoxAdapter(child: SizedBox(height: 16)),
@@ -465,19 +518,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   crossAxisSpacing: crossAxisSpacing,
                   childAspectRatio: childAspectRatio,
                 ),
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final product = products[index];
-                    return ProductCard(
-                      product: product,
-                      heroTagPrefix: 'category_${selectedCategory.id}',
-                      onTap: () => context.push(
-                        '/product/${product.id}?heroTagPrefix=category_${selectedCategory.id}',
-                      ),
-                    );
-                  },
-                  childCount: products.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final product = products[index];
+                  return ProductCard(
+                    product: product,
+                    heroTagPrefix: 'category_${selectedCategory.id}',
+                    onTap: () => context.push(
+                      '/product/${product.id}?heroTagPrefix=category_${selectedCategory.id}',
+                    ),
+                  );
+                }, childCount: products.length),
               );
             },
             loading: () => SliverGrid(
@@ -501,9 +551,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ]);
     }
 
-    Widget body = CustomScrollView(
-      slivers: slivers,
-    );
+    Widget body = CustomScrollView(slivers: slivers);
 
     // Limit screen width on large monitors/desktop builds to ensure a premium centered look
     if (isDesktop) {
@@ -560,8 +608,7 @@ class _LocationText extends StatelessWidget {
                 ),
               ),
             ),
-            Icon(Icons.keyboard_arrow_down_rounded,
-                size: 20, color: onSurface),
+            Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: onSurface),
           ],
         ),
         if (city.isNotEmpty)
@@ -605,23 +652,27 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     final pinnedAtTop = shrinkOffset > 0 || overlapsContent;
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
       padding: EdgeInsets.fromLTRB(
-          horizontalPadding, pinnedAtTop ? 0 : 6, horizontalPadding, 8),
+        horizontalPadding,
+        pinnedAtTop ? 0 : 6,
+        horizontalPadding,
+        8,
+      ),
       alignment: Alignment.bottomCenter,
       child: Container(
         height: 48,
         decoration: BoxDecoration(
           color: colorScheme.surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: colorScheme.outline,
-            width: 0.5,
-          ),
+          border: Border.all(color: colorScheme.outline, width: 0.5),
         ),
         child: Row(
           children: [
@@ -633,8 +684,11 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
                     children: [
-                      Icon(Icons.search_rounded,
-                          color: colorScheme.onSurface.withValues(alpha: 0.5), size: 22),
+                      Icon(
+                        Icons.search_rounded,
+                        color: colorScheme.onSurface.withValues(alpha: 0.5),
+                        size: 22,
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
@@ -657,8 +711,11 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
               padding: const EdgeInsets.only(right: 16),
               constraints: const BoxConstraints(),
               onPressed: onCameraTap,
-              icon: Icon(Icons.camera_alt_outlined,
-                  color: colorScheme.primary, size: 22),
+              icon: Icon(
+                Icons.camera_alt_outlined,
+                color: colorScheme.primary,
+                size: 22,
+              ),
             ),
           ],
         ),
@@ -697,16 +754,17 @@ class _CategoryTabsDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
           bottom: BorderSide(
-            color: overlapsContent
-                ? colorScheme.outline
-                : Colors.transparent,
+            color: overlapsContent ? colorScheme.outline : Colors.transparent,
             width: 0.5,
           ),
         ),
@@ -719,7 +777,7 @@ class _CategoryTabsDelegate extends SliverPersistentHeaderDelegate {
         itemBuilder: (context, i) {
           final selected = i == selectedIndex;
           final String label = i == 0 ? 'All' : categories[i - 1].name;
-          
+
           return GestureDetector(
             onTap: () => onChanged(i),
             behavior: HitTestBehavior.opaque,
@@ -956,6 +1014,106 @@ class _HeroBannerPlaceholder extends StatelessWidget {
         child: Text(
           'No Promotions',
           style: TextStyle(color: Colors.white54, fontSize: 16),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// REDESIGNED PREMIUM USER PROFILE AVATAR BUTTON
+// ─────────────────────────────────────────────────────────────
+
+class _ProfileAvatarButton extends ConsumerStatefulWidget {
+  const _ProfileAvatarButton();
+
+  @override
+  ConsumerState<_ProfileAvatarButton> createState() => _ProfileAvatarButtonState();
+}
+
+class _ProfileAvatarButtonState extends ConsumerState<_ProfileAvatarButton> {
+  double _scale = 1.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final userProfile = ref.watch(profileNotifierProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    String? initials;
+    if (userProfile != null) {
+      final name = userProfile['firstName'] ?? userProfile['name'];
+      if (name != null && name.toString().isNotEmpty) {
+        initials = name.toString().trim().substring(0, 1).toUpperCase();
+      }
+    }
+
+    final avatarUrl = userProfile?['avatarUrl'];
+
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _scale = 0.92),
+      onTapUp: (_) => setState(() => _scale = 1.0),
+      onTapCancel: () => setState(() => _scale = 1.0),
+      onTap: () => context.push('/profile'),
+      child: AnimatedScale(
+        scale: _scale,
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOutBack,
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              colors: [
+                colorScheme.primary.withValues(alpha: 0.8),
+                colorScheme.secondary.withValues(alpha: 0.9),
+              ],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: colorScheme.primary.withValues(alpha: 0.15),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+            border: Border.all(
+              color: colorScheme.primary.withValues(alpha: 0.25),
+              width: 1.5,
+            ),
+          ),
+          padding: const EdgeInsets.all(2.0),
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: colorScheme.surface,
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: CircleAvatar(
+              backgroundColor: colorScheme.surface,
+              backgroundImage: (avatarUrl != null && avatarUrl.toString().isNotEmpty)
+                  ? NetworkImage(avatarUrl)
+                  : null,
+              onBackgroundImageError: (avatarUrl != null && avatarUrl.toString().isNotEmpty)
+                  ? (exception, stackTrace) {}
+                  : null,
+              child: (avatarUrl != null && avatarUrl.toString().isNotEmpty)
+                  ? null
+                  : (initials != null
+                      ? Text(
+                          initials,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.primary,
+                          ),
+                        )
+                      : Icon(
+                          Icons.person_outline_rounded,
+                          size: 18,
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
+                        )),
+            ),
+          ),
         ),
       ),
     );

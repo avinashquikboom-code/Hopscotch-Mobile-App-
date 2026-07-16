@@ -47,6 +47,13 @@ final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeModeOption>((ref
 });
 
 final themeModeProvider = Provider<ThemeMode>((ref) {
-  final themeNotifier = ref.watch(themeProvider.notifier);
-  return themeNotifier.themeMode;
+  final option = ref.watch(themeProvider);
+  switch (option) {
+    case ThemeModeOption.light:
+      return ThemeMode.light;
+    case ThemeModeOption.dark:
+      return ThemeMode.dark;
+    case ThemeModeOption.system:
+      return ThemeMode.system;
+  }
 });

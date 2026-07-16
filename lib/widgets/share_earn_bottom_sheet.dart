@@ -522,6 +522,16 @@ https://hopscotch.com/p/${widget.product.id}
                                 width: responsive.spacing(48),
                                 height: responsive.spacing(48),
                                 fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  width: responsive.spacing(48),
+                                  height: responsive.spacing(48),
+                                  color: AppTheme.primaryColor.withValues(alpha: 0.05),
+                                  child: Icon(
+                                    Icons.image_not_supported_rounded,
+                                    size: responsive.iconSize(20),
+                                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                                  ),
+                                ),
                               ),
                               if (hasAdditional)
                                 Container(
@@ -592,6 +602,16 @@ https://hopscotch.com/p/${widget.product.id}
                             width: responsive.spacing(48),
                             height: responsive.spacing(48),
                             fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              width: responsive.spacing(48),
+                              height: responsive.spacing(48),
+                              color: AppTheme.primaryColor.withValues(alpha: 0.05),
+                              child: Icon(
+                                Icons.image_not_supported_rounded,
+                                size: responsive.iconSize(20),
+                                color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                              ),
+                            ),
                           ),
                         ),
                         SizedBox(width: responsive.spacing(12)),

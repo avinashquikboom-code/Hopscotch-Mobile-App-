@@ -225,8 +225,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           : (_userData?['avatarUrl'] != null && _userData!['avatarUrl'].isNotEmpty
                               ? NetworkImage(_userData!['avatarUrl'])
                               : null),
-                      child: _profileImage == null &&
-                              (_userData?['avatarUrl'] == null || _userData!['avatarUrl'].isEmpty)
+                      onBackgroundImageError: (_userData?['avatarUrl'] != null && _userData!['avatarUrl'].isNotEmpty && _profileImage == null)
+                          ? (exception, stackTrace) {}
+                          : null,
+                      child: (_profileImage == null)
                           ? Text(
                               (_userData?['firstName'] ?? _userData?['name'] ?? 'U').substring(0, 1).toUpperCase(),
                               style: TextStyle(

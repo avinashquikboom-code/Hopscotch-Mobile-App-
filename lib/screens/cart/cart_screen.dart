@@ -160,11 +160,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                           borderRadius: BorderRadius.circular(
                                             AppTheme.radiusM,
                                           ),
+                                          color: AppTheme.primaryColor.withValues(alpha: 0.05),
                                           image: DecorationImage(
                                             image: NetworkImage(
                                               product.imageUrl,
                                             ),
                                             fit: BoxFit.cover,
+                                            onError: (exception, stackTrace) {},
                                           ),
                                         ),
                                       ),

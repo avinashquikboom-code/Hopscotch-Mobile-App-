@@ -150,6 +150,19 @@ class MyOrdersScreen extends ConsumerWidget {
                                   width: responsive.spacing(60),
                                   height: responsive.spacing(60),
                                   fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Container(
+                                    width: responsive.spacing(60),
+                                    height: responsive.spacing(60),
+                                    color: AppTheme.primaryColor
+                                        .withValues(alpha: 0.05),
+                                    child: Icon(
+                                      Icons.image_not_supported_rounded,
+                                      size: responsive.iconSize(20),
+                                      color: AppTheme.primaryColor
+                                          .withValues(alpha: 0.3),
+                                    ),
+                                  ),
                                 ),
                               ),
                             );

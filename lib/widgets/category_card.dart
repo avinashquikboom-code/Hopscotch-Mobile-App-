@@ -33,11 +33,13 @@ class CategoryCard extends StatelessWidget {
                   height: 70,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
+                    color: AppTheme.primaryColor.withValues(alpha: 0.05),
                     border: Border.all(color: AppTheme.borderColor, width: 1.5),
                     boxShadow: AppTheme.softShadow,
                     image: DecorationImage(
                       image: NetworkImage(category.imageUrl),
                       fit: BoxFit.cover,
+                      onError: (exception, stackTrace) {},
                     ),
                   ),
                 ),
@@ -73,9 +75,11 @@ class CategoryCard extends StatelessWidget {
             height: 140,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+              color: AppTheme.primaryColor.withValues(alpha: 0.05),
               image: DecorationImage(
                 image: NetworkImage(category.imageUrl),
                 fit: BoxFit.cover,
+                onError: (exception, stackTrace) {},
               ),
               boxShadow: AppTheme.softShadow,
             ),

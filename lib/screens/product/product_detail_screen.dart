@@ -711,15 +711,16 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                                             rev.userAvatarUrl!,
                                                           )
                                                         : null,
-                                                    child:
-                                                        rev.userAvatarUrl ==
-                                                            null
-                                                        ? Icon(
-                                                            Icons.person,
-                                                            size: responsive
-                                                                .iconSize(18),
-                                                          )
-                                                        : null,
+                                                    onBackgroundImageError:
+                                                        rev.userAvatarUrl != null
+                                                            ? (exception,
+                                                                    stackTrace) {}
+                                                            : null,
+                                                    child: Icon(
+                                                      Icons.person,
+                                                      size: responsive
+                                                          .iconSize(18),
+                                                    ),
                                                   ),
                                                   SizedBox(
                                                     width: responsive.spacing(
