@@ -43,35 +43,35 @@ class AppColors {
   // ════════════════════════════════════════════════════════════
 
   // ── DARK PRIMARY ────────────────────────────────────────────
-  static const Color darkPrimary       = Color(0xFF14B8A6); // Teal 500 — brighter in dark
-  static const Color darkPrimaryHover  = Color(0xFF0D9488); // Teal 600
-  static const Color darkPrimaryLight  = Color(0xFF042F2E); // Deep teal tint
-  static const Color darkPrimaryBorder = Color(0xFF115E59); // Dark teal border
-  static const Color darkPrimaryBg     = Color(0xFF022C2A); // Subtle dark teal surface
+  static const Color darkPrimary       = Color(0xFF2DD4BF); // Teal 400 — brighter and more vibrant
+  static const Color darkPrimaryHover  = Color(0xFF14B8A6); // Teal 500
+  static const Color darkPrimaryLight  = Color(0xFF134E4A); // Soft teal tint for backgrounds
+  static const Color darkPrimaryBorder = Color(0xFF0F766E); // Original primary for borders
+  static const Color darkPrimaryBg     = Color(0xFF0D3D3A); // Soft teal surface
 
   // ── DARK SECONDARY / ACCENT ─────────────────────────────────
-  static const Color darkSecondary = Color(0xFF475569); // Slate 600
-  static const Color darkAccent    = Color(0xFFD97706); // Amber 600
+  static const Color darkSecondary = Color(0xFF94A3B8); // Slate 400 — lighter for better contrast
+  static const Color darkAccent    = Color(0xFFFBBF24); // Amber 400 — warmer and more visible
 
   // ── DARK STATUS ─────────────────────────────────────────────
-  static const Color darkSuccess = Color(0xFF059669); // Emerald 600
-  static const Color darkWarning = Color(0xFFF59E0B); // Amber 500
-  static const Color darkDanger  = Color(0xFFF43F5E); // Rose 500
-  static const Color darkInfo    = Color(0xFF14B8A6);
+  static const Color darkSuccess = Color(0xFF34D399); // Emerald 400 — brighter
+  static const Color darkWarning = Color(0xFFFCD34D); // Amber 300 — more visible
+  static const Color darkDanger  = Color(0xFFF87171); // Red 400 — softer but clear
+  static const Color darkInfo    = Color(0xFF2DD4BF); // Match dark primary
 
   // ── DARK NEUTRAL ────────────────────────────────────────────
-  static const Color darkBackground = Color(0xFF050505);
-  static const Color darkSurface    = Color(0xFF0A0A0A);
-  static const Color darkBorder     = Color(0xFF1E1E1E);
-  static const Color darkDivider    = Color(0xFF262626);
+  static const Color darkBackground = Color(0xFF0F172A); // Slate 900 — deep blue-gray
+  static const Color darkSurface    = Color(0xFF1E293B); // Slate 800 — elevated surfaces
+  static const Color darkBorder     = Color(0xFF334155); // Slate 700 — visible borders
+  static const Color darkDivider    = Color(0xFF475569); // Slate 600 — subtle dividers
 
   // ── DARK TEXT ───────────────────────────────────────────────
-  static const Color darkTextPrimary   = Color(0xFFF1F5F9); // Slate 100
-  static const Color darkTextBody      = Color(0xFFCBD5E1); // Slate 300
-  static const Color darkTextSecondary = Color(0xFF64748B); // Slate 500
-  static const Color darkTextDisabled  = Color(0xFF475569); // Slate 600
-  static const Color darkTextLight     = Color(0xFF475569); // Alias
+  static const Color darkTextPrimary   = Color(0xFFF8FAFC); // Slate 50 — crisp white
+  static const Color darkTextBody      = Color(0xFFE2E8F0); // Slate 200 — readable body
+  static const Color darkTextSecondary = Color(0xFF94A3B8); // Slate 400 — secondary text
+  static const Color darkTextDisabled  = Color(0xFF64748B); // Slate 500 — disabled state
+  static const Color darkTextLight     = Color(0xFF94A3B8); // Alias for disabled
 
   // ── DARK ERROR ──────────────────────────────────────────────
-  static const Color darkError = Color(0xFFF43F5E); // Rose 500
+  static const Color darkError = Color(0xFFF87171); // Red 400 — consistent with danger
 }

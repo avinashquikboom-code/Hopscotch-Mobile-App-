@@ -81,13 +81,15 @@ class MainShell extends ConsumerWidget {
 
     final badges = <int>[0, 0, wishlistCount, cartCount, 0];
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       body: child,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           border: Border(
             top: BorderSide(
-              color: AppTheme.borderColor.withValues(alpha: 0.5),
+              color: colorScheme.outline.withValues(alpha: 0.5),
               width: 0.5,
             ),
           ),
@@ -96,9 +98,9 @@ class MainShell extends ConsumerWidget {
           currentIndex: selectedIndex,
           onTap: (index) => _onItemTapped(index, context),
           type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.white,
-          selectedItemColor: AppTheme.primaryColor,
-          unselectedItemColor: AppTheme.textSecondaryColor,
+          backgroundColor: colorScheme.surface,
+          selectedItemColor: colorScheme.primary,
+          unselectedItemColor: colorScheme.onSurface.withValues(alpha: 0.5),
           selectedLabelStyle: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 10,

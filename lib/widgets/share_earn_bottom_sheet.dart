@@ -225,13 +225,52 @@ https://hopscotch.com/p/${widget.product.id}
       ];
 
       int savedCount = 0;
-      for (final url in imageUrls) {
+      final dio = Dio();
+      final tempDir = await getTemporaryDirectory();
+
+      for (int i = 0; i < imageUrls.length; i++) {
+        final url = imageUrls[i];
         if (url.trim().isEmpty) continue;
-        final success = await GallerySaver.saveImage(
-          url,
-          albumName: 'Aura Couture',
-        );
-        if (success ?? false) savedCount++;
+
+        try {
+          // Download the image first
+          final response = await dio.get<List<int>>(
+            url,
+            options: Options(responseType: ResponseType.bytes),
+          );
+
+          if (response.data != null) {
+            // Determine file extension
+            String ext = 'jpg';
+            if (url.contains('.png')) {
+              ext = 'png';
+            } else if (url.contains('.webp')) {
+              ext = 'webp';
+            }
+
+            // Save to temporary file
+            final tempFilePath = '${tempDir.path}/download_img_${widget.product.id}_$i.$ext';
+            final tempFile = File(tempFilePath);
+            await tempFile.writeAsBytes(response.data!);
+
+            // Save to gallery from local file
+            final success = await GallerySaver.saveImage(
+              tempFilePath,
+              albumName: 'Aura Couture',
+            );
+
+            // Clean up temp file
+            if (await tempFile.exists()) {
+              await tempFile.delete();
+            }
+
+            if (success ?? false) savedCount++;
+          }
+        } catch (e) {
+          // Continue with next image if one fails
+          print('Failed to download image $i: $e');
+          continue;
+        }
       }
 
       if (mounted) {

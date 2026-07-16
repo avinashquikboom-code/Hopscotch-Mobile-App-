@@ -198,8 +198,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   Widget build(BuildContext context) {
     final responsive = context.responsive;
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Container(
@@ -254,7 +254,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   child: Text(
                     'Create Account',
                     style: responsive.headline4.copyWith(
-                      color: AppTheme.textPrimaryColor,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                 ),
@@ -263,7 +263,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   child: Text(
                     'Sign up to get started',
                     style: responsive.bodyMedium.copyWith(
-                      color: AppTheme.textSecondaryColor,
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -275,35 +275,35 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   controller: _nameController,
                   keyboardType: TextInputType.name,
                   style: TextStyle(
-                    color: AppTheme.textPrimaryColor,
+                    color: colorScheme.onSurface,
                     fontSize: responsive.fontSize14,
                   ),
                   decoration: InputDecoration(
                     hintText: 'Enter your name',
                     hintStyle: TextStyle(
-                      color: AppTheme.textSecondaryColor.withValues(alpha: 0.6),
+                      color: colorScheme.onSurface.withValues(alpha: 0.4),
                       fontSize: responsive.fontSize14,
                     ),
                     labelText: 'Name',
                     labelStyle: TextStyle(
-                      color: AppTheme.primaryColor,
+                      color: colorScheme.primary,
                       fontSize: responsive.fontSize14,
                     ),
                     prefixIcon: Icon(
                       Icons.person_outline_rounded,
-                      color: AppTheme.primaryColor,
+                      color: colorScheme.primary,
                       size: responsive.iconSize(20),
                     ),
                     filled: true,
-                    fillColor: AppTheme.surfaceColor,
+                    fillColor: colorScheme.surface,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppTheme.radiusM),
                       borderSide: BorderSide.none,
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppTheme.radiusM),
-                      borderSide: const BorderSide(
-                        color: AppTheme.primaryColor,
+                      borderSide: BorderSide(
+                        color: colorScheme.primary,
                         width: 2,
                       ),
                     ),
@@ -320,35 +320,35 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   style: TextStyle(
-                    color: AppTheme.textPrimaryColor,
+                    color: colorScheme.onSurface,
                     fontSize: responsive.fontSize14,
                   ),
                   decoration: InputDecoration(
                     hintText: 'Enter email',
                     hintStyle: TextStyle(
-                      color: AppTheme.textSecondaryColor.withValues(alpha: 0.6),
+                      color: colorScheme.onSurface.withValues(alpha: 0.4),
                       fontSize: responsive.fontSize14,
                     ),
                     labelText: 'Email',
                     labelStyle: TextStyle(
-                      color: AppTheme.primaryColor,
+                      color: colorScheme.primary,
                       fontSize: responsive.fontSize14,
                     ),
                     prefixIcon: Icon(
                       Icons.email_outlined,
-                      color: AppTheme.primaryColor,
+                      color: colorScheme.primary,
                       size: responsive.iconSize(20),
                     ),
                     filled: true,
-                    fillColor: AppTheme.surfaceColor,
+                    fillColor: colorScheme.surface,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppTheme.radiusM),
                       borderSide: BorderSide.none,
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppTheme.radiusM),
-                      borderSide: const BorderSide(
-                        color: AppTheme.primaryColor,
+                      borderSide: BorderSide(
+                        color: colorScheme.primary,
                         width: 2,
                       ),
                     ),
@@ -365,35 +365,35 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
                   style: TextStyle(
-                    color: AppTheme.textPrimaryColor,
+                    color: colorScheme.onSurface,
                     fontSize: responsive.fontSize14,
                   ),
                   decoration: InputDecoration(
                     hintText: 'Enter phone number',
                     hintStyle: TextStyle(
-                      color: AppTheme.textSecondaryColor.withValues(alpha: 0.6),
+                      color: colorScheme.onSurface.withValues(alpha: 0.4),
                       fontSize: responsive.fontSize14,
                     ),
                     labelText: 'Phone Number',
                     labelStyle: TextStyle(
-                      color: AppTheme.primaryColor,
+                      color: colorScheme.primary,
                       fontSize: responsive.fontSize14,
                     ),
                     prefixIcon: Icon(
                       Icons.phone_outlined,
-                      color: AppTheme.primaryColor,
+                      color: colorScheme.primary,
                       size: responsive.iconSize(20),
                     ),
                     filled: true,
-                    fillColor: AppTheme.surfaceColor,
+                    fillColor: colorScheme.surface,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppTheme.radiusM),
                       borderSide: BorderSide.none,
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppTheme.radiusM),
-                      borderSide: const BorderSide(
-                        color: AppTheme.primaryColor,
+                      borderSide: BorderSide(
+                        color: colorScheme.primary,
                         width: 2,
                       ),
                     ),
@@ -410,29 +410,29 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   style: TextStyle(
-                    color: AppTheme.textPrimaryColor,
+                    color: colorScheme.onSurface,
                     fontSize: responsive.fontSize14,
                   ),
                   decoration: InputDecoration(
                     hintText: 'Enter password',
                     hintStyle: TextStyle(
-                      color: AppTheme.textSecondaryColor.withValues(alpha: 0.6),
+                      color: colorScheme.onSurface.withValues(alpha: 0.4),
                       fontSize: responsive.fontSize14,
                     ),
                     labelText: 'Password',
                     labelStyle: TextStyle(
-                      color: AppTheme.primaryColor,
+                      color: colorScheme.primary,
                       fontSize: responsive.fontSize14,
                     ),
                     prefixIcon: Icon(
                       Icons.lock_outline_rounded,
-                      color: AppTheme.primaryColor,
+                      color: colorScheme.primary,
                       size: responsive.iconSize(20),
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                        color: AppTheme.primaryColor,
+                        color: colorScheme.primary,
                         size: responsive.iconSize(20),
                       ),
                       onPressed: () {
@@ -442,15 +442,15 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       },
                     ),
                     filled: true,
-                    fillColor: AppTheme.surfaceColor,
+                    fillColor: colorScheme.surface,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppTheme.radiusM),
                       borderSide: BorderSide.none,
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppTheme.radiusM),
-                      borderSide: const BorderSide(
-                        color: AppTheme.primaryColor,
+                      borderSide: BorderSide(
+                        color: colorScheme.primary,
                         width: 2,
                       ),
                     ),
@@ -467,29 +467,29 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirmPassword,
                   style: TextStyle(
-                    color: AppTheme.textPrimaryColor,
+                    color: colorScheme.onSurface,
                     fontSize: responsive.fontSize14,
                   ),
                   decoration: InputDecoration(
                     hintText: 'Confirm password',
                     hintStyle: TextStyle(
-                      color: AppTheme.textSecondaryColor.withValues(alpha: 0.6),
+                      color: colorScheme.onSurface.withValues(alpha: 0.4),
                       fontSize: responsive.fontSize14,
                     ),
                     labelText: 'Confirm Password',
                     labelStyle: TextStyle(
-                      color: AppTheme.primaryColor,
+                      color: colorScheme.primary,
                       fontSize: responsive.fontSize14,
                     ),
                     prefixIcon: Icon(
                       Icons.lock_outline_rounded,
-                      color: AppTheme.primaryColor,
+                      color: colorScheme.primary,
                       size: responsive.iconSize(20),
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureConfirmPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                        color: AppTheme.primaryColor,
+                        color: colorScheme.primary,
                         size: responsive.iconSize(20),
                       ),
                       onPressed: () {
@@ -499,15 +499,15 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       },
                     ),
                     filled: true,
-                    fillColor: AppTheme.surfaceColor,
+                    fillColor: colorScheme.surface,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppTheme.radiusM),
                       borderSide: BorderSide.none,
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppTheme.radiusM),
-                      borderSide: const BorderSide(
-                        color: AppTheme.primaryColor,
+                      borderSide: BorderSide(
+                        color: colorScheme.primary,
                         width: 2,
                       ),
                     ),

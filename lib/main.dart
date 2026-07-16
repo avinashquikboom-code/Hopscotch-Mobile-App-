@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hopscotch/firebase/firebase_config.dart';
 import 'package:hopscotch/routes/app_pages.dart';
 import 'package:hopscotch/theme/app_theme.dart';
+import 'package:hopscotch/theme/theme_provider.dart';
 import 'package:hopscotch/providers/language_provider.dart';
 import 'package:hopscotch/l10n/app_localizations.dart';
 
@@ -35,10 +36,13 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final language = ref.watch(languageProvider);
+    final themeMode = ref.watch(themeModeProvider);
     
     return MaterialApp.router(
       title: 'Aura Couture',
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
       routerConfig: AppPages.router,
       debugShowCheckedModeBanner: false,
       localizationsDelegates: AppLocalizations.localizationsDelegates,

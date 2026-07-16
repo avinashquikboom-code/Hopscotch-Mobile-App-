@@ -37,6 +37,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final currency = ref.watch(currencyProvider);
     final responsive = context.responsive;
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final double subtotal = cartNotifier.subtotal;
     const double shipping = 150.00;
@@ -45,7 +47,6 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final double totalAmount = subtotal + shipping + tax + giftCost;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: Text(
           l10n.yourBag,
@@ -56,7 +57,6 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           ),
         ),
         elevation: 0,
-        backgroundColor: const Color(0xFFF8FAFC),
         actions: [
           if (cart.isNotEmpty)
             Padding(
@@ -70,7 +70,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   style: TextStyle(
                     fontSize: responsive.fontSize12,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.primaryColor,
+                    color: colorScheme.primary,
                     letterSpacing: 1.0,
                   ),
                 ),
@@ -104,7 +104,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           style: TextStyle(
                             fontSize: responsive.fontSize12,
                             fontWeight: FontWeight.w600,
-                            color: AppTheme.textSecondaryColor,
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
                             letterSpacing: 1.5,
                           ),
                         ),
@@ -127,13 +127,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 
                           return Container(
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: colorScheme.surface,
                               borderRadius: BorderRadius.circular(
                                 AppTheme.radiusL,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.04),
+                                  color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.04),
                                   blurRadius: 20,
                                   offset: const Offset(0, 4),
                                 ),
@@ -190,7 +190,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                               style: TextStyle(
                                                 fontSize: responsive.fontSize10,
                                                 fontWeight: FontWeight.bold,
-                                                color: AppTheme.primaryColor,
+                                                color: colorScheme.primary,
                                                 letterSpacing: 1.0,
                                               ),
                                             ),
@@ -200,7 +200,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                               child: Icon(
                                                 Icons.close_rounded,
                                                 size: responsive.iconSize(20),
-                                                color: AppTheme.textLightColor,
+                                                color: colorScheme.onSurface.withValues(alpha: 0.4),
                                               ),
                                             ),
                                           ],
@@ -219,7 +219,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: responsive.fontSize16,
-                                            color: AppTheme.textPrimaryColor,
+                                            color: colorScheme.onSurface,
                                           ),
                                         ),
                                         SizedBox(
@@ -241,9 +241,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                                   ),
                                                 ),
                                                 decoration: BoxDecoration(
-                                                  color: const Color(
-                                                    0xFFF1F5F9,
-                                                  ),
+                                                  color: colorScheme.outline.withValues(alpha: 0.15),
                                                   borderRadius:
                                                       BorderRadius.circular(4),
                                                 ),
@@ -253,8 +251,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                                     fontSize:
                                                         responsive.fontSize10,
                                                     fontWeight: FontWeight.bold,
-                                                    color: AppTheme
-                                                        .textPrimaryColor,
+                                                    color: colorScheme.onSurface,
                                                   ),
                                                 ),
                                               ),
@@ -274,7 +271,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                                   ),
                                                   shape: BoxShape.circle,
                                                   border: Border.all(
-                                                    color: Colors.white,
+                                                    color: colorScheme.surface,
                                                     width: 2,
                                                   ),
                                                   boxShadow: [
@@ -307,19 +304,19 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                               style: TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: responsive.fontSize18,
-                                                color:
-                                                    AppTheme.textPrimaryColor,
+                                                color: colorScheme.onSurface,
                                               ),
                                             ),
                                             Container(
                                               decoration: BoxDecoration(
-                                                color: const Color(0xFFF1F5F9),
+                                                color: colorScheme.outline.withValues(alpha: 0.12),
                                                 borderRadius:
                                                     BorderRadius.circular(8),
                                               ),
                                               child: Row(
                                                 children: [
                                                   _buildQtyButton(
+                                                    context: context,
                                                     icon: Icons.remove_rounded,
                                                     onTap: () => cartNotifier
                                                         .updateQuantity(
@@ -341,12 +338,12 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                                             .fontSize14,
                                                         fontWeight:
                                                             FontWeight.bold,
-                                                        color: AppTheme
-                                                            .textPrimaryColor,
+                                                        color: colorScheme.onSurface,
                                                       ),
                                                     ),
                                                   ),
                                                   _buildQtyButton(
+                                                    context: context,
                                                     icon: Icons.add_rounded,
                                                     onTap: () => cartNotifier
                                                         .updateQuantity(
@@ -381,11 +378,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             responsive.spacing(AppTheme.spaceL),
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: colorScheme.surface,
                             borderRadius: BorderRadius.circular(
                               AppTheme.radiusL,
                             ),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                            border: Border.all(color: colorScheme.outline),
                           ),
                           child: Row(
                             children: [
@@ -393,7 +390,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 width: responsive.spacing(44),
                                 height: responsive.spacing(44),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.primaryColor.withValues(
+                                  color: colorScheme.primary.withValues(
                                     alpha: 0.1,
                                   ),
                                   borderRadius: BorderRadius.circular(
@@ -402,7 +399,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 ),
                                 child: Icon(
                                   Icons.card_giftcard_rounded,
-                                  color: AppTheme.primaryColor,
+                                  color: colorScheme.primary,
                                   size: responsive.iconSize(24),
                                 ),
                               ),
@@ -418,7 +415,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                       style: TextStyle(
                                         fontSize: responsive.fontSize14,
                                         fontWeight: FontWeight.bold,
-                                        color: AppTheme.textPrimaryColor,
+                                        color: colorScheme.onSurface,
                                       ),
                                     ),
                                     SizedBox(height: responsive.spacing(2)),
@@ -426,7 +423,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                       l10n.giftWrappingDesc,
                                       style: TextStyle(
                                         fontSize: responsive.fontSize11,
-                                        color: AppTheme.textSecondaryColor,
+                                        color: colorScheme.onSurface.withValues(alpha: 0.6),
                                       ),
                                     ),
                                   ],
@@ -440,7 +437,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                     _includeGiftWrapping = val;
                                   });
                                 },
-                                activeThumbColor: AppTheme.primaryColor,
+                                activeColor: colorScheme.primary,
                               ),
                             ],
                           ),
@@ -458,11 +455,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             responsive.spacing(AppTheme.spaceXL),
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: colorScheme.surface,
                             borderRadius: BorderRadius.circular(
                               AppTheme.radiusL,
                             ),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                            border: Border.all(color: colorScheme.outline),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -472,7 +469,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 style: TextStyle(
                                   fontSize: responsive.fontSize11,
                                   fontWeight: FontWeight.bold,
-                                  color: AppTheme.textSecondaryColor,
+                                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                                   letterSpacing: 1.5,
                                 ),
                               ),
@@ -480,6 +477,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 height: responsive.spacing(AppTheme.spaceL),
                               ),
                               _buildSummaryRow(
+                                context,
                                 l10n.subtotal,
                                 currency.formatPrice(subtotal),
                                 responsive,
@@ -488,6 +486,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 height: responsive.spacing(AppTheme.spaceS),
                               ),
                               _buildSummaryRow(
+                                context,
                                 l10n.shipping,
                                 currency.formatPrice(shipping),
                                 responsive,
@@ -496,6 +495,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 height: responsive.spacing(AppTheme.spaceS),
                               ),
                               _buildSummaryRow(
+                                context,
                                 l10n.taxPercent,
                                 currency.formatPrice(tax),
                                 responsive,
@@ -505,6 +505,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                   height: responsive.spacing(AppTheme.spaceS),
                                 ),
                                 _buildSummaryRow(
+                                  context,
                                   l10n.giftWrapping,
                                   currency.formatPrice(_giftWrappingCost),
                                   responsive,
@@ -514,6 +515,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 height: responsive.spacing(AppTheme.spaceXL),
                               ),
                               _buildSummaryRow(
+                                context,
                                 l10n.total,
                                 currency.formatPrice(totalAmount),
                                 responsive,
@@ -541,9 +543,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           responsive.spacing(AppTheme.spaceXL),
                         ).copyWith(bottom: responsive.spacing(40)),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          border: const Border(
-                            top: BorderSide(color: Color(0xFFE2E8F0)),
+                          color: colorScheme.surface.withValues(alpha: 0.92),
+                          border: Border(
+                            top: BorderSide(color: colorScheme.outline),
                           ),
                         ),
                         child: Column(
@@ -557,7 +559,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                   style: TextStyle(
                                     fontSize: responsive.fontSize12,
                                     fontWeight: FontWeight.bold,
-                                    color: AppTheme.textSecondaryColor,
+                                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                                     letterSpacing: 1.5,
                                   ),
                                 ),
@@ -566,7 +568,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                   style: TextStyle(
                                     fontSize: responsive.fontSize24,
                                     fontWeight: FontWeight.bold,
-                                    color: AppTheme.textPrimaryColor,
+                                    color: colorScheme.onSurface,
                                   ),
                                 ),
                               ],
@@ -580,7 +582,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 width: double.infinity,
                                 height: responsive.spacing(56),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.primaryColor,
+                                  color: colorScheme.primary,
                                   borderRadius: BorderRadius.circular(
                                     AppTheme.radiusM,
                                   ),
@@ -591,7 +593,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                     style: TextStyle(
                                       fontSize: responsive.fontSize14,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                      color: colorScheme.onPrimary,
                                       letterSpacing: 1.0,
                                     ),
                                   ),
@@ -610,6 +612,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   }
 
   Widget _buildQtyButton({
+    required BuildContext context,
     required IconData icon,
     required VoidCallback onTap,
     required ResponsiveText responsive,
@@ -624,18 +627,20 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         child: Icon(
           icon,
           size: responsive.iconSize(18),
-          color: AppTheme.textPrimaryColor,
+          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
     );
   }
 
   Widget _buildSummaryRow(
+    BuildContext context,
     String label,
     String value,
     ResponsiveText responsive, {
     bool isTotal = false,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -645,8 +650,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             fontSize: isTotal ? responsive.fontSize14 : responsive.fontSize13,
             fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
             color: isTotal
-                ? AppTheme.textPrimaryColor
-                : AppTheme.textSecondaryColor,
+                ? colorScheme.onSurface
+                : colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
         Text(
@@ -654,7 +659,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           style: TextStyle(
             fontSize: isTotal ? responsive.fontSize16 : responsive.fontSize13,
             fontWeight: isTotal ? FontWeight.bold : FontWeight.w600,
-            color: isTotal ? AppTheme.primaryColor : AppTheme.textPrimaryColor,
+            color: isTotal ? colorScheme.primary : colorScheme.onSurface,
           ),
         ),
       ],

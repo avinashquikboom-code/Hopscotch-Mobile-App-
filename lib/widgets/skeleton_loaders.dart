@@ -16,14 +16,15 @@ class SkeletonLoader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Shimmer.fromColors(
-      baseColor: Colors.grey[200]!,
-      highlightColor: Colors.grey[50]!,
+      baseColor: isDark ? Colors.grey[800]! : Colors.grey[200]!,
+      highlightColor: isDark ? Colors.grey[700]! : Colors.grey[50]!,
       child: Container(
         width: width,
         height: height,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(borderRadius),
         ),
       ),
@@ -38,9 +39,9 @@ class ProductCardSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(AppTheme.radiusL),
-        border: Border.all(color: AppTheme.borderColor),
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
       ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,9 +98,9 @@ class CategoryCardSkeleton extends StatelessWidget {
     return Container(
       height: 140,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-        border: Border.all(color: AppTheme.borderColor),
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
       ),
       padding: const EdgeInsets.all(AppTheme.spaceL),
       child: const Column(

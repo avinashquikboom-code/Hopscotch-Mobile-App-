@@ -133,8 +133,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           padding: EdgeInsets.fromLTRB(horizontalPadding, topPadding + 12, horizontalPadding, 4),
           child: Row(
             children: [
-              const Icon(Icons.location_on_outlined,
-                  color: AppTheme.primaryColor, size: 22),
+              Icon(Icons.location_on_outlined,
+                  color: Theme.of(context).colorScheme.primary, size: 22),
               const SizedBox(width: 8),
               Expanded(
                 child: GestureDetector(
@@ -154,15 +154,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               IconButton(
                 onPressed: () => context.push('/wishlist'),
                 icon: const Icon(Icons.bookmark_border_rounded),
-                color: AppTheme.textPrimaryColor,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
               GestureDetector(
                 onTap: () => context.push('/profile'),
-                child: const CircleAvatar(
+                child: CircleAvatar(
                   radius: 17,
-                  backgroundColor: AppTheme.surfaceColor,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
                   child: Icon(Icons.person_outline,
-                      size: 20, color: AppTheme.textSecondaryColor),
+                      size: 20, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                 ),
               ),
             ],
@@ -264,8 +264,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             height: 6,
                             decoration: BoxDecoration(
                               color: isActive
-                                  ? AppTheme.primaryColor
-                                  : Colors.grey.shade300,
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).colorScheme.outline,
                               borderRadius: BorderRadius.circular(3),
                             ),
                           );
@@ -516,7 +516,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(allCategoriesProvider);
@@ -542,6 +541,7 @@ class _LocationText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final onSurface = Theme.of(context).colorScheme.onSurface;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -553,15 +553,15 @@ class _LocationText extends StatelessWidget {
                 area,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.textPrimaryColor,
+                  color: onSurface,
                 ),
               ),
             ),
-            const Icon(Icons.keyboard_arrow_down_rounded,
-                size: 20, color: AppTheme.textPrimaryColor),
+            Icon(Icons.keyboard_arrow_down_rounded,
+                size: 20, color: onSurface),
           ],
         ),
         if (city.isNotEmpty)
@@ -569,9 +569,9 @@ class _LocationText extends StatelessWidget {
             city,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: AppTheme.textSecondaryColor,
+              color: onSurface.withValues(alpha: 0.6),
             ),
           ),
       ],
@@ -607,18 +607,19 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     final pinnedAtTop = shrinkOffset > 0 || overlapsContent;
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      color: AppTheme.backgroundColor,
+      color: Theme.of(context).scaffoldBackgroundColor,
       padding: EdgeInsets.fromLTRB(
           horizontalPadding, pinnedAtTop ? 0 : 6, horizontalPadding, 8),
       alignment: Alignment.bottomCenter,
       child: Container(
         height: 48,
         decoration: BoxDecoration(
-          color: AppTheme.surfaceColor,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: AppTheme.borderColor,
+            color: colorScheme.outline,
             width: 0.5,
           ),
         ),
@@ -632,16 +633,16 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
                     children: [
-                      const Icon(Icons.search_rounded,
-                          color: AppTheme.textSecondaryColor, size: 22),
+                      Icon(Icons.search_rounded,
+                          color: colorScheme.onSurface.withValues(alpha: 0.5), size: 22),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           placeholderText,
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
-                          style: const TextStyle(
-                            color: AppTheme.textSecondaryColor,
+                          style: TextStyle(
+                            color: colorScheme.onSurface.withValues(alpha: 0.5),
                             fontSize: 14,
                           ),
                         ),
@@ -656,8 +657,8 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
               padding: const EdgeInsets.only(right: 16),
               constraints: const BoxConstraints(),
               onPressed: onCameraTap,
-              icon: const Icon(Icons.camera_alt_outlined,
-                  color: AppTheme.primaryColor, size: 22),
+              icon: Icon(Icons.camera_alt_outlined,
+                  color: colorScheme.primary, size: 22),
             ),
           ],
         ),
@@ -697,13 +698,14 @@ class _CategoryTabsDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.backgroundColor,
+        color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
           bottom: BorderSide(
             color: overlapsContent
-                ? AppTheme.borderColor
+                ? colorScheme.outline
                 : Colors.transparent,
             width: 0.5,
           ),
@@ -731,8 +733,8 @@ class _CategoryTabsDelegate extends SliverPersistentHeaderDelegate {
                     letterSpacing: 0.3,
                     fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                     color: selected
-                        ? AppTheme.primaryColor
-                        : AppTheme.textSecondaryColor,
+                        ? colorScheme.primary
+                        : colorScheme.onSurface.withValues(alpha: 0.5),
                   ),
                 ),
                 const SizedBox(height: 5),
@@ -741,7 +743,7 @@ class _CategoryTabsDelegate extends SliverPersistentHeaderDelegate {
                   height: 2.5,
                   width: selected ? 24 : 0,
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor,
+                    color: colorScheme.primary,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),

@@ -153,11 +153,11 @@ class ProfileScreen extends ConsumerWidget {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-                  border: Border.all(color: AppTheme.borderColor),
+                  border: Border.all(color: Theme.of(context).colorScheme.outline),
                   boxShadow: AppTheme.softShadow,
                 ),
                 child: Material(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                   clipBehavior: Clip.antiAlias,
                   child: Column(
@@ -200,11 +200,11 @@ class ProfileScreen extends ConsumerWidget {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-                  border: Border.all(color: AppTheme.borderColor),
+                  border: Border.all(color: Theme.of(context).colorScheme.outline),
                   boxShadow: AppTheme.softShadow,
                 ),
                 child: Material(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                   clipBehavior: Clip.antiAlias,
                   child: Column(
@@ -277,6 +277,7 @@ class ProfileScreen extends ConsumerWidget {
     required VoidCallback onTap,
   }) {
     final responsive = context.responsive;
+    final colorScheme = Theme.of(context).colorScheme;
     return ListTile(
       contentPadding: EdgeInsets.symmetric(
         horizontal: responsive.spacing(AppTheme.spaceL),
@@ -285,12 +286,12 @@ class ProfileScreen extends ConsumerWidget {
       leading: Container(
         padding: EdgeInsets.all(responsive.spacing(8)),
         decoration: BoxDecoration(
-          color: AppTheme.primaryColor.withValues(alpha: 0.04),
+          color: colorScheme.primary.withValues(alpha: 0.08),
           shape: BoxShape.circle,
         ),
         child: Icon(
           icon,
-          color: AppTheme.primaryColor,
+          color: colorScheme.primary,
           size: responsive.iconSize(20),
         ),
       ),
@@ -298,21 +299,21 @@ class ProfileScreen extends ConsumerWidget {
         title,
         style: TextStyle(
           fontWeight: FontWeight.bold,
-          color: AppTheme.textPrimaryColor,
+          color: colorScheme.onSurface,
           fontSize: responsive.fontSize14,
         ),
       ),
       subtitle: Text(
         subtitle,
         style: TextStyle(
-          color: AppTheme.textSecondaryColor,
+          color: colorScheme.onSurface.withValues(alpha: 0.6),
           fontSize: responsive.fontSize11,
         ),
       ),
       trailing: Icon(
         Icons.arrow_forward_ios_rounded,
         size: responsive.iconSize(14),
-        color: AppTheme.textLightColor,
+        color: colorScheme.onSurface.withValues(alpha: 0.4),
       ),
       onTap: onTap,
     );

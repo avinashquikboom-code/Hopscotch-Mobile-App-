@@ -36,9 +36,9 @@ class ProductCard extends ConsumerWidget {
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
         decoration: BoxDecoration(
-          color: AppTheme.surfaceColor,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(AppTheme.radiusL),
-          border: Border.all(color: AppTheme.borderColor, width: 1),
+          border: Border.all(color: Theme.of(context).colorScheme.outline, width: 1),
           boxShadow: AppTheme.softShadow,
         ),
         child: Column(
@@ -64,7 +64,7 @@ class ProductCard extends ConsumerWidget {
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) return child;
                             return Container(
-                              color: AppTheme.borderColor.withValues(
+                              color: Theme.of(context).colorScheme.outline.withValues(
                                 alpha: 0.2,
                               ),
                               child: const Center(
@@ -204,13 +204,13 @@ class ProductCard extends ConsumerWidget {
                           );
                         },
                         borderRadius: BorderRadius.circular(20),
-                        splashColor: AppTheme.primaryColor.withValues(
+                        splashColor: Theme.of(context).colorScheme.primary.withValues(
                           alpha: 0.2,
                         ),
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.9),
+                            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
@@ -223,7 +223,7 @@ class ProductCard extends ConsumerWidget {
                           child: AnimatedHeartButton(
                             isFav: isFav,
                             size: 20,
-                            baseColor: AppTheme.textSecondaryColor,
+                            baseColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                             onTap: () {},
                           ),
                         ),
@@ -247,7 +247,7 @@ class ProductCard extends ConsumerWidget {
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.9),
+                          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
@@ -257,9 +257,9 @@ class ProductCard extends ConsumerWidget {
                             ),
                           ],
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Remix.share_forward_line,
-                          color: AppTheme.textPrimaryColor,
+                          color: Theme.of(context).colorScheme.onSurface,
                           size: 20,
                         ),
                       ),
@@ -286,7 +286,7 @@ class ProductCard extends ConsumerWidget {
                       Text(
                         product.subcategory.toUpperCase(),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppTheme.textSecondaryColor,
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.5,
                           fontSize: 10,
@@ -299,7 +299,7 @@ class ProductCard extends ConsumerWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: AppTheme.textPrimaryColor,
+                          color: Theme.of(context).colorScheme.onSurface,
                           height: 1.2,
                           fontWeight: FontWeight.w600,
                           fontSize: 13,
@@ -319,7 +319,7 @@ class ProductCard extends ConsumerWidget {
                             product.rating.toString(),
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
-                                  color: AppTheme.textPrimaryColor,
+                                  color: Theme.of(context).colorScheme.onSurface,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 11,
                                 ),
@@ -329,7 +329,7 @@ class ProductCard extends ConsumerWidget {
                             '(${product.reviewCount})',
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
-                                  color: AppTheme.textLightColor,
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
                                   fontSize: 10,
                                 ),
                           ),
@@ -359,7 +359,7 @@ class ProductCard extends ConsumerWidget {
                                 currency.formatPrice(product.originalPrice),
                                 style: Theme.of(context).textTheme.bodySmall
                                     ?.copyWith(
-                                      color: AppTheme.textLightColor,
+                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
                                       decoration: TextDecoration.lineThrough,
                                       fontSize: 11,
                                     ),
