@@ -111,7 +111,14 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                   SizedBox(height: responsive.spacing(AppTheme.spaceL)),
                   Text(
-                    userProfile?['firstName'] ?? userProfile?['name'] ?? l10n.auraMember,
+                    (() {
+                      final firstName = userProfile?['firstName']?.toString() ?? '';
+                      final lastName = userProfile?['lastName']?.toString() ?? '';
+                      if (firstName.isNotEmpty && lastName.isNotEmpty) {
+                        return '$firstName $lastName';
+                      }
+                      return firstName.isNotEmpty ? firstName : (userProfile?['name']?.toString() ?? l10n.auraMember);
+                    })(),
                     style: responsive.headline4,
                   ),
                   SizedBox(height: responsive.spacing(4)),

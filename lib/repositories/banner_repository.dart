@@ -29,7 +29,7 @@ class BannerRepository {
               id: id,
               imageUrl: fullImageUrl,
               title: b['title']?.toString() ?? '',
-              subtitle: b['subtitle']?.toString(),
+              subtitle: (b['subtitle'] ?? b['description'])?.toString(),
               link: b['link']?.toString(),
               order: b['order'] as int? ?? 0,
               isActive: b['isActive'] as bool? ?? b['active'] as bool? ?? true,

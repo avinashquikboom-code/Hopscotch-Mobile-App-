@@ -133,7 +133,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 1.2,
+                  childAspectRatio: 1.1,
                   crossAxisSpacing: responsive.spacing(AppTheme.spaceM),
                   mainAxisSpacing: responsive.spacing(AppTheme.spaceM),
                 ),
@@ -181,13 +181,17 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                             ),
                           ),
                           SizedBox(height: responsive.spacing(4)),
-                          Text(
-                            option['subtitle'],
-                            style: TextStyle(
-                              fontSize: responsive.fontSize11,
-                              color: AppTheme.textSecondaryColor,
+                          Expanded(
+                            child: Text(
+                              option['subtitle'],
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: responsive.fontSize11,
+                                color: AppTheme.textSecondaryColor,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                            textAlign: TextAlign.center,
                           ),
                         ],
                       ),

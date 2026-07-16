@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hopscotch/providers/api_provider.dart';
+import 'package:hopscotch/repositories/profile_repository.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -44,23 +46,44 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     // Check if language and currency are already selected and navigate accordingly
     Future.delayed(const Duration(milliseconds: 2600), () async {
-      if (mounted) {
-        final prefs = await SharedPreferences.getInstance();
-        final languageCode = prefs.getString('language_code');
-        final currencyCode = prefs.getString('currency_code');
-        final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
+      if (!mounted) return;
+      final prefs = await SharedPreferences.getInstance();
+      if (!mounted) return;
+      
+      final languageCode = prefs.getString('language_code');
+      final currencyCode = prefs.getString('currency_code');
+      final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
+      
+      if (languageCode == null) {
+        // Language not selected, go to language selection
+        context.go('/language-selection');
+      } else if (currencyCode == null) {
+        // Language selected but currency not selected, go to currency selection
+        context.go('/currency-selection');
+      } else if (!onboardingCompleted) {
+        // Both language and currency selected but onboarding not completed
+        context.go('/onboarding');
+      } else {
+        // All onboarding completed, restore session silently if a token was saved previously
+        final apiService = ref.read(apiServiceProvider);
+        final loggedIn = await apiService.isLoggedIn();
+        if (!mounted) return;
         
-        if (languageCode == null) {
-          // Language not selected, go to language selection
-          context.go('/language-selection');
-        } else if (currencyCode == null) {
-          // Language selected but currency not selected, go to currency selection
-          context.go('/currency-selection');
-        } else if (!onboardingCompleted) {
-          // Both language and currency selected but onboarding not completed
-          context.go('/onboarding');
+        if (loggedIn) {
+          final restored = await apiService.restoreSession();
+          if (!mounted) return;
+          
+          if (restored) {
+            // Preload profile data so all home screen components are ready
+            await ref.read(profileNotifierProvider.notifier).loadProfile();
+            if (!mounted) return;
+            context.go('/home');
+          } else {
+            // Token exists but is invalid/expired and refresh failed. Redirect to login.
+            context.go('/login');
+          }
         } else {
-          // All completed, go to home
+          // Not logged in (guest flow)
           context.go('/home');
         }
       }

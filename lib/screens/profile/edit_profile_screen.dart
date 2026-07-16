@@ -8,6 +8,7 @@ import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/api/api_service.dart';
 import 'package:hopscotch/api/auth_api.dart';
 import 'package:hopscotch/widgets/toast_notification.dart';
+import 'package:hopscotch/repositories/profile_repository.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -51,7 +52,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       if (response.statusCode == 200) {
         setState(() {
           _userData = response.data['data'];
-          _nameController.text = _userData?['firstName'] ?? _userData?['name'] ?? '';
+          final firstName = _userData?['firstName'] ?? '';
+          final lastName = _userData?['lastName'] ?? '';
+          if (firstName.isNotEmpty && lastName.isNotEmpty) {
+            _nameController.text = '$firstName $lastName';
+          } else {
+            _nameController.text = firstName.isNotEmpty ? firstName : (_userData?['name'] ?? '');
+          }
           _emailController.text = _userData?['email'] ?? '';
           _phoneController.text = _userData?['phone'] ?? '';
         });
@@ -155,14 +162,31 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       final apiService = ApiService();
       final authApi = AuthApi(apiService);
       
+      final fullName = _nameController.text.trim();
+      String firstName = fullName;
+      String? lastName;
+      
+      final spaceIndex = fullName.indexOf(' ');
+      if (spaceIndex != -1) {
+        firstName = fullName.substring(0, spaceIndex).trim();
+        lastName = fullName.substring(spaceIndex + 1).trim();
+      }
+      
+      if (lastName != null && lastName.isEmpty) {
+        lastName = null;
+      }
+      
       final response = await authApi.updateProfile(
-        firstName: _nameController.text.trim(),
-        lastName: '',
+        firstName: firstName,
+        lastName: lastName,
         phone: _phoneController.text.trim(),
         avatar: _profileImage,
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        // Refresh the profile notifier immediately so other screens update their UI
+        await ref.read(profileNotifierProvider.notifier).refreshProfile();
+        
         _showSuccess('Profile updated successfully');
         if (mounted) {
           context.pop();
@@ -280,6 +304,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               SizedBox(height: responsive.spacing(AppTheme.spaceL)),
               TextFormField(
                 controller: _emailController,
+                readOnly: true,
                 keyboardType: TextInputType.emailAddress,
                 style: TextStyle(fontSize: responsive.fontSize14),
                 decoration: InputDecoration(
