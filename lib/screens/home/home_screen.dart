@@ -198,12 +198,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final responsive = context.responsive;
     final l10n = AppLocalizations.of(context)!;
 
-    final double heroHeight =
-        isDesktop ? 420 : (isTablet ? 380 : size.height * 0.50);
+    final double carouselHeight = size.width * 0.80 * 9 / 16;
+    final double heroHeight = isDesktop
+        ? 420
+        : (isTablet ? 380 : topPadding + 116 + carouselHeight + 30);
 
     final List<Widget> slivers = [
-      // HERO — only on the "All" tab
-      if (_selectedTab == 0)
+      // HERO — only on the "All" tab and if it is loading or has active banners
+      if (_selectedTab == 0 && (bannersAsync.isLoading || (bannersAsync.value != null && bannersAsync.value!.isNotEmpty)))
         SliverAppBar(
           expandedHeight: heroHeight,
           collapsedHeight: 0,
