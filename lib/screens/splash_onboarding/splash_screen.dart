@@ -147,7 +147,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
                         // Crisp Minimal Typography
                         Text(
-                          'AURA COUTURE',
+                          'FCI SELLER',
                           style: TextStyle(
                             color: AppTheme.textPrimaryColor,
                             fontSize: responsive.fontSize32,

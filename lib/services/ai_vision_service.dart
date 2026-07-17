@@ -22,7 +22,7 @@ class MockAIVisionService implements AIVisionService {
       rating: 4.5,
       reviewCount: 128,
       isAvailable: true,
-      brand: 'Aura Couture',
+      brand: 'FCISeller',
     ),
     VisualSearchProduct(
       id: '2',
@@ -35,7 +35,7 @@ class MockAIVisionService implements AIVisionService {
       rating: 4.7,
       reviewCount: 89,
       isAvailable: true,
-      brand: 'Aura Couture',
+      brand: 'FCISeller',
     ),
     VisualSearchProduct(
       id: '3',
@@ -48,7 +48,7 @@ class MockAIVisionService implements AIVisionService {
       rating: 4.3,
       reviewCount: 256,
       isAvailable: true,
-      brand: 'Aura Couture',
+      brand: 'FCISeller',
     ),
     VisualSearchProduct(
       id: '4',
@@ -61,7 +61,7 @@ class MockAIVisionService implements AIVisionService {
       rating: 4.6,
       reviewCount: 67,
       isAvailable: true,
-      brand: 'Aura Couture',
+      brand: 'FCISeller',
     ),
     VisualSearchProduct(
       id: '5',
@@ -74,7 +74,7 @@ class MockAIVisionService implements AIVisionService {
       rating: 4.4,
       reviewCount: 145,
       isAvailable: true,
-      brand: 'Aura Couture',
+      brand: 'FCISeller',
     ),
     VisualSearchProduct(
       id: '6',
@@ -87,7 +87,7 @@ class MockAIVisionService implements AIVisionService {
       rating: 4.8,
       reviewCount: 92,
       isAvailable: true,
-      brand: 'Aura Couture',
+      brand: 'FCISeller',
     ),
     VisualSearchProduct(
       id: '7',
@@ -100,7 +100,7 @@ class MockAIVisionService implements AIVisionService {
       rating: 4.2,
       reviewCount: 178,
       isAvailable: true,
-      brand: 'Aura Couture',
+      brand: 'FCISeller',
     ),
     VisualSearchProduct(
       id: '8',
@@ -113,7 +113,7 @@ class MockAIVisionService implements AIVisionService {
       rating: 4.5,
       reviewCount: 54,
       isAvailable: true,
-      brand: 'Aura Couture',
+      brand: 'FCISeller',
     ),
   ];
 

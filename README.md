@@ -1,4 +1,4 @@
-# Hopscotch Mobile App 🌟
+# FCISeller Mobile App 🌟
 
 A premium, feature-rich Kids E-Commerce Mobile Application built with Flutter. This project leverages modern architecture, robust state management, and high-quality UI/UX designs to deliver a seamless shopping experience.
 

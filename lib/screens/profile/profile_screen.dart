@@ -117,13 +117,13 @@ class ProfileScreen extends ConsumerWidget {
                       if (firstName.isNotEmpty && lastName.isNotEmpty) {
                         return '$firstName $lastName';
                       }
-                      return firstName.isNotEmpty ? firstName : (userProfile?['name']?.toString() ?? l10n.auraMember);
+                      return firstName.isNotEmpty ? firstName : (userProfile?['name']?.toString() ?? l10n.fcisellerMember);
                     })(),
                     style: responsive.headline4,
                   ),
                   SizedBox(height: responsive.spacing(4)),
                   Text(
-                    userProfile?['email'] ?? 'member@auracouture.com',
+                    userProfile?['email'] ?? 'member@fciseller.com',
                     style: responsive.bodyMedium.copyWith(
                       color: AppTheme.textSecondaryColor,
                     ),

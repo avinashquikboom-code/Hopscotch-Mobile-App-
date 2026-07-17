@@ -2,7 +2,7 @@
   {
     "id": "prod_1",
     "name": "Cute Cat Embroidery T-Shirt",
-    "brand": "Aura Couture",
+    "brand": "FCISeller",
     "category": "tshirt",
     "subcategory": "casual",
     "familyId": "fam_tshirt_cat",
@@ -48,7 +48,7 @@
   {
     "id": "prod_2",
     "name": "Floral Print Summer Dress",
-    "brand": "Aura Couture",
+    "brand": "FCISeller",
     "category": "dress",
     "subcategory": "summer",
     "familyId": "fam_dress_floral",
@@ -94,7 +94,7 @@
   {
     "id": "prod_3",
     "name": "Classic White Shirt",
-    "brand": "Aura Couture",
+    "brand": "FCISeller",
     "category": "shirt",
     "subcategory": "formal",
     "familyId": "fam_shirt_white",
@@ -134,7 +134,7 @@
   {
     "id": "prod_4",
     "name": "Denim Jacket",
-    "brand": "Aura Couture",
+    "brand": "FCISeller",
     "category": "jacket",
     "subcategory": "casual",
     "familyId": "fam_jacket_denim",
@@ -174,7 +174,7 @@
   {
     "id": "prod_5",
     "name": "Leather Handbag",
-    "brand": "Aura Couture",
+    "brand": "FCISeller",
     "category": "bag",
     "subcategory": "accessory",
     "familyId": "fam_bag_leather",
@@ -214,7 +214,7 @@
   {
     "id": "prod_6",
     "name": "Running Shoes",
-    "brand": "Aura Couture",
+    "brand": "FCISeller",
     "category": "shoes",
     "subcategory": "sports",
     "familyId": "fam_shoes_running",
@@ -254,7 +254,7 @@
   {
     "id": "prod_7",
     "name": "Embroidered Kurti",
-    "brand": "Aura Couture",
+    "brand": "FCISeller",
     "category": "kurti",
     "subcategory": "ethnic",
     "familyId": "fam_kurti_embroidered",
@@ -294,7 +294,7 @@
   {
     "id": "prod_8",
     "name": "Silk Saree",
-    "brand": "Aura Couture",
+    "brand": "FCISeller",
     "category": "saree",
     "subcategory": "ethnic",
     "familyId": "fam_saree_silk",
@@ -334,7 +334,7 @@
   {
     "id": "prod_9",
     "name": "Slim Fit Jeans",
-    "brand": "Aura Couture",
+    "brand": "FCISeller",
     "category": "jeans",
     "subcategory": "casual",
     "familyId": "fam_jeans_slim",
@@ -374,7 +374,7 @@
   {
     "id": "prod_10",
     "name": "Gold Watch",
-    "brand": "Aura Couture",
+    "brand": "FCISeller",
     "category": "watch",
     "subcategory": "accessory",
     "familyId": "fam_watch_gold",
@@ -414,7 +414,7 @@
   {
     "id": "prod_11",
     "name": "Statement Necklace",
-    "brand": "Aura Couture",
+    "brand": "FCISeller",
     "category": "accessory",
     "subcategory": "jewellery",
     "familyId": "fam_necklace_statement",
@@ -448,7 +448,7 @@
   {
     "id": "prod_12",
     "name": "Casual Sneakers",
-    "brand": "Aura Couture",
+    "brand": "FCISeller",
     "category": "shoes",
     "subcategory": "casual",
     "familyId": "fam_shoes_sneakers",
@@ -488,7 +488,7 @@
   {
     "id": "prod_13",
     "name": "Printed Scarf",
-    "brand": "Aura Couture",
+    "brand": "FCISeller",
     "category": "accessory",
     "subcategory": "scarf",
     "familyId": "fam_scarf_printed",
@@ -522,7 +522,7 @@
   {
     "id": "prod_14",
     "name": "Blazer",
-    "brand": "Aura Couture",
+    "brand": "FCISeller",
     "category": "jacket",
     "subcategory": "formal",
     "familyId": "fam_blazer_formal",
@@ -562,7 +562,7 @@
   {
     "id": "prod_15",
     "name": "Maxi Dress",
-    "brand": "Aura Couture",
+    "brand": "FCISeller",
     "category": "dress",
     "subcategory": "evening",
     "familyId": "fam_dress_maxi",

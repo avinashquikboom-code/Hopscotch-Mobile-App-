@@ -273,7 +273,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get myPortfolio => 'मेरा पोर्टफोलियो';
 
   @override
-  String get auraMember => 'ऑरा सदस्य';
+  String get fcisellerMember => 'ऑरा सदस्य';
 
   @override
   String get eliteMember => 'एलीट सदस्य';

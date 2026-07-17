@@ -72,7 +72,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
             _buildPolicySection(context,
               'Contact Us',
-              'If you have any questions about this Privacy Policy, please contact us at:\n\nEmail: privacy@auracouture.com\nPhone: +91 1800-123-4567',
+              'If you have any questions about this Privacy Policy, please contact us at:\n\nEmail: privacy@fciseller.com\nPhone: +91 1800-123-4567',
             ),
           ],
         ),

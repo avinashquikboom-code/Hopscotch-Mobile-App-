@@ -273,7 +273,7 @@ class AppLocalizationsMr extends AppLocalizations {
   String get myPortfolio => 'माझे पोर्टफोलिओ';
 
   @override
-  String get auraMember => 'ऑरा सदस्य';
+  String get fcisellerMember => 'ऑरा सदस्य';
 
   @override
   String get eliteMember => 'एलिट सदस्य';

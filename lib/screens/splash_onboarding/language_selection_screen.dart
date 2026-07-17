@@ -59,7 +59,7 @@ class _LanguageSelectionScreenState
                     ),
                     SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
                     Text(
-                      'AURA COUTURE',
+                      'FCI SELLER',
                       style: TextStyle(
                         color: AppTheme.textPrimaryColor,
                         fontSize: responsive.fontSize24,

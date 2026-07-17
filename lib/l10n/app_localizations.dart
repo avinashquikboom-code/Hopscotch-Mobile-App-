@@ -135,7 +135,7 @@ abstract class AppLocalizations {
   /// Application name
   ///
   /// In en, this message translates to:
-  /// **'Aura Couture'**
+  /// **'FCISeller'**
   String get appName;
 
   /// Language selection label
@@ -267,7 +267,7 @@ abstract class AppLocalizations {
   /// Onboarding slide 1 subtitle
   ///
   /// In en, this message translates to:
-  /// **'AURA COUTURE'**
+  /// **'FCI SELLER'**
   String get onboardingSubtitle1;
 
   /// Onboarding slide 1 description
@@ -381,7 +381,7 @@ abstract class AppLocalizations {
   /// Sign up screen subtitle
   ///
   /// In en, this message translates to:
-  /// **'Join Aura Couture for custom tailor fits, priority shipping, and member pricing.'**
+  /// **'Join FCISeller for custom tailor fits, priority shipping, and member pricing.'**
   String get signupDescription;
 
   /// Name input hint
@@ -645,8 +645,8 @@ abstract class AppLocalizations {
   /// Default member name
   ///
   /// In en, this message translates to:
-  /// **'Aura Member'**
-  String get auraMember;
+  /// **'FCISeller Member'**
+  String get fcisellerMember;
 
   /// Elite member badge
   ///
@@ -969,7 +969,7 @@ abstract class AppLocalizations {
   /// Share product message
   ///
   /// In en, this message translates to:
-  /// **'Check out this product on Hopscotch!'**
+  /// **'Check out this product on FCISeller!'**
   String get shareProduct;
 
   /// Category label

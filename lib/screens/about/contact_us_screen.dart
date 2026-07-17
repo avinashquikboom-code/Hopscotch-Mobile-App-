@@ -94,7 +94,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     context,
                     Icons.email_outlined,
                     'Email',
-                    'support@auracouture.com',
+                    'support@fciseller.com',
                   ),
                 ),
                 SizedBox(width: responsive.spacing(AppTheme.spaceM)),

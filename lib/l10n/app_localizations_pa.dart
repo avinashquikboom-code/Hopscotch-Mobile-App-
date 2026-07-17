@@ -9,7 +9,7 @@ class AppLocalizationsPa extends AppLocalizations {
   AppLocalizationsPa([String locale = 'pa']) : super(locale);
 
   @override
-  String get appName => 'Aura Couture';
+  String get appName => 'FCISeller';
 
   @override
   String get language => 'Language';
@@ -75,7 +75,7 @@ class AppLocalizationsPa extends AppLocalizations {
   String get onboardingTitle1 => 'Curated Elite Wear';
 
   @override
-  String get onboardingSubtitle1 => 'AURA COUTURE';
+  String get onboardingSubtitle1 => 'FCI SELLER';
 
   @override
   String get onboardingDesc1 =>
@@ -137,7 +137,7 @@ class AppLocalizationsPa extends AppLocalizations {
 
   @override
   String get signupDescription =>
-      'Join Aura Couture for custom tailor fits, priority shipping, and member pricing.';
+      'Join FCISeller for custom tailor fits, priority shipping, and member pricing.';
 
   @override
   String get enterFullName => 'Enter your full name';
@@ -273,7 +273,7 @@ class AppLocalizationsPa extends AppLocalizations {
   String get myPortfolio => 'MY PORTFOLIO';
 
   @override
-  String get auraMember => 'Aura Member';
+  String get fcisellerMember => 'FCISeller Member';
 
   @override
   String get eliteMember => 'ELITE MEMBER';
@@ -437,7 +437,7 @@ class AppLocalizationsPa extends AppLocalizations {
   String get added => 'ADDED';
 
   @override
-  String get shareProduct => 'Check out this product on Hopscotch!';
+  String get shareProduct => 'Check out this product on FCISeller!';
 
   @override
   String get category => 'Category';

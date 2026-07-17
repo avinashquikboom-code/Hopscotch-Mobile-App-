@@ -9,11 +9,11 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Photo library access is required for image search.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Allow Aura Couture to save product images to your Photos library.</string>
+	<string>Allow FCISeller to save product images to your Photos library.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Hopscotch</string>
+	<string>FCISeller</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

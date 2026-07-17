@@ -49,7 +49,7 @@ class AboutScreen extends StatelessWidget {
                   ),
                   SizedBox(height: responsive.spacing(AppTheme.spaceM)),
                   Text(
-                    'AURA COUTURE',
+                    'FCI SELLER',
                     style: TextStyle(
                       fontSize: responsive.fontSize18,
                       fontWeight: FontWeight.bold,
@@ -128,7 +128,7 @@ class AboutScreen extends StatelessWidget {
             _buildContactItem(
               context,
               Icons.email_outlined,
-              'support@auracouture.com',
+              'support@fciseller.com',
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceM)),
             _buildContactItem(
@@ -140,7 +140,7 @@ class AboutScreen extends StatelessWidget {
             _buildContactItem(
               context,
               Icons.language_outlined,
-              'www.auracouture.com',
+              'www.fciseller.com',
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
             // Social Links

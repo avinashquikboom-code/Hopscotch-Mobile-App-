@@ -1,6 +1,6 @@
 {
   "@@locale": "ml",
-  "appName": "Aura Couture",
+  "appName": "FCISeller",
   "@appName": {
     "description": "Application name"
   },
@@ -88,7 +88,7 @@
   "@onboardingTitle1": {
     "description": "Onboarding slide 1 title"
   },
-  "onboardingSubtitle1": "AURA COUTURE",
+  "onboardingSubtitle1": "FCI SELLER",
   "@onboardingSubtitle1": {
     "description": "Onboarding slide 1 subtitle"
   },
@@ -164,7 +164,7 @@
   "@createAccountTitle": {
     "description": "Sign up screen title"
   },
-  "signupDescription": "Join Aura Couture for custom tailor fits, priority shipping, and member pricing.",
+  "signupDescription": "Join FCISeller for custom tailor fits, priority shipping, and member pricing.",
   "@signupDescription": {
     "description": "Sign up screen subtitle"
   },
@@ -348,8 +348,8 @@
   "@myPortfolio": {
     "description": "Profile screen title"
   },
-  "auraMember": "Aura Member",
-  "@auraMember": {
+  "fcisellerMember": "FCISeller Member",
+  "@fcisellerMember": {
     "description": "Default member name"
   },
   "eliteMember": "ELITE MEMBER",
@@ -576,7 +576,7 @@
   "@buyNow": {
     "description": "Buy now button"
   },
-  "shareProduct": "Check out this product on Hopscotch!",
+  "shareProduct": "Check out this product on FCISeller!",
   "@shareProduct": {
     "description": "Share product message"
   },

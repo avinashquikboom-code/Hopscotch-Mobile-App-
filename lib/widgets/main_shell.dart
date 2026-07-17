@@ -6,7 +6,7 @@ import 'package:remixicon/remixicon.dart';
 import 'package:hopscotch/repositories/cart_wishlist_repository.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 
-/// AURA COUTURE — floating "atelier dock" navigation.
+/// FCI SELLER — floating "atelier dock" navigation.
 ///
 /// Design intent:
 /// - Detached pill dock floating above the bottom edge (content scrolls

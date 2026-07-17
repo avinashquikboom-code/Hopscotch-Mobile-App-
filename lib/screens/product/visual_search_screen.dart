@@ -173,7 +173,7 @@ class _VisualSearchScreenState extends ConsumerState<VisualSearchScreen> with Ti
       'Initializing neural network...',
       'Isolating garment contours...',
       ...hotspot.logs,
-      'Querying Aura Couture database...',
+      'Querying FCISeller database...',
       'Generating recommendation rank...',
     ];
 

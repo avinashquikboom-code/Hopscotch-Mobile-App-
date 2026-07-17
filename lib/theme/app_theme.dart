@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hopscotch/constants/app_colors.dart';
 
-/// AURA COUTURE — Unified App Theme
+/// FCI SELLER — Unified App Theme
 /// Font: Inter  |  Primary: #0F766E  |  Grid: 8px
 class AppTheme {
   AppTheme._(); // non-instantiable

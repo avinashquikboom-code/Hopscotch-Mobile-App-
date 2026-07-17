@@ -36,7 +36,7 @@ class _ShareEarnBottomSheetState extends ConsumerState<ShareEarnBottomSheet> {
   String _generateShareText(AppCurrency currency) {
     final sellingPriceStr = currency.formatPrice(widget.product.price + _margin);
     return '''
-✨ *Hopscotch Special Offer!* ✨
+✨ *FCISeller Special Offer!* ✨
 *${widget.product.title}*
 
 ${widget.product.description.length > 150 ? '${widget.product.description.substring(0, 150)}...' : widget.product.description}
@@ -45,7 +45,7 @@ ${widget.product.description.length > 150 ? '${widget.product.description.substr
 🚚 *Free Delivery & Cash on Delivery Available*
 
 👇 *Order Now / View Details:*
-https://hopscotch.com/p/${widget.product.id}
+https://fciseller.com/p/${widget.product.id}
 ''';
   }
 
@@ -54,7 +54,7 @@ https://hopscotch.com/p/${widget.product.id}
     HapticFeedback.mediumImpact();
 
     if (platform == 'Copy Link') {
-      await Clipboard.setData(ClipboardData(text: 'https://hopscotch.com/p/${widget.product.id}'));
+      await Clipboard.setData(ClipboardData(text: 'https://fciseller.com/p/${widget.product.id}'));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -256,7 +256,7 @@ https://hopscotch.com/p/${widget.product.id}
             // Save to gallery from local file
             final success = await GallerySaver.saveImage(
               tempFilePath,
-              albumName: 'Aura Couture',
+              albumName: 'FCISeller',
             );
 
             // Clean up temp file

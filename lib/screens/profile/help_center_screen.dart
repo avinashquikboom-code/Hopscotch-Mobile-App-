@@ -24,7 +24,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     {
       'question': 'What are your secure billing parameters?',
       'answer':
-          'Aura Couture operates strictly under certified PCI-DSS secure billing standards. If enabled, biometric authentication data resides solely inside your device\'s native hardware secure enclave. No credit card numbers or security credentials are ever cached on our external servers.',
+          'FCISeller operates strictly under certified PCI-DSS secure billing standards. If enabled, biometric authentication data resides solely inside your device\'s native hardware secure enclave. No credit card numbers or security credentials are ever cached on our external servers.',
     },
     {
       'question': 'What is your insured courier logistics timeline?',
@@ -54,7 +54,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     {
       'icon': Icons.email_outlined,
       'title': 'Email',
-      'subtitle': 'support@auracouture.com',
+      'subtitle': 'support@fciseller.com',
       'color': Colors.blue,
     },
     {

@@ -22,12 +22,12 @@ class _LegalPoliciesScreenState extends State<LegalPoliciesScreen> {
         {
           'heading': '1. Bespoke Custom Tailoring',
           'body':
-              'By purchasing custom tailored or bespoke-fitting garments from Aura Couture, you acknowledge and agree that minor visual adjustments and drape alignments may occur during the physical tailoring phase. Because each item is constructed based on individual clients\' specified measurements, variations are custom-tailored to provide the ultimate styling fit.',
+              'By purchasing custom tailored or bespoke-fitting garments from FCISeller, you acknowledge and agree that minor visual adjustments and drape alignments may occur during the physical tailoring phase. Because each item is constructed based on individual clients\' specified measurements, variations are custom-tailored to provide the ultimate styling fit.',
         },
         {
           'heading': '2. Proprietary Couture Designs',
           'body':
-              'All designs, custom knitwear weaves, silk patterns, embroidery drapes, and application structures featured inside the Aura Couture catalog represent exclusive, patented intellectual property owned by Aura Couture and its collaborative European design houses. Unauthorized reproduction or reverse-engineering is strictly prohibited.',
+              'All designs, custom knitwear weaves, silk patterns, embroidery drapes, and application structures featured inside the FCISeller catalog represent exclusive, patented intellectual property owned by FCISeller and its collaborative European design houses. Unauthorized reproduction or reverse-engineering is strictly prohibited.',
         },
         {
           'heading': '3. Order Cancellation Window',
@@ -43,7 +43,7 @@ class _LegalPoliciesScreenState extends State<LegalPoliciesScreen> {
         {
           'heading': '1. Biometric Enclave Protection',
           'body':
-              'If you choose to authorize billing or purchase secure keys using biometric data, your fingerprint or facial signature never leaves your physical mobile device. Biometric data is strictly encapsulated inside your native device hardware\'s Secure Enclave/Keymaster. Aura Couture never accesses, transmits, or caches biometric identifiers.',
+              'If you choose to authorize billing or purchase secure keys using biometric data, your fingerprint or facial signature never leaves your physical mobile device. Biometric data is strictly encapsulated inside your native device hardware\'s Secure Enclave/Keymaster. FCISeller never accesses, transmits, or caches biometric identifiers.',
         },
         {
           'heading': '2. Encrypted Data Streams',
@@ -69,7 +69,7 @@ class _LegalPoliciesScreenState extends State<LegalPoliciesScreen> {
         {
           'heading': '2. Complaints and Alteration Ateliers',
           'body':
-              'Aura Couture operates under an elite styling guarantee. If a custom garment does not fit to your total satisfaction, we provide complimentary alteration credits. alter your garment at any of our collaborative luxury tailoring ateliers globally. Simply contact your Concierge to receive an authorized atelier voucher.',
+              'FCISeller operates under an elite styling guarantee. If a custom garment does not fit to your total satisfaction, we provide complimentary alteration credits. alter your garment at any of our collaborative luxury tailoring ateliers globally. Simply contact your Concierge to receive an authorized atelier voucher.',
         },
         {
           'heading': '3. Customs & Import Tariffs',

@@ -271,7 +271,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get myPortfolio => 'マイポートフォリオ';
 
   @override
-  String get auraMember => 'オーラメンバー';
+  String get fcisellerMember => 'オーラメンバー';
 
   @override
   String get eliteMember => 'エリートメンバー';
@@ -434,7 +434,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get added => '追加済み';
 
   @override
-  String get shareProduct => 'Hopscotchでこの商品をチェック！';
+  String get shareProduct => 'FCISellerでこの商品をチェック！';
 
   @override
   String get category => 'カテゴリ';

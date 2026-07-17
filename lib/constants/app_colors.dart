@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// AURA COUTURE — Unified Color Palette
+/// FCI SELLER — Unified Color Palette
 /// Primary: #0F766E | All tokens match the website & admin panel.
 class AppColors {
   AppColors._(); // non-instantiable
