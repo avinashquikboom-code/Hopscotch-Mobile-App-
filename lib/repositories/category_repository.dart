@@ -17,7 +17,6 @@ class CategoryRepository {
         final data = response.data;
         final List? rawList = data is Map ? data['data'] : data;
         if (rawList != null) {
-          const apiBase = AppUrls.mobileBaseUrl;
           return rawList.map((c) {
             final id = c['id']?.toString() ?? '';
             final name = c['name']?.toString() ?? '';
@@ -25,7 +24,7 @@ class CategoryRepository {
             
             final iconUrlVal = c['iconUrl']?.toString() ?? c['bannerUrl']?.toString();
             if (iconUrlVal != null && iconUrlVal.isNotEmpty) {
-              imageUrl = iconUrlVal.startsWith('http') ? iconUrlVal : '$apiBase/$iconUrlVal';
+              imageUrl = AppUrls.resolveUrl(iconUrlVal);
             }
             
             final isFeatured = c['isFeatured'] as bool? ?? false;

@@ -17,13 +17,10 @@ class BannerRepository {
         final data = response.data;
         final List? rawList = data is Map ? data['data'] : data;
         if (rawList != null) {
-          const apiBase = AppUrls.mobileBaseUrl;
           return rawList.map((b) {
             final id = b['id']?.toString() ?? '';
             final imageUrl = b['imageUrl']?.toString() ?? b['image']?.toString() ?? '';
-            final fullImageUrl = imageUrl.startsWith('http') 
-                ? imageUrl 
-                : '$apiBase/$imageUrl';
+            final fullImageUrl = AppUrls.resolveUrl(imageUrl);
             
             return BannerModel(
               id: id,

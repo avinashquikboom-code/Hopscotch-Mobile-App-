@@ -4,6 +4,27 @@ class AppUrls {
   // static const String mobileBaseUrl = 'http://192.168.1.102:5001';
   static const String mobileBaseUrl = 'https://api.fciseller.com';
 
+  static String resolveUrl(String? url) {
+    if (url == null || url.trim().isEmpty) {
+      return '';
+    }
+    final trimmed = url.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      if (trimmed.contains('localhost:') || trimmed.contains('127.0.0.1:')) {
+        try {
+          final uri = Uri.parse(trimmed);
+          return '$mobileBaseUrl${uri.path}';
+        } catch (_) {
+          return trimmed;
+        }
+      }
+      return trimmed;
+    }
+    // Prefix relative paths with mobileBaseUrl, taking care of double slashes
+    final path = trimmed.startsWith('/') ? trimmed : '/$trimmed';
+    return '$mobileBaseUrl$path';
+  }
+
   //Auth Gateways
   static const String login = '/api/auth/login';
   static const String signup = '/api/auth/register';

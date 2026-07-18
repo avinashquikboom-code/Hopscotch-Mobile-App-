@@ -205,7 +205,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     final List<Widget> slivers = [
       // HERO — only on the "All" tab and if it is loading or has active banners
-      if (_selectedTab == 0 && (bannersAsync.isLoading || (bannersAsync.value != null && bannersAsync.value!.isNotEmpty)))
+      if (_selectedTab == 0 &&
+          (bannersAsync.isLoading ||
+              (bannersAsync.value != null && bannersAsync.value!.isNotEmpty)))
         SliverAppBar(
           expandedHeight: heroHeight,
           collapsedHeight: 0,
@@ -226,17 +228,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
               topRow: Row(
                 children: [
-                  const Icon(Icons.location_on_outlined,
-                      color: Colors.white, size: 22),
+                  const Icon(
+                    Icons.location_on_outlined,
+                    color: Colors.white,
+                    size: 22,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: GestureDetector(
                       onTap: () => ref.invalidate(userLocationProvider),
                       child: location.when(
                         loading: () => const _HeroLocationText(
-                            area: 'Detecting…', city: ' '),
+                          area: 'Detecting…',
+                          city: ' ',
+                        ),
                         error: (_, __) => const _HeroLocationText(
-                            area: 'Set location', city: 'Tap to choose'),
+                          area: 'Set location',
+                          city: 'Tap to choose',
+                        ),
                         data: (loc) =>
                             _HeroLocationText(area: loc.area, city: loc.city),
                       ),
@@ -261,20 +270,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       child: GestureDetector(
                         onTap: () => context.push('/search'),
                         behavior: HitTestBehavior.opaque,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
                           child: Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.search_rounded,
                                 color: Colors.white70,
                                 size: 22,
                               ),
-                              const SizedBox(width: 10),
+                              SizedBox(width: 10),
                               Expanded(
                                 child: Text(
-                                  l10n.searchPlaceholder,
-                                  style: const TextStyle(
+                                  'Search Product',
+                                  style: TextStyle(
                                     color: Colors.white70,
                                     fontSize: 14,
                                   ),
@@ -306,11 +315,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         SliverToBoxAdapter(
           child: Padding(
             padding: EdgeInsets.fromLTRB(
-                horizontalPadding, topPadding + 12, horizontalPadding, 4),
+              horizontalPadding,
+              topPadding + 12,
+              horizontalPadding,
+              4,
+            ),
             child: Row(
               children: [
-                Icon(Icons.location_on_outlined,
-                    color: Theme.of(context).colorScheme.primary, size: 22),
+                Icon(
+                  Icons.location_on_outlined,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 22,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: GestureDetector(
@@ -319,7 +335,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       loading: () =>
                           const _LocationText(area: 'Detecting…', city: ' '),
                       error: (_, __) => const _LocationText(
-                          area: 'Set location', city: 'Tap to choose'),
+                        area: 'Set location',
+                        city: 'Tap to choose',
+                      ),
                       data: (loc) =>
                           _LocationText(area: loc.area, city: loc.city),
                     ),
@@ -356,13 +374,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       // Home Feed (All tab selected)
       slivers.addAll([
         SliverToBoxAdapter(
-          child: SizedBox(
-            height: _scrollOffset > 20 ? 16.0 : 0.0,
-          ),
+          child: SizedBox(height: _scrollOffset > 20 ? 16.0 : 0.0),
         ),
         SliverToBoxAdapter(
           child: SizedBox(
-            height: _scrollOffset > 20 ? responsive.spacing(AppTheme.spaceXL) : 0.0,
+            height: _scrollOffset > 20
+                ? responsive.spacing(AppTheme.spaceXL)
+                : 0.0,
           ),
         ),
 
@@ -407,7 +425,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         Icon(
                           Icons.shopping_bag_outlined,
                           size: 44,
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.5),
                         ),
                         const SizedBox(height: 8),
                         Text(
@@ -505,7 +525,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         Icon(
                           Icons.new_releases_outlined,
                           size: 44,
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.5),
                         ),
                         const SizedBox(height: 8),
                         Text(
@@ -700,7 +722,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          l10n.searchPlaceholder,
+                          'Search Product',
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                           style: TextStyle(
@@ -821,7 +843,10 @@ class _CategoryTabsDelegate extends SliverPersistentHeaderDelegate {
       final double fadeStart = heroHeight - 120;
       final double fadeEnd = heroHeight - 48 - topPadding;
       if (scrollOffset > fadeStart) {
-        opacity = ((scrollOffset - fadeStart) / (fadeEnd - fadeStart)).clamp(0.0, 1.0);
+        opacity = ((scrollOffset - fadeStart) / (fadeEnd - fadeStart)).clamp(
+          0.0,
+          1.0,
+        );
       } else {
         opacity = 0.0;
       }
@@ -834,7 +859,9 @@ class _CategoryTabsDelegate extends SliverPersistentHeaderDelegate {
           color: Theme.of(context).scaffoldBackgroundColor,
           border: Border(
             bottom: BorderSide(
-              color: overlapsContent && opacity > 0.9 ? colorScheme.outline : Colors.transparent,
+              color: overlapsContent && opacity > 0.9
+                  ? colorScheme.outline
+                  : Colors.transparent,
               width: 0.5,
             ),
           ),
@@ -862,7 +889,9 @@ class _CategoryTabsDelegate extends SliverPersistentHeaderDelegate {
                       style: TextStyle(
                         fontSize: 14,
                         letterSpacing: 0.3,
-                        fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                        fontWeight: selected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
                         color: selected
                             ? colorScheme.primary
                             : colorScheme.onSurface.withValues(alpha: 0.5),
@@ -897,7 +926,6 @@ class _CategoryTabsDelegate extends SliverPersistentHeaderDelegate {
       old.scrollOffset != scrollOffset ||
       old.heroHeight != heroHeight;
 }
-
 
 // ─────────────────────────────────────────────────────────────
 // REDESIGNED PREMIUM USER PROFILE AVATAR BUTTON
@@ -1006,7 +1034,6 @@ class _ProfileAvatarButtonState extends ConsumerState<_ProfileAvatarButton> {
 // STEP 1a — HeroHeader widget (add to home_screen.dart)
 // ─────────────────────────────────────────────────────────────
 
-
 // ─────────────────────────────────────────────────────────────
 // STEP 1b — white location text for use over the image
 // (add to home_screen.dart; your existing _LocationText stays untouched
@@ -1040,8 +1067,11 @@ class _HeroLocationText extends StatelessWidget {
                 ),
               ),
             ),
-            const Icon(Icons.keyboard_arrow_down_rounded,
-                size: 20, color: Colors.white),
+            const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 20,
+              color: Colors.white,
+            ),
           ],
         ),
         if (city.isNotEmpty)

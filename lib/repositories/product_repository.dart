@@ -53,19 +53,17 @@ ProductModel mapBackendToMobileProduct(Map<String, dynamic> raw) {
       }
       
       if (imgUrl.isNotEmpty) {
-        if (!imgUrl.startsWith('http')) {
-          imgUrl = '$apiBase/$imgUrl';
-        }
+        final resolvedImgUrl = AppUrls.resolveUrl(imgUrl);
         if (i == 0) {
-          imageUrl = imgUrl;
+          imageUrl = resolvedImgUrl;
         } else {
-          additionalImages.add(imgUrl);
+          additionalImages.add(resolvedImgUrl);
         }
       }
     }
   } else if (raw['thumbnailUrl'] != null) {
     final thumb = raw['thumbnailUrl'].toString();
-    imageUrl = thumb.startsWith('http') ? thumb : '$apiBase/$thumb';
+    imageUrl = AppUrls.resolveUrl(thumb);
   }
 
   final categoryName = raw['category']?['name']?.toString() ?? 'Collections';
@@ -169,17 +167,29 @@ class ProductRepository {
 
   Future<List<ProductModel>> getTrendingProducts() async {
     final products = await getProducts();
-    return products.where((element) => element.isTrending).toList();
+    final filtered = products.where((element) => element.isTrending).toList();
+    if (filtered.isEmpty && products.isNotEmpty) {
+      return products.take(6).toList();
+    }
+    return filtered;
   }
 
   Future<List<ProductModel>> getNewArrivals() async {
     final products = await getProducts();
-    return products.where((element) => element.isNewArrival).toList();
+    final filtered = products.where((element) => element.isNewArrival).toList();
+    if (filtered.isEmpty && products.isNotEmpty) {
+      return products.reversed.take(6).toList();
+    }
+    return filtered;
   }
 
   Future<List<ProductModel>> getFeaturedProducts() async {
     final products = await getProducts();
-    return products.where((element) => element.isFeatured).toList();
+    final filtered = products.where((element) => element.isFeatured).toList();
+    if (filtered.isEmpty && products.isNotEmpty) {
+      return products.take(6).toList();
+    }
+    return filtered;
   }
 
   Future<List<ProductModel>> getProductsByCategory(String categoryId) async {

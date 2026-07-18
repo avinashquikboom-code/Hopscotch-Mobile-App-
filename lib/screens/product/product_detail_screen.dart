@@ -320,6 +320,19 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                       onTap: () {
                                         HapticFeedback.lightImpact();
                                         ref.read(wishlistProvider.notifier).toggleWishlist(product);
+                                        ScaffoldMessenger.of(context).clearSnackBars();
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              isFav
+                                                  ? 'Removed from wishlist'
+                                                  : 'Added to wishlist',
+                                            ),
+                                            duration: const Duration(seconds: 1),
+                                            behavior: SnackBarBehavior.floating,
+                                            backgroundColor: AppTheme.primaryColor,
+                                          ),
+                                        );
                                       },
                                     ),
                                     SizedBox(height: responsive.spacing(12)),

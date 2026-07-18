@@ -183,13 +183,27 @@ class ProductCard extends ConsumerWidget {
                   Positioned(
                     top: AppTheme.spaceS,
                     right: AppTheme.spaceS,
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: AnimatedHeartButton(
+                        isFav: isFav,
+                        size: 20,
+                        baseColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                         onTap: () {
                           ref
                               .read(wishlistProvider.notifier)
                               .toggleWishlist(product);
+                          ScaffoldMessenger.of(context).clearSnackBars();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
@@ -203,30 +217,6 @@ class ProductCard extends ConsumerWidget {
                             ),
                           );
                         },
-                        borderRadius: BorderRadius.circular(20),
-                        splashColor: Theme.of(context).colorScheme.primary.withValues(
-                          alpha: 0.2,
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: AnimatedHeartButton(
-                            isFav: isFav,
-                            size: 20,
-                            baseColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                            onTap: () {},
-                          ),
-                        ),
                       ),
                     ),
                   ),
