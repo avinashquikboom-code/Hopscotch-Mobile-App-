@@ -155,15 +155,19 @@ https://fciseller.com/p/${widget.product.id}
       }
 
       if (xFilesToShare.isNotEmpty) {
-        await Share.shareXFiles(
-          xFilesToShare,
-          text: shareText,
-          subject: widget.product.title,
+        await SharePlus.instance.share(
+          ShareParams(
+            files: xFilesToShare,
+            text: shareText,
+            subject: widget.product.title,
+          ),
         );
       } else {
-        await Share.share(
-          shareText,
-          subject: widget.product.title,
+        await SharePlus.instance.share(
+          ShareParams(
+            text: shareText,
+            subject: widget.product.title,
+          ),
         );
       }
     } catch (e) {
