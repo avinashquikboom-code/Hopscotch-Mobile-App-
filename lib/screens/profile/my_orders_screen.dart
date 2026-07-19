@@ -25,7 +25,7 @@ class MyOrdersScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final orders = ref.watch(orderProvider);
+    final ordersAsync = ref.watch(orderProvider);
     final currency = ref.watch(currencyProvider);
     final responsive = context.responsive;
 
@@ -49,7 +49,22 @@ class MyOrdersScreen extends ConsumerWidget {
           },
         ),
       ),
-      body: orders.isEmpty
+      body: ordersAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, _) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Failed to load orders', style: TextStyle(color: AppTheme.textSecondaryColor)),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: () => ref.read(orderProvider.notifier).fetchOrders(),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+        data: (orders) => orders.isEmpty
           ? EmptyState(
               icon: Icons.receipt_long_outlined,
               title: 'No Orders Placed Yet',
@@ -58,7 +73,9 @@ class MyOrdersScreen extends ConsumerWidget {
               buttonText: 'Browse Catalog',
               onButtonPressed: () => context.go('/'),
             )
-          : ListView.separated(
+          : RefreshIndicator(
+              onRefresh: () => ref.read(orderProvider.notifier).fetchOrders(),
+              child: ListView.separated(
               padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
               itemCount: orders.length,
               separatorBuilder: (context, index) =>
@@ -241,6 +258,8 @@ class MyOrdersScreen extends ConsumerWidget {
                 );
               },
             ),
+          ),  // RefreshIndicator
+      ),  // ordersAsync.when
     );
   }
 }
