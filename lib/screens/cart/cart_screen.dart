@@ -215,10 +215,24 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                             decoration: BoxDecoration(
                                               borderRadius: BorderRadius.circular(12),
                                               color: colorScheme.outline.withValues(alpha: 0.05),
-                                              image: DecorationImage(
-                                                image: NetworkImage(product.imageUrl),
+                                            ),
+                                            child: ClipRRect(
+                                              borderRadius: BorderRadius.circular(12),
+                                              child: Image.network(
+                                                product.imageUrl,
                                                 fit: BoxFit.cover,
-                                                onError: (exception, stackTrace) {},
+                                                errorBuilder: (context, error, stackTrace) {
+                                                  return Container(
+                                                    color: colorScheme.outline.withValues(alpha: 0.1),
+                                                    child: Center(
+                                                      child: Icon(
+                                                        Icons.image_not_supported_outlined,
+                                                        color: colorScheme.primary.withValues(alpha: 0.5),
+                                                        size: 24,
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
                                               ),
                                             ),
                                           ),
