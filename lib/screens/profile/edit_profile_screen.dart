@@ -25,17 +25,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
   bool _isSaving = false;
-  bool _isInitialized = false;
   File? _profileImage;
   final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
-    _firstNameController = TextEditingController();
-    _lastNameController = TextEditingController();
-    _emailController = TextEditingController();
-    _phoneController = TextEditingController();
+    
+    // Read the current profile state to populate text fields immediately
+    final profile = ref.read(profileNotifierProvider);
+    _firstNameController = TextEditingController(text: profile?['firstName']?.toString() ?? '');
+    _lastNameController = TextEditingController(text: profile?['lastName']?.toString() ?? '');
+    _emailController = TextEditingController(text: profile?['email']?.toString() ?? '');
+    _phoneController = TextEditingController(text: profile?['phone']?.toString() ?? '');
   }
 
   @override
@@ -178,13 +180,23 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final responsive = context.responsive;
     final userProfile = ref.watch(profileNotifierProvider);
 
-    if (!_isInitialized && userProfile != null) {
-      _firstNameController.text = userProfile['firstName']?.toString() ?? '';
-      _lastNameController.text = userProfile['lastName']?.toString() ?? '';
-      _emailController.text = userProfile['email']?.toString() ?? '';
-      _phoneController.text = userProfile['phone']?.toString() ?? '';
-      _isInitialized = true;
-    }
+    // Safely listen for profile data updates to populate fields without interrupting the build phase
+    ref.listen<Map<String, dynamic>?>(profileNotifierProvider, (previous, next) {
+      if (next != null) {
+        if (_firstNameController.text.isEmpty && next['firstName'] != null) {
+          _firstNameController.text = next['firstName'].toString();
+        }
+        if (_lastNameController.text.isEmpty && next['lastName'] != null) {
+          _lastNameController.text = next['lastName'].toString();
+        }
+        if (_emailController.text.isEmpty && next['email'] != null) {
+          _emailController.text = next['email'].toString();
+        }
+        if (_phoneController.text.isEmpty && next['phone'] != null) {
+          _phoneController.text = next['phone'].toString();
+        }
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(

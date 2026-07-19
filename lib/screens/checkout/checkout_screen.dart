@@ -506,7 +506,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                   children: [
                                     const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
                                     const SizedBox(width: 8),
-                                    Text(_paymentProcessingStep ?? 'Processing...', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                                    Flexible(
+                                      child: Text(
+                                        _paymentProcessingStep ?? 'Processing...',
+                                        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
                                   ],
                                 )
                               : Text(

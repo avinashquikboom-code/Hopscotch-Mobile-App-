@@ -50,6 +50,10 @@ import 'package:hopscotch/visual_search/domain/entities/visual_search_result.dar
 import 'package:hopscotch/core/session_manager.dart';
 
 class AppPages {
+  static LocalKey _pageKey(GoRouterState state) {
+    return ValueKey('${state.pageKey.value}_${state.uri}');
+  }
+
   static final List<RouteBase> _routes = [
       // Root redirect to Home
       GoRoute(
@@ -60,7 +64,7 @@ class AppPages {
       GoRoute(
         path: AppRoutes.splash,
         pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
+          key: _pageKey(state),
           child: const SplashScreen(),
           transitionDuration: const Duration(milliseconds: 600),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -76,7 +80,7 @@ class AppPages {
       GoRoute(
         path: AppRoutes.languageSelection,
         pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
+          key: _pageKey(state),
           child: const LanguageSelectionScreen(),
           transitionDuration: const Duration(milliseconds: 500),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -92,7 +96,7 @@ class AppPages {
       GoRoute(
         path: AppRoutes.currencySelection,
         pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
+          key: _pageKey(state),
           child: const CurrencySelectionScreen(),
           transitionDuration: const Duration(milliseconds: 500),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -108,7 +112,7 @@ class AppPages {
       GoRoute(
         path: AppRoutes.onboarding,
         pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
+          key: _pageKey(state),
           child: const OnboardingScreen(),
           transitionDuration: const Duration(milliseconds: 500),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -124,7 +128,7 @@ class AppPages {
       GoRoute(
         path: AppRoutes.login,
         pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
+          key: _pageKey(state),
           child: const LoginScreen(),
           transitionDuration: const Duration(milliseconds: 400),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -144,7 +148,7 @@ class AppPages {
       GoRoute(
         path: AppRoutes.signup,
         pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
+          key: _pageKey(state),
           child: const SignupScreen(),
           transitionDuration: const Duration(milliseconds: 400),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -164,7 +168,7 @@ class AppPages {
       GoRoute(
         path: AppRoutes.forgotPassword,
         pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
+          key: _pageKey(state),
           child: const ForgotPasswordScreen(),
           transitionDuration: const Duration(milliseconds: 400),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -189,7 +193,7 @@ class AppPages {
           GoRoute(
             path: AppRoutes.home,
             pageBuilder: (context, state) => CustomTransitionPage(
-              key: state.pageKey,
+              key: _pageKey(state),
               child: const HomeScreen(),
               transitionDuration: const Duration(milliseconds: 350),
               transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -203,7 +207,7 @@ class AppPages {
           GoRoute(
             path: AppRoutes.categories,
             pageBuilder: (context, state) => CustomTransitionPage(
-              key: state.pageKey,
+              key: _pageKey(state),
               child: const CategoriesScreen(),
               transitionDuration: const Duration(milliseconds: 350),
               transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -217,7 +221,7 @@ class AppPages {
           GoRoute(
             path: AppRoutes.wishlist,
             pageBuilder: (context, state) => CustomTransitionPage(
-              key: state.pageKey,
+              key: _pageKey(state),
               child: const WishlistScreen(),
               transitionDuration: const Duration(milliseconds: 350),
               transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -231,7 +235,7 @@ class AppPages {
           GoRoute(
             path: AppRoutes.cart,
             pageBuilder: (context, state) => CustomTransitionPage(
-              key: state.pageKey,
+              key: _pageKey(state),
               child: const CartScreen(),
               transitionDuration: const Duration(milliseconds: 350),
               transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -245,7 +249,7 @@ class AppPages {
           GoRoute(
             path: AppRoutes.profile,
             pageBuilder: (context, state) => CustomTransitionPage(
-              key: state.pageKey,
+              key: _pageKey(state),
               child: const ProfileScreen(),
               transitionDuration: const Duration(milliseconds: 350),
               transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -269,7 +273,7 @@ class AppPages {
           final categoryName = state.uri.queryParameters['categoryName'] ?? 'Elite Clothing';
           
           return CustomTransitionPage(
-            key: state.pageKey,
+            key: _pageKey(state),
             child: ProductListingScreen(
               categoryId: categoryId,
               subcategory: subcategory,
@@ -298,7 +302,7 @@ class AppPages {
           final id = state.pathParameters['id']!;
           final heroTagPrefix = state.uri.queryParameters['heroTagPrefix'];
           return CustomTransitionPage(
-            key: state.pageKey,
+            key: _pageKey(state),
             child: ProductDetailScreen(productId: id, heroTagPrefix: heroTagPrefix),
             transitionDuration: const Duration(milliseconds: 500),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -319,7 +323,7 @@ class AppPages {
       GoRoute(
         path: AppRoutes.search,
         pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
+          key: _pageKey(state),
           child: const SearchScreen(),
           transitionDuration: const Duration(milliseconds: 400),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -341,7 +345,7 @@ class AppPages {
         pageBuilder: (context, state) {
           final file = state.extra as File;
           return CustomTransitionPage(
-            key: state.pageKey,
+            key: _pageKey(state),
             child: VisualSearchPreviewScreen(image: file),
             transitionDuration: const Duration(milliseconds: 400),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -355,7 +359,7 @@ class AppPages {
         pageBuilder: (context, state) {
           final result = state.extra as VisualSearchResult;
           return CustomTransitionPage(
-            key: state.pageKey,
+            key: _pageKey(state),
             child: VisualSearchResultsScreen(result: result),
             transitionDuration: const Duration(milliseconds: 400),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -367,7 +371,7 @@ class AppPages {
       GoRoute(
         path: AppRoutes.checkout,
         pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
+          key: _pageKey(state),
           child: const CheckoutScreen(),
           transitionDuration: const Duration(milliseconds: 450),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -389,7 +393,7 @@ class AppPages {
         pageBuilder: (context, state) {
           final orderId = state.uri.queryParameters['orderId'] ?? 'ORD-000000';
           return CustomTransitionPage(
-            key: state.pageKey,
+            key: _pageKey(state),
             child: OrderSuccessScreen(orderId: orderId),
             transitionDuration: const Duration(milliseconds: 600),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -407,7 +411,7 @@ class AppPages {
       GoRoute(
         path: AppRoutes.myOrders,
         pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
+          key: _pageKey(state),
           child: const MyOrdersScreen(),
           transitionDuration: const Duration(milliseconds: 400),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -427,7 +431,7 @@ class AppPages {
       GoRoute(
         path: AppRoutes.notifications,
         pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
+          key: _pageKey(state),
           child: const NotificationsScreen(),
           transitionDuration: const Duration(milliseconds: 400),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -447,7 +451,7 @@ class AppPages {
       GoRoute(
         path: AppRoutes.settings,
         pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
+          key: _pageKey(state),
           child: const SettingsScreen(),
           transitionDuration: const Duration(milliseconds: 400),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -467,7 +471,7 @@ class AppPages {
       GoRoute(
         path: AppRoutes.editProfile,
         pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
+          key: _pageKey(state),
           child: const EditProfileScreen(),
           transitionDuration: const Duration(milliseconds: 400),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -487,7 +491,7 @@ class AppPages {
       GoRoute(
         path: AppRoutes.helpCenter,
         pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
+          key: _pageKey(state),
           child: const HelpCenterScreen(),
           transitionDuration: const Duration(milliseconds: 400),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -507,7 +511,7 @@ class AppPages {
       GoRoute(
         path: AppRoutes.legalPolicies,
         pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
+          key: _pageKey(state),
           child: const LegalPoliciesScreen(),
           transitionDuration: const Duration(milliseconds: 400),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -528,7 +532,7 @@ class AppPages {
       GoRoute(
         path: AppRoutes.offers,
         pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
+          key: _pageKey(state),
           child: const OffersScreen(),
           transitionDuration: const Duration(milliseconds: 400),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -548,7 +552,7 @@ class AppPages {
       GoRoute(
         path: AppRoutes.coupons,
         pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
+          key: _pageKey(state),
           child: const CouponsScreen(),
           transitionDuration: const Duration(milliseconds: 400),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -570,7 +574,7 @@ class AppPages {
         pageBuilder: (context, state) {
           final orderId = state.pathParameters['orderId'] ?? 'ORD-000000';
           return CustomTransitionPage(
-            key: state.pageKey,
+            key: _pageKey(state),
             child: TrackOrderScreen(orderId: orderId),
             transitionDuration: const Duration(milliseconds: 400),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -591,7 +595,7 @@ class AppPages {
       GoRoute(
         path: AppRoutes.addresses,
         pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
+          key: _pageKey(state),
           child: const AddressesScreen(),
           transitionDuration: const Duration(milliseconds: 400),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -611,7 +615,7 @@ class AppPages {
       GoRoute(
         path: AppRoutes.about,
         pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
+          key: _pageKey(state),
           child: const AboutScreen(),
           transitionDuration: const Duration(milliseconds: 400),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -631,7 +635,7 @@ class AppPages {
       GoRoute(
         path: AppRoutes.privacyPolicy,
         pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
+          key: _pageKey(state),
           child: const PrivacyPolicyScreen(),
           transitionDuration: const Duration(milliseconds: 400),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -651,7 +655,7 @@ class AppPages {
       GoRoute(
         path: AppRoutes.terms,
         pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
+          key: _pageKey(state),
           child: const TermsScreen(),
           transitionDuration: const Duration(milliseconds: 400),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -671,7 +675,7 @@ class AppPages {
       GoRoute(
         path: AppRoutes.contactUs,
         pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
+          key: _pageKey(state),
           child: const ContactUsScreen(),
           transitionDuration: const Duration(milliseconds: 400),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
