@@ -1,4 +1,3 @@
-import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -484,121 +483,116 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   ),
                 ),
 
-                // Floating Premium Glassmorphic Bottom Panel
+                // Floating Premium Solid Bottom Panel
                 Positioned(
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  child: ClipRRect(
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                      child: Container(
-                        padding: EdgeInsets.only(
-                          left: 20,
-                          right: 20,
-                          top: 16,
-                          bottom: MediaQuery.of(context).padding.bottom + 16,
+                  child: Container(
+                    padding: EdgeInsets.only(
+                      left: 20,
+                      right: 20,
+                      top: 16,
+                      bottom: MediaQuery.of(context).padding.bottom + 16,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF1E1E1E)
+                          : Colors.white,
+                      border: Border(
+                        top: BorderSide(
+                          color: colorScheme.outline.withValues(alpha: isDark ? 0.2 : 0.1),
                         ),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF1E1E1E).withValues(alpha: 0.85)
-                              : Colors.white.withValues(alpha: 0.88),
-                          border: Border(
-                            top: BorderSide(
-                              color: colorScheme.outline.withValues(alpha: isDark ? 0.2 : 0.1),
-                            ),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, -4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        // Total summary detail
+                        Expanded(
+                          flex: 4,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l10n.totalLabel.toUpperCase(),
+                                style: TextStyle(
+                                  fontSize: responsive.fontSize10,
+                                  fontWeight: FontWeight.w800,
+                                  color: colorScheme.onSurface.withValues(alpha: 0.45),
+                                  letterSpacing: 1.0,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                currency.formatPrice(totalAmount),
+                                style: TextStyle(
+                                  fontSize: responsive.fontSize20,
+                                  fontWeight: FontWeight.w900,
+                                  color: colorScheme.onSurface,
+                                ),
+                              ),
+                            ],
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, -4),
-                            ),
-                          ],
                         ),
-                        child: Row(
-                          children: [
-                            // Total summary detail
-                            Expanded(
-                              flex: 4,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    l10n.totalLabel.toUpperCase(),
-                                    style: TextStyle(
-                                      fontSize: responsive.fontSize10,
-                                      fontWeight: FontWeight.w800,
-                                      color: colorScheme.onSurface.withValues(alpha: 0.45),
-                                      letterSpacing: 1.0,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    currency.formatPrice(totalAmount),
-                                    style: TextStyle(
-                                      fontSize: responsive.fontSize20,
-                                      fontWeight: FontWeight.w900,
-                                      color: colorScheme.onSurface,
-                                    ),
+
+                        // Checkout button
+                        Expanded(
+                          flex: 6,
+                          child: InkWell(
+                            onTap: () {
+                              HapticFeedback.mediumImpact();
+                              context.push('/checkout');
+                            },
+                            borderRadius: BorderRadius.circular(30),
+                            child: Container(
+                              height: 52,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [colorScheme.primary, colorScheme.primary.withValues(alpha: 0.8)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(30),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: colorScheme.primary.withValues(alpha: 0.3),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
                                   ),
                                 ],
                               ),
-                            ),
-
-                            // Checkout button
-                            Expanded(
-                              flex: 6,
-                              child: InkWell(
-                                onTap: () {
-                                  HapticFeedback.mediumImpact();
-                                  context.push('/checkout');
-                                },
-                                borderRadius: BorderRadius.circular(30),
-                                child: Container(
-                                  height: 52,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [colorScheme.primary, colorScheme.primary.withValues(alpha: 0.8)],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(30),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: colorScheme.primary.withValues(alpha: 0.3),
-                                        blurRadius: 12,
-                                        offset: const Offset(0, 4),
+                              child: Center(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.lock_outline_rounded, color: Colors.white, size: 15),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'SECURE CHECKOUT',
+                                      style: TextStyle(
+                                        fontSize: responsive.fontSize12,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.white,
+                                        letterSpacing: 0.5,
                                       ),
-                                    ],
-                                  ),
-                                  child: Center(
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        const Icon(Icons.lock_outline_rounded, color: Colors.white, size: 15),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          'SECURE CHECKOUT',
-                                          style: TextStyle(
-                                            fontSize: responsive.fontSize12,
-                                            fontWeight: FontWeight.w900,
-                                            color: Colors.white,
-                                            letterSpacing: 0.5,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 6),
-                                        const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 15),
-                                      ],
                                     ),
-                                  ),
+                                    const SizedBox(width: 6),
+                                    const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 15),
+                                  ],
                                 ),
                               ),
                             ),
-                          ],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ),

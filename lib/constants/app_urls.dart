@@ -10,7 +10,7 @@ class AppUrls {
     }
     final trimmed = url.trim();
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-      if (trimmed.contains('localhost:') || trimmed.contains('127.0.0.1:')) {
+      if (trimmed.contains('localhost:') || trimmed.contains('127.0.0.1:') || trimmed.contains('api.fciseller.com')) {
         try {
           final uri = Uri.parse(trimmed);
           return '$mobileBaseUrl${uri.path}';

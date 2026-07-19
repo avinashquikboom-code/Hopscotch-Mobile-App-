@@ -6,7 +6,6 @@ import 'package:hopscotch/widgets/custom_button.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/utils/error_handler.dart';
 import 'package:hopscotch/repositories/auth_repository.dart';
-import 'package:hopscotch/l10n/app_localizations.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -167,7 +166,6 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
-    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,

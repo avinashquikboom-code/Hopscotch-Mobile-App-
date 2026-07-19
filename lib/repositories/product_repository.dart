@@ -36,8 +36,6 @@ ProductModel mapBackendToMobileProduct(Map<String, dynamic> raw) {
     }
   }
   
-  const apiBase = AppUrls.mobileBaseUrl;
-  
   String imageUrl = 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=600&auto=format&fit=crop&q=80';
   List<String> additionalImages = [];
   
