@@ -4,7 +4,7 @@ import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/widgets/custom_button.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/l10n/app_localizations.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hopscotch/core/session_manager.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -269,8 +269,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               right: responsive.spacing(AppTheme.spaceXL),
               child: TextButton(
                 onPressed: () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  await prefs.setBool('onboarding_completed', true);
+                  await SessionManager.setOnboardingDone();
                   if (mounted) {
                     context.go('/login');
                   }
@@ -328,14 +327,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       text: _currentIndex == 2
                           ? l10n.begin
                           : l10n.next,
-                      onPressed: () {
+                      onPressed: () async {
                         if (_currentIndex < 2) {
                           _pageController.nextPage(
                             duration: const Duration(milliseconds: 500),
                             curve: Curves.fastOutSlowIn,
                           );
                         } else {
-                          context.go('/login');
+                          await SessionManager.setOnboardingDone();
+                          if (context.mounted) {
+                            context.go('/login');
+                          }
                         }
                       },
                       isFullWidth: true,

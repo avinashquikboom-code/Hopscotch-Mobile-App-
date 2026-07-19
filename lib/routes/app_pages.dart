@@ -47,11 +47,10 @@ import 'dart:io';
 import 'package:hopscotch/screens/visual_search/visual_search_preview_screen.dart';
 import 'package:hopscotch/screens/visual_search/visual_search_results_screen.dart';
 import 'package:hopscotch/visual_search/domain/entities/visual_search_result.dart';
+import 'package:hopscotch/core/session_manager.dart';
 
 class AppPages {
-  static final router = GoRouter(
-    initialLocation: AppRoutes.splash,
-    routes: [
+  static final List<RouteBase> _routes = [
       // Root redirect to Home
       GoRoute(
         path: '/',
@@ -689,6 +688,43 @@ class AppPages {
           },
         ),
       ),
-    ],
-  );
+  ];
+
+  static late final GoRouter router;
+
+  static void init(StartupState startupState) {
+    String initialLoc;
+    switch (startupState) {
+      case StartupState.onboarding:
+        initialLoc = AppRoutes.onboarding;
+        break;
+      case StartupState.login:
+        initialLoc = AppRoutes.login;
+        break;
+      case StartupState.home:
+        initialLoc = AppRoutes.home;
+        break;
+    }
+
+    router = GoRouter(
+      initialLocation: initialLoc,
+      routes: _routes,
+      redirect: (context, state) async {
+        final onboarded = await SessionManager.isOnboardingDone();
+        final loggedIn = await SessionManager.hasSession();
+        final loc = state.uri.toString();
+
+        final onAuthPages =
+            loc == AppRoutes.login || 
+            loc == AppRoutes.signup || 
+            loc == AppRoutes.forgotPassword || 
+            loc == AppRoutes.onboarding;
+
+        if (!onboarded && loc != AppRoutes.onboarding) return AppRoutes.onboarding;
+        if (onboarded && !loggedIn && !onAuthPages) return AppRoutes.login;
+        if (loggedIn && onAuthPages) return AppRoutes.home;
+        return null;
+      },
+    );
+  }
 }

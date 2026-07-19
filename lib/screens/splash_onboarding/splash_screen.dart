@@ -6,6 +6,7 @@ import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hopscotch/providers/api_provider.dart';
 import 'package:hopscotch/repositories/profile_repository.dart';
+import 'package:hopscotch/core/session_manager.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -52,7 +53,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       
       final languageCode = prefs.getString('language_code');
       final currencyCode = prefs.getString('currency_code');
-      final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
+      final onboardingCompleted = await SessionManager.isOnboardingDone();
       
       if (languageCode == null) {
         // Language not selected, go to language selection

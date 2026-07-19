@@ -7,12 +7,20 @@ import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/theme/theme_provider.dart';
 import 'package:hopscotch/providers/language_provider.dart';
 import 'package:hopscotch/l10n/app_localizations.dart';
+import 'package:hopscotch/core/session_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize Firebase
   await FirebaseConfig.initialize();
+  
+  // Resolve startup state before running the app
+  final container = ProviderContainer();
+  final startupState = await container.read(startupStateProvider.future);
+  
+  // Initialize AppPages router with initial startup state
+  AppPages.init(startupState);
   
   // Set transparent status bar globally
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -24,8 +32,9 @@ void main() async {
   ));
 
   runApp(
-    const ProviderScope(
-      child: MyApp(),
+    UncontrolledProviderScope(
+      container: container,
+      child: const MyApp(),
     ),
   );
 }

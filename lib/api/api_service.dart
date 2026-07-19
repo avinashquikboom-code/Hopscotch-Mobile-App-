@@ -1,11 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hopscotch/constants/app_urls.dart';
-import 'package:hopscotch/services/secure_storage_service.dart';
+import 'package:hopscotch/core/session_manager.dart';
 
 class ApiService {
   static const String baseUrl = AppUrls.mobileBaseUrl;
-  final SecureStorageService _secureStorage = SecureStorageService();
   
   // ANSI color codes for terminal
   static const String _reset = '\x1B[0m';
@@ -40,7 +39,7 @@ class ApiService {
         }
         
         // Add auth token if available
-        final token = await _secureStorage.getAccessToken();
+        final token = await SessionManager.getAccessToken();
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
           _logColored('$_cyan[API]$_reset $_magenta📤$_reset $_green${'Auth token present'}$_reset');
@@ -73,26 +72,26 @@ class ApiService {
         if (error.response?.statusCode == 401 && !_isRefreshing && !isAuthEndpoint) {
           _isRefreshing = true;
           try {
-            final refreshToken = await _secureStorage.getRefreshToken();
+            final refreshToken = await SessionManager.getRefreshToken();
             if (refreshToken != null) {
               _logColored('$_cyan[API]$_reset $_yellow🔄$_reset Attempting to refresh token...');
               
-              final refreshResponse = await _dio.post(
-                AppUrls.refreshToken,
+              // Use a clean Dio instance for refresh call to avoid request interceptor recursion
+              final refreshResponse = await Dio().post(
+                '${AppUrls.mobileBaseUrl}${AppUrls.refreshToken}',
                 data: {'refreshToken': refreshToken},
               );
               
               if (refreshResponse.statusCode == 200 || refreshResponse.statusCode == 201) {
                 final newAccessToken = refreshResponse.data['accessToken'] ?? refreshResponse.data['data']?['accessToken'];
-                final newRefreshToken = refreshResponse.data['refreshToken'] ?? refreshResponse.data['data']?['refreshToken'];
+                final newRefreshToken = refreshResponse.data['refreshToken'] ?? refreshResponse.data['data']?['refreshToken'] ?? refreshToken;
                 
                 if (newAccessToken != null) {
-                  await _secureStorage.saveAccessToken(newAccessToken, expiryInMinutes: 15);
+                  await SessionManager.saveTokens(
+                    accessToken: newAccessToken,
+                    refreshToken: newRefreshToken,
+                  );
                   _logColored('$_cyan[API]$_reset $_green✓$_reset Token refreshed successfully');
-                  
-                  if (newRefreshToken != null) {
-                    await _secureStorage.saveRefreshToken(newRefreshToken);
-                  }
                   
                   // Update the request with new token and retry
                   error.requestOptions.headers['Authorization'] = 'Bearer $newAccessToken';
@@ -115,7 +114,7 @@ class ApiService {
             }
           } catch (e) {
             _logColored('$_cyan[API]$_reset $_red❌$_reset Token refresh failed: $e');
-            await _secureStorage.clearAll();
+            await SessionManager.clearTokens();
           } finally {
             _isRefreshing = false;
           }
@@ -138,59 +137,57 @@ class ApiService {
   Future<bool> restoreSession() async {
     try {
       // Check if refresh token exists
-      final refreshToken = await _secureStorage.getRefreshToken();
+      final refreshToken = await SessionManager.getRefreshToken();
       if (refreshToken == null || refreshToken.isEmpty) {
         return false;
       }
       
-      // Check if access token exists and is not expired
-      final accessToken = await _secureStorage.getAccessToken();
-      final isExpired = await _secureStorage.isAccessTokenExpired();
-      
-      if (accessToken != null && accessToken.isNotEmpty && !isExpired) {
+      // Check if access token exists
+      final accessToken = await SessionManager.getAccessToken();
+      if (accessToken != null && accessToken.isNotEmpty) {
         _logColored('$_cyan[API]$_reset $_green✓$_reset Session valid, no refresh needed');
         return true;
       }
       
-      // Access token expired or missing, try to refresh
+      // Access token missing, try to refresh
       _logColored('$_cyan[API]$_reset $_yellow🔄$_reset Attempting to refresh session...');
       
-      final refreshResponse = await _dio.post(
-        AppUrls.refreshToken,
+      final refreshResponse = await Dio().post(
+        '${AppUrls.mobileBaseUrl}${AppUrls.refreshToken}',
         data: {'refreshToken': refreshToken},
       );
       
       if (refreshResponse.statusCode == 200 || refreshResponse.statusCode == 201) {
         final newAccessToken = refreshResponse.data['accessToken'] ?? refreshResponse.data['data']?['accessToken'];
-        final newRefreshToken = refreshResponse.data['refreshToken'] ?? refreshResponse.data['data']?['refreshToken'];
+        final newRefreshToken = refreshResponse.data['refreshToken'] ?? refreshResponse.data['data']?['refreshToken'] ?? refreshToken;
         
         if (newAccessToken != null) {
-          await _secureStorage.saveAccessToken(newAccessToken, expiryInMinutes: 15);
+          await SessionManager.saveTokens(
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken,
+          );
           _logColored('$_cyan[API]$_reset $_green✓$_reset Session refreshed successfully');
-          
-          if (newRefreshToken != null) {
-            await _secureStorage.saveRefreshToken(newRefreshToken);
-          }
-          
           return true;
         }
       }
       
       _logColored('$_cyan[API]$_reset $_red❌$_reset Session refresh failed');
+      await SessionManager.clearTokens();
       return false;
     } catch (e) {
       _logColored('$_cyan[API]$_reset $_red❌$_reset Session restoration error: $e');
+      await SessionManager.clearTokens();
       return false;
     }
   }
   
   // Public methods for secure storage management
   Future<bool> hasValidSession() async {
-    return await _secureStorage.hasValidSession();
+    return await SessionManager.hasSession();
   }
   
   Future<bool> isLoggedIn() async {
-    return await _secureStorage.isLoggedIn();
+    return await SessionManager.hasSession();
   }
   
   Future<Response> get(String path, {Map<String, dynamic>? queryParameters}) {

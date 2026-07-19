@@ -3,6 +3,7 @@ import 'package:hopscotch/api/auth_api.dart';
 import 'package:hopscotch/api/api_service.dart';
 import 'package:hopscotch/models/user_model.dart';
 import 'package:hopscotch/firebase/firebase_auth_service.dart';
+import 'package:hopscotch/core/session_manager.dart';
 
 class AuthRepository {
   final AuthApi _authApi;
@@ -23,6 +24,14 @@ class AuthRepository {
 
       if (response.statusCode == 200) {
         final data = response.data;
+        final token = data['token'] ?? data['accessToken'] ?? data['data']?['token'] ?? data['data']?['accessToken'];
+        final refreshToken = data['refreshToken'] ?? data['data']?['refreshToken'];
+        if (token != null && refreshToken != null) {
+          await SessionManager.saveTokens(
+            accessToken: token,
+            refreshToken: refreshToken,
+          );
+        }
         return UserModel(
           id: data['user']['id'] ?? '',
           email: data['user']['email'] ?? email,
@@ -58,6 +67,14 @@ class AuthRepository {
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         final data = response.data;
+        final token = data['token'] ?? data['accessToken'] ?? data['data']?['token'] ?? data['data']?['accessToken'];
+        final refreshToken = data['refreshToken'] ?? data['data']?['refreshToken'];
+        if (token != null && refreshToken != null) {
+          await SessionManager.saveTokens(
+            accessToken: token,
+            refreshToken: refreshToken,
+          );
+        }
         return UserModel(
           id: data['user']['id'] ?? '',
           email: data['user']['email'] ?? email,
@@ -98,7 +115,7 @@ class AuthRepository {
 
   // Sign out
   Future<void> logout() async {
-    // Implement logout logic if needed
+    await SessionManager.clearTokens();
   }
 
   // Get current user

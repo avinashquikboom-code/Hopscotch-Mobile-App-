@@ -5,6 +5,7 @@ import 'package:hopscotch/constants/app_urls.dart';
 import 'package:hopscotch/utils/dev_logger.dart';
 import 'package:hopscotch/services/secure_storage_service.dart';
 import 'package:hopscotch/services/device_info_service.dart';
+import 'package:hopscotch/core/session_manager.dart';
 
 class AuthApi {
   final ApiService _apiService;
@@ -45,6 +46,13 @@ class AuthApi {
         // If keep me signed in is true, use 7 days, otherwise use shorter expiry (e.g., 1 day)
         final expiryDays = keepMeSignedIn ? 7 : 1;
         await _secureStorage.saveRefreshToken(refreshToken, expiryInDays: expiryDays);
+      }
+      
+      if (token != null && refreshToken != null) {
+        await SessionManager.saveTokens(
+          accessToken: token,
+          refreshToken: refreshToken,
+        );
       }
       
       // Save session ID from response if provided
@@ -128,6 +136,13 @@ class AuthApi {
         // If keep me signed in is true, use 7 days, otherwise use shorter expiry (e.g., 1 day)
         final expiryDays = keepMeSignedIn ? 7 : 1;
         await _secureStorage.saveRefreshToken(refreshToken, expiryInDays: expiryDays);
+      }
+      
+      if (token != null && refreshToken != null) {
+        await SessionManager.saveTokens(
+          accessToken: token,
+          refreshToken: refreshToken,
+        );
       }
       
       // Save session ID from response if provided
@@ -221,6 +236,7 @@ class AuthApi {
     } finally {
       // Clear all secure storage data regardless of response
       await _secureStorage.clearAll();
+      await SessionManager.clearTokens();
     }
     
     return response;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
@@ -10,6 +11,7 @@ import 'package:hopscotch/repositories/product_repository.dart';
 import 'package:hopscotch/repositories/category_repository.dart';
 
 import 'package:hopscotch/repositories/banner_repository.dart';
+import 'package:hopscotch/widgets/animated_search_hint.dart';
 import 'package:hopscotch/widgets/district_hero_header.dart';
 import 'package:hopscotch/widgets/product_card.dart';
 import 'package:hopscotch/widgets/skeleton_loaders.dart';
@@ -17,6 +19,7 @@ import 'package:hopscotch/l10n/app_localizations.dart';
 import 'dart:io';
 import 'package:hopscotch/widgets/visual_search_bottom_sheet.dart';
 import 'package:hopscotch/repositories/profile_repository.dart';
+import 'package:hopscotch/widgets/flipkart_category_strip.dart';
 
 // ─────────────────────────────────────────────────────────────
 // LOCATION PROVIDER — Geolocates user address details
@@ -152,9 +155,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   void _onScroll() {
     if (_scrollController.hasClients) {
-      if (_scrollController.offset != _scrollOffset) {
+      final offset = _scrollController.offset;
+      if (offset != _scrollOffset) {
         setState(() {
-          _scrollOffset = _scrollController.offset;
+          _scrollOffset = offset;
         });
       }
     }
@@ -198,16 +202,107 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final responsive = context.responsive;
     final l10n = AppLocalizations.of(context)!;
 
-    final double carouselHeight = size.width * 0.80 * 9 / 16;
+    // Hero height: status bar + location row + search bar + 16:9 image area
+    // The image bleeds behind the status bar (edge-to-edge like District / Play Store)
+    final double imageArea =
+        isDesktop ? 360 : (isTablet ? 300 : size.width * 9 / 16);
     final double heroHeight = isDesktop
         ? 420
-        : (isTablet ? 380 : topPadding + 116 + carouselHeight + 30);
+        : (isTablet ? 400 : topPadding + 116 + imageArea);
+
+    // Rotating search hints (Flipkart style)
+    const _searchHints = [
+      'silk sarees',
+      'kurtas',
+      'lehengas',
+      'co-ord sets',
+      'dresses',
+      'dupattas',
+      'ethnic wear',
+      'western tops',
+    ];
+
+    // ── Search bar widget (shared between banner overlay & tab header) ──
+    final Widget searchBarWidget = Container(
+      height: 48,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.30),
+          width: 0.8,
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => context.push('/search'),
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    const Icon(Icons.search_rounded,
+                        color: Colors.white70, size: 22),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: AnimatedSearchHint(
+                        prefix: 'Search for ',
+                        hints: _searchHints,
+                        style: const TextStyle(
+                            color: Colors.white70, fontSize: 14),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          IconButton(
+            padding: const EdgeInsets.only(right: 16),
+            constraints: const BoxConstraints(),
+            onPressed: _showImageSourceBottomSheet,
+            icon: const Icon(
+              Icons.camera_alt_outlined,
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    // ── Location row for banner overlay (white text + white icon) ──
+    final Widget heroLocationRow = Row(
+      children: [
+        const Icon(Icons.location_on_outlined, color: Colors.white, size: 22),
+        const SizedBox(width: 8),
+        Expanded(
+          child: GestureDetector(
+            onTap: () => ref.invalidate(userLocationProvider),
+            child: location.when(
+              loading: () =>
+                  const _HeroLocationText(area: 'Detecting…', city: ' '),
+              error: (_, __) => const _HeroLocationText(
+                area: 'Set location',
+                city: 'Tap to choose',
+              ),
+              data: (loc) =>
+                  _HeroLocationText(area: loc.area, city: loc.city),
+            ),
+          ),
+        ),
+        const _ProfileAvatarButton(),
+      ],
+    );
 
     final List<Widget> slivers = [
-      // HERO — only on the "All" tab and if it is loading or has active banners
+      // ── HERO: full-bleed banner that bleeds behind the status bar ──
       if (_selectedTab == 0 &&
           (bannersAsync.isLoading ||
-              (bannersAsync.value != null && bannersAsync.value!.isNotEmpty)))
+              (bannersAsync.value != null &&
+                  bannersAsync.value!.isNotEmpty)))
         SliverAppBar(
           expandedHeight: heroHeight,
           collapsedHeight: 0,
@@ -218,6 +313,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           pinned: false,
           floating: false,
           flexibleSpace: FlexibleSpaceBar(
+            collapseMode: CollapseMode.none,
             background: DistrictHeroHeader(
               height: heroHeight,
               isLoading: bannersAsync.isLoading,
@@ -226,163 +322,87 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 final link = banner.link;
                 if (link != null) context.push(link);
               },
-              topRow: Row(
-                children: [
-                  const Icon(
-                    Icons.location_on_outlined,
-                    color: Colors.white,
-                    size: 22,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => ref.invalidate(userLocationProvider),
-                      child: location.when(
-                        loading: () => const _HeroLocationText(
-                          area: 'Detecting…',
-                          city: ' ',
-                        ),
-                        error: (_, __) => const _HeroLocationText(
-                          area: 'Set location',
-                          city: 'Tap to choose',
-                        ),
-                        data: (loc) =>
-                            _HeroLocationText(area: loc.area, city: loc.city),
-                      ),
-                    ),
-                  ),
-                  const _ProfileAvatarButton(),
-                ],
-              ),
-              searchBar: Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.25),
-                    width: 0.8,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => context.push('/search'),
-                        behavior: HitTestBehavior.opaque,
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.search_rounded,
-                                color: Colors.white70,
-                                size: 22,
-                              ),
-                              SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  'Search Product',
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      padding: const EdgeInsets.only(right: 16),
-                      constraints: const BoxConstraints(),
-                      onPressed: _showImageSourceBottomSheet,
-                      icon: const Icon(
-                        Icons.camera_alt_outlined,
-                        color: Colors.white,
-                        size: 22,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              topRow: heroLocationRow,
+              searchBar: searchBarWidget,
             ),
           ),
         )
       else ...[
-        // Category tabs keep the plain location header
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(
-              horizontalPadding,
-              topPadding + 12,
-              horizontalPadding,
-              4,
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.location_on_outlined,
-                  color: Theme.of(context).colorScheme.primary,
-                  size: 22,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => ref.invalidate(userLocationProvider),
-                    child: location.when(
-                      loading: () =>
-                          const _LocationText(area: 'Detecting…', city: ' '),
-                      error: (_, __) => const _LocationText(
-                        area: 'Set location',
-                        city: 'Tap to choose',
+        // ── STICKY HEADER for category tabs (location + themed search bar) ──
+        SliverAppBar(
+          pinned: true,
+          floating: false,
+          automaticallyImplyLeading: false,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          elevation: 0,
+          toolbarHeight: topPadding + 110,
+          flexibleSpace: SafeArea(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                  horizontalPadding, 8, horizontalPadding, 8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.location_on_outlined,
+                        color: Theme.of(context).colorScheme.primary,
+                        size: 22,
                       ),
-                      data: (loc) =>
-                          _LocationText(area: loc.area, city: loc.city),
-                    ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => ref.invalidate(userLocationProvider),
+                          child: location.when(
+                            loading: () => const _LocationText(
+                              area: 'Detecting…',
+                              city: ' ',
+                            ),
+                            error: (_, __) => const _LocationText(
+                              area: 'Set location',
+                              city: 'Tap to choose',
+                            ),
+                            data: (loc) =>
+                                _LocationText(area: loc.area, city: loc.city),
+                          ),
+                        ),
+                      ),
+                      const _ProfileAvatarButton(),
+                    ],
                   ),
-                ),
-                const _ProfileAvatarButton(),
-              ],
+                  const SizedBox(height: 10),
+                  _buildSearchBar(context, responsive, l10n, 0),
+                ],
+              ),
             ),
           ),
         ),
-        // Search bar on non-All tabs (scrolls away)
-        SliverToBoxAdapter(
-          child: _buildSearchBar(context, responsive, l10n, horizontalPadding),
-        ),
       ],
 
-      // CATEGORY TABS — pinned
+      // ── FLIPKART MORPHING CATEGORY STRIP ──
       SliverPersistentHeader(
         pinned: true,
-        delegate: _CategoryTabsDelegate(
+        delegate: FlipkartCategoryStripDelegate(
           categories: categories,
           selectedIndex: _selectedTab,
-          onChanged: (i) => setState(() => _selectedTab = i),
+          onChanged: (i) {
+            if (_scrollController.hasClients) {
+              _scrollController.jumpTo(0.0);
+            }
+            setState(() => _selectedTab = i);
+          },
           horizontalPadding: horizontalPadding,
-          topPadding: topPadding,
-          scrollOffset: _scrollOffset,
-          heroHeight: heroHeight,
+          topPadding: 0,
         ),
       ),
     ];
+
 
     // 4. MAIN CONTENT
     if (_selectedTab == 0) {
       // Home Feed (All tab selected)
       slivers.addAll([
-        SliverToBoxAdapter(
-          child: SizedBox(height: _scrollOffset > 20 ? 16.0 : 0.0),
-        ),
-        SliverToBoxAdapter(
-          child: SizedBox(
-            height: _scrollOffset > 20
-                ? responsive.spacing(AppTheme.spaceXL)
-                : 0.0,
-          ),
-        ),
 
         // Trending Products Header
         SliverToBoxAdapter(
@@ -721,10 +741,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: Text(
-                          'Search Product',
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
+                        child: AnimatedSearchHint(
+                          prefix: 'Search for ',
+                          hints: const [
+                            'silk sarees',
+                            'kurtas',
+                            'lehengas',
+                            'co-ord sets',
+                            'dresses',
+                            'dupattas',
+                            'ethnic wear',
+                            'western tops',
+                          ],
                           style: TextStyle(
                             color: colorScheme.onSurface.withValues(alpha: 0.5),
                             fontSize: 14,
@@ -801,131 +829,6 @@ class _LocationText extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// PINNED CATEGORY TABS DELEGATE
-// ─────────────────────────────────────────────────────────────
-
-class _CategoryTabsDelegate extends SliverPersistentHeaderDelegate {
-  final List<dynamic> categories;
-  final int selectedIndex;
-  final ValueChanged<int> onChanged;
-  final double horizontalPadding;
-  final double topPadding;
-  final double scrollOffset;
-  final double heroHeight;
-
-  _CategoryTabsDelegate({
-    required this.categories,
-    required this.selectedIndex,
-    required this.onChanged,
-    required this.horizontalPadding,
-    required this.topPadding,
-    required this.scrollOffset,
-    required this.heroHeight,
-  });
-
-  @override
-  double get minExtent => 48 + topPadding;
-  @override
-  double get maxExtent => 48 + topPadding;
-
-  @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    // Calculate opacity based on scrollOffset (only for All tab i.e. index 0)
-    double opacity = 1.0;
-    if (selectedIndex == 0) {
-      final double fadeStart = heroHeight - 120;
-      final double fadeEnd = heroHeight - 48 - topPadding;
-      if (scrollOffset > fadeStart) {
-        opacity = ((scrollOffset - fadeStart) / (fadeEnd - fadeStart)).clamp(
-          0.0,
-          1.0,
-        );
-      } else {
-        opacity = 0.0;
-      }
-    }
-
-    return Opacity(
-      opacity: opacity,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          border: Border(
-            bottom: BorderSide(
-              color: overlapsContent && opacity > 0.9
-                  ? colorScheme.outline
-                  : Colors.transparent,
-              width: 0.5,
-            ),
-          ),
-        ),
-        padding: EdgeInsets.only(top: topPadding),
-        child: IgnorePointer(
-          ignoring: opacity < 0.2, // disable interactions when faded out
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-            itemCount: categories.length + 1,
-            separatorBuilder: (_, __) => const SizedBox(width: 24),
-            itemBuilder: (context, i) {
-              final selected = i == selectedIndex;
-              final String label = i == 0 ? 'All' : categories[i - 1].name;
-
-              return GestureDetector(
-                onTap: () => onChanged(i),
-                behavior: HitTestBehavior.opaque,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: 14,
-                        letterSpacing: 0.3,
-                        fontWeight: selected
-                            ? FontWeight.w700
-                            : FontWeight.w500,
-                        color: selected
-                            ? colorScheme.primary
-                            : colorScheme.onSurface.withValues(alpha: 0.5),
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      height: 2.5,
-                      width: selected ? 24 : 0,
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  bool shouldRebuild(covariant _CategoryTabsDelegate old) =>
-      old.selectedIndex != selectedIndex ||
-      old.categories != categories ||
-      old.horizontalPadding != horizontalPadding ||
-      old.topPadding != topPadding ||
-      old.scrollOffset != scrollOffset ||
-      old.heroHeight != heroHeight;
-}
 
 // ─────────────────────────────────────────────────────────────
 // REDESIGNED PREMIUM USER PROFILE AVATAR BUTTON
@@ -1031,13 +934,7 @@ class _ProfileAvatarButtonState extends ConsumerState<_ProfileAvatarButton> {
 }
 
 // ─────────────────────────────────────────────────────────────
-// STEP 1a — HeroHeader widget (add to home_screen.dart)
-// ─────────────────────────────────────────────────────────────
-
-// ─────────────────────────────────────────────────────────────
-// STEP 1b — white location text for use over the image
-// (add to home_screen.dart; your existing _LocationText stays untouched
-//  and keeps being used on category tabs)
+// WHITE LOCATION TEXT — overlaid on banner image
 // ─────────────────────────────────────────────────────────────
 
 class _HeroLocationText extends StatelessWidget {

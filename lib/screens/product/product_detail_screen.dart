@@ -13,6 +13,7 @@ import 'package:hopscotch/providers/currency_provider.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:hopscotch/models/product_model.dart';
 import 'package:hopscotch/widgets/share_earn_bottom_sheet.dart';
+import 'package:hopscotch/widgets/fullscreen_image_viewer.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
@@ -132,12 +133,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       body: productAsync.when(
         data: (product) {
           if (product == null) {
-            return Scaffold(
-              body: Center(
-                child: Text(
-                  l10n.productNotFound,
-                  style: TextStyle(fontSize: responsive.fontSize16),
-                ),
+            return Center(
+              child: Text(
+                l10n.productNotFound,
+                style: TextStyle(fontSize: responsive.fontSize16),
               ),
             );
           }
@@ -157,11 +156,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
 
           final imageList = [product.imageUrl, ...product.additionalImages];
 
-          return Scaffold(
-            body: Stack(
-              children: [
-                NestedScrollView(
-                  headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) {
                     return [
                       SliverAppBar(
                         expandedHeight: MediaQuery.of(context).size.width * 1.1,
@@ -229,47 +225,51 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                             ? '${widget.heroTagPrefix}_product_image_${product.id}'
                                             : 'product_image_${product.id}')
                                       : 'gallery_${product.id}_$index';
-                                  return Hero(
-                                    tag: currentHeroTag,
-                                    child: Image.network(
-                                      imageList[index],
-                                      fit: BoxFit.cover,
-                                      width: double.infinity,
-                                      loadingBuilder:
-                                          (context, child, loadingProgress) {
-                                            if (loadingProgress == null)
-                                              return child;
-                                            return Container(
-                                              color: AppTheme.borderColor
-                                                  .withValues(alpha: 0.2),
-                                              child: const Center(
-                                                child: CircularProgressIndicator(
-                                                  strokeWidth: 2,
-                                                  valueColor:
-                                                      AlwaysStoppedAnimation<
-                                                        Color
-                                                      >(AppTheme.primaryColor),
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                      errorBuilder:
-                                          (
-                                            context,
-                                            error,
-                                            stackTrace,
-                                          ) => Container(
-                                            color: AppTheme.primaryColor
-                                                .withValues(alpha: 0.04),
-                                            child: Center(
-                                              child: Icon(
-                                                Icons.checkroom_rounded,
-                                                color: AppTheme.primaryColor
-                                                    .withValues(alpha: 0.15),
-                                                size: responsive.iconSize(80),
+
+                                  final heroTags = List.generate(imageList.length, (i) {
+                                    return i == 0
+                                        ? (widget.heroTagPrefix != null
+                                            ? '${widget.heroTagPrefix}_product_image_${product.id}'
+                                            : 'product_image_${product.id}')
+                                        : 'gallery_${product.id}_$i';
+                                  });
+
+                                  return GestureDetector(
+                                    onTap: () => FullscreenImageViewer.open(
+                                      context,
+                                      imageUrls: imageList,
+                                      initialIndex: index,
+                                      heroTags: heroTags,
+                                    ),
+                                    child: Hero(
+                                      tag: currentHeroTag,
+                                      child: Image.network(
+                                        imageList[index],
+                                        fit: BoxFit.cover,
+                                        width: double.infinity,
+                                        loadingBuilder: (context, child, loadingProgress) {
+                                          if (loadingProgress == null) return child;
+                                          return Container(
+                                            color: AppTheme.borderColor.withValues(alpha: 0.2),
+                                            child: const Center(
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
                                               ),
                                             ),
+                                          );
+                                        },
+                                        errorBuilder: (context, error, stackTrace) => Container(
+                                          color: AppTheme.primaryColor.withValues(alpha: 0.04),
+                                          child: Center(
+                                            child: Icon(
+                                              Icons.checkroom_rounded,
+                                              color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                                              size: responsive.iconSize(80),
+                                            ),
                                           ),
+                                        ),
+                                      ),
                                     ),
                                   );
                                 },
@@ -360,7 +360,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                     ];
                   },
                   body: SingleChildScrollView(
-                    padding: EdgeInsets.only(bottom: responsive.spacing(120)),
+                    padding: EdgeInsets.only(bottom: responsive.spacing(24)),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -890,131 +890,143 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                       ],
                     ),
                   ),
+                );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(
+          child: Text(
+            '${l10n.error}: $err',
+            style: TextStyle(fontSize: responsive.fontSize14),
+          ),
+        ),
+      ),
+      bottomNavigationBar: productAsync.when(
+        data: (product) {
+          if (product == null) return const SizedBox.shrink();
+          return Container(
+            padding: EdgeInsets.only(
+              left: responsive.spacing(AppTheme.spaceXL),
+              right: responsive.spacing(AppTheme.spaceXL),
+              top: responsive.spacing(AppTheme.spaceL),
+              bottom: responsive.spacing(AppTheme.spaceL) + MediaQuery.of(context).padding.bottom,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, -4),
                 ),
-
-                // 2. Floating Transparent bottom buttons
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    padding: EdgeInsets.all(
-                      responsive.spacing(AppTheme.spaceXL),
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      border: const Border(
-                        top: BorderSide(color: AppTheme.borderColor),
+              ],
+              border: const Border(
+                top: BorderSide(color: AppTheme.borderColor),
+              ),
+            ),
+            child: Row(
+              children: [
+                // Add to Cart (Outlined with Micro-Animation)
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: _isAddingToCart || _showCartSuccess
+                        ? null
+                        : () => _triggerAddToCart(product),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.primaryColor,
+                      side: const BorderSide(
+                        color: AppTheme.primaryColor,
+                        width: 1.5,
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        vertical: responsive.spacing(16),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.radiusM,
+                        ),
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        // Add to Cart (Outlined with Micro-Animation)
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: _isAddingToCart || _showCartSuccess
-                                ? null
-                                : () => _triggerAddToCart(product),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppTheme.primaryColor,
-                              side: const BorderSide(
-                                color: AppTheme.primaryColor,
-                                width: 1.5,
+                    child: AnimatedSize(
+                      duration: const Duration(milliseconds: 250),
+                      child: _isAddingToCart
+                          ? SizedBox(
+                              width: responsive.spacing(20),
+                              height: responsive.spacing(20),
+                              child: const CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(
+                                      AppTheme.primaryColor,
+                                    ),
                               ),
-                              padding: EdgeInsets.symmetric(
-                                vertical: responsive.spacing(16),
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                  AppTheme.radiusM,
-                                ),
-                              ),
-                            ),
-                            child: AnimatedSize(
-                              duration: const Duration(milliseconds: 250),
-                              child: _isAddingToCart
-                                  ? SizedBox(
-                                      width: responsive.spacing(20),
-                                      height: responsive.spacing(20),
-                                      child: const CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                              AppTheme.primaryColor,
-                                            ),
+                            )
+                          : (_showCartSuccess
+                                ? Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.check_rounded,
+                                        size: responsive.iconSize(18),
+                                        color: AppTheme.primaryColor,
                                       ),
-                                    )
-                                  : (_showCartSuccess
-                                        ? Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.check_rounded,
-                                                size: responsive.iconSize(18),
-                                                color: AppTheme.primaryColor,
-                                              ),
-                                              SizedBox(
-                                                width: responsive.spacing(6),
-                                              ),
-                                              Text(
-                                                l10n.added,
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  color: AppTheme.primaryColor,
-                                                  fontSize:
-                                                      responsive.fontSize14,
-                                                ),
-                                              ),
-                                            ],
-                                          )
-                                        : Text(
-                                            l10n.addToCart,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: responsive.fontSize14,
-                                            ),
-                                          )),
-                            ),
-                          ),
+                                      SizedBox(
+                                        width: responsive.spacing(6),
+                                      ),
+                                      Text(
+                                        l10n.added,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: AppTheme.primaryColor,
+                                          fontSize:
+                                              responsive.fontSize14,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : Text(
+                                    l10n.addToCart,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: responsive.fontSize14,
+                                    ),
+                                  )),
+                    ),
+                  ),
+                ),
+                SizedBox(width: responsive.spacing(AppTheme.spaceL)),
+                // Buy Now (Solid)
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      HapticFeedback.heavyImpact();
+                      ref
+                          .read(cartProvider.notifier)
+                          .addToCart(
+                            product,
+                            size: _selectedSize,
+                            color: _selectedColor,
+                          );
+                      // Go straight to checkout screen!
+                      context.push('/checkout');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryColor,
+                      padding: EdgeInsets.symmetric(
+                        vertical: responsive.spacing(16),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.radiusM,
                         ),
-                        SizedBox(width: responsive.spacing(AppTheme.spaceL)),
-                        // Buy Now (Solid)
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              HapticFeedback.heavyImpact();
-                              ref
-                                  .read(cartProvider.notifier)
-                                  .addToCart(
-                                    product,
-                                    size: _selectedSize,
-                                    color: _selectedColor,
-                                  );
-                              // Go straight to checkout screen!
-                              context.push('/checkout');
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.primaryColor,
-                              padding: EdgeInsets.symmetric(
-                                vertical: responsive.spacing(16),
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                  AppTheme.radiusM,
-                                ),
-                              ),
-                            ),
-                            child: Text(
-                              l10n.buyNow,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: responsive.fontSize14,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
+                    ),
+                    child: Text(
+                      l10n.buyNow,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: responsive.fontSize14,
+                      ),
                     ),
                   ),
                 ),
@@ -1022,14 +1034,67 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             ),
           );
         },
-        loading: () =>
-            const Scaffold(body: Center(child: CircularProgressIndicator())),
-        error: (err, stack) => Scaffold(
-          body: Center(
-            child: Text(
-              '${l10n.error}: $err',
-              style: TextStyle(fontSize: responsive.fontSize14),
-            ),
+        loading: () => Container(
+          padding: EdgeInsets.only(
+            left: responsive.spacing(AppTheme.spaceXL),
+            right: responsive.spacing(AppTheme.spaceXL),
+            top: responsive.spacing(AppTheme.spaceL),
+            bottom: responsive.spacing(AppTheme.spaceL) + MediaQuery.of(context).padding.bottom,
+          ),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            border: Border(top: BorderSide(color: AppTheme.borderColor)),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                  ),
+                ),
+              ),
+              SizedBox(width: responsive.spacing(AppTheme.spaceL)),
+              Expanded(
+                child: Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        error: (err, stack) => Container(
+          padding: EdgeInsets.only(
+            left: responsive.spacing(AppTheme.spaceXL),
+            right: responsive.spacing(AppTheme.spaceXL),
+            top: responsive.spacing(AppTheme.spaceL),
+            bottom: responsive.spacing(AppTheme.spaceL) + MediaQuery.of(context).padding.bottom,
+          ),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            border: Border(top: BorderSide(color: AppTheme.borderColor)),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => ref.invalidate(productDetailProvider(widget.productId)),
+                  icon: const Icon(Icons.refresh_rounded, size: 18),
+                  label: const Text('Retry'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.primaryColor,
+                    side: const BorderSide(color: AppTheme.primaryColor),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
