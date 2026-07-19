@@ -314,16 +314,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           floating: false,
           flexibleSpace: FlexibleSpaceBar(
             collapseMode: CollapseMode.none,
-            background: DistrictHeroHeader(
-              height: heroHeight,
-              isLoading: bannersAsync.isLoading,
-              banners: bannersAsync.value ?? const [],
-              onExplore: (banner) {
-                final link = banner.link;
-                if (link != null) context.push(link);
-              },
-              topRow: heroLocationRow,
-              searchBar: searchBarWidget,
+            background: ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                bottom: Radius.circular(24),
+              ),
+              child: DistrictHeroHeader(
+                height: heroHeight,
+                isLoading: bannersAsync.isLoading,
+                banners: bannersAsync.value ?? const [],
+                onExplore: (banner) {
+                  final link = banner.link;
+                  if (link != null) context.push(link);
+                },
+                topRow: heroLocationRow,
+                searchBar: searchBarWidget,
+              ),
             ),
           ),
         )
@@ -393,7 +398,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             setState(() => _selectedTab = i);
           },
           horizontalPadding: horizontalPadding,
-          topPadding: 0,
+          topPadding: _selectedTab == 0 ? topPadding : 0,
         ),
       ),
     ];
