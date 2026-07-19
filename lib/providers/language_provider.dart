@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hopscotch/repositories/config_repository.dart';
 
 enum AppLanguage {
   english('en', 'US', 'English'),
@@ -58,4 +59,18 @@ class LanguageNotifier extends StateNotifier<AppLanguage> {
 
 final languageProvider = StateNotifierProvider<LanguageNotifier, AppLanguage>((ref) {
   return LanguageNotifier();
+});
+
+final enabledLanguagesProvider = FutureProvider<List<AppLanguage>>((ref) async {
+  final configRepo = ref.watch(configRepositoryProvider);
+  final apiLangs = await configRepo.fetchLanguages();
+  if (apiLangs.isEmpty) {
+    // Default fallback list
+    return AppLanguage.values;
+  }
+  return AppLanguage.values.where((lang) {
+    return apiLangs.any((apiLang) =>
+        apiLang['code'].toString().toLowerCase() == lang.code.toLowerCase() &&
+        apiLang['isEnabled'] == true);
+  }).toList();
 });

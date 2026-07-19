@@ -8,6 +8,7 @@ class CurrencySelector extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentCurrency = ref.watch(currencyProvider);
+    final enabledCurrsAsync = ref.watch(enabledCurrenciesProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -15,7 +16,7 @@ class CurrencySelector extends ConsumerWidget {
         elevation: 0,
       ),
       body: ListView(
-        children: AppCurrency.values.map((currency) {
+        children: (enabledCurrsAsync.value ?? AppCurrency.values).map((currency) {
           return ListTile(
             leading: Text(
               currency.symbol,

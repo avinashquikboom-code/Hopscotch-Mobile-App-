@@ -8,6 +8,7 @@ import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/repositories/cart_wishlist_repository.dart';
 import 'package:hopscotch/repositories/order_repository.dart';
 import 'package:hopscotch/providers/currency_provider.dart';
+import 'package:hopscotch/repositories/config_repository.dart';
 
 // ---------------------------------------------------------------------------
 // Country list (includes all 8 new countries)
@@ -262,6 +263,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final cart = ref.watch(cartProvider);
     final cartNotifier = ref.read(cartProvider.notifier);
     final currency = ref.watch(currencyProvider);
+    final countriesAsync = ref.watch(apiCountriesProvider);
+    final apiList = countriesAsync.value
+            ?.map((c) => c['name']?.toString() ?? '')
+            .where((name) => name.isNotEmpty)
+            .toList();
+    final countriesList = (apiList != null && apiList.isNotEmpty) ? apiList : _kCountries;
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -351,9 +358,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      // Country Dropdown
                       DropdownButtonFormField<String>(
-                        value: _selectedCountry,
+                        value: countriesList.contains(_selectedCountry) ? _selectedCountry : (countriesList.isNotEmpty ? countriesList.first : null),
                         decoration: InputDecoration(
                           labelText: 'Country',
                           prefixIcon: Icon(Icons.flag_outlined, size: responsive.iconSize(20)),
@@ -373,7 +379,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           ),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         ),
-                        items: _kCountries
+                        items: countriesList
                             .map((c) => DropdownMenuItem(value: c, child: Text(c, style: TextStyle(fontSize: responsive.fontSize14))))
                             .toList(),
                         onChanged: (val) => setState(() => _selectedCountry = val ?? 'India'),

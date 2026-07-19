@@ -19,6 +19,7 @@ class _CurrencySelectionScreenState
   Widget build(BuildContext context) {
     final responsive = context.responsive;
     final currentCurrency = ref.watch(currencyProvider);
+    final enabledCurrsAsync = ref.watch(enabledCurrenciesProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -81,7 +82,7 @@ class _CurrencySelectionScreenState
               // Currency Options
               Expanded(
                 child: ListView(
-                  children: AppCurrency.values.map((currency) {
+                  children: (enabledCurrsAsync.value ?? AppCurrency.values).map((currency) {
                     final isSelected = currentCurrency == currency;
                     return GestureDetector(
                       onTap: () async {

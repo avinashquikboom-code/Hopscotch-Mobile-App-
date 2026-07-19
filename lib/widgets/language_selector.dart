@@ -10,6 +10,7 @@ class LanguageSelector extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentLanguage = ref.watch(languageProvider);
+    final enabledLangsAsync = ref.watch(enabledLanguagesProvider);
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -18,7 +19,7 @@ class LanguageSelector extends ConsumerWidget {
         elevation: 0,
       ),
       body: ListView(
-        children: AppLanguage.values.map((language) {
+        children: (enabledLangsAsync.value ?? AppLanguage.values.where((l) => l.code == 'en' || l.code == 'hi' || l.code == 'es' || l.code == 'fr').toList()).map((language) {
           return ListTile(
             leading: Icon(_getLanguageIcon(language)),
             title: Text(_getLanguageName(language, l10n)),

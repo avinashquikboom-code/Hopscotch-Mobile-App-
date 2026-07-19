@@ -50,8 +50,8 @@ import 'package:hopscotch/visual_search/domain/entities/visual_search_result.dar
 import 'package:hopscotch/core/session_manager.dart';
 
 class AppPages {
-  static LocalKey _pageKey(GoRouterState state) {
-    return ValueKey('${state.pageKey.value}_${state.uri}');
+  static LocalKey? _pageKey(GoRouterState state) {
+    return null;
   }
 
   static final List<RouteBase> _routes = [

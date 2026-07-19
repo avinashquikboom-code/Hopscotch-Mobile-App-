@@ -22,6 +22,7 @@ class _LanguageSelectionScreenState
     final responsive = context.responsive;
     final currentLanguage = ref.watch(languageProvider);
     final currentCurrency = ref.watch(currencyProvider);
+    final enabledLangsAsync = ref.watch(enabledLanguagesProvider);
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -85,7 +86,7 @@ class _LanguageSelectionScreenState
               // Language Options
               Expanded(
                 child: ListView(
-                  children: AppLanguage.values.map((language) {
+                  children: (enabledLangsAsync.value ?? AppLanguage.values.where((l) => l.code == 'en' || l.code == 'hi' || l.code == 'es' || l.code == 'fr').toList()).map((language) {
                     final isSelected = currentLanguage == language;
                     return GestureDetector(
                       onTap: () async {

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hopscotch/repositories/config_repository.dart';
 
 enum AppCurrency {
   inr('INR', '₹', 'Indian Rupee', 1.0),
@@ -89,4 +90,24 @@ final currencySymbolProvider = Provider<String>((ref) {
 
 final currencyCodeProvider = Provider<String>((ref) {
   return ref.watch(currencyProvider.notifier).currencyCode;
+});
+
+final enabledCurrenciesProvider = FutureProvider<List<AppCurrency>>((ref) async {
+  final configRepo = ref.watch(configRepositoryProvider);
+  final apiCurrs = await configRepo.fetchCurrencies();
+  if (apiCurrs.isEmpty) {
+    return AppCurrency.values;
+  }
+  
+  final List<AppCurrency> matched = [];
+  for (final curr in AppCurrency.values) {
+    final apiCurr = apiCurrs.firstWhere(
+      (c) => c['code'].toString().toUpperCase() == curr.code.toUpperCase() && c['isEnabled'] == true,
+      orElse: () => {},
+    );
+    if (apiCurr.isNotEmpty) {
+      matched.add(curr);
+    }
+  }
+  return matched.isNotEmpty ? matched : AppCurrency.values;
 });
