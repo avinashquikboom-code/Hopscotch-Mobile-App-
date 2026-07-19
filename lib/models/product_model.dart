@@ -29,7 +29,7 @@ class ProductModel with _$ProductModel {
     required String imageUrl,
     @Default([]) List<String> additionalImages,
     required String categoryId,
-    required String subcategory,
+    @Default('Collections') String subcategory,
     required double rating,
     required int reviewCount,
     @Default([]) List<ProductReviewModel> reviews,
