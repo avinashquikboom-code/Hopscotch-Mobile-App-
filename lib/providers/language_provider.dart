@@ -21,7 +21,10 @@ enum AppLanguage {
   portuguese('pt', 'PT', 'Português'),
   japanese('ja', 'JP', '日本語'),
   chinese('zh', 'CN', '中文'),
-  russian('ru', 'RU', 'Русский');
+  russian('ru', 'RU', 'Русский'),
+  // New countries
+  malay('ms', 'MY', 'Bahasa Melayu'),
+  dutch('nl', 'NL', 'Nederlands');
 
   final String code;
   final String countryCode;

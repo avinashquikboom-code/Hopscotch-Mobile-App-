@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/widgets/custom_button.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
@@ -8,7 +10,7 @@ import 'package:hopscotch/utils/dev_logger.dart';
 import 'package:hopscotch/utils/error_handler.dart';
 import 'package:hopscotch/api/auth_api.dart';
 import 'package:hopscotch/api/api_service.dart';
-import 'package:hopscotch/l10n/app_localizations.dart';
+import 'package:hopscotch/widgets/toast_notification.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -18,7 +20,8 @@ class SignupScreen extends ConsumerStatefulWidget {
 }
 
 class _SignupScreenState extends ConsumerState<SignupScreen> {
-  final _nameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -26,10 +29,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  File? _profileImage;
+  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
@@ -37,109 +43,136 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     super.dispose();
   }
 
+  Future<void> _pickImageFromGallery() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+        maxWidth: 512,
+        maxHeight: 512,
+      );
+      
+      if (image != null) {
+        setState(() {
+          _profileImage = File(image.path);
+        });
+      }
+    } catch (e) {
+      _showError('Failed to pick image from gallery');
+    }
+  }
+
+  Future<void> _pickImageFromCamera() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 80,
+        maxWidth: 512,
+        maxHeight: 512,
+      );
+      
+      if (image != null) {
+        setState(() {
+          _profileImage = File(image.path);
+        });
+      }
+    } catch (e) {
+      _showError('Failed to pick image from camera');
+    }
+  }
+
+  void _showImagePickerBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from Gallery'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImageFromGallery();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Take Photo'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImageFromCamera();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showError(String message) {
+    ToastNotification.show(
+      context,
+      message: message,
+      isError: true,
+    );
+  }
+
   Future<void> _signup() async {
-    final name = _nameController.text.trim();
+    final firstName = _firstNameController.text.trim();
+    final lastName = _lastNameController.text.trim();
     final email = _emailController.text.trim();
     final phone = _phoneController.text.trim();
     final password = _passwordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
     
-    if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter your name'),
-          backgroundColor: AppTheme.errorColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+    if (firstName.isEmpty) {
+      _showError('Please enter your first name');
+      return;
+    }
+    
+    if (lastName.isEmpty) {
+      _showError('Please enter your last name');
       return;
     }
     
     if (email.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter email'),
-          backgroundColor: AppTheme.errorColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      _showError('Please enter email');
       return;
     }
     
     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid email'),
-          backgroundColor: AppTheme.errorColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      _showError('Please enter a valid email');
       return;
     }
 
     if (phone.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter phone number'),
-          backgroundColor: AppTheme.errorColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      _showError('Please enter phone number');
       return;
     }
     
     if (!RegExp(r'^\+?[0-9]{10,15}$').hasMatch(phone)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid phone number (10+ digits)'),
-          backgroundColor: AppTheme.errorColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      _showError('Please enter a valid phone number (10+ digits)');
       return;
     }
     
     if (password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter password'),
-          backgroundColor: AppTheme.errorColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      _showError('Please enter password');
       return;
     }
     
     if (password.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password must be at least 6 characters'),
-          backgroundColor: AppTheme.errorColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      _showError('Password must be at least 6 characters');
       return;
     }
     
     if (confirmPassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please confirm password'),
-          backgroundColor: AppTheme.errorColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      _showError('Please confirm password');
       return;
     }
     
     if (password != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Passwords do not match'),
-          backgroundColor: AppTheme.errorColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      _showError('Passwords do not match');
       return;
     }
 
@@ -152,21 +185,20 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       final authApi = AuthApi(apiService);
       
       final response = await authApi.register(
-        firstName: name,
-        lastName: '',
+        firstName: firstName,
+        lastName: lastName,
         email: email,
         password: password,
         phone: phone,
+        profileImage: _profileImage,
       );
       
       if (response.statusCode == 201 || response.statusCode == 200) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Account created successfully'),
-              backgroundColor: AppTheme.primaryColor,
-              behavior: SnackBarBehavior.floating,
-            ),
+          ToastNotification.show(
+            context,
+            message: 'Account created successfully',
+            isError: false,
           );
           context.pop();
         }
@@ -177,13 +209,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       DevLogger.logError(e.toString(), context: 'Signup');
       if (mounted) {
         final errorMessage = ErrorHandler.getErrorMessage(e);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: AppTheme.errorColor,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        _showError(errorMessage);
       }
     } finally {
       if (mounted) {
@@ -197,7 +223,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
-    final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       body: SafeArea(
@@ -216,104 +241,174 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Top Header logo or icon
-                Center(
-                  child: Container(
-                    padding: EdgeInsets.all(
-                      responsive.spacing(AppTheme.spaceXL),
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppTheme.primaryColor.withValues(alpha: 0.1),
-                          AppTheme.primaryColor.withValues(alpha: 0.05),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.2),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.person_add_rounded,
-                      color: AppTheme.primaryColor,
-                      size: responsive.iconSize(48),
-                    ),
-                  ),
-                ),
-                SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
+                 // Profile Photo Picker
+                 Center(
+                   child: GestureDetector(
+                     onTap: _showImagePickerBottomSheet,
+                     child: Stack(
+                       children: [
+                         Container(
+                           padding: EdgeInsets.all(responsive.spacing(4)),
+                           decoration: BoxDecoration(
+                             shape: BoxShape.circle,
+                             border: Border.all(
+                               color: AppTheme.primaryColor,
+                               width: 2,
+                             ),
+                           ),
+                           child: CircleAvatar(
+                             radius: responsive.iconSize(54),
+                             backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.08),
+                             backgroundImage: _profileImage != null
+                                 ? FileImage(_profileImage!)
+                                 : null,
+                             child: _profileImage == null
+                                 ? Icon(
+                                     Icons.person_add_alt_1_rounded,
+                                     size: responsive.iconSize(44),
+                                     color: AppTheme.primaryColor,
+                                   )
+                                 : null,
+                           ),
+                         ),
+                         Positioned(
+                           bottom: 0,
+                           right: 0,
+                           child: Container(
+                             padding: EdgeInsets.all(responsive.spacing(6)),
+                             decoration: const BoxDecoration(
+                               color: AppTheme.primaryColor,
+                               shape: BoxShape.circle,
+                             ),
+                             child: Icon(
+                               Icons.camera_alt_rounded,
+                               color: Colors.white,
+                               size: responsive.iconSize(16),
+                             ),
+                           ),
+                         ),
+                       ],
+                     ),
+                   ),
+                 ),
+                 SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
-                // Greeting
-                Center(
-                  child: Text(
-                    'Create Account',
-                    style: responsive.headline4.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                ),
-                SizedBox(height: responsive.spacing(AppTheme.spaceM)),
-                Center(
-                  child: Text(
-                    'Sign up to get started',
-                    style: responsive.bodyMedium.copyWith(
-                      color: colorScheme.onSurface.withValues(alpha: 0.6),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
+                 // Greeting
+                 Center(
+                   child: Text(
+                     'Create Account',
+                     style: responsive.headline4.copyWith(
+                       color: colorScheme.onSurface,
+                     ),
+                   ),
+                 ),
+                 SizedBox(height: responsive.spacing(AppTheme.spaceM)),
+                 Center(
+                   child: Text(
+                     'Sign up to get started',
+                     style: responsive.bodyMedium.copyWith(
+                       color: colorScheme.onSurface.withValues(alpha: 0.6),
+                     ),
+                     textAlign: TextAlign.center,
+                   ),
+                 ),
+                 SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
-                // Name
-                TextField(
-                  controller: _nameController,
-                  keyboardType: TextInputType.name,
-                  style: TextStyle(
-                    color: colorScheme.onSurface,
-                    fontSize: responsive.fontSize14,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Enter your name',
-                    hintStyle: TextStyle(
-                      color: colorScheme.onSurface.withValues(alpha: 0.4),
-                      fontSize: responsive.fontSize14,
-                    ),
-                    labelText: 'Name',
-                    labelStyle: TextStyle(
-                      color: colorScheme.primary,
-                      fontSize: responsive.fontSize14,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.person_outline_rounded,
-                      color: colorScheme.primary,
-                      size: responsive.iconSize(20),
-                    ),
-                    filled: true,
-                    fillColor: colorScheme.surface,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
-                      borderSide: BorderSide(
-                        color: colorScheme.primary,
-                        width: 2,
-                      ),
-                    ),
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: responsive.spacing(AppTheme.spaceL),
-                      vertical: responsive.spacing(AppTheme.spaceM),
-                    ),
-                  ),
-                ),
-                SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+                 // First Name & Last Name
+                 Row(
+                   children: [
+                     Expanded(
+                       child: TextField(
+                         controller: _firstNameController,
+                         keyboardType: TextInputType.name,
+                         style: TextStyle(
+                           color: colorScheme.onSurface,
+                           fontSize: responsive.fontSize14,
+                         ),
+                         decoration: InputDecoration(
+                           hintText: 'First name',
+                           hintStyle: TextStyle(
+                             color: colorScheme.onSurface.withValues(alpha: 0.4),
+                             fontSize: responsive.fontSize14,
+                           ),
+                           labelText: 'First Name',
+                           labelStyle: TextStyle(
+                             color: colorScheme.primary,
+                             fontSize: responsive.fontSize14,
+                           ),
+                           prefixIcon: Icon(
+                             Icons.person_outline_rounded,
+                             color: colorScheme.primary,
+                             size: responsive.iconSize(20),
+                           ),
+                           filled: true,
+                           fillColor: colorScheme.surface,
+                           border: OutlineInputBorder(
+                             borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                             borderSide: BorderSide.none,
+                           ),
+                           focusedBorder: OutlineInputBorder(
+                             borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                             borderSide: BorderSide(
+                               color: colorScheme.primary,
+                               width: 2,
+                             ),
+                           ),
+                           contentPadding: EdgeInsets.symmetric(
+                             horizontal: responsive.spacing(AppTheme.spaceM),
+                             vertical: responsive.spacing(AppTheme.spaceM),
+                           ),
+                         ),
+                       ),
+                     ),
+                     SizedBox(width: responsive.spacing(AppTheme.spaceM)),
+                     Expanded(
+                       child: TextField(
+                         controller: _lastNameController,
+                         keyboardType: TextInputType.name,
+                         style: TextStyle(
+                           color: colorScheme.onSurface,
+                           fontSize: responsive.fontSize14,
+                         ),
+                         decoration: InputDecoration(
+                           hintText: 'Last name',
+                           hintStyle: TextStyle(
+                             color: colorScheme.onSurface.withValues(alpha: 0.4),
+                             fontSize: responsive.fontSize14,
+                           ),
+                           labelText: 'Last Name',
+                           labelStyle: TextStyle(
+                             color: colorScheme.primary,
+                             fontSize: responsive.fontSize14,
+                           ),
+                           prefixIcon: Icon(
+                             Icons.person_outline_rounded,
+                             color: colorScheme.primary,
+                             size: responsive.iconSize(20),
+                           ),
+                           filled: true,
+                           fillColor: colorScheme.surface,
+                           border: OutlineInputBorder(
+                             borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                             borderSide: BorderSide.none,
+                           ),
+                           focusedBorder: OutlineInputBorder(
+                             borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                             borderSide: BorderSide(
+                               color: colorScheme.primary,
+                               width: 2,
+                             ),
+                           ),
+                           contentPadding: EdgeInsets.symmetric(
+                             horizontal: responsive.spacing(AppTheme.spaceM),
+                             vertical: responsive.spacing(AppTheme.spaceM),
+                           ),
+                         ),
+                       ),
+                     ),
+                   ],
+                 ),
+                 SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
 
                 // Email
                 TextField(

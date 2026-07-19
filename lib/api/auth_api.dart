@@ -235,8 +235,16 @@ class AuthApi {
       DevLogger.logError('Server logout failed (expected if token expired/invalid): $e', context: 'AuthApi');
     } finally {
       // Clear all secure storage data regardless of response
-      await _secureStorage.clearAll();
-      await SessionManager.clearTokens();
+      try {
+        await _secureStorage.clearAll();
+      } catch (e) {
+        DevLogger.logError('Failed to clear secure storage during logout: $e', context: 'AuthApi');
+      }
+      try {
+        await SessionManager.clearTokens();
+      } catch (e) {
+        DevLogger.logError('Failed to clear SessionManager tokens during logout: $e', context: 'AuthApi');
+      }
     }
     
     return response;

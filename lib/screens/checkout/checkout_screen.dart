@@ -2,12 +2,23 @@ import 'dart:math' show pi;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/repositories/cart_wishlist_repository.dart';
 import 'package:hopscotch/repositories/order_repository.dart';
-import 'package:hopscotch/widgets/custom_button.dart';
 import 'package:hopscotch/providers/currency_provider.dart';
+
+// ---------------------------------------------------------------------------
+// Country list (includes all 8 new countries)
+// ---------------------------------------------------------------------------
+const _kCountries = [
+  'India', 'United States', 'United Kingdom', 'UAE (Dubai)',
+  'Bahrain', 'Malaysia', 'Mauritius', 'Fiji', 'Guyana',
+  'Suriname', 'Trinidad & Tobago', 'Australia', 'Canada',
+  'Germany', 'France', 'Japan', 'Singapore', 'Saudi Arabia',
+  'Qatar', 'Kuwait', 'Oman', 'South Africa', 'New Zealand',
+];
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -18,12 +29,17 @@ class CheckoutScreen extends ConsumerStatefulWidget {
 
 class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _formKey = GlobalKey<FormState>();
+
+  // ── Shipping controllers ────────────────────────────────────────────────
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _addressController = TextEditingController();
   final _cityController = TextEditingController();
   final _zipController = TextEditingController();
   final _phoneController = TextEditingController();
+  String _selectedCountry = 'India';
 
-  // Premium Credit Card fields & anims
+  // ── Credit Card controllers ─────────────────────────────────────────────
   final _cardNumberController = TextEditingController();
   final _cardNameController = TextEditingController();
   final _cardExpiryController = TextEditingController();
@@ -31,22 +47,32 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _cvvFocusNode = FocusNode();
   bool _isCardFlipped = false;
 
-  String _selectedPayment = 'Credit Card'; // Credit Card, Apple Pay, PayPal
+  // ── Payment ─────────────────────────────────────────────────────────────
+  String _selectedPayment = 'Razorpay';
   bool _isPlacingOrder = false;
   String? _paymentProcessingStep;
+
+  // ── Razorpay ────────────────────────────────────────────────────────────
+  late Razorpay _razorpay;
+  static const String _razorpayKeyId = 'YOUR_RAZORPAY_KEY_ID'; // Replace with actual key
 
   @override
   void initState() {
     super.initState();
     _cvvFocusNode.addListener(() {
-      setState(() {
-        _isCardFlipped = _cvvFocusNode.hasFocus;
-      });
+      setState(() => _isCardFlipped = _cvvFocusNode.hasFocus);
     });
+
+    _razorpay = Razorpay();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handleRazorpaySuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handleRazorpayError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
   }
 
   @override
   void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _addressController.dispose();
     _cityController.dispose();
     _zipController.dispose();
@@ -56,9 +82,59 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     _cardExpiryController.dispose();
     _cardCvvController.dispose();
     _cvvFocusNode.dispose();
+    _razorpay.clear();
     super.dispose();
   }
 
+  // ── Razorpay handlers ───────────────────────────────────────────────────
+  void _handleRazorpaySuccess(PaymentSuccessResponse response) async {
+    setState(() => _paymentProcessingStep = 'PAYMENT CONFIRMED ✓');
+    final cart = ref.read(cartProvider);
+    final cartNotifier = ref.read(cartProvider.notifier);
+    final address =
+        '${_firstNameController.text} ${_lastNameController.text}, '
+        '${_addressController.text}, ${_cityController.text}, '
+        '$_selectedCountry - ${_zipController.text}';
+    try {
+      final order = await ref.read(orderProvider.notifier).placeOrder(
+            items: cart,
+            totalAmount: cartNotifier.totalAmount,
+            address: address,
+            paymentMethod: 'Razorpay',
+          );
+      cartNotifier.clearCart();
+      if (mounted) context.go('/order-success?orderId=${order.id}');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Order save failed: $e'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isPlacingOrder = false);
+    }
+  }
+
+  void _handleRazorpayError(PaymentFailureResponse response) {
+    setState(() => _isPlacingOrder = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Payment failed: ${response.message}'),
+        backgroundColor: AppTheme.errorColor,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    setState(() => _isPlacingOrder = false);
+  }
+
+  // ── Card formatting ─────────────────────────────────────────────────────
   void _onCardNumberChanged(String value) {
     final clean = value.replaceAll(RegExp(r'\D'), '');
     var formatted = '';
@@ -78,12 +154,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   void _onExpiryChanged(String value) {
     final clean = value.replaceAll(RegExp(r'\D'), '');
     var formatted = '';
-    if (clean.isNotEmpty) {
-      formatted += clean.substring(0, clean.length < 2 ? clean.length : 2);
-      if (clean.length > 2) {
-        formatted +=
-            '/${clean.substring(2, clean.length < 4 ? clean.length : 4)}';
-      }
+    for (var i = 0; i < clean.length && i < 4; i++) {
+      if (i == 2) formatted += '/';
+      formatted += clean[i];
     }
     if (formatted != _cardExpiryController.text) {
       _cardExpiryController.value = TextEditingValue(
@@ -94,33 +167,35 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     setState(() {});
   }
 
+  // ── Place order ─────────────────────────────────────────────────────────
   Future<void> _handlePlaceOrder() async {
     if (!_formKey.currentState!.validate()) return;
-
     final cart = ref.read(cartProvider);
     if (cart.isEmpty) return;
+
+    if (_selectedPayment == 'Razorpay') {
+      _openRazorpay();
+      return;
+    }
 
     setState(() {
       _isPlacingOrder = true;
       _paymentProcessingStep = 'AUTHENTICATING BILLING KEY...';
     });
-
     await Future.delayed(const Duration(milliseconds: 900));
     if (mounted) {
-      setState(() {
-        _paymentProcessingStep = 'RESERVING DESIGNER COUTURE...';
-      });
+      setState(() => _paymentProcessingStep = 'PROCESSING PAYMENT...');
     }
     await Future.delayed(const Duration(milliseconds: 800));
 
     try {
       final cartNotifier = ref.read(cartProvider.notifier);
       final address =
-          '${_addressController.text}, ${_cityController.text}, ${_zipController.text}';
+          '${_firstNameController.text} ${_lastNameController.text}, '
+          '${_addressController.text}, ${_cityController.text}, '
+          '$_selectedCountry - ${_zipController.text}';
 
-      final order = await ref
-          .read(orderProvider.notifier)
-          .placeOrder(
+      final order = await ref.read(orderProvider.notifier).placeOrder(
             items: cart,
             totalAmount: cartNotifier.totalAmount,
             address: address,
@@ -128,18 +203,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           );
 
       if (mounted) {
-        setState(() {
-          _paymentProcessingStep = 'ASSIGNING COUTURE LOGISTICS... ✨';
-        });
+        setState(() => _paymentProcessingStep = 'ORDER PLACED SUCCESSFULLY ✨');
       }
       await Future.delayed(const Duration(milliseconds: 1000));
-
-      // Clear the cart on successful checkout
       ref.read(cartProvider.notifier).clearCart();
-
-      if (mounted) {
-        context.go('/order-success?orderId=${order.id}');
-      }
+      if (mounted) context.go('/order-success?orderId=${order.id}');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -151,48 +219,70 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         );
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _isPlacingOrder = false;
-        });
-      }
+      if (mounted) setState(() => _isPlacingOrder = false);
     }
   }
 
+  void _openRazorpay() {
+    final cart = ref.read(cartProvider);
+    final cartNotifier = ref.read(cartProvider.notifier);
+    final amountInPaise = (cartNotifier.totalAmount * 100).toInt();
+    setState(() => _isPlacingOrder = true);
+
+    final options = {
+      'key': _razorpayKeyId,
+      'amount': amountInPaise,
+      'name': 'FCI Seller',
+      'description': '${cart.length} item(s)',
+      'prefill': {
+        'contact': _phoneController.text,
+        'email': '',
+      },
+      'theme': {'color': '#0d9488'},
+    };
+
+    try {
+      _razorpay.open(options);
+    } catch (e) {
+      setState(() => _isPlacingOrder = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not open Razorpay: $e'),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  // ── Build ────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
     final cart = ref.watch(cartProvider);
     final cartNotifier = ref.read(cartProvider.notifier);
     final currency = ref.watch(currencyProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (cart.isEmpty) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            'CHECKOUT',
-            style: TextStyle(
-              fontSize: responsive.fontSize18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        body: Center(
-          child: Text(
-            'Your cart is empty.',
-            style: TextStyle(fontSize: responsive.fontSize14),
-          ),
-        ),
+        appBar: AppBar(title: const Text('CHECKOUT')),
+        body: const Center(child: Text('Your cart is empty.')),
       );
     }
 
     return Scaffold(
+      backgroundColor: isDark ? colorScheme.surface : const Color(0xFFF6F7FB),
       appBar: AppBar(
+        backgroundColor: colorScheme.surface,
+        elevation: 0,
         title: Text(
           'SECURE CHECKOUT',
           style: TextStyle(
-            fontSize: responsive.fontSize18,
+            fontSize: responsive.fontSize16,
             fontWeight: FontWeight.bold,
+            letterSpacing: 2.0,
           ),
         ),
         leading: IconButton(
@@ -205,681 +295,548 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             }
           },
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Row(
+              children: [
+                Icon(Icons.lock_outline_rounded,
+                    color: AppTheme.primaryColor, size: 14),
+                const SizedBox(width: 4),
+                Text(
+                  'SSL SECURED',
+                  style: TextStyle(
+                    fontSize: responsive.fontSize10,
+                    color: AppTheme.primaryColor,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
       body: Stack(
         children: [
           SingleChildScrollView(
-            padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
+            padding: EdgeInsets.all(responsive.spacing(16)).copyWith(bottom: 120),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Shipping Form
-                  Text(
-                    'Shipping Address',
-                    style: TextStyle(
-                      fontSize: responsive.fontSize18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: responsive.spacing(AppTheme.spaceM)),
-                  TextFormField(
-                    controller: _addressController,
-                    decoration: InputDecoration(
-                      labelText: 'Street Address',
-                      prefixIcon: Icon(
-                        Icons.home_outlined,
-                        size: responsive.iconSize(20),
-                      ),
-                    ),
-                    validator: (value) => value == null || value.trim().isEmpty
-                        ? 'Address is required'
-                        : null,
-                  ),
-                  SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-                  Row(
+                  // ── SHIPPING ADDRESS ──────────────────────────────────
+                  _sectionHeader(context, responsive, Icons.local_shipping_outlined, 'SHIPPING ADDRESS'),
+                  _sectionCard(
+                    context,
+                    isDark,
+                    colorScheme,
                     children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: _cityController,
-                          decoration: InputDecoration(
-                            labelText: 'City',
-                            prefixIcon: Icon(
-                              Icons.location_city_outlined,
-                              size: responsive.iconSize(20),
-                            ),
-                          ),
-                          validator: (value) =>
-                              value == null || value.trim().isEmpty
-                              ? 'City is required'
-                              : null,
-                        ),
+                      Row(
+                        children: [
+                          Expanded(child: _buildField(responsive, _firstNameController, 'First Name', Icons.person_outline, validator: _required)),
+                          const SizedBox(width: 12),
+                          Expanded(child: _buildField(responsive, _lastNameController, 'Last Name', Icons.person_outline, validator: _required)),
+                        ],
                       ),
-                      SizedBox(width: responsive.spacing(AppTheme.spaceL)),
-                      Expanded(
-                        child: TextFormField(
-                          controller: _zipController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: 'ZIP Code',
-                            prefixIcon: Icon(
-                              Icons.pin_drop_outlined,
-                              size: responsive.iconSize(20),
-                            ),
-                          ),
-                          validator: (value) =>
-                              value == null || value.trim().isEmpty
-                              ? 'ZIP required'
-                              : null,
-                        ),
+                      const SizedBox(height: 16),
+                      _buildField(responsive, _addressController, 'Street Address', Icons.home_outlined, validator: _required),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(child: _buildField(responsive, _cityController, 'City', Icons.location_city_outlined, validator: _required)),
+                          const SizedBox(width: 12),
+                          Expanded(child: _buildField(responsive, _zipController, 'ZIP Code', Icons.pin_drop_outlined, keyboardType: TextInputType.number, validator: _required)),
+                        ],
                       ),
+                      const SizedBox(height: 16),
+                      // Country Dropdown
+                      DropdownButtonFormField<String>(
+                        value: _selectedCountry,
+                        decoration: InputDecoration(
+                          labelText: 'Country',
+                          prefixIcon: Icon(Icons.flag_outlined, size: responsive.iconSize(20)),
+                          filled: true,
+                          fillColor: colorScheme.surface,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        ),
+                        items: _kCountries
+                            .map((c) => DropdownMenuItem(value: c, child: Text(c, style: TextStyle(fontSize: responsive.fontSize14))))
+                            .toList(),
+                        onChanged: (val) => setState(() => _selectedCountry = val ?? 'India'),
+                        validator: (v) => v == null || v.isEmpty ? 'Please select a country' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildField(responsive, _phoneController, 'Phone Number', Icons.phone_outlined, keyboardType: TextInputType.phone, validator: _required),
                     ],
                   ),
-                  SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-                  TextFormField(
-                    controller: _phoneController,
-                    keyboardType: TextInputType.phone,
-                    decoration: InputDecoration(
-                      labelText: 'Phone Number',
-                      prefixIcon: Icon(
-                        Icons.phone_outlined,
-                        size: responsive.iconSize(20),
-                      ),
-                    ),
-                    validator: (value) => value == null || value.trim().isEmpty
-                        ? 'Phone number is required'
-                        : null,
-                  ),
-                  SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
-                  // Payment Selection
-                  Text(
-                    'Payment Method',
-                    style: TextStyle(
-                      fontSize: responsive.fontSize18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: responsive.spacing(AppTheme.spaceM)),
-                  _buildPaymentOption('Credit Card', Icons.credit_card_rounded),
+                  const SizedBox(height: 20),
 
-                  // Dynamic Flipping Credit Card Form Area
-                  if (_selectedPayment == 'Credit Card') ...[
-                    SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-                    _buildCreditCardInteractiveForm(),
-                  ],
-
-                  SizedBox(height: responsive.spacing(AppTheme.spaceM)),
-                  _buildPaymentOption('Apple Pay', Icons.apple_rounded),
-                  SizedBox(height: responsive.spacing(AppTheme.spaceM)),
-                  _buildPaymentOption('PayPal', Icons.payment_rounded),
-                  SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
-
-                  // Summary
-                  Container(
-                    padding: EdgeInsets.all(
-                      responsive.spacing(AppTheme.spaceL),
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-                      border: Border.all(color: AppTheme.borderColor),
-                    ),
-                    child: Column(
-                      children: [
-                        _buildPricingRow(
-                          'Subtotal',
-                          currency.formatPrice(cartNotifier.subtotal),
-                        ),
-                        SizedBox(height: responsive.spacing(AppTheme.spaceS)),
-                        _buildPricingRow('Elite Courier Shipping', currency.formatPrice(15.00)),
-                        SizedBox(height: responsive.spacing(AppTheme.spaceS)),
-                        _buildPricingRow(
-                          'Estimated Tax',
-                          currency.formatPrice(cartNotifier.subtotal * 0.08),
-                        ),
-                        Divider(height: responsive.spacing(AppTheme.spaceL)),
-                        _buildPricingRow(
-                          'Order Total',
-                          currency.formatPrice(cartNotifier.totalAmount),
-                          isTotal: true,
-                        ),
+                  // ── PAYMENT METHOD ────────────────────────────────────
+                  _sectionHeader(context, responsive, Icons.payment_rounded, 'PAYMENT METHOD'),
+                  _sectionCard(
+                    context,
+                    isDark,
+                    colorScheme,
+                    children: [
+                      _buildPaymentOption(context, responsive, colorScheme, 'Razorpay', Icons.bolt_rounded, subtitle: 'UPI, Cards, Wallets & More', color: const Color(0xFF2F8FFF)),
+                      const SizedBox(height: 12),
+                      _buildPaymentOption(context, responsive, colorScheme, 'Credit Card', Icons.credit_card_rounded, subtitle: 'Visa, Mastercard, Amex'),
+                      if (_selectedPayment == 'Credit Card') ...[
+                        const SizedBox(height: 16),
+                        _buildCreditCardInteractiveForm(responsive, colorScheme, isDark),
                       ],
-                    ),
+                      const SizedBox(height: 12),
+                      _buildPaymentOption(context, responsive, colorScheme, 'Cash on Delivery', Icons.money_rounded, subtitle: 'Pay when you receive'),
+                    ],
                   ),
-                  SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
-                  // Submit Button
-                  CustomButton(
-                    text: 'PLACE SECURE ORDER',
-                    onPressed: _handlePlaceOrder,
-                    isLoading: _isPlacingOrder,
+                  const SizedBox(height: 20),
+
+                  // ── ORDER SUMMARY ─────────────────────────────────────
+                  _sectionHeader(context, responsive, Icons.receipt_long_outlined, 'ORDER SUMMARY'),
+                  _sectionCard(
+                    context,
+                    isDark,
+                    colorScheme,
+                    children: [
+                      // Product thumbnails strip
+                      if (cart.isNotEmpty) ...[
+                        SizedBox(
+                          height: 56,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: cart.length,
+                            separatorBuilder: (_, __) => const SizedBox(width: 8),
+                            itemBuilder: (context, i) {
+                              final img = cart[i].product.imageUrl;
+                              return ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(img, width: 56, height: 56, fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(width: 56, height: 56, color: colorScheme.outline.withValues(alpha: 0.1))),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        const Divider(),
+                        const SizedBox(height: 12),
+                      ],
+                      _priceRow(responsive, colorScheme, 'Subtotal', currency.formatPrice(cartNotifier.subtotal)),
+                      const SizedBox(height: 8),
+                      _priceRow(responsive, colorScheme, 'Shipping', currency.formatPrice(150.00)),
+                      const SizedBox(height: 8),
+                      _priceRow(responsive, colorScheme, 'Tax (8%)', currency.formatPrice(cartNotifier.subtotal * 0.08)),
+                      const Divider(height: 24),
+                      _priceRow(responsive, colorScheme, 'Order Total', currency.formatPrice(cartNotifier.totalAmount), isTotal: true),
+                    ],
                   ),
-                  SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
           ),
-          if (_isPlacingOrder)
-            Positioned.fill(
-              child: Container(
-                color: Colors.white.withValues(alpha: 0.96),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(
-                        width: responsive.spacing(54),
-                        height: responsive.spacing(54),
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            AppTheme.primaryColor,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        child: Text(
-                          _paymentProcessingStep ??
-                              'PROCESSING SECURE TRANSACTION...',
-                          key: ValueKey(_paymentProcessingStep),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: responsive.fontSize14,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 2.0,
-                            color: AppTheme.textPrimaryColor,
-                          ),
-                        ),
-                      ),
-                    ],
+
+          // ── STICKY CTA ──────────────────────────────────────────────────
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: EdgeInsets.fromLTRB(20, 12, 20, MediaQuery.of(context).padding.bottom + 12),
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 20,
+                    offset: const Offset(0, -4),
                   ),
-                ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('TOTAL', style: TextStyle(fontSize: responsive.fontSize10, fontWeight: FontWeight.bold, color: colorScheme.onSurface.withValues(alpha: 0.5), letterSpacing: 1.5)),
+                        Text(currency.formatPrice(cartNotifier.totalAmount), style: TextStyle(fontSize: responsive.fontSize20, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    flex: 4,
+                    child: GestureDetector(
+                      onTap: _isPlacingOrder ? null : _handlePlaceOrder,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        height: 52,
+                        decoration: BoxDecoration(
+                          gradient: _isPlacingOrder
+                              ? null
+                              : const LinearGradient(
+                                  colors: [Color(0xFF0d9488), Color(0xFF14b8a6)],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                ),
+                          color: _isPlacingOrder ? AppTheme.primaryColor.withValues(alpha: 0.5) : null,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Center(
+                          child: _isPlacingOrder
+                              ? Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+                                    const SizedBox(width: 8),
+                                    Text(_paymentProcessingStep ?? 'Processing...', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                                  ],
+                                )
+                              : Text(
+                                  _selectedPayment == 'Razorpay' ? 'PAY WITH RAZORPAY' : 'PLACE ORDER',
+                                  style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 1.0),
+                                ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildPaymentOption(String name, IconData icon) {
-    final responsive = context.responsive;
+  // ── Helpers ─────────────────────────────────────────────────────────────
+
+  String? _required(String? v) =>
+      v == null || v.trim().isEmpty ? 'Required' : null;
+
+  Widget _sectionHeader(BuildContext context, ResponsiveText responsive, IconData icon, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: AppTheme.primaryColor),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: responsive.fontSize11,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.8,
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionCard(BuildContext context, bool isDark, ColorScheme colorScheme, {required List<Widget> children}) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.15)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.12 : 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: children),
+    );
+  }
+
+  Widget _buildField(
+    ResponsiveText responsive,
+    TextEditingController controller,
+    String label,
+    IconData icon, {
+    TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      style: TextStyle(fontSize: responsive.fontSize14, color: colorScheme.onSurface),
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, size: responsive.iconSize(18)),
+        filled: true,
+        fillColor: colorScheme.surface,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: colorScheme.primary, width: 2),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+      validator: validator,
+    );
+  }
+
+  Widget _buildPaymentOption(
+    BuildContext context,
+    ResponsiveText responsive,
+    ColorScheme colorScheme,
+    String name,
+    IconData icon, {
+    String? subtitle,
+    Color? color,
+  }) {
     final isSelected = _selectedPayment == name;
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedPayment = name;
-        });
-      },
-      child: Container(
-        padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
+      onTap: () => setState(() => _selectedPayment = name),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppTheme.primaryColor.withValues(alpha: 0.04)
-              : Colors.white,
-          borderRadius: BorderRadius.circular(AppTheme.radiusM),
+          color: isSelected ? (color ?? AppTheme.primaryColor).withValues(alpha: 0.06) : colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppTheme.primaryColor : AppTheme.borderColor,
+            color: isSelected ? (color ?? AppTheme.primaryColor) : colorScheme.outline.withValues(alpha: 0.3),
             width: isSelected ? 1.5 : 1,
           ),
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                Icon(
-                  icon,
-                  size: responsive.iconSize(24),
-                  color: isSelected
-                      ? AppTheme.primaryColor
-                      : AppTheme.textSecondaryColor,
-                ),
-                SizedBox(width: responsive.spacing(AppTheme.spaceM)),
-                Text(
-                  name,
-                  style: TextStyle(
-                    fontSize: responsive.fontSize14,
-                    fontWeight: isSelected
-                        ? FontWeight.bold
-                        : FontWeight.normal,
-                    color: isSelected
-                        ? AppTheme.primaryColor
-                        : AppTheme.textPrimaryColor,
-                  ),
-                ),
-              ],
-            ),
-            if (isSelected)
-              Icon(
-                Icons.check_circle_rounded,
-                size: responsive.iconSize(20),
-                color: AppTheme.primaryColor,
-              )
-            else
-              Container(
-                width: responsive.spacing(20),
-                height: responsive.spacing(20),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppTheme.borderColor),
-                ),
+            Icon(icon, size: 24, color: isSelected ? (color ?? AppTheme.primaryColor) : colorScheme.onSurface.withValues(alpha: 0.5)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(name, style: TextStyle(fontSize: responsive.fontSize14, fontWeight: isSelected ? FontWeight.bold : FontWeight.w500, color: isSelected ? (color ?? AppTheme.primaryColor) : colorScheme.onSurface)),
+                  if (subtitle != null)
+                    Text(subtitle, style: TextStyle(fontSize: responsive.fontSize11, color: colorScheme.onSurface.withValues(alpha: 0.5))),
+                ],
               ),
+            ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isSelected ? (color ?? AppTheme.primaryColor) : Colors.transparent,
+                border: Border.all(color: isSelected ? (color ?? AppTheme.primaryColor) : colorScheme.outline.withValues(alpha: 0.4), width: 2),
+              ),
+              child: isSelected ? const Icon(Icons.check_rounded, size: 12, color: Colors.white) : null,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPricingRow(String label, String value, {bool isTotal = false}) {
-    final responsive = context.responsive;
+  Widget _priceRow(ResponsiveText responsive, ColorScheme colorScheme, String label, String value, {bool isTotal = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: isTotal
-                ? AppTheme.textPrimaryColor
-                : AppTheme.textSecondaryColor,
-            fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-            fontSize: isTotal ? responsive.fontSize15 : responsive.fontSize13,
-          ),
+        Text(label, style: TextStyle(fontSize: isTotal ? responsive.fontSize14 : responsive.fontSize13, fontWeight: isTotal ? FontWeight.bold : FontWeight.w500, color: isTotal ? colorScheme.onSurface : colorScheme.onSurface.withValues(alpha: 0.6))),
+        Text(value, style: TextStyle(fontSize: isTotal ? responsive.fontSize16 : responsive.fontSize13, fontWeight: isTotal ? FontWeight.bold : FontWeight.w600, color: isTotal ? AppTheme.primaryColor : colorScheme.onSurface)),
+      ],
+    );
+  }
+
+  // ── 3D Credit Card ───────────────────────────────────────────────────────
+  Widget _buildCreditCardInteractiveForm(ResponsiveText responsive, ColorScheme colorScheme, bool isDark) {
+    return Column(
+      children: [
+        TweenAnimationBuilder<double>(
+          duration: const Duration(milliseconds: 550),
+          curve: Curves.easeOut,
+          tween: Tween<double>(begin: 0.0, end: _isCardFlipped ? pi : 0.0),
+          builder: (context, angle, child) {
+            final isBack = angle >= pi / 2;
+            return Transform(
+              transform: Matrix4.identity()
+                ..setEntry(3, 2, 0.0012)
+                ..rotateY(angle),
+              alignment: Alignment.center,
+              child: isBack
+                  ? Transform(
+                      transform: Matrix4.identity()..rotateY(pi),
+                      alignment: Alignment.center,
+                      child: _buildCreditCardBack(responsive),
+                    )
+                  : _buildCreditCardFront(responsive),
+            );
+          },
         ),
-        Text(
-          value,
-          style: TextStyle(
-            color: isTotal ? AppTheme.primaryColor : AppTheme.textPrimaryColor,
-            fontWeight: isTotal ? FontWeight.bold : FontWeight.w600,
-            fontSize: isTotal ? responsive.fontSize16 : responsive.fontSize13,
+        const SizedBox(height: 16),
+        TextFormField(
+          controller: _cardNumberController,
+          keyboardType: TextInputType.number,
+          maxLength: 19,
+          onChanged: _onCardNumberChanged,
+          decoration: InputDecoration(
+            labelText: 'Card Number',
+            counterText: '',
+            prefixIcon: const Icon(Icons.credit_card),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
+          validator: (v) => (v == null || v.isEmpty) ? 'Card number required' : null,
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: _cardNameController,
+          decoration: InputDecoration(
+            labelText: 'Cardholder Name',
+            prefixIcon: const Icon(Icons.person_outline),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          onChanged: (_) => setState(() {}),
+          validator: (v) => (v == null || v.isEmpty) ? 'Name required' : null,
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                controller: _cardExpiryController,
+                keyboardType: TextInputType.number,
+                maxLength: 5,
+                onChanged: _onExpiryChanged,
+                decoration: InputDecoration(
+                  labelText: 'MM/YY',
+                  counterText: '',
+                  prefixIcon: const Icon(Icons.calendar_today_outlined),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: TextFormField(
+                controller: _cardCvvController,
+                focusNode: _cvvFocusNode,
+                keyboardType: TextInputType.number,
+                maxLength: 3,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'CVV',
+                  counterText: '',
+                  prefixIcon: const Icon(Icons.lock_outline),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
 
-  // Breathtaking 3D Interactive Card Layout
-  Widget _buildCreditCardInteractiveForm() {
-    final responsive = context.responsive;
-    return Container(
-      padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
-      decoration: BoxDecoration(
-        color: AppTheme.borderColor.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-        border: Border.all(color: AppTheme.borderColor.withValues(alpha: 0.5)),
-      ),
-      child: Column(
-        children: [
-          // 3D Flipping Card
-          TweenAnimationBuilder<double>(
-            duration: const Duration(milliseconds: 550),
-            curve: Curves.easeOut,
-            tween: Tween<double>(begin: 0.0, end: _isCardFlipped ? pi : 0.0),
-            builder: (context, angle, child) {
-              final isBack = angle >= pi / 2;
-              return Transform(
-                transform: Matrix4.identity()
-                  ..setEntry(3, 2, 0.0012) // Perfect 3D perspective depth!
-                  ..rotateY(angle),
-                alignment: Alignment.center,
-                child: isBack
-                    ? Transform(
-                        transform: Matrix4.identity()..rotateY(pi),
-                        alignment: Alignment.center,
-                        child: _buildCreditCardBack(),
-                      )
-                    : _buildCreditCardFront(),
-              );
-            },
-          ),
-          SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
-
-          // Inputs Form Fields
-          TextFormField(
-            controller: _cardNumberController,
-            keyboardType: TextInputType.number,
-            maxLength: 19,
-            onChanged: _onCardNumberChanged,
-            decoration: InputDecoration(
-              labelText: 'Card Number',
-              prefixIcon: Icon(
-                Icons.credit_card,
-                size: responsive.iconSize(20),
-              ),
-              counterText: '',
-            ),
-            validator: (value) {
-              if (_selectedPayment != 'Credit Card') return null;
-              if (value == null || value.trim().length < 15) {
-                return 'Invalid credit card number';
-              }
-              return null;
-            },
-          ),
-          SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-          TextFormField(
-            controller: _cardNameController,
-            textCapitalization: TextCapitalization.words,
-            onChanged: (_) => setState(() {}),
-            decoration: InputDecoration(
-              labelText: 'Cardholder Name',
-              prefixIcon: Icon(
-                Icons.person_outline,
-                size: responsive.iconSize(20),
-              ),
-            ),
-            validator: (value) {
-              if (_selectedPayment != 'Credit Card') return null;
-              if (value == null || value.trim().isEmpty) {
-                return 'Cardholder name is required';
-              }
-              return null;
-            },
-          ),
-          SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-          Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  controller: _cardExpiryController,
-                  keyboardType: TextInputType.number,
-                  maxLength: 5,
-                  onChanged: _onExpiryChanged,
-                  decoration: InputDecoration(
-                    labelText: 'Expiry (MM/YY)',
-                    prefixIcon: Icon(
-                      Icons.calendar_today_outlined,
-                      size: responsive.iconSize(20),
-                    ),
-                    counterText: '',
-                  ),
-                  validator: (value) {
-                    if (_selectedPayment != 'Credit Card') return null;
-                    if (value == null || !value.contains('/')) {
-                      return 'Use MM/YY';
-                    }
-                    return null;
-                  },
-                ),
-              ),
-              SizedBox(width: responsive.spacing(AppTheme.spaceL)),
-              Expanded(
-                child: TextFormField(
-                  controller: _cardCvvController,
-                  focusNode: _cvvFocusNode,
-                  keyboardType: TextInputType.number,
-                  maxLength: 4,
-                  onChanged: (_) => setState(() {}),
-                  decoration: InputDecoration(
-                    labelText: 'CVV',
-                    prefixIcon: Icon(
-                      Icons.lock_outline_rounded,
-                      size: responsive.iconSize(20),
-                    ),
-                    counterText: '',
-                  ),
-                  validator: (value) {
-                    if (_selectedPayment != 'Credit Card') return null;
-                    if (value == null || value.trim().length < 3) {
-                      return 'Invalid CVV';
-                    }
-                    return null;
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCreditCardFront() {
-    final responsive = context.responsive;
-    final number = _cardNumberController.text.isEmpty
-        ? '•••• •••• •••• ••••'
-        : _cardNumberController.text;
-    final name = _cardNameController.text.isEmpty
-        ? 'ARIA STERLING'
-        : _cardNameController.text.toUpperCase();
-    final expiry = _cardExpiryController.text.isEmpty
-        ? 'MM/YY'
-        : _cardExpiryController.text;
-
-    // Detect card brand (Visa = starts with 4, Mastercard = starts with 5)
-    final isVisa = _cardNumberController.text.startsWith('4');
-    final isMastercard = _cardNumberController.text.startsWith('5');
-
-    return Container(
-      height: responsive.spacing(190),
-      width: double.infinity,
-      padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF0D0D11), // Ultra-premium obsidian midnight black
-            Color(0xFF242429), // Smooth carbon graphite black
-          ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Premium Gold Metallic Contact Chip
-              Container(
-                width: responsive.spacing(42),
-                height: responsive.spacing(32),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(6),
-                  gradient: const LinearGradient(
-                    colors: [
-                      Color(0xFFF7D070),
-                      Color(0xFFC59F3E),
-                      Color(0xFFF7D070),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-              ),
-              // Card brand / Signature branding
-              Text(
-                isVisa ? 'VISA' : (isMastercard ? 'MASTERCARD' : 'AURA ELITE'),
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
-                  fontSize: responsive.fontSize13,
-                ),
-              ),
-            ],
-          ),
-
-          // Real-time Number Display
-          Text(
-            number,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: responsive.fontSize19,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 3,
-            ),
-          ),
-
-          // Holder & Expiry details
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'CARDHOLDER',
-                    style: TextStyle(
-                      color: Colors.white54,
-                      fontSize: responsive.fontSize8,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                  SizedBox(height: responsive.spacing(2)),
-                  Text(
-                    name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: responsive.fontSize12,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    'EXPIRES',
-                    style: TextStyle(
-                      color: Colors.white54,
-                      fontSize: responsive.fontSize8,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                  SizedBox(height: responsive.spacing(2)),
-                  Text(
-                    expiry,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: responsive.fontSize12,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCreditCardBack() {
-    final cvv = _cardCvvController.text.isEmpty
-        ? '•••'
-        : _cardCvvController.text;
-
+  Widget _buildCreditCardFront(ResponsiveText responsive) {
     return Container(
       height: 190,
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 20),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
         gradient: const LinearGradient(
+          colors: [Color(0xFF0d9488), Color(0xFF14b8a6), Color(0xFF5eead4)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF0D0D11), // Midnight Black
-            Color(0xFF1F1F24), // Charcoal Black
-          ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: AppTheme.primaryColor.withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 8))],
       ),
+      padding: const EdgeInsets.all(22),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Magnetic Strip
-          Container(height: 38, color: Colors.black87, width: double.infinity),
-          const SizedBox(height: AppTheme.spaceL),
-
-          // Signature Panel with CVV block
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceXL),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    height: 38,
-                    decoration: const BoxDecoration(color: Colors.white70),
-                    alignment: Alignment.centerLeft,
-                    padding: const EdgeInsets.only(left: 8),
-                    child: const Text(
-                      'FCI SELLER MEMBER EXCLUSIVE',
-                      style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        fontSize: 8,
-                        color: Colors.black45,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                Container(
-                  width: 50,
-                  height: 38,
-                  color: Colors.white,
-                  alignment: Alignment.center,
-                  child: Text(
-                    cvv,
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            const Icon(Icons.contactless_rounded, color: Colors.white70, size: 28),
+            Text('VISA', style: TextStyle(color: Colors.white, fontSize: responsive.fontSize18, fontWeight: FontWeight.bold, letterSpacing: 2)),
+          ]),
           const Spacer(),
-          // Holographic Seal Mock
+          Text(
+            _cardNumberController.text.isEmpty ? '**** **** **** ****' : _cardNumberController.text,
+            style: TextStyle(color: Colors.white, fontSize: responsive.fontSize18, fontWeight: FontWeight.bold, letterSpacing: 2.5),
+          ),
+          const SizedBox(height: 12),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('CARDHOLDER', style: TextStyle(color: Colors.white54, fontSize: responsive.fontSize10, letterSpacing: 1)),
+              Text(
+                _cardNameController.text.isEmpty ? 'YOUR NAME' : _cardNameController.text.toUpperCase(),
+                style: TextStyle(color: Colors.white, fontSize: responsive.fontSize12, fontWeight: FontWeight.bold),
+              ),
+            ]),
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('EXPIRES', style: TextStyle(color: Colors.white54, fontSize: responsive.fontSize10, letterSpacing: 1)),
+              Text(
+                _cardExpiryController.text.isEmpty ? 'MM/YY' : _cardExpiryController.text,
+                style: TextStyle(color: Colors.white, fontSize: responsive.fontSize12, fontWeight: FontWeight.bold),
+              ),
+            ]),
+          ]),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCreditCardBack(ResponsiveText responsive) {
+    return Container(
+      height: 190,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0d9488), Color(0xFF0f766e)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: 30),
+          Container(height: 48, color: Colors.black.withValues(alpha: 0.5)),
+          const SizedBox(height: 16),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceXL),
+            padding: const EdgeInsets.symmetric(horizontal: 22),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Container(
-                  width: 40,
-                  height: 25,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4),
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.blue.withValues(alpha: 0.4),
-                        Colors.teal.withValues(alpha: 0.4),
-                        Colors.purple.withValues(alpha: 0.4),
-                      ],
-                    ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(6)),
+                  child: Text(
+                    _cardCvvController.text.isEmpty ? 'CVV' : _cardCvvController.text,
+                    style: TextStyle(fontSize: responsive.fontSize14, fontWeight: FontWeight.bold, color: Colors.black87),
                   ),
-                ),
-                const Text(
-                  'Authorized Signature Only',
-                  style: TextStyle(color: Colors.white30, fontSize: 7),
                 ),
               ],
             ),

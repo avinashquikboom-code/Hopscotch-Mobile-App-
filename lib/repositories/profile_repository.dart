@@ -47,6 +47,10 @@ class ProfileNotifier extends StateNotifier<Map<String, dynamic>?> {
     final profile = await _repository.getProfile();
     state = profile;
   }
+
+  void clearProfile() {
+    state = null;
+  }
 }
 
 final profileNotifierProvider = StateNotifierProvider<ProfileNotifier, Map<String, dynamic>?>((ref) {

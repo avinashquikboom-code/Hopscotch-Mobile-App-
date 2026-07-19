@@ -7,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hopscotch/providers/api_provider.dart';
 import 'package:hopscotch/repositories/profile_repository.dart';
 import 'package:hopscotch/core/session_manager.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:hopscotch/utils/dev_logger.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -47,6 +49,20 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     // Check if language and currency are already selected and navigate accordingly
     Future.delayed(const Duration(milliseconds: 2600), () async {
+      if (!mounted) return;
+
+      // Ask for location, camera, storage, and photo permissions when app installs/first launch
+      try {
+        await [
+          Permission.location,
+          Permission.camera,
+          Permission.storage,
+          Permission.photos,
+        ].request();
+      } catch (e) {
+        DevLogger.logError('Error requesting runtime permissions: $e', context: 'Splash');
+      }
+
       if (!mounted) return;
       final prefs = await SharedPreferences.getInstance();
       if (!mounted) return;

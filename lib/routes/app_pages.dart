@@ -709,20 +709,21 @@ class AppPages {
     router = GoRouter(
       initialLocation: initialLoc,
       routes: _routes,
-      redirect: (context, state) async {
-        final onboarded = await SessionManager.isOnboardingDone();
-        final loggedIn = await SessionManager.hasSession();
+      redirect: (context, state) {
         final loc = state.uri.toString();
+        final isLoggedIn = SessionManager.sessionActiveSync;
+        final isOnboarded = SessionManager.onboardingDoneSync;
 
         final onAuthPages =
             loc == AppRoutes.login || 
             loc == AppRoutes.signup || 
             loc == AppRoutes.forgotPassword || 
-            loc == AppRoutes.onboarding;
+            loc == AppRoutes.onboarding ||
+            loc == AppRoutes.splash;
 
-        if (!onboarded && loc != AppRoutes.onboarding) return AppRoutes.onboarding;
-        if (onboarded && !loggedIn && !onAuthPages) return AppRoutes.login;
-        if (loggedIn && onAuthPages) return AppRoutes.home;
+        if (!isOnboarded && loc != AppRoutes.onboarding) return AppRoutes.onboarding;
+        if (isOnboarded && !isLoggedIn && !onAuthPages) return AppRoutes.login;
+        if (isLoggedIn && (loc == AppRoutes.login || loc == AppRoutes.signup || loc == AppRoutes.onboarding)) return AppRoutes.home;
         return null;
       },
     );

@@ -16,7 +16,7 @@ enum AppCurrency {
   kwd('KWD', 'د.ك', 'Kuwaiti Dinar', 0.0037),
   qar('QAR', '﷼', 'Qatari Riyal', 0.044),
   omr('OMR', '﷼', 'Omani Rial', 0.0046),
-  bhd('BHD', 'د.ب', 'Bahraini Dinar', 0.0045),
+  bhd('BHD', 'BD', 'Bahraini Dinar', 0.0045),
   myr('MYR', 'RM', 'Malaysian Ringgit', 0.056),
   sgd('SGD', 'S\$', 'Singapore Dollar', 0.016),
   hkd('HKD', 'HK\$', 'Hong Kong Dollar', 0.093),
@@ -25,7 +25,13 @@ enum AppCurrency {
   nok('NOK', 'kr', 'Norwegian Krone', 0.13),
   dkk('DKK', 'kr', 'Danish Krone', 0.084),
   pln('PLN', 'zł', 'Polish Zloty', 0.048),
-  rub('RUB', '₽', 'Russian Ruble', 1.08);
+  rub('RUB', '₽', 'Russian Ruble', 1.08),
+  // New countries
+  mur('MUR', '₨', 'Mauritian Rupee', 0.55),
+  fjd('FJD', 'FJ\$', 'Fijian Dollar', 0.027),
+  gyd('GYD', 'G\$', 'Guyanese Dollar', 2.51),
+  srd('SRD', 'Sr\$', 'Surinamese Dollar', 0.39),
+  ttd('TTD', 'TT\$', 'Trinidad & Tobago Dollar', 0.081);
 
   final String code;
   final String symbol;

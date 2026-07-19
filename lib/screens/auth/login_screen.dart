@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +11,8 @@ import 'package:hopscotch/api/auth_api.dart';
 import 'package:hopscotch/api/api_service.dart';
 import 'package:hopscotch/widgets/toast_notification.dart';
 import 'package:hopscotch/l10n/app_localizations.dart';
+import 'package:hopscotch/repositories/profile_repository.dart';
+import 'package:hopscotch/routes/app_routes.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -82,13 +85,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       );
       
       if (response.statusCode == 200) {
+        final userData = response.data['data'] ?? response.data;
+        final userName = userData['firstName'] ?? userData['name'] ?? 'User';
+
+        // Immediately refresh profile so new user's data replaces any stale state
+        ref.read(profileNotifierProvider.notifier).clearProfile();
+        unawaited(ref.read(profileNotifierProvider.notifier).refreshProfile());
         if (mounted) {
           ToastNotification.show(
             context,
-            message: 'Login successful',
+            message: 'Welcome back, $userName!',
             isError: false,
           );
-          context.go('/');
+          context.go(AppRoutes.home);
         }
       } else {
         throw Exception('Login failed');

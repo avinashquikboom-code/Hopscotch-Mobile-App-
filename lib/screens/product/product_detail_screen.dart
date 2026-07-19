@@ -194,15 +194,29 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                               color: Colors.white,
                               shape: BoxShape.circle,
                             ),
-                            child: IconButton(
-                              icon: Icon(
-                                Icons.shopping_cart_outlined,
-                                size: responsive.iconSize(20),
-                                color: AppTheme.textPrimaryColor,
-                              ),
-                              onPressed: () {
-                                HapticFeedback.lightImpact();
-                                context.push('/cart');
+                            child: Consumer(
+                              builder: (context, ref, _) {
+                                final cartCount = ref.watch(cartProvider).fold<int>(0, (sum, item) => sum + item.quantity);
+                                return Badge(
+                                  isLabelVisible: cartCount > 0,
+                                  label: Text(
+                                    cartCount > 9 ? '9+' : cartCount.toString(),
+                                    style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold),
+                                  ),
+                                  backgroundColor: AppTheme.accentColor,
+                                  textColor: Colors.white,
+                                  child: IconButton(
+                                    icon: Icon(
+                                      Icons.shopping_cart_outlined,
+                                      size: responsive.iconSize(20),
+                                      color: AppTheme.textPrimaryColor,
+                                    ),
+                                    onPressed: () {
+                                      HapticFeedback.lightImpact();
+                                      context.push('/cart');
+                                    },
+                                  ),
+                                );
                               },
                             ),
                           ),

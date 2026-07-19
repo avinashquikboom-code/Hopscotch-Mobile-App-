@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/repositories/profile_repository.dart';
+import 'package:hopscotch/repositories/cart_wishlist_repository.dart';
 import 'package:hopscotch/api/api_service.dart';
+import 'package:hopscotch/constants/app_urls.dart';
 import 'package:hopscotch/api/auth_api.dart';
 import 'package:hopscotch/widgets/toast_notification.dart';
 import 'package:hopscotch/l10n/app_localizations.dart';
@@ -13,15 +15,47 @@ class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {
+    // Show confirmation dialog
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Log Out', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text('Are you sure you want to log out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(
+              foregroundColor: AppTheme.errorColor,
+            ),
+            child: const Text('Log Out'),
+          ),
+        ],
+      ),
+    );
+    
+    if (confirm != true) return;
+
     try {
+      final userProfile = ref.read(profileNotifierProvider);
+      final userName = userProfile?['firstName'] ?? userProfile?['name'] ?? 'User';
+
       final apiService = ApiService();
       final authApi = AuthApi(apiService);
       await authApi.logout();
-      
+
+      // Clear all in-memory state so the next user doesn't see stale data
+      ref.read(profileNotifierProvider.notifier).clearProfile();
+      ref.read(cartProvider.notifier).clearCart();
+      ref.read(wishlistProvider.notifier).clearWishlist();
+
       if (context.mounted) {
         ToastNotification.show(
           context,
-          message: 'Logged out successfully',
+          message: 'Goodbye, $userName!',
           isError: false,
         );
         context.go('/login');
@@ -76,19 +110,27 @@ class ProfileScreen extends ConsumerWidget {
                               width: 2,
                             ),
                           ),
-                          child: CircleAvatar(
-                            radius: responsive.iconSize(54),
-                            backgroundImage: userProfile?['avatarUrl'] != null
-                                ? NetworkImage(userProfile!['avatarUrl'])
-                                : null,
-                            onBackgroundImageError: userProfile?['avatarUrl'] != null
-                                ? (exception, stackTrace) {}
-                                : null,
-                            child: Icon(
-                              Icons.person,
-                              size: responsive.iconSize(54),
-                            ),
-                          ),
+                          child: () {
+                            final rawUrl = userProfile?['avatarUrl']?.toString();
+                            final avatarUrl = rawUrl != null && rawUrl.isNotEmpty
+                                ? AppUrls.resolveUrl(rawUrl)
+                                : null;
+                            return CircleAvatar(
+                              radius: responsive.iconSize(54),
+                              backgroundImage: avatarUrl != null
+                                  ? NetworkImage(avatarUrl)
+                                  : null,
+                              onBackgroundImageError: avatarUrl != null
+                                  ? (exception, stackTrace) {}
+                                  : null,
+                              child: avatarUrl == null
+                                  ? Icon(
+                                      Icons.person,
+                                      size: responsive.iconSize(54),
+                                    )
+                                  : null,
+                            );
+                          }(),
                         ),
                         Positioned(
                           bottom: 0,

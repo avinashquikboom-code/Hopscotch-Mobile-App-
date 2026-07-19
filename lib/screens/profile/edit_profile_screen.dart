@@ -9,6 +9,7 @@ import 'package:hopscotch/api/api_service.dart';
 import 'package:hopscotch/api/auth_api.dart';
 import 'package:hopscotch/widgets/toast_notification.dart';
 import 'package:hopscotch/repositories/profile_repository.dart';
+import 'package:hopscotch/constants/app_urls.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -19,53 +20,31 @@ class EditProfileScreen extends ConsumerStatefulWidget {
 
 class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _nameController;
+  late final TextEditingController _firstNameController;
+  late final TextEditingController _lastNameController;
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
   bool _isSaving = false;
+  bool _isInitialized = false;
   File? _profileImage;
   final ImagePicker _imagePicker = ImagePicker();
-  Map<String, dynamic>? _userData;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController();
+    _firstNameController = TextEditingController();
+    _lastNameController = TextEditingController();
     _emailController = TextEditingController();
     _phoneController = TextEditingController();
-    _loadUserProfile();
   }
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadUserProfile() async {
-    try {
-      final apiService = ApiService();
-      final authApi = AuthApi(apiService);
-      final response = await authApi.getProfile();
-      if (response.statusCode == 200) {
-        setState(() {
-          _userData = response.data['data'];
-          final firstName = _userData?['firstName'] ?? '';
-          final lastName = _userData?['lastName'] ?? '';
-          if (firstName.isNotEmpty && lastName.isNotEmpty) {
-            _nameController.text = '$firstName $lastName';
-          } else {
-            _nameController.text = firstName.isNotEmpty ? firstName : (_userData?['name'] ?? '');
-          }
-          _emailController.text = _userData?['email'] ?? '';
-          _phoneController.text = _userData?['phone'] ?? '';
-        });
-      }
-    } catch (e) {
-      print('Error loading profile: $e');
-    }
   }
 
   Future<void> _pickImageFromGallery() async {
@@ -162,23 +141,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       final apiService = ApiService();
       final authApi = AuthApi(apiService);
       
-      final fullName = _nameController.text.trim();
-      String firstName = fullName;
-      String? lastName;
-      
-      final spaceIndex = fullName.indexOf(' ');
-      if (spaceIndex != -1) {
-        firstName = fullName.substring(0, spaceIndex).trim();
-        lastName = fullName.substring(spaceIndex + 1).trim();
-      }
-      
-      if (lastName != null && lastName.isEmpty) {
-        lastName = null;
-      }
+      final firstName = _firstNameController.text.trim();
+      final lastName = _lastNameController.text.trim();
       
       final response = await authApi.updateProfile(
         firstName: firstName,
-        lastName: lastName,
+        lastName: lastName.isEmpty ? null : lastName,
         phone: _phoneController.text.trim(),
         avatar: _profileImage,
       );
@@ -208,6 +176,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
+    final userProfile = ref.watch(profileNotifierProvider);
+
+    if (!_isInitialized && userProfile != null) {
+      _firstNameController.text = userProfile['firstName']?.toString() ?? '';
+      _lastNameController.text = userProfile['lastName']?.toString() ?? '';
+      _emailController.text = userProfile['email']?.toString() ?? '';
+      _phoneController.text = userProfile['phone']?.toString() ?? '';
+      _isInitialized = true;
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -245,16 +222,30 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         alpha: 0.08,
                       ),
                       backgroundImage: _profileImage != null
-                          ? FileImage(_profileImage!)
-                          : (_userData?['avatarUrl'] != null && _userData!['avatarUrl'].isNotEmpty
-                              ? NetworkImage(_userData!['avatarUrl'])
-                              : null),
-                      onBackgroundImageError: (_userData?['avatarUrl'] != null && _userData!['avatarUrl'].isNotEmpty && _profileImage == null)
+                          ? FileImage(_profileImage!) as ImageProvider
+                          : () {
+                              final rawUrl = userProfile?['avatarUrl']?.toString();
+                              final resolvedUrl = (rawUrl != null && rawUrl.isNotEmpty)
+                                  ? AppUrls.resolveUrl(rawUrl)
+                                  : null;
+                              return resolvedUrl != null ? NetworkImage(resolvedUrl) : null;
+                            }(),
+                      onBackgroundImageError: (_profileImage != null ||
+                              (userProfile?['avatarUrl'] != null &&
+                                  userProfile!['avatarUrl'].toString().isNotEmpty))
                           ? (exception, stackTrace) {}
                           : null,
-                      child: (_profileImage == null)
+                      child: (_profileImage == null &&
+                              (userProfile?['avatarUrl'] == null ||
+                                  userProfile!['avatarUrl'].toString().isEmpty))
                           ? Text(
-                              (_userData?['firstName'] ?? _userData?['name'] ?? 'U').substring(0, 1).toUpperCase(),
+                              (() {
+                                final firstName = userProfile?['firstName']?.toString() ?? '';
+                                final name = userProfile?['name']?.toString() ?? 'U';
+                                return (firstName.isNotEmpty ? firstName : name)
+                                    .substring(0, 1)
+                                    .toUpperCase();
+                              })(),
                               style: TextStyle(
                                 fontSize: responsive.fontSize32,
                                 fontWeight: FontWeight.bold,
@@ -285,21 +276,46 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
               // Fields
-              TextFormField(
-                controller: _nameController,
-                textCapitalization: TextCapitalization.words,
-                style: TextStyle(fontSize: responsive.fontSize14),
-                decoration: InputDecoration(
-                  labelText: 'Full Name',
-                  prefixIcon: Icon(
-                    Icons.person_outline_rounded,
-                    size: responsive.iconSize(20),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _firstNameController,
+                      textCapitalization: TextCapitalization.words,
+                      style: TextStyle(fontSize: responsive.fontSize14),
+                      decoration: InputDecoration(
+                        labelText: 'First Name',
+                        prefixIcon: Icon(
+                          Icons.person_outline_rounded,
+                          size: responsive.iconSize(20),
+                        ),
+                        labelStyle: TextStyle(fontSize: responsive.fontSize14),
+                      ),
+                      validator: (value) => value == null || value.trim().isEmpty
+                          ? 'First name is required'
+                          : null,
+                    ),
                   ),
-                  labelStyle: TextStyle(fontSize: responsive.fontSize14),
-                ),
-                validator: (value) => value == null || value.trim().isEmpty
-                    ? 'Name is required'
-                    : null,
+                  SizedBox(width: responsive.spacing(AppTheme.spaceM)),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _lastNameController,
+                      textCapitalization: TextCapitalization.words,
+                      style: TextStyle(fontSize: responsive.fontSize14),
+                      decoration: InputDecoration(
+                        labelText: 'Last Name',
+                        prefixIcon: Icon(
+                          Icons.person_outline_rounded,
+                          size: responsive.iconSize(20),
+                        ),
+                        labelStyle: TextStyle(fontSize: responsive.fontSize14),
+                      ),
+                      validator: (value) => value == null || value.trim().isEmpty
+                          ? 'Last name is required'
+                          : null,
+                    ),
+                  ),
+                ],
               ),
               SizedBox(height: responsive.spacing(AppTheme.spaceL)),
               TextFormField(

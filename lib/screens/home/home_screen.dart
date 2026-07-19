@@ -19,6 +19,7 @@ import 'package:hopscotch/l10n/app_localizations.dart';
 import 'dart:io';
 import 'package:hopscotch/widgets/visual_search_bottom_sheet.dart';
 import 'package:hopscotch/repositories/profile_repository.dart';
+import 'package:hopscotch/constants/app_urls.dart';
 import 'package:hopscotch/widgets/flipkart_category_strip.dart';
 
 // ─────────────────────────────────────────────────────────────
@@ -863,7 +864,10 @@ class _ProfileAvatarButtonState extends ConsumerState<_ProfileAvatarButton> {
       }
     }
 
-    final avatarUrl = userProfile?['avatarUrl'];
+    final rawAvatarUrl = userProfile?['avatarUrl']?.toString();
+    final avatarUrl = (rawAvatarUrl != null && rawAvatarUrl.isNotEmpty)
+        ? AppUrls.resolveUrl(rawAvatarUrl)
+        : null;
 
     return GestureDetector(
       onTapDown: (_) => setState(() => _scale = 0.92),

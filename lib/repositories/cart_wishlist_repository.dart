@@ -17,6 +17,10 @@ class WishlistNotifier extends StateNotifier<List<ProductModel>> {
   bool isFavorite(String productId) {
     return state.any((p) => p.id == productId);
   }
+
+  void clearWishlist() {
+    state = [];
+  }
 }
 
 final wishlistProvider = StateNotifierProvider<WishlistNotifier, List<ProductModel>>((ref) {
