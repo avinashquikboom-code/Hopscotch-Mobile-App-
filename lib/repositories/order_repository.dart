@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hopscotch/api/api_service.dart';
 import 'package:hopscotch/api/orders_api.dart';
 import 'package:hopscotch/models/cart_item_model.dart';
 import 'package:hopscotch/models/order_model.dart';

@@ -1,8 +1,7 @@
 class AppUrls {
   // Base API URLs
-  // For local development, uncomment the line below (using local IP):
-  static const String mobileBaseUrl = 'http://192.168.1.102:5001';
-  // static const String mobileBaseUrl = 'https://api.fciseller.com';
+  // static const String mobileBaseUrl = 'http://192.168.1.102:5001';
+  static const String mobileBaseUrl = 'https://api.fciseller.com';
 
   static String resolveUrl(String? url) {
     if (url == null || url.trim().isEmpty) {
