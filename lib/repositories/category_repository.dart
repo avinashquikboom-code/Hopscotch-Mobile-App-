@@ -20,21 +20,61 @@ class CategoryRepository {
           return rawList.map((c) {
             final id = c['id']?.toString() ?? '';
             final name = c['name']?.toString() ?? '';
-            String imageUrl = 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600&auto=format&fit=crop&q=80';
             
-            final iconUrlVal = c['iconUrl']?.toString() ?? c['bannerUrl']?.toString();
+            String imageUrl = '';
+            final iconUrlVal = c['iconUrl']?.toString() ?? c['bannerUrl']?.toString() ?? c['imageUrl']?.toString();
             if (iconUrlVal != null && iconUrlVal.isNotEmpty) {
               imageUrl = AppUrls.resolveUrl(iconUrlVal);
             }
-            
+
+            List<SubCategoryModel> subObjs = [];
+            List<String> subs = [];
+
+            final rawChildren = c['children'] ?? c['subcategories'];
+            if (rawChildren is List) {
+              for (final sub in rawChildren) {
+                if (sub is Map<String, dynamic>) {
+                  final subId = sub['id']?.toString() ?? '';
+                  final subName = sub['name']?.toString() ?? '';
+                  String subImg = '';
+                  final subIconVal = sub['iconUrl']?.toString() ?? sub['bannerUrl']?.toString() ?? sub['imageUrl']?.toString();
+                  if (subIconVal != null && subIconVal.isNotEmpty) {
+                    subImg = AppUrls.resolveUrl(subIconVal);
+                  } else {
+                    subImg = imageUrl;
+                  }
+
+                  if (subName.isNotEmpty) {
+                    subs.add(subName);
+                    subObjs.add(SubCategoryModel(
+                      id: subId.isNotEmpty ? subId : subName,
+                      name: subName,
+                      imageUrl: subImg,
+                    ));
+                  }
+                } else if (sub != null) {
+                  final subStr = sub.toString();
+                  if (subStr.isNotEmpty) {
+                    subs.add(subStr);
+                    subObjs.add(SubCategoryModel(
+                      id: subStr,
+                      name: subStr,
+                      imageUrl: imageUrl,
+                    ));
+                  }
+                }
+              }
+            }
+
             final isFeatured = c['isFeatured'] as bool? ?? false;
-            
+
             return CategoryModel(
               id: id,
               name: name,
               imageUrl: imageUrl,
               icon: c['iconUrl']?.toString(),
-              subcategories: [],
+              subcategories: subs,
+              subCategoryObjects: subObjs,
               isFeatured: isFeatured,
             );
           }).toList();
@@ -44,7 +84,6 @@ class CategoryRepository {
       }
     } catch (e) {
       DevLogger.logError('Error fetching categories: $e', context: 'CategoryRepository');
-      // Return empty list instead of throwing exception
       return [];
     }
 

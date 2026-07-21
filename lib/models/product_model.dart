@@ -159,7 +159,21 @@ class ProductModel {
       price: _asDouble(json['price']),
       originalPrice: _asDouble(json['originalPrice'] ?? json['original_price'] ?? json['price']),
       discountPercentage: _asDouble(json['discountPercentage'] ?? json['discount_percentage']),
-      imageUrl: _asString(json['imageUrl'] ?? json['image_url'] ?? json['image']),
+      imageUrl: () {
+        final direct = json['imageUrl'] ?? json['image_url'] ?? json['image'];
+        if (direct != null && direct.toString().trim().isNotEmpty) {
+          return direct.toString().trim();
+        }
+        final imgs = json['images'];
+        if (imgs is List && imgs.isNotEmpty) {
+          final first = imgs.first;
+          if (first is String) return first;
+          if (first is Map) {
+            return (first['url'] ?? first['imageUrl'] ?? first['image_url'] ?? '').toString();
+          }
+        }
+        return '';
+      }(),
       additionalImages: _asStringList(json['additionalImages'] ?? json['additional_images']),
       categoryId: _asString(json['categoryId'] ?? json['category_id'] ?? json['category']),
       subcategory: _asString(json['subcategory'], 'Collections'),

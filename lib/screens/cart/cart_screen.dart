@@ -8,6 +8,8 @@ import 'package:hopscotch/repositories/cart_wishlist_repository.dart';
 import 'package:hopscotch/widgets/state_widgets.dart';
 import 'package:hopscotch/l10n/app_localizations.dart';
 import 'package:hopscotch/providers/currency_provider.dart';
+import 'package:hopscotch/constants/app_urls.dart';
+import 'package:hopscotch/utils/navigation_utils.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -36,15 +38,30 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final cartNotifier = ref.read(cartProvider.notifier);
     final currency = ref.watch(currencyProvider);
     final responsive = context.responsive;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final double subtotal = cartNotifier.subtotal;
+    final double subtotal = cart.fold(0.0, (sum, item) => sum + (item.product.price * item.quantity));
     const double shipping = 150.00;
     final double tax = subtotal * 0.08;
     final double giftCost = _includeGiftWrapping ? _giftWrappingCost : 0.0;
     final double totalAmount = subtotal + shipping + tax + giftCost;
+
+    final yourBagTitle = l10n?.yourBag ?? 'Your Bag';
+    final clearText = l10n?.clear ?? 'Clear';
+    final bagEmptyTitle = l10n?.bagEmpty ?? 'Your Shopping Bag is Empty';
+    final bagEmptyDesc = l10n?.bagEmptyDescription ?? 'Explore our latest collections and add your favorite items.';
+    final shopNewArrivalsText = l10n?.shopNewArrivals ?? 'Shop New Arrivals';
+    final itemsText = l10n?.items ?? 'Items';
+    final giftWrappingText = l10n?.giftWrapping ?? 'Gift Wrapping';
+    final giftWrappingDescText = l10n?.giftWrappingDesc ?? 'Add a personalized message & luxury gift box';
+    final orderSummaryText = l10n?.orderSummary ?? 'Order Summary';
+    final subtotalText = l10n?.subtotal ?? 'Subtotal';
+    final shippingText = l10n?.shipping ?? 'Shipping';
+    final taxPercentText = l10n?.taxPercent ?? 'Estimated Tax';
+    final totalText = l10n?.total ?? 'Total';
+    final totalLabelText = l10n?.totalLabel ?? 'Total';
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF8FAFC),
@@ -53,7 +70,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(
-          l10n.yourBag,
+          yourBagTitle,
           style: TextStyle(
             fontWeight: FontWeight.w800,
             fontSize: responsive.fontSize20,
@@ -74,7 +91,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 },
                 icon: const Icon(Icons.delete_outline_rounded, size: 16),
                 label: Text(
-                  l10n.clear,
+                  clearText,
                   style: TextStyle(
                     fontSize: responsive.fontSize12,
                     fontWeight: FontWeight.bold,
@@ -92,9 +109,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       body: cart.isEmpty
           ? EmptyState(
               icon: Icons.shopping_bag_outlined,
-              title: l10n.bagEmpty,
-              description: l10n.bagEmptyDescription,
-              buttonText: l10n.shopNewArrivals,
+              title: bagEmptyTitle,
+              description: bagEmptyDesc,
+              buttonText: shopNewArrivalsText,
               onButtonPressed: () => context.go('/'),
             )
           : Stack(
@@ -126,7 +143,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                               Icon(Icons.shopping_bag_outlined, size: 14, color: colorScheme.primary),
                               const SizedBox(width: 6),
                               Text(
-                                '${cart.length} ${l10n.items.toLowerCase()}',
+                                '${cart.length} ${itemsText.toLowerCase()}',
                                 style: TextStyle(
                                   fontSize: responsive.fontSize11,
                                   fontWeight: FontWeight.bold,
@@ -149,7 +166,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             final product = item.product;
 
                             return Dismissible(
-                              key: Key('cart_item_${item.id}'),
+                              key: Key('cart_item_${item.id}_$index'),
                               direction: DismissDirection.endToStart,
                               confirmDismiss: (direction) async {
                                 HapticFeedback.mediumImpact();
@@ -204,11 +221,12 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                     children: [
                                       // Product Image Wrapper
                                       GestureDetector(
-                                        onTap: () => context.push(
-                                          '/product/${product.id}?heroTagPrefix=cart',
+                                        onTap: () => safeNavigate(
+                                          context,
+                                          '/product/${product.id}?heroTagPrefix=cart_$index',
                                         ),
                                         child: Hero(
-                                          tag: 'cart_product_image_${product.id}',
+                                          tag: 'cart_${index}_product_image_${product.id}',
                                           child: Container(
                                             width: responsive.spacing(90),
                                             height: responsive.spacing(110),
@@ -218,10 +236,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                             ),
                                             child: ClipRRect(
                                               borderRadius: BorderRadius.circular(12),
-                                              child: Image.network(
-                                                product.imageUrl,
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (context, error, stackTrace) {
+                                              child: () {
+                                                final resolvedUrl = AppUrls.resolveUrl(product.imageUrl);
+                                                if (resolvedUrl.isEmpty) {
                                                   return Container(
                                                     color: colorScheme.outline.withValues(alpha: 0.1),
                                                     child: Center(
@@ -232,8 +249,24 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                                       ),
                                                     ),
                                                   );
-                                                },
-                                              ),
+                                                }
+                                                return Image.network(
+                                                  resolvedUrl,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (context, error, stackTrace) {
+                                                    return Container(
+                                                      color: colorScheme.outline.withValues(alpha: 0.1),
+                                                      child: Center(
+                                                        child: Icon(
+                                                          Icons.image_not_supported_outlined,
+                                                          color: colorScheme.primary.withValues(alpha: 0.5),
+                                                          size: 24,
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                                );
+                                              }(),
                                             ),
                                           ),
                                         ),
@@ -248,7 +281,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                           children: [
                                             // Category tag
                                             Text(
-                                              product.subcategory.toUpperCase(),
+                                              (product.subcategory.isEmpty ? 'Collections' : product.subcategory).toUpperCase(),
                                               style: TextStyle(
                                                 fontSize: responsive.fontSize10,
                                                 fontWeight: FontWeight.w800,
@@ -416,7 +449,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      l10n.giftWrapping,
+                                      giftWrappingText,
                                       style: TextStyle(
                                         fontSize: responsive.fontSize13,
                                         fontWeight: FontWeight.bold,
@@ -425,7 +458,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      l10n.giftWrappingDesc,
+                                      giftWrappingDescText,
                                       style: TextStyle(
                                         fontSize: responsive.fontSize10,
                                         color: colorScheme.onSurface.withValues(alpha: 0.5),
@@ -441,7 +474,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                   HapticFeedback.selectionClick();
                                   setState(() => _includeGiftWrapping = val);
                                 },
-                                activeColor: colorScheme.primary,
+                                activeThumbColor: colorScheme.primary,
                                 activeTrackColor: colorScheme.primary.withValues(alpha: 0.3),
                               ),
                             ],
@@ -463,7 +496,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                l10n.orderSummary.toUpperCase(),
+                                orderSummaryText.toUpperCase(),
                                 style: TextStyle(
                                   fontSize: responsive.fontSize10,
                                   fontWeight: FontWeight.w800,
@@ -472,18 +505,18 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 ),
                               ),
                               const SizedBox(height: 14),
-                              _buildSummaryRow(l10n.subtotal, currency.formatPrice(subtotal), responsive, colorScheme),
+                              _buildSummaryRow(subtotalText, currency.formatPrice(subtotal), responsive, colorScheme),
                               const SizedBox(height: 10),
-                              _buildSummaryRow(l10n.shipping, currency.formatPrice(shipping), responsive, colorScheme),
+                              _buildSummaryRow(shippingText, currency.formatPrice(shipping), responsive, colorScheme),
                               const SizedBox(height: 10),
-                              _buildSummaryRow(l10n.taxPercent, currency.formatPrice(tax), responsive, colorScheme),
+                              _buildSummaryRow(taxPercentText, currency.formatPrice(tax), responsive, colorScheme),
                               if (_includeGiftWrapping) ...[
                                 const SizedBox(height: 10),
-                                _buildSummaryRow(l10n.giftWrapping, currency.formatPrice(_giftWrappingCost), responsive, colorScheme),
+                                _buildSummaryRow(giftWrappingText, currency.formatPrice(_giftWrappingCost), responsive, colorScheme),
                               ],
                               const Divider(height: 24, thickness: 1),
                               _buildSummaryRow(
-                                l10n.total,
+                                totalText,
                                 currency.formatPrice(totalAmount),
                                 responsive,
                                 colorScheme,
@@ -536,7 +569,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                l10n.totalLabel.toUpperCase(),
+                                totalLabelText.toUpperCase(),
                                 style: TextStyle(
                                   fontSize: responsive.fontSize10,
                                   fontWeight: FontWeight.w800,
@@ -563,7 +596,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           child: InkWell(
                             onTap: () {
                               HapticFeedback.mediumImpact();
-                              context.push('/checkout');
+                              safeNavigate(context, '/checkout');
                             },
                             borderRadius: BorderRadius.circular(30),
                             child: Container(

@@ -6,6 +6,7 @@ import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/repositories/cart_wishlist_repository.dart';
 import 'package:hopscotch/widgets/product_card.dart';
 import 'package:hopscotch/widgets/state_widgets.dart';
+import 'package:hopscotch/utils/navigation_utils.dart';
 
 class WishlistScreen extends ConsumerWidget {
   const WishlistScreen({super.key});
@@ -42,7 +43,7 @@ class WishlistScreen extends ConsumerWidget {
                 return ProductCard(
                   product: product,
                   heroTagPrefix: 'wishlist',
-                  onTap: () => context.push('/product/${product.id}?heroTagPrefix=wishlist'),
+                  onTap: () => safeNavigate(context, '/product/${product.id}?heroTagPrefix=wishlist'),
                 );
               },
             ),

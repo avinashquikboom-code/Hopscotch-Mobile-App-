@@ -30,7 +30,7 @@ class OrderModel {
           : double.tryParse('${json['totalAmount'] ?? json['total']}') ?? 0.0,
       orderDate: (json['orderDate'] ?? json['createdAt'] ?? json['created_at'] ?? '').toString(),
       status: (json['status'] ?? 'Pending').toString(),
-      shippingAddress: (json['shippingAddress'] ?? json['address'] ?? '').toString(),
+      shippingAddress: _parseAddress(json['shippingAddress'] ?? json['address']),
       paymentMethod: (json['paymentMethod'] ?? json['payment_method'] ?? '').toString(),
       trackingNumber: json['trackingNumber'] as String? ?? json['tracking_number'] as String?,
     );
@@ -47,6 +47,32 @@ class OrderModel {
       'paymentMethod': paymentMethod,
       'trackingNumber': trackingNumber,
     };
+  }
+
+  static String _parseAddress(dynamic raw) {
+    if (raw == null) return '';
+    if (raw is String) return raw;
+    if (raw is Map) {
+      final name = raw['name'] ?? raw['fullName'] ?? raw['recipientName'] ?? '';
+      final phone = raw['phone'] ?? raw['phoneNumber'] ?? raw['contactPhone'] ?? '';
+      final line1 = raw['line1'] ?? raw['addressLine1'] ?? raw['street'] ?? raw['address'] ?? '';
+      final line2 = raw['line2'] ?? raw['addressLine2'] ?? '';
+      final city = raw['city'] ?? '';
+      final state = raw['state'] ?? '';
+      final pincode = raw['pincode'] ?? raw['postalCode'] ?? raw['zip'] ?? raw['zipCode'] ?? '';
+      final country = raw['country'] ?? '';
+
+      final lines = <String>[];
+      if (name.toString().trim().isNotEmpty) lines.add(name.toString().trim());
+      if (phone.toString().trim().isNotEmpty) lines.add('Phone: ${phone.toString().trim()}');
+      final streetParts = [line1, line2].where((e) => e != null && e.toString().trim().isNotEmpty).join(', ');
+      if (streetParts.isNotEmpty) lines.add(streetParts);
+      final cityParts = [city, state, pincode, country].where((e) => e != null && e.toString().trim().isNotEmpty).join(', ');
+      if (cityParts.isNotEmpty) lines.add(cityParts);
+
+      return lines.join('\n');
+    }
+    return raw.toString();
   }
 
   static List<OrderModel> listFromJson(dynamic json) {

@@ -7,6 +7,7 @@ import 'package:hopscotch/repositories/product_repository.dart';
 import 'package:hopscotch/widgets/product_card.dart';
 import 'package:hopscotch/widgets/skeleton_loaders.dart';
 import 'package:hopscotch/models/product_model.dart';
+import 'package:hopscotch/utils/navigation_utils.dart';
 
 class ProductListingScreen extends ConsumerStatefulWidget {
   final String? categoryId;
@@ -80,16 +81,33 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
   List<ProductModel> _applyFiltersAndSort(List<ProductModel> allProducts) {
     List<ProductModel> result = List.from(allProducts);
 
-    // Filter by category
-    if (widget.categoryId != null) {
-      result = result.where((p) => p.categoryId == widget.categoryId).toList();
+    // Filter by category (supports ID, name, or subcategory fallback)
+    if (widget.categoryId != null && widget.categoryId!.isNotEmpty) {
+      final catIdLower = widget.categoryId!.toLowerCase();
+      final catNameLower = widget.categoryName.toLowerCase();
+
+      final categoryMatches = result.where((p) =>
+        p.categoryId == widget.categoryId ||
+        p.categoryId.toLowerCase() == catIdLower ||
+        p.subcategory.toLowerCase() == catNameLower
+      ).toList();
+
+      if (categoryMatches.isNotEmpty) {
+        result = categoryMatches;
+      }
     }
 
     // Filter by subcategory
-    if (widget.subcategory != null) {
-      result = result
-          .where((p) => p.subcategory == widget.subcategory)
-          .toList();
+    if (widget.subcategory != null && widget.subcategory!.isNotEmpty) {
+      final subLower = widget.subcategory!.toLowerCase();
+      final subMatches = result.where((p) =>
+        p.subcategory.toLowerCase() == subLower ||
+        p.title.toLowerCase().contains(subLower)
+      ).toList();
+
+      if (subMatches.isNotEmpty) {
+        result = subMatches;
+      }
     }
 
     // Filter by standard filters (trending / new)
@@ -480,7 +498,8 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                     return ProductCard(
                       product: product,
                       heroTagPrefix: 'listing',
-                      onTap: () => context.push(
+                      onTap: () => safeNavigate(
+                        context,
                         '/product/${product.id}?heroTagPrefix=listing',
                       ),
                     );

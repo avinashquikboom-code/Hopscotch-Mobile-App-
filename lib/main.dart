@@ -31,6 +31,31 @@ void main() async {
     systemNavigationBarIconBrightness: Brightness.dark,
   ));
 
+  // Production-grade error boundary widget builder (prevents white screen crashes)
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    debugPrint('GLOBAL UI ERROR: ${details.exceptionAsString()}');
+    return const Material(
+      color: Colors.white,
+      child: Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline_rounded, color: Colors.grey, size: 48),
+              SizedBox(height: 12),
+              Text(
+                'Something went wrong. Please try again.',
+                style: TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w500),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  };
+
   runApp(
     UncontrolledProviderScope(
       container: container,

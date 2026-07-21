@@ -38,6 +38,8 @@ import 'package:hopscotch/screens/profile/legal_policies_screen.dart';
 import 'package:hopscotch/screens/offers/offers_screen.dart';
 import 'package:hopscotch/screens/coupons/coupons_screen.dart';
 import 'package:hopscotch/screens/orders/track_order_screen.dart';
+import 'package:hopscotch/screens/orders/order_detail_screen.dart';
+import 'package:hopscotch/models/order_model.dart';
 import 'package:hopscotch/screens/address/addresses_screen.dart';
 import 'package:hopscotch/screens/about/about_screen.dart';
 import 'package:hopscotch/screens/about/privacy_policy_screen.dart';
@@ -427,6 +429,30 @@ class AppPages {
             );
           },
         ),
+      ),
+      GoRoute(
+        path: AppRoutes.orderDetail,
+        pageBuilder: (context, state) {
+          final extraOrder = state.extra as OrderModel?;
+          final orderId = state.uri.queryParameters['id'];
+          return CustomTransitionPage(
+            key: _pageKey(state),
+            child: OrderDetailScreen(order: extraOrder, orderId: orderId),
+            transitionDuration: const Duration(milliseconds: 400),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1.0, 0.0),
+                  end: Offset.zero,
+                ).animate(CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeInOutCubic,
+                )),
+                child: child,
+              );
+            },
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.notifications,

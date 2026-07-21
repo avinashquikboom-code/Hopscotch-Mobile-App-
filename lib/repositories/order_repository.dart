@@ -44,39 +44,36 @@ class OrderNotifier extends StateNotifier<AsyncValue<List<OrderModel>>> {
   ///     first available saved address (if any) or falls back to creating
   ///     the order with a placeholder.
   Future<OrderModel> placeOrder({
-    // Legacy / checkout-screen params (kept for backward compat)
     List<CartItemModel>? items,
     double? totalAmount,
     String? address,
     String? paymentMethod,
-    // Preferred backend param
     String? addressId,
   }) async {
     try {
-      // Use provided addressId or fall back to the user's first saved address.
-      String resolvedAddressId = addressId ?? '1';
+      final formattedItems = items?.map((item) {
+        return {
+          'productId': item.product.id,
+          'quantity': item.quantity,
+        };
+      }).toList();
 
-      if (addressId == null) {
-        // Try to fetch the user's addresses to get a valid addressId.
-        try {
-          final addrRes = await _api.getOrders(limit: 1); // hack: reuse api
-          // Ignore — we'll just pass '1' as a last resort below.
-        } catch (_) {}
-      }
-
-      final response = await _api.createOrder(addressId: resolvedAddressId);
+      final response = await _api.createOrder(
+        addressId: addressId,
+        address: address,
+        items: formattedItems,
+        paymentMethod: paymentMethod ?? 'COD',
+      );
       final rawOrder = response.data['data'] ?? response.data;
       final newOrder = OrderModel.fromJson(
         rawOrder is Map<String, dynamic>
             ? rawOrder
             : {'id': '', 'status': 'PENDING', 'totalAmount': totalAmount ?? 0},
       );
-      // Refresh order list so UI reflects the new order
       await fetchOrders();
       return newOrder;
     } catch (e) {
-      // If the backend call fails (e.g. no saved address), create a local
-      // optimistic order so the checkout flow can continue to the success screen.
+      // Create local fallback if offline/guest mode
       final fallback = OrderModel(
         id: 'ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}',
         items: items ?? [],
@@ -84,11 +81,10 @@ class OrderNotifier extends StateNotifier<AsyncValue<List<OrderModel>>> {
         orderDate: DateTime.now().toIso8601String(),
         status: 'Processing',
         shippingAddress: address ?? '',
-        paymentMethod: paymentMethod ?? 'Card',
+        paymentMethod: paymentMethod ?? 'COD',
         trackingNumber:
             'TRK-${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}',
       );
-      // Add optimistic order to local state
       final current = state.valueOrNull ?? [];
       state = AsyncValue.data([fallback, ...current]);
       return fallback;
@@ -96,8 +92,8 @@ class OrderNotifier extends StateNotifier<AsyncValue<List<OrderModel>>> {
   }
 
   /// Cancel an order and refresh the list.
-  Future<void> cancelOrder(String orderId) async {
-    await _api.cancelOrder(orderId);
+  Future<void> cancelOrder(String orderId, {String? reason}) async {
+    await _api.cancelOrder(orderId, reason: reason);
     await fetchOrders();
   }
 }

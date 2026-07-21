@@ -23,15 +23,34 @@ class OrdersApi {
   }
   
   Future<Response> createOrder({
-    required String addressId,
+    String? addressId,
+    dynamic address,
+    List<dynamic>? items,
+    String? paymentMethod,
+    String? razorpayOrderId,
+    String? razorpayPaymentId,
+    String? razorpaySignature,
   }) async {
     return await _apiService.post(
-      '/api/orders',
-      data: {'addressId': addressId},
+      '/api/v1/mobile/orders',
+      data: {
+        if (addressId != null) 'addressId': addressId,
+        if (address != null) 'address': address,
+        if (items != null) 'items': items,
+        if (paymentMethod != null) 'paymentMethod': paymentMethod,
+        if (razorpayOrderId != null) 'razorpayOrderId': razorpayOrderId,
+        if (razorpayPaymentId != null) 'razorpayPaymentId': razorpayPaymentId,
+        if (razorpaySignature != null) 'razorpaySignature': razorpaySignature,
+      },
     );
   }
   
-  Future<Response> cancelOrder(String orderId) async {
-    return await _apiService.patch('/api/orders/$orderId/cancel');
+  Future<Response> cancelOrder(String orderId, {String? reason}) async {
+    return await _apiService.patch(
+      '/api/orders/$orderId/cancel',
+      data: {
+        if (reason != null && reason.trim().isNotEmpty) 'reason': reason.trim(),
+      },
+    );
   }
 }

@@ -39,6 +39,22 @@ class NotificationNotifier extends StateNotifier<List<NotificationModel>> {
     state = [];
   }
 
+  void addNotification({
+    required String title,
+    required String body,
+    String type = 'general',
+  }) {
+    final newNotif = NotificationModel(
+      id: 'NOTIF-${DateTime.now().millisecondsSinceEpoch}',
+      title: title,
+      body: body,
+      createdAt: DateTime.now().toIso8601String(),
+      isRead: false,
+      type: type,
+    );
+    state = [newNotif, ...state];
+  }
+
   void markAsRead(String notificationId) {
     state = [
       for (final notif in state)

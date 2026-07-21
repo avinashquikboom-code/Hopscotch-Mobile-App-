@@ -21,6 +21,7 @@ import 'package:hopscotch/widgets/visual_search_bottom_sheet.dart';
 import 'package:hopscotch/repositories/profile_repository.dart';
 import 'package:hopscotch/constants/app_urls.dart';
 import 'package:hopscotch/widgets/flipkart_category_strip.dart';
+import 'package:hopscotch/utils/navigation_utils.dart';
 
 // ─────────────────────────────────────────────────────────────
 // LOCATION PROVIDER — Geolocates user address details
@@ -171,6 +172,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       context.push('/visual-search/preview', extra: File(image.path));
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -481,7 +484,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       child: ProductCard(
                         product: product,
                         heroTagPrefix: 'home_trending',
-                        onTap: () => context.push(
+                        onTap: () => safeNavigate(
+                          context,
                           '/product/${product.id}?heroTagPrefix=home_trending',
                         ),
                       ),
@@ -580,7 +584,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   return ProductCard(
                     product: product,
                     heroTagPrefix: 'home_new',
-                    onTap: () => context.push(
+                    onTap: () => safeNavigate(
+                      context,
                       '/product/${product.id}?heroTagPrefix=home_new',
                     ),
                   );
@@ -655,7 +660,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   return ProductCard(
                     product: product,
                     heroTagPrefix: 'category_${selectedCategory.id}',
-                    onTap: () => context.push(
+                    onTap: () => safeNavigate(
+                      context,
                       '/product/${product.id}?heroTagPrefix=category_${selectedCategory.id}',
                     ),
                   );

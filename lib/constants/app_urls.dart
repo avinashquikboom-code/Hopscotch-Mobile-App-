@@ -1,8 +1,8 @@
 class AppUrls {
   // Base API URLs
   // For local development, uncomment the line below (using local IP):
-  // static const String mobileBaseUrl = 'http://192.168.1.102:5001';
-  static const String mobileBaseUrl = 'https://api.fciseller.com';
+  static const String mobileBaseUrl = 'http://192.168.1.102:5001';
+  // static const String mobileBaseUrl = 'https://api.fciseller.com';
 
   static String resolveUrl(String? url) {
     if (url == null || url.trim().isEmpty) {
@@ -10,6 +10,9 @@ class AppUrls {
     }
     final trimmed = url.trim();
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      if (trimmed.contains('cloudinary.com')) {
+        return trimmed;
+      }
       if (trimmed.contains('localhost:') || trimmed.contains('127.0.0.1:') || trimmed.contains('api.fciseller.com')) {
         try {
           final uri = Uri.parse(trimmed);

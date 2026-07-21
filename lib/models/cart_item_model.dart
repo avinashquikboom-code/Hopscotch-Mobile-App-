@@ -15,6 +15,12 @@ class CartItemModel {
     this.selectedColor,
   });
 
+  /// Calculates percentage discount for the product item
+  double get discount => (product.discountPercentage / 100.0) * product.price;
+
+  /// Returns complete product data map
+  Map<String, dynamic> get productMeta => product.toJson();
+
   factory CartItemModel.fromJson(Map<String, dynamic> json) {
     return CartItemModel(
       id: (json['id'] ?? json['_id'] ?? '').toString(),

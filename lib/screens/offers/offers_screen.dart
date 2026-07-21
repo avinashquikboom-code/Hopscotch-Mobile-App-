@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/widgets/custom_button.dart';
+import 'package:hopscotch/repositories/notification_repository.dart';
 
 class OfferModel {
   final String id;
@@ -45,14 +47,16 @@ class OfferModel {
   }
 }
 
-class OffersScreen extends StatefulWidget {
+
+
+class OffersScreen extends ConsumerStatefulWidget {
   const OffersScreen({super.key});
 
   @override
-  State<OffersScreen> createState() => _OffersScreenState();
+  ConsumerState<OffersScreen> createState() => _OffersScreenState();
 }
 
-class _OffersScreenState extends State<OffersScreen>
+class _OffersScreenState extends ConsumerState<OffersScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   final List<OfferModel> _offers = [
@@ -126,6 +130,11 @@ class _OffersScreenState extends State<OffersScreen>
     final responsive = context.responsive;
     HapticFeedback.lightImpact();
     Clipboard.setData(ClipboardData(text: code));
+    ref.read(notificationProvider.notifier).addNotification(
+      title: 'Offer Code Copied 🏷️',
+      body: 'Promo code $code copied! Redeem at checkout.',
+      type: 'offer',
+    );
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -148,6 +157,15 @@ class _OffersScreenState extends State<OffersScreen>
         _offers[index] = offer.copyWith(isApplied: !offer.isApplied);
       }
     });
+
+    if (!offer.isApplied) {
+      ref.read(notificationProvider.notifier).addNotification(
+        title: 'Special Offer Claimed 🔥',
+        body: 'Offer "${offer.title}" (${offer.code}) activated for your cart!',
+        type: 'offer',
+      );
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(

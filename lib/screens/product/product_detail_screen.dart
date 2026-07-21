@@ -14,6 +14,7 @@ import 'package:remixicon/remixicon.dart';
 import 'package:hopscotch/models/product_model.dart';
 import 'package:hopscotch/widgets/share_earn_bottom_sheet.dart';
 import 'package:hopscotch/widgets/fullscreen_image_viewer.dart';
+import 'package:hopscotch/utils/navigation_utils.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
@@ -213,7 +214,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                     ),
                                     onPressed: () {
                                       HapticFeedback.lightImpact();
-                                      context.push('/cart');
+                                      context.go('/cart');
                                     },
                                   ),
                                 );
@@ -1022,7 +1023,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                             color: _selectedColor,
                           );
                       // Go straight to checkout screen!
-                      context.push('/checkout');
+                      safeNavigate(context, '/checkout');
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primaryColor,

@@ -9,6 +9,7 @@ import 'package:hopscotch/widgets/product_card.dart';
 import 'package:hopscotch/models/product_model.dart';
 import 'package:hopscotch/widgets/camera_search_button.dart';
 import 'package:hopscotch/widgets/visual_search_bottom_sheet.dart';
+import 'package:hopscotch/utils/navigation_utils.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
@@ -285,7 +286,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         return ProductCard(
           product: product,
           heroTagPrefix: 'search',
-          onTap: () => context.push('/product/${product.id}?heroTagPrefix=search'),
+          onTap: () => safeNavigate(context, '/product/${product.id}?heroTagPrefix=search'),
         );
       },
     );

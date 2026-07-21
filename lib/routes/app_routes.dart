@@ -40,7 +40,10 @@ class AppRoutes {
   static const String terms = '/terms';
   static const String contactUs = '/contact-us';
 
+  static const String orderDetail = '/order-detail';
+
   // Direct dynamic path helpers
   static String getProductDetailRoute(String id) => '/product/$id';
   static String getTrackOrderRoute(String orderId) => '/track-order/$orderId';
+  static String getOrderDetailRoute(String id) => '/order-detail/$id';
 }

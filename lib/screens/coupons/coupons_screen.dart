@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/repositories/coupon_repository.dart';
+import 'package:hopscotch/repositories/notification_repository.dart';
 
 class CouponModel {
   final String id;
@@ -133,6 +134,11 @@ class _CouponsScreenState extends ConsumerState<CouponsScreen> {
     final responsive = context.responsive;
     HapticFeedback.lightImpact();
     Clipboard.setData(ClipboardData(text: code));
+    ref.read(notificationProvider.notifier).addNotification(
+      title: 'Coupon Code Claimed 🏷️',
+      body: 'Promo code $code copied! Use at checkout to save.',
+      type: 'offer',
+    );
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -155,6 +161,15 @@ class _CouponsScreenState extends ConsumerState<CouponsScreen> {
         _coupons[index] = coupon.copyWith(isApplied: !coupon.isApplied);
       }
     });
+
+    if (!coupon.isApplied) {
+      ref.read(notificationProvider.notifier).addNotification(
+        title: 'Discount Offer Applied 🔥',
+        body: 'Coupon ${coupon.code} (${coupon.title}) has been applied to your session!',
+        type: 'offer',
+      );
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(

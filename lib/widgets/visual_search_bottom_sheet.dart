@@ -38,62 +38,68 @@ class VisualSearchBottomSheet extends StatelessWidget {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF00897B).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
+            Material(
+              color: Colors.transparent,
+              child: ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF00897B).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Remix.camera_line,
+                    color: Color(0xFF00897B),
+                    size: 24,
+                  ),
                 ),
-                child: const Icon(
-                  Remix.camera_line,
-                  color: Color(0xFF00897B),
-                  size: 24,
+                title: const Text(
+                  'Take a photo',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
+                subtitle: const Text('Use camera to capture product'),
+                onTap: () async {
+                  final image = await picker.pickImage(source: ImageSource.camera);
+                  if (context.mounted) {
+                    Navigator.pop(context, image);
+                  }
+                },
               ),
-              title: const Text(
-                'Take a photo',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              subtitle: const Text('Use camera to capture product'),
-              onTap: () async {
-                final image = await picker.pickImage(source: ImageSource.camera);
-                if (context.mounted) {
-                  Navigator.pop(context, image);
-                }
-              },
             ),
             const Divider(height: 1),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF00897B).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
+            Material(
+              color: Colors.transparent,
+              child: ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF00897B).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Remix.image_line,
+                    color: Color(0xFF00897B),
+                    size: 24,
+                  ),
                 ),
-                child: const Icon(
-                  Remix.image_line,
-                  color: Color(0xFF00897B),
-                  size: 24,
+                title: const Text(
+                  'Upload from gallery',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
+                subtitle: const Text('Choose an existing image'),
+                onTap: () async {
+                  final image = await picker.pickImage(source: ImageSource.gallery);
+                  if (context.mounted) {
+                    Navigator.pop(context, image);
+                  }
+                },
               ),
-              title: const Text(
-                'Choose from gallery',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              subtitle: const Text('Select image from photos'),
-              onTap: () async {
-                final image = await picker.pickImage(source: ImageSource.gallery);
-                if (context.mounted) {
-                  Navigator.pop(context, image);
-                }
-              },
             ),
             const SizedBox(height: 8),
             TextButton(

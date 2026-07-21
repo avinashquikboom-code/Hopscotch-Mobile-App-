@@ -136,6 +136,16 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
     _saveToPrefs();
   }
 
+  bool get isPersistenceSupportEnabled => true;
+
+  List<CartItemModel> get getCartItems => state;
+
+  int get getCartCount => state.fold(0, (sum, item) => sum + item.quantity);
+
+  void removeItemFromCart(String cartItemId) {
+    removeFromCart(cartItemId);
+  }
+
   void clearCart() {
     state = [];
     _saveToPrefs();
@@ -161,6 +171,8 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
     if (state.isEmpty) return 0.0;
     return subtotal + 15.00 + (subtotal * 0.08);
   }
+
+  double get getTotalAmount => totalAmount;
 }
 
 final cartProvider = StateNotifierProvider<CartNotifier, List<CartItemModel>>((ref) {
