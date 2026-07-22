@@ -180,8 +180,42 @@ class ProductModel {
       rating: _asDouble(json['rating']),
       reviewCount: _asInt(json['reviewCount'] ?? json['review_count']),
       reviews: ProductReviewModel.listFromJson(json['reviews']),
-      sizes: _asStringList(json['sizes']),
-      colors: _asStringList(json['colors']),
+      sizes: () {
+        final direct = _asStringList(json['sizes']);
+        if (direct.isNotEmpty) return direct;
+        final vars = json['variants'];
+        if (vars is List) {
+          final extracted = <String>{};
+          for (final v in vars) {
+            if (v is Map) {
+              final s = v['size']?.toString().trim();
+              if (s != null && s.isNotEmpty && s != 'One Size') {
+                extracted.add(s);
+              }
+            }
+          }
+          if (extracted.isNotEmpty) return extracted.toList();
+        }
+        return <String>[];
+      }(),
+      colors: () {
+        final direct = _asStringList(json['colors']);
+        if (direct.isNotEmpty) return direct;
+        final vars = json['variants'];
+        if (vars is List) {
+          final extracted = <String>{};
+          for (final v in vars) {
+            if (v is Map) {
+              final c = v['color']?.toString().trim();
+              if (c != null && c.isNotEmpty && c != 'Default') {
+                extracted.add(c);
+              }
+            }
+          }
+          if (extracted.isNotEmpty) return extracted.toList();
+        }
+        return <String>[];
+      }(),
       isAvailable: _asBool(json['isAvailable'] ?? json['is_available'], true),
       isTrending: _asBool(json['isTrending'] ?? json['is_trending']),
       isNewArrival: _asBool(json['isNewArrival'] ?? json['is_new_arrival']),
