@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:hopscotch/core/api_circuit_breaker.dart';
 import 'package:hopscotch/constants/app_urls.dart';
 import 'package:hopscotch/core/session_manager.dart';
 
@@ -30,6 +31,18 @@ class ApiService {
     
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
+        if (ApiCircuitBreaker.isOpen) {
+          final remaining = ApiCircuitBreaker.remainingCooldown ?? Duration.zero;
+          _logColored('$_cyan[API]$_reset $_red⛔ Circuit Breaker OPEN — short-circuiting request (${remaining.inSeconds}s cooldown left)$_reset');
+          return handler.reject(
+            DioException(
+              requestOptions: options,
+              error: CircuitOpenException(remaining),
+              type: DioExceptionType.cancel,
+            ),
+          );
+        }
+
         final timestamp = DateTime.now().toIso8601String();
         _logColored('$_cyan[API]$_reset $_magenta📤$_reset $_green${options.method.toUpperCase()}$_reset $_blue${options.uri}$_reset');
         _logColored('$_cyan[API]$_reset $_magenta📤$_reset Timestamp: $timestamp');
@@ -48,6 +61,9 @@ class ApiService {
         return handler.next(options);
       },
       onResponse: (response, handler) {
+        if (response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 300) {
+          ApiCircuitBreaker.recordSuccess();
+        }
         final timestamp = DateTime.now().toIso8601String();
         _logColored('$_cyan[API]$_reset $_magenta📥$_reset $_green${'Response:'}$_reset ${response.statusCode} $_blue${response.requestOptions.uri}$_reset');
         _logColored('$_cyan[API]$_reset $_magenta📥$_reset Timestamp: $timestamp');
@@ -66,7 +82,7 @@ class ApiService {
           _logColored('$_cyan[API]$_reset $_red❌$_reset Error Data: $_red${error.response?.data}$_reset');
         }
         
-        // Handle 429 Rate Limit with exponential backoff retry
+        // Handle 429 Rate Limit with exponential backoff retry & circuit breaker integration
         if (error.response?.statusCode == 429) {
           final retryCount = (error.requestOptions.extra['retry_count'] as int? ?? 0) + 1;
           const maxRetries = 3;
@@ -98,9 +114,12 @@ class ApiService {
               return handler.resolve(response);
             } catch (retryError) {
               if (retryError is DioException) {
+                ApiCircuitBreaker.recordFailure();
                 return handler.next(retryError);
               }
             }
+          } else {
+            ApiCircuitBreaker.recordFailure();
           }
         }
 

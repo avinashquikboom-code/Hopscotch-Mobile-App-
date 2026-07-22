@@ -92,7 +92,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           
           if (restored) {
             // Preload profile data so all home screen components are ready
-            await ref.read(profileNotifierProvider.notifier).loadProfile();
+            try {
+              await ref.read(profileNotifierProvider.notifier).loadProfile();
+            } catch (e) {
+              DevLogger.logError('Profile load failed on splash: $e', context: 'Splash');
+            }
             if (!mounted) return;
             context.go('/home');
           } else {

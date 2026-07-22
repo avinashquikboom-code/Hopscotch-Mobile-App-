@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:hopscotch/api/api_circuit_breaker.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/utils/dev_logger.dart';
@@ -202,6 +203,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final trendingAsync = ref.watch(trendingProductsProvider);
     final newArrivalsAsync = ref.watch(newArrivalsProvider);
     final bannersAsync = ref.watch(bannersProvider);
+
+    final bool hasCircuitBreakerError = ApiCircuitBreaker.isOpen ||
+        (categoriesAsync.hasError && trendingAsync.hasError && bannersAsync.hasError);
+
+    if (hasCircuitBreakerError) {
+      return Scaffold(
+        body: SafeArea(
+          child: _CircuitBreakerErrorView(
+            onRetry: () {
+              ApiCircuitBreaker.reset();
+              ref.invalidate(allCategoriesProvider);
+              ref.invalidate(trendingProductsProvider);
+              ref.invalidate(newArrivalsProvider);
+              ref.invalidate(bannersProvider);
+              ref.invalidate(userLocationProvider);
+            },
+          ),
+        ),
+      );
+    }
 
     final responsive = context.responsive;
     final l10n = AppLocalizations.of(context)!;
@@ -1427,6 +1448,58 @@ class _NewGuardSectionHeaderState extends State<_NewGuardSectionHeader>
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CircuitBreakerErrorView extends ConsumerWidget {
+  final VoidCallback onRetry;
+  const _CircuitBreakerErrorView({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final remaining = ApiCircuitBreaker.remainingCooldownSeconds;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.wifi_off_rounded,
+              size: 64,
+              color: AppTheme.primaryColor,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              "Can't connect right now",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              remaining > 0
+                  ? "Too many requests. Please wait $remaining seconds before trying again."
+                  : "We're having trouble connecting to the server.",
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.grey),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh),
+              label: const Text("Try Again"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
