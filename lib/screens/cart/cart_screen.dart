@@ -22,14 +22,84 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   bool _includeGiftWrapping = false;
   final double _giftWrappingCost = 250.00;
 
-  Color _parseColor(String? hexCode) {
-    if (hexCode == null) return Colors.grey;
-    try {
-      final code = hexCode.replaceAll('#', '');
-      return Color(int.parse('FF$code', radix: 16));
-    } catch (_) {
-      return Colors.grey;
+  Color _parseColor(String? colorStr) {
+    if (colorStr == null || colorStr.trim().isEmpty) return Colors.grey;
+    final str = colorStr.trim().toLowerCase();
+    const colorMap = <String, Color>{
+      'black': Colors.black,
+      'white': Colors.white,
+      'red': Color(0xFFE53935),
+      'blue': Color(0xFF1E88E5),
+      'navy': Color(0xFF000080),
+      'navy blue': Color(0xFF000080),
+      'green': Color(0xFF43A047),
+      'yellow': Color(0xFFFDD835),
+      'orange': Color(0xFFFB8C00),
+      'purple': Color(0xFF8E24AA),
+      'pink': Color(0xFFD81B60),
+      'grey': Color(0xFF757575),
+      'gray': Color(0xFF757575),
+      'brown': Color(0xFF6D4C41),
+      'teal': Color(0xFF00897B),
+      'cyan': Color(0xFF00ACC1),
+      'gold': Color(0xFFFFD700),
+      'silver': Color(0xFFC0C0C0),
+      'maroon': Color(0xFF800000),
+      'beige': Color(0xFFF5F5DC),
+      'olive': Color(0xFF808000),
+      'coral': Color(0xFFFF7F50),
+      'indigo': Color(0xFF3F51B5),
+      'khaki': Color(0xFFC3B091),
+      'magenta': Color(0xFFE91E63),
+    };
+
+    if (colorMap.containsKey(str)) {
+      return colorMap[str]!;
     }
+
+    try {
+      String hex = colorStr.replaceAll('#', '').replaceAll('0x', '').trim();
+      if (hex.length == 3) {
+        hex = '${hex[0]}${hex[0]}${hex[1]}${hex[1]}${hex[2]}${hex[2]}';
+      }
+      if (hex.length == 6) hex = 'FF$hex';
+      if (hex.length == 8) return Color(int.parse(hex, radix: 16));
+    } catch (_) {}
+
+    return Colors.teal;
+  }
+
+  String _resolveCartItemImage(dynamic item) {
+    final product = item.product;
+    final allImages = [
+      if (product.imageUrl.isNotEmpty) product.imageUrl as String,
+      ...List<String>.from(product.additionalImages ?? []),
+    ];
+
+    if (item.selectedColor != null && item.selectedColor!.toString().trim().isNotEmpty) {
+      final colorLower = item.selectedColor!.toString().trim().toLowerCase();
+
+      if (product.variants != null) {
+        for (final v in product.variants) {
+          if (v.color?.toLowerCase() == colorLower && v.imageUrl != null && v.imageUrl!.isNotEmpty) {
+            return v.imageUrl!;
+          }
+        }
+      }
+
+      final matchedImage = allImages.firstWhere(
+        (url) => url.toLowerCase().contains(colorLower),
+        orElse: () => '',
+      );
+      if (matchedImage.isNotEmpty) return matchedImage;
+
+      final colorIdx = (product.colors as List).indexWhere((c) => c.toString().toLowerCase() == colorLower);
+      if (colorIdx >= 0 && colorIdx < allImages.length) {
+        return allImages[colorIdx];
+      }
+    }
+
+    return product.imageUrl;
   }
 
   @override
@@ -236,38 +306,39 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                             ),
                                             child: ClipRRect(
                                               borderRadius: BorderRadius.circular(12),
-                                              child: () {
-                                                final resolvedUrl = AppUrls.resolveUrl(product.imageUrl);
-                                                if (resolvedUrl.isEmpty) {
-                                                  return Container(
-                                                    color: colorScheme.outline.withValues(alpha: 0.1),
-                                                    child: Center(
-                                                      child: Icon(
-                                                        Icons.image_not_supported_outlined,
-                                                        color: colorScheme.primary.withValues(alpha: 0.5),
-                                                        size: 24,
-                                                      ),
-                                                    ),
-                                                  );
-                                                }
-                                                return Image.network(
-                                                  resolvedUrl,
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (context, error, stackTrace) {
-                                                    return Container(
-                                                      color: colorScheme.outline.withValues(alpha: 0.1),
-                                                      child: Center(
-                                                        child: Icon(
-                                                          Icons.image_not_supported_outlined,
-                                                          color: colorScheme.primary.withValues(alpha: 0.5),
-                                                          size: 24,
-                                                        ),
-                                                      ),
-                                                    );
-                                                  },
-                                                );
-                                              }(),
-                                            ),
+                                               child: () {
+                                                 final rawUrl = _resolveCartItemImage(item);
+                                                 final resolvedUrl = AppUrls.resolveUrl(rawUrl);
+                                                 if (resolvedUrl.isEmpty) {
+                                                   return Container(
+                                                     color: colorScheme.outline.withValues(alpha: 0.1),
+                                                     child: Center(
+                                                       child: Icon(
+                                                         Icons.image_not_supported_outlined,
+                                                         color: colorScheme.primary.withValues(alpha: 0.5),
+                                                         size: 24,
+                                                       ),
+                                                     ),
+                                                   );
+                                                 }
+                                                 return Image.network(
+                                                   resolvedUrl,
+                                                   fit: BoxFit.cover,
+                                                   errorBuilder: (context, error, stackTrace) {
+                                                     return Container(
+                                                       color: colorScheme.outline.withValues(alpha: 0.1),
+                                                       child: Center(
+                                                         child: Icon(
+                                                           Icons.image_not_supported_outlined,
+                                                           color: colorScheme.primary.withValues(alpha: 0.5),
+                                                           size: 24,
+                                                         ),
+                                                       ),
+                                                     );
+                                                   },
+                                                 );
+                                               }(),
+                                             ),
                                           ),
                                         ),
                                       ),
@@ -306,46 +377,69 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                             const SizedBox(height: 8),
 
                                             // Options (Size & Color)
-                                            Row(
+                                            Wrap(
+                                              spacing: 8,
+                                              runSpacing: 4,
+                                              crossAxisAlignment: WrapCrossAlignment.center,
                                               children: [
-                                                if (item.selectedSize != null) ...[
+                                                if (item.selectedSize != null && item.selectedSize!.trim().isNotEmpty)
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                    decoration: BoxDecoration(
+                                                      color: colorScheme.primary.withValues(alpha: 0.08),
+                                                      borderRadius: BorderRadius.circular(6),
+                                                      border: Border.all(
+                                                        color: colorScheme.primary.withValues(alpha: 0.2),
+                                                        width: 1,
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      'Size: ${item.selectedSize}',
+                                                      style: TextStyle(
+                                                        fontSize: responsive.fontSize11,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: colorScheme.primary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                if (item.selectedColor != null && item.selectedColor!.trim().isNotEmpty)
                                                   Container(
                                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                                     decoration: BoxDecoration(
                                                       color: colorScheme.outline.withValues(alpha: 0.08),
                                                       borderRadius: BorderRadius.circular(6),
-                                                    ),
-                                                    child: Text(
-                                                      'Size: ${item.selectedSize!}',
-                                                      style: TextStyle(
-                                                        fontSize: responsive.fontSize10,
-                                                        fontWeight: FontWeight.bold,
-                                                        color: colorScheme.onSurface.withValues(alpha: 0.8),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                ],
-                                                if (item.selectedColor != null) ...[
-                                                  Container(
-                                                    width: 16,
-                                                    height: 16,
-                                                    decoration: BoxDecoration(
-                                                      color: _parseColor(item.selectedColor),
-                                                      shape: BoxShape.circle,
                                                       border: Border.all(
-                                                        color: colorScheme.surface,
-                                                        width: 1.5,
+                                                        color: colorScheme.outline.withValues(alpha: 0.2),
+                                                        width: 1,
                                                       ),
-                                                      boxShadow: [
-                                                        BoxShadow(
-                                                          color: Colors.black.withValues(alpha: 0.1),
-                                                          blurRadius: 2,
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        Container(
+                                                          width: 12,
+                                                          height: 12,
+                                                          decoration: BoxDecoration(
+                                                            color: _parseColor(item.selectedColor),
+                                                            shape: BoxShape.circle,
+                                                            border: Border.all(
+                                                              color: Colors.grey.shade400,
+                                                              width: 0.8,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(width: 6),
+                                                        Text(
+                                                          item.selectedColor!,
+                                                          style: TextStyle(
+                                                            fontSize: responsive.fontSize11,
+                                                            fontWeight: FontWeight.w600,
+                                                            color: colorScheme.onSurface,
+                                                          ),
                                                         ),
                                                       ],
                                                     ),
                                                   ),
-                                                ],
                                               ],
                                             ),
                                             const SizedBox(height: 12),

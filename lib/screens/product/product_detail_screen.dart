@@ -35,8 +35,21 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   int _activeImageIndex = 0;
   String? _selectedSize;
   String? _selectedColor;
+  double? _selectedVariantPrice;
   bool _isAddingToCart = false;
   bool _showCartSuccess = false;
+  final PageController _pageController = PageController();
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   void _triggerAddToCart(product) async {
     if (_isAddingToCart || _showCartSuccess) return;
@@ -73,14 +86,106 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   }
 
 
-  // Custom helper to parse hex colors to Flutter Color objects
-  Color _parseColor(String hexCode) {
-    try {
-      final code = hexCode.replaceAll('#', '');
-      return Color(int.parse('FF$code', radix: 16));
-    } catch (_) {
-      return Colors.grey;
+  // Custom helper to parse hex codes or color names to Flutter Color objects
+  Color _parseColor(String colorStr) {
+    if (colorStr.trim().isEmpty) return Colors.grey;
+    final str = colorStr.trim().toLowerCase();
+    const colorMap = <String, Color>{
+      'black': Colors.black,
+      'white': Colors.white,
+      'red': Color(0xFFE53935),
+      'blue': Color(0xFF1E88E5),
+      'navy': Color(0xFF000080),
+      'navy blue': Color(0xFF000080),
+      'green': Color(0xFF43A047),
+      'yellow': Color(0xFFFDD835),
+      'orange': Color(0xFFFB8C00),
+      'purple': Color(0xFF8E24AA),
+      'pink': Color(0xFFD81B60),
+      'grey': Color(0xFF757575),
+      'gray': Color(0xFF757575),
+      'brown': Color(0xFF6D4C41),
+      'teal': Color(0xFF00897B),
+      'cyan': Color(0xFF00ACC1),
+      'gold': Color(0xFFFFD700),
+      'silver': Color(0xFFC0C0C0),
+      'maroon': Color(0xFF800000),
+      'beige': Color(0xFFF5F5DC),
+      'olive': Color(0xFF808000),
+      'coral': Color(0xFFFF7F50),
+      'indigo': Color(0xFF3F51B5),
+      'khaki': Color(0xFFC3B091),
+      'magenta': Color(0xFFE91E63),
+    };
+
+    if (colorMap.containsKey(str)) {
+      return colorMap[str]!;
     }
+
+    try {
+      String hex = colorStr.replaceAll('#', '').replaceAll('0x', '').trim();
+      if (hex.length == 3) {
+        hex = '${hex[0]}${hex[0]}${hex[1]}${hex[1]}${hex[2]}${hex[2]}';
+      }
+      if (hex.length == 6) hex = 'FF$hex';
+      if (hex.length == 8) return Color(int.parse(hex, radix: 16));
+    } catch (_) {}
+
+    return Colors.teal;
+  }
+
+  void _selectColor(String colorName, dynamic product, List<String> imageList) {
+    HapticFeedback.lightImpact();
+    setState(() {
+      _selectedColor = colorName;
+
+      // Match variant details
+      ProductVariantModel? matchingVariant;
+      if (product is ProductModel && product.variants.isNotEmpty) {
+        for (final v in product.variants) {
+          if (v.color?.toLowerCase() == colorName.toLowerCase()) {
+            if (_selectedSize != null && v.size?.toLowerCase() == _selectedSize?.toLowerCase()) {
+              matchingVariant = v;
+              break;
+            }
+            matchingVariant ??= v;
+          }
+        }
+      }
+
+      if (matchingVariant != null && matchingVariant.price > 0) {
+        _selectedVariantPrice = matchingVariant.price;
+      }
+
+      // Sync image carousel
+      int targetIndex = -1;
+      if (matchingVariant != null && matchingVariant.imageUrl != null && matchingVariant.imageUrl!.isNotEmpty) {
+        targetIndex = imageList.indexOf(matchingVariant.imageUrl!);
+      }
+
+      if (targetIndex == -1) {
+        final colorLower = colorName.toLowerCase();
+        targetIndex = imageList.indexWhere((url) => url.toLowerCase().contains(colorLower));
+      }
+
+      if (targetIndex == -1) {
+        final colorIdx = (product.colors as List).indexOf(colorName);
+        if (colorIdx >= 0 && colorIdx < imageList.length) {
+          targetIndex = colorIdx;
+        }
+      }
+
+      if (targetIndex >= 0 && targetIndex < imageList.length) {
+        _activeImageIndex = targetIndex;
+        if (_pageController.hasClients) {
+          _pageController.animateToPage(
+            targetIndex,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      }
+    });
   }
 
   void _openShareEarnBottomSheet(ProductModel product) {
@@ -228,6 +333,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                             fit: StackFit.expand,
                             children: [
                               PageView.builder(
+                                controller: _pageController,
                                 onPageChanged: (index) {
                                   setState(() {
                                     _activeImageIndex = index;
@@ -428,7 +534,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                     textBaseline: TextBaseline.alphabetic,
                                     children: [
                                       Text(
-                                        currency.formatPrice(product.price),
+                                        currency.formatPrice(_selectedVariantPrice ?? product.price),
                                         style: TextStyle(
                                           fontSize: responsive.fontSize20,
                                           color: AppTheme.primaryColor,
@@ -607,69 +713,89 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
 
                               // Color Selection
                               if (product.colors.isNotEmpty) ...[
-                                Text(
-                                  l10n.selectColor,
-                                  style: TextStyle(
-                                    fontSize: responsive.fontSize16,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppTheme.textPrimaryColor,
-                                  ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      l10n.selectColor,
+                                      style: TextStyle(
+                                        fontSize: responsive.fontSize16,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.textPrimaryColor,
+                                      ),
+                                    ),
+                                    if (_selectedColor != null)
+                                      Text(
+                                        _selectedColor!,
+                                        style: TextStyle(
+                                          fontSize: responsive.fontSize13,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppTheme.primaryColor,
+                                        ),
+                                      ),
+                                  ],
                                 ),
                                 SizedBox(
                                   height: responsive.spacing(AppTheme.spaceM),
                                 ),
-                                Row(
-                                  children: product.colors.map((hex) {
-                                    final isSelected = _selectedColor == hex;
-                                    final colorVal = _parseColor(hex);
-                                    return GestureDetector(
-                                      onTap: () {
-                                        HapticFeedback.lightImpact();
-                                        setState(() {
-                                          _selectedColor = hex;
-                                        });
-                                      },
-                                      child: AnimatedContainer(
-                                        duration: const Duration(
-                                          milliseconds: 200,
-                                        ),
-                                        width: responsive.spacing(45),
-                                        height: responsive.spacing(45),
-                                        margin: EdgeInsets.only(
-                                          right: responsive.spacing(
-                                            AppTheme.spaceM,
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    children: product.colors.map((colorName) {
+                                      final isSelected = _selectedColor == colorName;
+                                      final colorVal = _parseColor(colorName);
+                                      final isLightColor = colorVal.computeLuminance() > 0.6;
+                                      return GestureDetector(
+                                        onTap: () => _selectColor(colorName, product, imageList),
+                                        child: AnimatedContainer(
+                                          duration: const Duration(milliseconds: 200),
+                                          margin: EdgeInsets.only(right: responsive.spacing(AppTheme.spaceS)),
+                                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                          decoration: BoxDecoration(
+                                            color: isSelected ? AppTheme.primaryColor.withValues(alpha: 0.1) : Colors.transparent,
+                                            borderRadius: BorderRadius.circular(24),
+                                            border: Border.all(
+                                              color: isSelected ? AppTheme.primaryColor : AppTheme.borderColor,
+                                              width: isSelected ? 2 : 1,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Container(
+                                                width: 18,
+                                                height: 18,
+                                                decoration: BoxDecoration(
+                                                  color: colorVal,
+                                                  shape: BoxShape.circle,
+                                                  border: Border.all(
+                                                    color: isLightColor ? Colors.grey.shade400 : Colors.transparent,
+                                                    width: 1,
+                                                  ),
+                                                ),
+                                                child: isSelected
+                                                    ? Icon(
+                                                        Icons.check,
+                                                        size: 11,
+                                                        color: isLightColor ? Colors.black : Colors.white,
+                                                      )
+                                                    : null,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                colorName,
+                                                style: TextStyle(
+                                                  fontSize: responsive.fontSize13,
+                                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                                  color: isSelected ? AppTheme.primaryColor : AppTheme.textPrimaryColor,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
-                                        decoration: BoxDecoration(
-                                          color: colorVal,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: isSelected
-                                                ? AppTheme.primaryColor
-                                                : Colors.white,
-                                            width: isSelected ? 4 : 2,
-                                          ),
-                                          boxShadow: isSelected
-                                              ? [
-                                                  BoxShadow(
-                                                    color: colorVal.withValues(
-                                                      alpha: 0.5,
-                                                    ),
-                                                    blurRadius: 12,
-                                                    offset: const Offset(0, 2),
-                                                  ),
-                                                ]
-                                              : [
-                                                  BoxShadow(
-                                                    color: Colors.black
-                                                        .withValues(alpha: 0.1),
-                                                    blurRadius: 4,
-                                                  ),
-                                                ],
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
+                                      );
+                                    }).toList(),
+                                  ),
                                 ),
                                 SizedBox(
                                   height: responsive.spacing(AppTheme.spaceXL),

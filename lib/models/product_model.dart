@@ -108,6 +108,56 @@ class ProductReviewModel {
   int get hashCode => id.hashCode;
 }
 
+class ProductVariantModel {
+  final String id;
+  final String? size;
+  final String? color;
+  final double price;
+  final int stock;
+  final String? imageUrl;
+
+  const ProductVariantModel({
+    required this.id,
+    this.size,
+    this.color,
+    required this.price,
+    required this.stock,
+    this.imageUrl,
+  });
+
+  factory ProductVariantModel.fromJson(Map<String, dynamic> json) {
+    return ProductVariantModel(
+      id: _asString(json['id'] ?? json['_id']),
+      size: json['size']?.toString().trim(),
+      color: json['color']?.toString().trim(),
+      price: _asDouble(json['price']),
+      stock: _asInt(json['stock'] ?? json['quantity']),
+      imageUrl: json['imageUrl'] as String? ?? json['image_url'] as String? ?? json['url'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'size': size,
+      'color': color,
+      'price': price,
+      'stock': stock,
+      'imageUrl': imageUrl,
+    };
+  }
+
+  static List<ProductVariantModel> listFromJson(dynamic json) {
+    if (json is List) {
+      return json
+          .whereType<Map<String, dynamic>>()
+          .map(ProductVariantModel.fromJson)
+          .toList();
+    }
+    return [];
+  }
+}
+
 class ProductModel {
   final String id;
   final String title;
@@ -124,6 +174,7 @@ class ProductModel {
   final List<ProductReviewModel> reviews;
   final List<String> sizes;
   final List<String> colors;
+  final List<ProductVariantModel> variants;
   final bool isAvailable;
   final bool isTrending;
   final bool isNewArrival;
@@ -145,6 +196,7 @@ class ProductModel {
     this.reviews = const [],
     this.sizes = const [],
     this.colors = const [],
+    this.variants = const [],
     this.isAvailable = true,
     this.isTrending = false,
     this.isNewArrival = false,
@@ -216,6 +268,7 @@ class ProductModel {
         }
         return <String>[];
       }(),
+      variants: ProductVariantModel.listFromJson(json['variants']),
       isAvailable: _asBool(json['isAvailable'] ?? json['is_available'], true),
       isTrending: _asBool(json['isTrending'] ?? json['is_trending']),
       isNewArrival: _asBool(json['isNewArrival'] ?? json['is_new_arrival']),
