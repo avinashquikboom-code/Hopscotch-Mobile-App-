@@ -133,11 +133,57 @@ ProductModel mapBackendToMobileProduct(Map<String, dynamic> raw) {
 }
 
 class ProductRepository {
+  // ── In-memory cache to prevent duplicate API calls (rate-limit fix) ──────
+  // All filter methods (trending, newArrivals, featured) share ONE fetch.
+  static List<ProductModel>? _cachedProducts;
+  static DateTime? _cacheTime;
+  static const Duration _cacheTtl = Duration(minutes: 5);
+  // In-flight deduplication: if a fetch is already running, await it instead
+  // of firing a second identical HTTP request.
+  static Future<List<ProductModel>>? _inflight;
+
+  static bool get _isCacheValid =>
+      _cachedProducts != null &&
+      _cacheTime != null &&
+      DateTime.now().difference(_cacheTime!) < _cacheTtl;
+
+  /// Call this to force a fresh fetch (e.g. on pull-to-refresh).
+  static void clearCache() {
+    _cachedProducts = null;
+    _cacheTime = null;
+    _inflight = null;
+  }
+
   final ApiService _apiService;
 
   ProductRepository(this._apiService);
 
-  Future<List<ProductModel>> getProducts() async {
+  Future<List<ProductModel>> getProducts({bool forceRefresh = false}) async {
+    // 1. Return from cache if still valid and no forced refresh.
+    if (!forceRefresh && _isCacheValid) {
+      DevLogger.logError('ProductRepository: returning cached products (${_cachedProducts!.length})', context: 'ProductRepository');
+      return _cachedProducts!;
+    }
+
+    // 2. Deduplicate: if a fetch is already in-flight, await it.
+    if (_inflight != null) {
+      DevLogger.logError('ProductRepository: awaiting in-flight fetch', context: 'ProductRepository');
+      return _inflight!;
+    }
+
+    // 3. Start a fresh fetch and store the Future for deduplication.
+    _inflight = _fetchFromApi();
+    try {
+      final products = await _inflight!;
+      _cachedProducts = products;
+      _cacheTime = DateTime.now();
+      return products;
+    } finally {
+      _inflight = null;
+    }
+  }
+
+  Future<List<ProductModel>> _fetchFromApi() async {
     try {
       final response = await _apiService.get(AppUrls.products);
       if (response.statusCode == 200) {
@@ -152,14 +198,24 @@ class ProductRepository {
           }
         }
         if (rawList != null) {
-          return rawList.map((e) => mapBackendToMobileProduct(Map<String, dynamic>.from(e))).toList();
+          return rawList
+              .map((e) => mapBackendToMobileProduct(
+                    Map<String, dynamic>.from(e),
+                  ))
+              .toList();
         }
       }
     } catch (e) {
-      DevLogger.logError('Error fetching products: $e', context: 'ProductRepository');
+      DevLogger.logError('Error fetching products: $e',
+          context: 'ProductRepository');
+      // Return stale cache on error rather than crashing the UI.
+      if (_cachedProducts != null) {
+        DevLogger.logError('ProductRepository: returning stale cache after error',
+            context: 'ProductRepository');
+        return _cachedProducts!;
+      }
       throw Exception('Failed to fetch products');
     }
-
     return [];
   }
 

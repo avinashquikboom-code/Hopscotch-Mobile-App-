@@ -173,8 +173,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -189,7 +187,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final double mainAxisSpacing = isDesktop ? 24 : 16;
     final double crossAxisSpacing = isDesktop ? 24 : 16;
     final int crossAxisCount = isDesktop ? 5 : (isTablet ? 3 : 2);
-    final double childAspectRatio = isDesktop ? 0.72 : (isTablet ? 0.68 : 0.65);
+    // Card uses Expanded for image — childAspectRatio controls total cell height.
+    // 0.65 gives a nice tall card with plenty of image + room for info.
+    final double childAspectRatio = isDesktop ? 0.58 : (isTablet ? 0.62 : 0.65);
 
     final double trendingHeight = isDesktop ? 340 : (isTablet ? 310 : 290);
 
@@ -208,8 +208,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     // Hero height: status bar + location row + search bar + 16:9 image area
     // The image bleeds behind the status bar (edge-to-edge like District / Play Store)
-    final double imageArea =
-        isDesktop ? 360 : (isTablet ? 300 : size.width * 9 / 16);
+    final double imageArea = isDesktop
+        ? 360
+        : (isTablet ? 300 : size.width * 9 / 16);
     final double heroHeight = isDesktop
         ? 420
         : (isTablet ? 400 : topPadding + 116 + imageArea);
@@ -243,19 +244,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: GestureDetector(
               onTap: () => context.push('/search'),
               behavior: HitTestBehavior.opaque,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
                   children: [
-                    const Icon(Icons.search_rounded,
-                        color: Colors.white70, size: 22),
-                    const SizedBox(width: 10),
+                    Icon(Icons.search_rounded, color: Colors.white70, size: 22),
+                    SizedBox(width: 10),
                     Expanded(
                       child: AnimatedSearchHint(
                         prefix: 'Search for ',
                         hints: _searchHints,
-                        style: const TextStyle(
-                            color: Colors.white70, fontSize: 14),
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
                       ),
                     ),
                   ],
@@ -292,8 +291,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 area: 'Set location',
                 city: 'Tap to choose',
               ),
-              data: (loc) =>
-                  _HeroLocationText(area: loc.area, city: loc.city),
+              data: (loc) => _HeroLocationText(area: loc.area, city: loc.city),
             ),
           ),
         ),
@@ -305,8 +303,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       // ── HERO: full-bleed banner that bleeds behind the status bar ──
       if (_selectedTab == 0 &&
           (bannersAsync.isLoading ||
-              (bannersAsync.value != null &&
-                  bannersAsync.value!.isNotEmpty)))
+              (bannersAsync.value != null && bannersAsync.value!.isNotEmpty)))
         SliverAppBar(
           expandedHeight: heroHeight,
           collapsedHeight: 0,
@@ -348,7 +345,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           flexibleSpace: SafeArea(
             child: Padding(
               padding: EdgeInsets.fromLTRB(
-                  horizontalPadding, 8, horizontalPadding, 8),
+                horizontalPadding,
+                8,
+                horizontalPadding,
+                8,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -407,30 +408,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     ];
 
-
     // 4. MAIN CONTENT
     if (_selectedTab == 0) {
       // Home Feed (All tab selected)
       slivers.addAll([
-
-        // Trending Products Header
+        // Trending Products Header — Premium styled
         SliverToBoxAdapter(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(l10n.trendingHighlights, style: responsive.headline5),
-                TextButton(
-                  onPressed: () => context.push(
-                    '/products?filter=trending&categoryName=Trending',
-                  ),
-                  child: Text(
-                    l10n.seeAll,
-                    style: TextStyle(fontSize: responsive.fontSize14),
-                  ),
-                ),
-              ],
+            child: _TrendingHighlightsSectionHeader(
+              title: l10n.trendingHighlights,
+              seeAllLabel: l10n.seeAll,
+              onSeeAll: () => context.push(
+                '/products?filter=trending&categoryName=Trending',
+              ),
             ),
           ),
         ),
@@ -514,24 +505,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
         ),
 
-        // New Arrivals Header
+        // New Arrivals Header — Premium "The New Guard" Card
         SliverToBoxAdapter(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(l10n.theNewGuard, style: responsive.headline5),
-                TextButton(
-                  onPressed: () => context.push(
-                    '/products?filter=new&categoryName=New Arrivals',
-                  ),
-                  child: Text(
-                    l10n.seeAll,
-                    style: TextStyle(fontSize: responsive.fontSize14),
-                  ),
-                ),
-              ],
+            child: _NewGuardSectionHeader(
+              title: l10n.theNewGuard,
+              seeAllLabel: l10n.seeAll,
+              onSeeAll: () => context.push(
+                '/products?filter=new&categoryName=New Arrivals',
+              ),
             ),
           ),
         ),
@@ -841,7 +824,6 @@ class _LocationText extends StatelessWidget {
   }
 }
 
-
 // ─────────────────────────────────────────────────────────────
 // REDESIGNED PREMIUM USER PROFILE AVATAR BUTTON
 // ─────────────────────────────────────────────────────────────
@@ -998,6 +980,454 @@ class _HeroLocationText extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// PREMIUM "TRENDING HIGHLIGHTS" SECTION HEADER
+// ─────────────────────────────────────────────────────────────
+
+class _TrendingHighlightsSectionHeader extends StatefulWidget {
+  final String title;
+  final String seeAllLabel;
+  final VoidCallback onSeeAll;
+
+  const _TrendingHighlightsSectionHeader({
+    required this.title,
+    required this.seeAllLabel,
+    required this.onSeeAll,
+  });
+
+  @override
+  State<_TrendingHighlightsSectionHeader> createState() =>
+      _TrendingHighlightsSectionHeaderState();
+}
+
+class _TrendingHighlightsSectionHeaderState
+    extends State<_TrendingHighlightsSectionHeader>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _shimmerController;
+
+  @override
+  void initState() {
+    super.initState();
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _shimmerController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Trending uses a warm orange/amber palette to differentiate from teal
+    const accentA = Color(0xFFf97316); // orange-500
+    const accentB = Color(0xFFfb923c); // orange-400
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: isDark
+            ? colorScheme.surface
+            : const Color(0xFFf97316).withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+        border: Border.all(
+          color: const Color(0xFFf97316)
+              .withValues(alpha: isDark ? 0.22 : 0.14),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          // ── Gradient accent bar (orange) ──────────────────────
+          Container(
+            width: 4,
+            height: 36,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [accentA, accentB],
+              ),
+              borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+              boxShadow: [
+                BoxShadow(
+                  color: accentA.withValues(alpha: 0.40),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+
+          // ── Title + "HOT" badge ───────────────────────────────
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        widget.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: colorScheme.onSurface,
+                          letterSpacing: -0.3,
+                          height: 1.1,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Animated shimmer "HOT" badge
+                    AnimatedBuilder(
+                      animation: _shimmerController,
+                      builder: (context, child) {
+                        return ShaderMask(
+                          shaderCallback: (bounds) {
+                            return LinearGradient(
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              colors: const [
+                                Color(0xFFf97316),
+                                Color(0xFFfcd34d),
+                                Color(0xFFf97316),
+                              ],
+                              stops: [
+                                (_shimmerController.value - 0.3)
+                                    .clamp(0.0, 1.0),
+                                _shimmerController.value.clamp(0.0, 1.0),
+                                (_shimmerController.value + 0.3)
+                                    .clamp(0.0, 1.0),
+                              ],
+                            ).createShader(bounds);
+                          },
+                          child: child,
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: accentA.withValues(alpha: 0.12),
+                          borderRadius:
+                              BorderRadius.circular(AppTheme.radiusFull),
+                          border: Border.all(
+                            color: accentA.withValues(alpha: 0.30),
+                            width: 1,
+                          ),
+                        ),
+                        child: const Text(
+                          '🔥 HOT',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.8,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'What everyone is shopping right now',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
+                    color: colorScheme.onSurface.withValues(alpha: 0.45),
+                    letterSpacing: 0.1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ── See All pill (orange gradient) ────────────────────
+          GestureDetector(
+            onTap: widget.onSeeAll,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [accentA, accentB],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                boxShadow: [
+                  BoxShadow(
+                    color: accentA.withValues(alpha: 0.28),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    widget.seeAllLabel,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                  const SizedBox(width: 3),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 10,
+                    color: Colors.white,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// PREMIUM "THE NEW GUARD" SECTION HEADER
+// ─────────────────────────────────────────────────────────────
+
+class _NewGuardSectionHeader extends StatefulWidget {
+  final String title;
+  final String seeAllLabel;
+  final VoidCallback onSeeAll;
+
+  const _NewGuardSectionHeader({
+    required this.title,
+    required this.seeAllLabel,
+    required this.onSeeAll,
+  });
+
+  @override
+  State<_NewGuardSectionHeader> createState() => _NewGuardSectionHeaderState();
+}
+
+class _NewGuardSectionHeaderState extends State<_NewGuardSectionHeader>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _shimmerController;
+
+  @override
+  void initState() {
+    super.initState();
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _shimmerController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: isDark
+            ? colorScheme.surface
+            : AppTheme.primaryColor.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+        border: Border.all(
+          color: AppTheme.primaryColor.withValues(alpha: isDark ? 0.20 : 0.12),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          // ── Gradient left accent bar ──────────────────────────
+          Container(
+            width: 4,
+            height: 36,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF0d9488), Color(0xFF14b8a6)],
+              ),
+              borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primaryColor.withValues(alpha: 0.35),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+
+          // ── Title + "NEW" badge ───────────────────────────────
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        widget.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: colorScheme.onSurface,
+                          letterSpacing: -0.3,
+                          height: 1.1,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Animated shimmer "NEW" badge
+                    AnimatedBuilder(
+                      animation: _shimmerController,
+                      builder: (context, child) {
+                        return ShaderMask(
+                          shaderCallback: (bounds) {
+                            return LinearGradient(
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              colors: const [
+                                Color(0xFF0d9488),
+                                Color(0xFF5eead4),
+                                Color(0xFF0d9488),
+                              ],
+                              stops: [
+                                (_shimmerController.value - 0.3).clamp(
+                                  0.0,
+                                  1.0,
+                                ),
+                                _shimmerController.value.clamp(0.0, 1.0),
+                                (_shimmerController.value + 0.3).clamp(
+                                  0.0,
+                                  1.0,
+                                ),
+                              ],
+                            ).createShader(bounds);
+                          },
+                          child: child,
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(
+                            AppTheme.radiusFull,
+                          ),
+                          border: Border.all(
+                            color: AppTheme.primaryColor.withValues(
+                              alpha: 0.30,
+                            ),
+                            width: 1,
+                          ),
+                        ),
+                        child: const Text(
+                          'NEW',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.2,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Freshest arrivals, just for you',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
+                    color: colorScheme.onSurface.withValues(alpha: 0.45),
+                    letterSpacing: 0.1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ── See All pill button ───────────────────────────────
+          GestureDetector(
+            onTap: widget.onSeeAll,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF0d9488), Color(0xFF14b8a6)],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.25),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    widget.seeAllLabel,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                  const SizedBox(width: 3),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 10,
+                    color: Colors.white,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

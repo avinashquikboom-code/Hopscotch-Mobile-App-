@@ -6,11 +6,45 @@ import 'package:hopscotch/constants/app_urls.dart';
 import 'package:hopscotch/models/category_model.dart';
 
 class CategoryRepository {
+  static List<CategoryModel>? _cachedCategories;
+  static DateTime? _cacheTime;
+  static const Duration _cacheTtl = Duration(minutes: 10);
+  static Future<List<CategoryModel>>? _inflight;
+
+  static bool get _isCacheValid =>
+      _cachedCategories != null &&
+      _cacheTime != null &&
+      DateTime.now().difference(_cacheTime!) < _cacheTtl;
+
+  static void clearCache() {
+    _cachedCategories = null;
+    _cacheTime = null;
+    _inflight = null;
+  }
+
   final ApiService _apiService;
 
   CategoryRepository(this._apiService);
 
-  Future<List<CategoryModel>> getCategories() async {
+  Future<List<CategoryModel>> getCategories({bool forceRefresh = false}) async {
+    if (!forceRefresh && _isCacheValid) {
+      return _cachedCategories!;
+    }
+    if (_inflight != null) {
+      return _inflight!;
+    }
+    _inflight = _fetchFromApi();
+    try {
+      final res = await _inflight!;
+      _cachedCategories = res;
+      _cacheTime = DateTime.now();
+      return res;
+    } finally {
+      _inflight = null;
+    }
+  }
+
+  Future<List<CategoryModel>> _fetchFromApi() async {
     try {
       final response = await _apiService.get(AppUrls.categories);
       if (response.statusCode == 200) {
@@ -84,6 +118,9 @@ class CategoryRepository {
       }
     } catch (e) {
       DevLogger.logError('Error fetching categories: $e', context: 'CategoryRepository');
+      if (_cachedCategories != null) {
+        return _cachedCategories!;
+      }
       return [];
     }
 

@@ -104,3 +104,42 @@ final startupStateProvider = FutureProvider<StartupState>((ref) async {
   return hasSession ? StartupState.home : StartupState.login;
 });
 
+// ── APP INITIALIZER CIRCUIT BREAKER ─────────────────────────
+class AppInitializer {
+  static int _consecutiveFailedRounds = 0;
+  static const int _maxRounds = 2;
+
+  static int get consecutiveFailedRounds => _consecutiveFailedRounds;
+  static bool get isCircuitOpen => _consecutiveFailedRounds >= _maxRounds;
+
+  static void reset() {
+    _consecutiveFailedRounds = 0;
+  }
+
+  static Future<void> initialize({
+    required Future<void> Function() fetchAuthMe,
+    required Future<void> Function() fetchCategories,
+    required Future<void> Function() fetchProducts,
+    required Future<void> Function() fetchBanners,
+  }) async {
+    if (_consecutiveFailedRounds >= _maxRounds) {
+      // Ruk jao — user ko manual retry button dikhao, loop mat chalao
+      throw Exception('Unable to connect. Please check your connection and retry.');
+    }
+
+    try {
+      await Future.wait([
+        fetchAuthMe(),
+        fetchCategories(),
+        fetchProducts(),
+        fetchBanners(),
+      ]);
+      _consecutiveFailedRounds = 0; // success pe reset
+    } catch (e) {
+      _consecutiveFailedRounds++;
+      rethrow; // UI ko error state dikhane do, khud dubara mat bulao
+    }
+  }
+}
+
+

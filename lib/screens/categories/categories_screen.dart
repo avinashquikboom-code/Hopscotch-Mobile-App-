@@ -7,6 +7,7 @@ import 'package:hopscotch/models/category_model.dart';
 import 'package:hopscotch/repositories/cart_wishlist_repository.dart';
 import 'package:hopscotch/repositories/product_repository.dart';
 import 'package:hopscotch/utils/navigation_utils.dart';
+import 'package:hopscotch/constants/app_urls.dart';
 
 class CategoriesScreen extends ConsumerStatefulWidget {
   const CategoriesScreen({super.key});
@@ -549,14 +550,19 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text(
-                                        'Products in ${selectedCategory.name}',
-                                        style: const TextStyle(
-                                          fontSize: 14.5,
-                                          fontWeight: FontWeight.bold,
-                                          letterSpacing: 0.1,
+                                      Expanded(
+                                        child: Text(
+                                          'Products in ${selectedCategory.name}',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontSize: 14.5,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 0.1,
+                                          ),
                                         ),
                                       ),
+                                      const SizedBox(width: 8),
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                         decoration: BoxDecoration(
@@ -612,7 +618,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                                                       child: ClipRRect(
                                                         borderRadius: BorderRadius.circular(14),
                                                         child: Image.network(
-                                                          product.imageUrl,
+                                                          AppUrls.resolveUrl(product.imageUrl),
                                                           fit: BoxFit.cover,
                                                           errorBuilder: (context, error, stackTrace) => const Icon(Icons.style_outlined),
                                                         ),

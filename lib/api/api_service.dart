@@ -66,6 +66,44 @@ class ApiService {
           _logColored('$_cyan[API]$_reset $_red❌$_reset Error Data: $_red${error.response?.data}$_reset');
         }
         
+        // Handle 429 Rate Limit with exponential backoff retry
+        if (error.response?.statusCode == 429) {
+          final retryCount = (error.requestOptions.extra['retry_count'] as int? ?? 0) + 1;
+          const maxRetries = 3;
+          if (retryCount <= maxRetries) {
+            final delayMs = 1200 * retryCount; // 1.2s, 2.4s, 3.6s
+            _logColored('$_cyan[API]$_reset $_yellow⏳$_reset Rate limited (429). Retrying request in ${delayMs}ms (Attempt $retryCount/$maxRetries)...');
+            await Future.delayed(Duration(milliseconds: delayMs));
+            
+            error.requestOptions.extra['retry_count'] = retryCount;
+            try {
+              dynamic requestData = error.requestOptions.data;
+              if (requestData is FormData) {
+                requestData = requestData.clone();
+              }
+
+              final opts = Options(
+                method: error.requestOptions.method,
+                headers: error.requestOptions.headers,
+                responseType: error.requestOptions.responseType,
+                contentType: error.requestOptions.contentType,
+                extra: error.requestOptions.extra,
+              );
+              final response = await _dio.request(
+                error.requestOptions.path,
+                data: requestData,
+                queryParameters: error.requestOptions.queryParameters,
+                options: opts,
+              );
+              return handler.resolve(response);
+            } catch (retryError) {
+              if (retryError is DioException) {
+                return handler.next(retryError);
+              }
+            }
+          }
+        }
+
         // Handle 401 errors with token refresh
         final path = error.requestOptions.path;
         final isAuthEndpoint = path.contains(AppUrls.refreshToken) || path.contains(AppUrls.logout);

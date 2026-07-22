@@ -5,11 +5,47 @@ import 'package:hopscotch/providers/api_provider.dart';
 import 'package:hopscotch/utils/dev_logger.dart';
 
 class ProfileRepository {
+  static Map<String, dynamic>? _cachedProfile;
+  static DateTime? _cacheTime;
+  static const Duration _cacheTtl = Duration(minutes: 5);
+  static Future<Map<String, dynamic>?>? _inflight;
+
+  static bool get _isCacheValid =>
+      _cachedProfile != null &&
+      _cacheTime != null &&
+      DateTime.now().difference(_cacheTime!) < _cacheTtl;
+
+  static void clearCache() {
+    _cachedProfile = null;
+    _cacheTime = null;
+    _inflight = null;
+  }
+
   final ApiService _apiService;
 
   ProfileRepository(this._apiService);
 
-  Future<Map<String, dynamic>?> getProfile() async {
+  Future<Map<String, dynamic>?> getProfile({bool forceRefresh = false}) async {
+    if (!forceRefresh && _isCacheValid) {
+      return _cachedProfile;
+    }
+    if (_inflight != null) {
+      return _inflight;
+    }
+    _inflight = _fetchFromApi();
+    try {
+      final profile = await _inflight;
+      if (profile != null) {
+        _cachedProfile = profile;
+        _cacheTime = DateTime.now();
+      }
+      return profile;
+    } finally {
+      _inflight = null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> _fetchFromApi() async {
     try {
       final authApi = AuthApi(_apiService);
       final response = await authApi.getProfile();
@@ -19,6 +55,9 @@ class ProfileRepository {
       return null;
     } catch (e) {
       DevLogger.logError('Error fetching profile: $e', context: 'ProfileRepository');
+      if (_cachedProfile != null) {
+        return _cachedProfile;
+      }
       return null;
     }
   }
@@ -44,7 +83,7 @@ class ProfileNotifier extends StateNotifier<Map<String, dynamic>?> {
   }
 
   Future<void> refreshProfile() async {
-    final profile = await _repository.getProfile();
+    final profile = await _repository.getProfile(forceRefresh: true);
     state = profile;
   }
 

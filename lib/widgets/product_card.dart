@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:hopscotch/constants/app_urls.dart';
 import 'package:hopscotch/models/product_model.dart';
 import 'package:hopscotch/repositories/cart_wishlist_repository.dart';
 import 'package:hopscotch/theme/app_theme.dart';
@@ -29,27 +31,30 @@ class ProductCard extends ConsumerWidget {
         ? '${heroTagPrefix}_product_image_${product.id}'
         : 'product_image_${product.id}';
 
+    // Always resolve the image URL so relative paths load correctly
+    final resolvedImageUrl = AppUrls.resolveUrl(product.imageUrl);
+
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
+      child: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(AppTheme.radiusL),
-          border: Border.all(color: Theme.of(context).colorScheme.outline, width: 1),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
+            width: 1,
+          ),
           boxShadow: AppTheme.softShadow,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Product Image & Badge Header
-            AspectRatio(
-              aspectRatio: 1,
+            // ── Product Image — Expanded fills available grid cell height ──
+            Expanded(
               child: Stack(
+                fit: StackFit.expand,
                 children: [
-                  // Image with Hero & Shimmer & Fallback Gradients
                   Positioned.fill(
                     child: ClipRRect(
                       borderRadius: const BorderRadius.only(
@@ -58,147 +63,98 @@ class ProductCard extends ConsumerWidget {
                       ),
                       child: Hero(
                         tag: '${heroTag}_image',
-                        child: Image.network(
-                          product.imageUrl,
-                          fit: BoxFit.cover,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Container(
-                              color: Theme.of(context).colorScheme.outline.withValues(
-                                alpha: 0.2,
-                              ),
-                              child: const Center(
-                                child: SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 1.5,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      AppTheme.primaryColor,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                          errorBuilder: (context, error, stackTrace) {
-                            // High-fashion solid fallback gradient if image is not visible/offline
-                            return Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    AppTheme.primaryColor.withValues(
-                                      alpha: 0.05,
-                                    ),
-                                    AppTheme.primaryColor.withValues(
-                                      alpha: 0.15,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      _getCategoryIcon(product.categoryId),
-                                      color: AppTheme.primaryColor.withValues(
-                                        alpha: 0.3,
-                                      ),
-                                      size: 36,
-                                    ),
-                                    const SizedBox(height: AppTheme.spaceS),
-                                    Text(
-                                      'AURA',
-                                      style: TextStyle(
-                                        fontFamily: 'Playfair Display',
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 2,
-                                        color: AppTheme.primaryColor.withValues(
-                                          alpha: 0.4,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
+                        child: resolvedImageUrl.isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: resolvedImageUrl,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                height: double.infinity,
+                                placeholder: (_, __) =>
+                                    _buildPlaceholder(context),
+                                errorWidget: (_, __, ___) =>
+                                    _buildPlaceholder(context),
+                              )
+                            : _buildPlaceholder(context),
                       ),
                     ),
                   ),
-                  // Sale / Discount Badge
+
+                  // Discount badge
                   if (product.discountPercentage > 0)
                     Positioned(
                       top: AppTheme.spaceM,
                       left: AppTheme.spaceM,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: AppTheme.accentColor,
-                          borderRadius: BorderRadius.circular(AppTheme.radiusS),
+                          borderRadius:
+                              BorderRadius.circular(AppTheme.radiusXS),
                         ),
                         child: Text(
                           '${product.discountPercentage.toInt()}% OFF',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 9,
+                            letterSpacing: 0.3,
+                          ),
                         ),
                       ),
                     ),
-                  // New Arrival Badge
+
+                  // New arrival badge
                   if (product.isNewArrival && product.discountPercentage == 0)
                     Positioned(
                       top: AppTheme.spaceM,
                       left: AppTheme.spaceM,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: AppTheme.secondaryColor,
-                          borderRadius: BorderRadius.circular(AppTheme.radiusS),
+                          borderRadius:
+                              BorderRadius.circular(AppTheme.radiusXS),
                         ),
-                        child: Text(
+                        child: const Text(
                           'NEW',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 9,
+                            letterSpacing: 0.5,
+                          ),
                         ),
                       ),
                     ),
-                  // Wishlist Toggle with ripple effect
+
+                  // Wishlist button (top-right)
                   Positioned(
                     top: AppTheme.spaceS,
                     right: AppTheme.spaceS,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surface
+                            .withValues(alpha: 0.92),
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 8,
+                            color: Colors.black.withValues(alpha: 0.10),
+                            blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),
                         ],
                       ),
                       child: AnimatedHeartButton(
                         isFav: isFav,
-                        size: 20,
-                        baseColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                        size: 18,
+                        baseColor: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.6),
                         onTap: () {
                           ref
                               .read(wishlistProvider.notifier)
@@ -220,7 +176,8 @@ class ProductCard extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  // Share Catalog button
+
+                  // Share button (bottom-right)
                   Positioned(
                     bottom: AppTheme.spaceS,
                     right: AppTheme.spaceS,
@@ -230,19 +187,23 @@ class ProductCard extends ConsumerWidget {
                           context: context,
                           isScrollControlled: true,
                           backgroundColor: Colors.transparent,
-                          builder: (context) => ShareEarnBottomSheet(product: product),
+                          builder: (context) =>
+                              ShareEarnBottomSheet(product: product),
                         );
                       },
                       behavior: HitTestBehavior.opaque,
                       child: Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(7),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surface
+                              .withValues(alpha: 0.92),
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 8,
+                              color: Colors.black.withValues(alpha: 0.10),
+                              blurRadius: 6,
                               offset: const Offset(0, 2),
                             ),
                           ],
@@ -250,117 +211,118 @@ class ProductCard extends ConsumerWidget {
                         child: Icon(
                           Remix.share_forward_line,
                           color: Theme.of(context).colorScheme.onSurface,
-                          size: 20,
+                          size: 18,
                         ),
                       ),
                     ),
                   ),
                 ],
               ),
-            ),
+            ),  // end Expanded
 
-            // Product Meta Information
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.spaceM,
-                  vertical: 8,
-                ),
-                child: SingleChildScrollView(
-                  physics: const NeverScrollableScrollPhysics(),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
+            // ── Product Info — fixed layout so price is never clipped ──────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Subcategory tag
+                  Text(
+                    product.subcategory.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.45),
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
+                      fontSize: 9,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+
+                  // Product title
+                  Text(
+                    product.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      height: 1.25,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12.5,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+
+                  // Rating row
+                  Row(
                     children: [
-                      // Category / Subcategory tag with uppercase
+                      const Icon(Icons.star_rounded,
+                          color: AppTheme.accentColor, size: 13),
+                      const SizedBox(width: 2),
                       Text(
-                        product.subcategory.toUpperCase(),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
-                          fontSize: 10,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      // Title with better typography
-                      Text(
-                        product.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        product.rating.toStringAsFixed(1),
+                        style: TextStyle(
                           color: Theme.of(context).colorScheme.onSurface,
-                          height: 1.2,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      // Rating
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.star_rounded,
-                            color: AppTheme.accentColor,
-                            size: 14,
-                          ),
-                          const SizedBox(width: 2),
-                          Text(
-                            product.rating.toString(),
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurface,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 11,
-                                ),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '(${product.reviewCount})',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
-                                  fontSize: 10,
-                                ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      // Prices
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                          textBaseline: TextBaseline.alphabetic,
-                          children: [
-                            Text(
-                              currency.formatPrice(product.price),
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(
-                                    color: AppTheme.primaryColor,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                            ),
-                            if (product.originalPrice > product.price) ...[
-                              const SizedBox(width: AppTheme.spaceS),
-                              Text(
-                                currency.formatPrice(product.originalPrice),
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(
-                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
-                                      decoration: TextDecoration.lineThrough,
-                                      fontSize: 11,
-                                    ),
-                              ),
-                            ],
-                          ],
+                      const SizedBox(width: 3),
+                      Text(
+                        '(${product.reviewCount})',
+                        style: TextStyle(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.4),
+                          fontSize: 10,
                         ),
                       ),
                     ],
                   ),
-                ),
+                  const SizedBox(height: 5),
+
+                  // Price row — always fully visible, never clipped
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          currency.formatPrice(product.price),
+                          style: const TextStyle(
+                            color: AppTheme.primaryColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13.5,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (product.originalPrice > product.price) ...[
+                        const SizedBox(width: 5),
+                        Flexible(
+                          child: Text(
+                            currency.formatPrice(product.originalPrice),
+                            style: TextStyle(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.38),
+                              decoration: TextDecoration.lineThrough,
+                              fontSize: 10.5,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
@@ -369,18 +331,19 @@ class ProductCard extends ConsumerWidget {
     );
   }
 
-  IconData _getCategoryIcon(String categoryId) {
-    switch (categoryId) {
-      case 'cat_womens':
-        return Icons.woman_rounded;
-      case 'cat_mens':
-        return Icons.man_rounded;
-      case 'cat_footwear':
-        return Icons.ice_skating_rounded;
-      case 'cat_kids':
-        return Icons.child_care_rounded;
-      default:
-        return Icons.checkroom_rounded;
-    }
+  /// Clean placeholder — no "AURA" text, just a subtle hanger icon
+  Widget _buildPlaceholder(BuildContext context) {
+    return Container(
+      color: AppTheme.primaryColor.withValues(alpha: 0.06),
+      child: Center(
+        child: Icon(
+          Icons.checkroom_rounded,
+          color: AppTheme.primaryColor.withValues(alpha: 0.22),
+          size: 40,
+        ),
+      ),
+    );
   }
+
 }
+
