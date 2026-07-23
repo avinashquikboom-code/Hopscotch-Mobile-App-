@@ -36,20 +36,21 @@ class AboutScreen extends StatelessWidget {
                       boxShadow: AppTheme.intenseShadow,
                     ),
                     child: Center(
-                      child: Text(
-                        'AURA',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: responsive.fontSize28,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 2,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                        child: Image.asset(
+                          'assets/images/logo.png',
+                          width: responsive.spacing(72),
+                          height: responsive.spacing(72),
+                          fit: BoxFit.contain,
                         ),
                       ),
                     ),
                   ),
                   SizedBox(height: responsive.spacing(AppTheme.spaceM)),
                   Text(
-                    'FCI SELLER',
+                    'FCI SELLER E-COMMERCE',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: responsive.fontSize18,
                       fontWeight: FontWeight.bold,

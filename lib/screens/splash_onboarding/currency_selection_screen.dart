@@ -45,23 +45,26 @@ class _CurrencySelectionScreenState
                         ),
                       ),
                       alignment: Alignment.center,
-                      child: Text(
-                        'A',
-                        style: TextStyle(
-                          color: const Color(0xFFC59F3E),
-                          fontSize: responsive.fontSize48,
-                          fontWeight: FontWeight.w300,
+                      padding: EdgeInsets.all(responsive.spacing(12)),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(40),
+                        child: Image.asset(
+                          'assets/images/logo.png',
+                          width: responsive.spacing(64),
+                          height: responsive.spacing(64),
+                          fit: BoxFit.contain,
                         ),
                       ),
                     ),
                     SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
                     Text(
-                      'FCI SELLER',
+                      'FCI SELLER E-COMMERCE',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppTheme.textPrimaryColor,
-                        fontSize: responsive.fontSize24,
+                        fontSize: responsive.fontSize20,
                         fontWeight: FontWeight.bold,
-                        letterSpacing: 4.0,
+                        letterSpacing: 3.0,
                       ),
                     ),
                     SizedBox(height: responsive.spacing(AppTheme.spaceM)),

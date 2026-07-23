@@ -138,29 +138,29 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Ultra-Fine Gold Line Circular Monogram
+                        // Logo Container
                         Container(
                           width: responsive.spacing(100),
                           height: responsive.spacing(100),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(
-                              color: const Color(0xFFC59F3E).withValues(
-                                alpha: 0.35,
-                              ), // Delicate champagne gold
-                              width: 1.0,
-                            ),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.05),
+                                blurRadius: 15,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
                           ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            'A',
-                            style: TextStyle(
-                              color: const Color(
-                                0xFFC59F3E,
-                              ), // Pure luxury gold
-                              fontSize: responsive.fontSize48,
-                              fontWeight: FontWeight.w300,
-                              letterSpacing: 0,
+                          padding: EdgeInsets.all(responsive.spacing(12)),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(50),
+                            child: Image.asset(
+                              'assets/images/logo.png',
+                              width: responsive.spacing(76),
+                              height: responsive.spacing(76),
+                              fit: BoxFit.contain,
                             ),
                           ),
                         ),
@@ -168,12 +168,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
                         // Crisp Minimal Typography
                         Text(
-                          'FCI SELLER',
+                          'FCI SELLER E-COMMERCE',
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             color: AppTheme.textPrimaryColor,
-                            fontSize: responsive.fontSize32,
+                            fontSize: responsive.fontSize24,
                             fontWeight: FontWeight.bold,
-                            letterSpacing: 6.0,
+                            letterSpacing: 4.0,
                           ),
                         ),
                         SizedBox(height: responsive.spacing(AppTheme.spaceS)),

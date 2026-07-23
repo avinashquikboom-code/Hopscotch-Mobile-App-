@@ -73,7 +73,7 @@ class MyApp extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
     
     return MaterialApp.router(
-      title: 'FCISeller',
+      title: 'FCI Seller E-commerce',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
