@@ -123,17 +123,13 @@ class AuthRepository {
     try {
       final response = await _authApi.getProfile();
       if (response.statusCode == 200) {
-        final data = response.data;
-        return UserModel(
-          id: data['id'] ?? '',
-          email: data['email'] ?? '',
-          name: data['name'] ?? 'User',
-          phoneNumber: data['phone'] ?? '',
-          avatarUrl: data['avatarUrl'],
-          address: data['address'],
-          city: data['city'],
-          zipCode: data['zipCode'],
-        );
+        final raw = response.data;
+        final userData = (raw is Map<String, dynamic>)
+            ? (raw['data'] ?? raw['user'] ?? raw)
+            : raw;
+        if (userData is Map<String, dynamic>) {
+          return UserModel.fromJson(userData);
+        }
       }
     } catch (e) {
       // Return null if user not found

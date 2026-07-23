@@ -15,6 +15,7 @@ import 'package:hopscotch/repositories/banner_repository.dart';
 import 'package:hopscotch/widgets/animated_search_hint.dart';
 import 'package:hopscotch/widgets/district_hero_header.dart';
 import 'package:hopscotch/widgets/product_card.dart';
+import 'package:hopscotch/widgets/trending_product_card.dart';
 import 'package:hopscotch/widgets/skeleton_loaders.dart';
 import 'package:hopscotch/l10n/app_localizations.dart';
 import 'dart:io';
@@ -190,9 +191,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final int crossAxisCount = isDesktop ? 5 : (isTablet ? 3 : 2);
     // Card uses Expanded for image — childAspectRatio controls total cell height.
     // 0.65 gives a nice tall card with plenty of image + room for info.
-    final double childAspectRatio = isDesktop ? 0.58 : (isTablet ? 0.62 : 0.65);
+    final double childAspectRatio = isDesktop ? 0.72 : (isTablet ? 0.70 : 0.72);
 
-    final double trendingHeight = isDesktop ? 340 : (isTablet ? 310 : 290);
+    final double trendingHeight = isDesktop ? 270 : (isTablet ? 250 : 230);
 
     final location = ref.watch(userLocationProvider);
     final topPadding = MediaQuery.of(context).padding.top;
@@ -439,10 +440,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             child: _TrendingHighlightsSectionHeader(
               title: l10n.trendingHighlights,
-              seeAllLabel: l10n.seeAll,
-              onSeeAll: () => context.push(
-                '/products?filter=trending&categoryName=Trending',
-              ),
             ),
           ),
         ),
@@ -489,11 +486,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   itemBuilder: (context, index) {
                     final product = products[index];
                     return Container(
-                      width: responsive.spacing(175),
+                      width: responsive.spacing(160),
                       margin: EdgeInsets.only(
-                        right: responsive.spacing(AppTheme.spaceL),
+                        right: responsive.spacing(12),
                       ),
-                      child: ProductCard(
+                      child: TrendingProductCard(
                         product: product,
                         heroTagPrefix: 'home_trending',
                         onTap: () => safeNavigate(
@@ -510,9 +507,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                 itemCount: 3,
                 itemBuilder: (context, index) => Container(
-                  width: responsive.spacing(175),
+                  width: responsive.spacing(160),
                   margin: EdgeInsets.only(
-                    right: responsive.spacing(AppTheme.spaceL),
+                    right: responsive.spacing(12),
                   ),
                   child: const ProductCardSkeleton(),
                 ),
@@ -532,10 +529,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             child: _NewGuardSectionHeader(
               title: l10n.theNewGuard,
-              seeAllLabel: l10n.seeAll,
-              onSeeAll: () => context.push(
-                '/products?filter=new&categoryName=New Arrivals',
+              onSeeAll: () => safeNavigate(
+                context,
+                '/products?section=new_arrivals',
               ),
+              seeAllLabel: 'Show All',
             ),
           ),
         ),
@@ -576,6 +574,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 );
               }
+              final displayProducts = products.take(4).toList();
               return SliverGrid(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: crossAxisCount,
@@ -584,7 +583,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   childAspectRatio: childAspectRatio,
                 ),
                 delegate: SliverChildBuilderDelegate((context, index) {
-                  final product = products[index];
+                  final product = displayProducts[index];
                   return ProductCard(
                     product: product,
                     heroTagPrefix: 'home_new',
@@ -593,7 +592,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       '/product/${product.id}?heroTagPrefix=home_new',
                     ),
                   );
-                }, childCount: products.length),
+                }, childCount: displayProducts.length),
               );
             },
             loading: () => SliverGrid(
@@ -613,7 +612,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
         ),
-        const SliverToBoxAdapter(child: SizedBox(height: 120)),
+        const SliverToBoxAdapter(child: SizedBox(height: 24)),
       ]);
     } else {
       // Category Tab Selected
@@ -1011,13 +1010,13 @@ class _HeroLocationText extends StatelessWidget {
 
 class _TrendingHighlightsSectionHeader extends StatefulWidget {
   final String title;
-  final String seeAllLabel;
-  final VoidCallback onSeeAll;
+  final VoidCallback? onSeeAll;
+  final String? seeAllLabel;
 
   const _TrendingHighlightsSectionHeader({
     required this.title,
-    required this.seeAllLabel,
-    required this.onSeeAll,
+    this.onSeeAll,
+    this.seeAllLabel,
   });
 
   @override
@@ -1050,19 +1049,19 @@ class _TrendingHighlightsSectionHeaderState
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Trending uses a warm orange/amber palette to differentiate from teal
-    const accentA = Color(0xFFf97316); // orange-500
-    const accentB = Color(0xFFfb923c); // orange-400
+    // Trending uses a refined teal palette matching the app theme
+    const accentA = Color(0xFF0d9488); // teal-600
+    const accentB = Color(0xFF14b8a6); // teal-500
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: isDark
             ? colorScheme.surface
-            : const Color(0xFFf97316).withValues(alpha: 0.04),
+            : const Color(0xFF0d9488).withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(AppTheme.radiusXL),
         border: Border.all(
-          color: const Color(0xFFf97316)
+          color: const Color(0xFF0d9488)
               .withValues(alpha: isDark ? 0.22 : 0.14),
           width: 1,
         ),
@@ -1125,9 +1124,9 @@ class _TrendingHighlightsSectionHeaderState
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                               colors: const [
-                                Color(0xFFf97316),
-                                Color(0xFFfcd34d),
-                                Color(0xFFf97316),
+                                Color(0xFF0d9488),
+                                Color(0xFF2dd4bf),
+                                Color(0xFF0d9488),
                               ],
                               stops: [
                                 (_shimmerController.value - 0.3)
@@ -1181,47 +1180,48 @@ class _TrendingHighlightsSectionHeaderState
           ),
 
           // ── See All pill (orange gradient) ────────────────────
-          GestureDetector(
-            onTap: widget.onSeeAll,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [accentA, accentB],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ),
-                borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-                boxShadow: [
-                  BoxShadow(
-                    color: accentA.withValues(alpha: 0.28),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
+          if (widget.onSeeAll != null && widget.seeAllLabel != null)
+            GestureDetector(
+              onTap: widget.onSeeAll,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [accentA, accentB],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
                   ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    widget.seeAllLabel,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      letterSpacing: 0.3,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                  boxShadow: [
+                    BoxShadow(
+                      color: accentA.withValues(alpha: 0.28),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
                     ),
-                  ),
-                  const SizedBox(width: 3),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 10,
-                    color: Colors.white,
-                  ),
-                ],
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      widget.seeAllLabel!,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    const SizedBox(width: 3),
+                    const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 10,
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -1234,13 +1234,13 @@ class _TrendingHighlightsSectionHeaderState
 
 class _NewGuardSectionHeader extends StatefulWidget {
   final String title;
-  final String seeAllLabel;
-  final VoidCallback onSeeAll;
+  final VoidCallback? onSeeAll;
+  final String? seeAllLabel;
 
   const _NewGuardSectionHeader({
     required this.title,
-    required this.seeAllLabel,
-    required this.onSeeAll,
+    this.onSeeAll,
+    this.seeAllLabel,
   });
 
   @override
@@ -1406,47 +1406,48 @@ class _NewGuardSectionHeaderState extends State<_NewGuardSectionHeader>
           ),
 
           // ── See All pill button ───────────────────────────────
-          GestureDetector(
-            onTap: widget.onSeeAll,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF0d9488), Color(0xFF14b8a6)],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ),
-                borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.25),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
+          if (widget.onSeeAll != null && widget.seeAllLabel != null)
+            GestureDetector(
+              onTap: widget.onSeeAll,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF0d9488), Color(0xFF14b8a6)],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
                   ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    widget.seeAllLabel,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      letterSpacing: 0.3,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.25),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
                     ),
-                  ),
-                  const SizedBox(width: 3),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 10,
-                    color: Colors.white,
-                  ),
-                ],
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      widget.seeAllLabel!,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    const SizedBox(width: 3),
+                    const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 10,
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

@@ -53,6 +53,59 @@ class AddressModel {
     );
   }
 
+  factory AddressModel.fromJson(Map<String, dynamic> json) {
+    final rawPhone = json['phone'] ??
+        json['phoneNumber'] ??
+        json['mobile'] ??
+        json['mobileNo'] ??
+        json['mobile_number'] ??
+        json['contactPhone'] ??
+        json['contactNumber'] ??
+        json['phone_no'] ??
+        json['contact'] ??
+        '';
+
+    return AddressModel(
+      id: (json['id'] ?? json['_id'] ?? '').toString(),
+      fullName: (json['fullName'] ?? json['name'] ?? json['userName'] ?? '').toString(),
+      phone: rawPhone.toString().trim(),
+      addressLine1: (json['addressLine1'] ?? json['street'] ?? json['line1'] ?? json['address'] ?? '').toString(),
+      addressLine2: (json['addressLine2'] ?? json['line2'] ?? json['area'] ?? json['landmark'] ?? '').toString(),
+      city: (json['city'] ?? '').toString(),
+      state: (json['state'] ?? '').toString(),
+      pincode: (json['pincode'] ?? json['zipCode'] ?? json['zip'] ?? json['postalCode'] ?? '').toString(),
+      country: (json['country'] ?? 'India').toString(),
+      isDefault: json['isDefault'] as bool? ?? json['default'] as bool? ?? false,
+      type: (json['type'] ?? 'home').toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'fullName': fullName,
+      'name': fullName,
+      'phone': phone,
+      'phoneNumber': phone,
+      'mobile': phone,
+      'mobileNo': phone,
+      'mobile_number': phone,
+      'contactPhone': phone,
+      'addressLine1': addressLine1,
+      'line1': addressLine1,
+      'street': addressLine1,
+      'addressLine2': addressLine2,
+      'line2': addressLine2,
+      'city': city,
+      'state': state,
+      'pincode': pincode,
+      'zipCode': pincode,
+      'country': country,
+      'isDefault': isDefault,
+      'type': type,
+    };
+  }
+
   String get fullAddress {
     return '$addressLine1, $addressLine2, $city, $state - $pincode, $country';
   }

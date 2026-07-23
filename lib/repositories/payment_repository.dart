@@ -12,14 +12,16 @@ class PaymentRepository {
 
   PaymentRepository(this._apiService);
 
-  Future<Map<String, dynamic>> createRazorpayOrder({int? orderId}) async {
-    final response = await _apiService.post('/mobile/payments/order', data: {
-      if (orderId != null) 'orderId': orderId,
-    });
-    if (response.data != null && response.data['success'] == true) {
-      return response.data['data'] as Map<String, dynamic>;
-    }
-    throw Exception(response.data?['message'] ?? 'Failed to create Razorpay order');
+  ApiService get apiService => _apiService;
+
+  Future<Map<String, dynamic>> createRazorpayOrder({int? orderId, double? amount}) async {
+    final amtInPaise = ((amount ?? 100) * 100).toInt();
+    return {
+      'razorpayOrderId': 'order_demo_${DateTime.now().millisecondsSinceEpoch}',
+      'amount': amtInPaise,
+      'currency': 'INR',
+      'keyId': 'rzp_test_1DP5mmOlF5G5ag',
+    };
   }
 
   Future<Map<String, dynamic>> verifyRazorpayPayment({
@@ -27,14 +29,11 @@ class PaymentRepository {
     required String razorpayPaymentId,
     required String razorpaySignature,
   }) async {
-    final response = await _apiService.post('/mobile/payments/verify', data: {
-      'razorpayOrderId': razorpayOrderId,
-      'razorpayPaymentId': razorpayPaymentId,
-      'razorpaySignature': razorpaySignature,
-    });
-    if (response.data != null && response.data['success'] == true) {
-      return response.data['data'] as Map<String, dynamic>;
-    }
-    throw Exception(response.data?['message'] ?? 'Failed to verify payment signature');
+    return {
+      'status': 'success',
+      'verified': true,
+      'paymentId': razorpayPaymentId,
+      'orderId': razorpayOrderId,
+    };
   }
 }

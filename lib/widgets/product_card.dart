@@ -7,8 +7,6 @@ import 'package:hopscotch/repositories/cart_wishlist_repository.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/providers/currency_provider.dart';
 import 'package:hopscotch/widgets/animated_heart_button.dart';
-import 'package:hopscotch/widgets/share_earn_bottom_sheet.dart';
-import 'package:remixicon/remixicon.dart';
 
 class ProductCard extends ConsumerWidget {
   final ProductModel product;
@@ -50,99 +48,39 @@ class ProductCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Product Image — Expanded fills available grid cell height ──
+            // ── Image Section ───────────────────────────────────────────
             Expanded(
               child: Stack(
                 fit: StackFit.expand,
                 children: [
                   Positioned.fill(
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(AppTheme.radiusL),
-                        topRight: Radius.circular(AppTheme.radiusL),
-                      ),
-                      child: Hero(
-                        tag: '${heroTag}_image',
-                        child: resolvedImageUrl.isNotEmpty
-                            ? CachedNetworkImage(
-                                imageUrl: resolvedImageUrl,
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                                height: double.infinity,
-                                placeholder: (_, __) =>
-                                    _buildPlaceholder(context),
-                                errorWidget: (_, __, ___) =>
-                                    _buildPlaceholder(context),
-                              )
-                            : _buildPlaceholder(context),
-                      ),
+                    child: Hero(
+                      tag: heroTag,
+                      child: resolvedImageUrl.isNotEmpty
+                          ? CachedNetworkImage(
+                              imageUrl: resolvedImageUrl,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                              placeholder: (_, __) => _buildPlaceholder(context),
+                              errorWidget: (_, __, ___) => _buildPlaceholder(context),
+                            )
+                          : _buildPlaceholder(context),
                     ),
                   ),
 
-                  // Discount badge
-                  if (product.discountPercentage > 0)
-                    Positioned(
-                      top: AppTheme.spaceM,
-                      left: AppTheme.spaceM,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppTheme.accentColor,
-                          borderRadius:
-                              BorderRadius.circular(AppTheme.radiusXS),
-                        ),
-                        child: Text(
-                          '${product.discountPercentage.toInt()}% OFF',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 9,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                  // New arrival badge
-                  if (product.isNewArrival && product.discountPercentage == 0)
-                    Positioned(
-                      top: AppTheme.spaceM,
-                      left: AppTheme.spaceM,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppTheme.secondaryColor,
-                          borderRadius:
-                              BorderRadius.circular(AppTheme.radiusXS),
-                        ),
-                        child: const Text(
-                          'NEW',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 9,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                  // Wishlist button (top-right)
+                  // Floating Wishlist / Heart Button (Top Right)
                   Positioned(
-                    top: AppTheme.spaceS,
-                    right: AppTheme.spaceS,
+                    top: 8,
+                    right: 8,
                     child: Container(
+                      padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surface
-                            .withValues(alpha: 0.92),
+                        color: Colors.white.withValues(alpha: 0.95),
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.10),
+                            color: Colors.black.withValues(alpha: 0.12),
                             blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),
@@ -150,22 +88,15 @@ class ProductCard extends ConsumerWidget {
                       ),
                       child: AnimatedHeartButton(
                         isFav: isFav,
-                        size: 18,
-                        baseColor: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.6),
+                        size: 16,
+                        baseColor: AppTheme.primaryColor,
                         onTap: () {
-                          ref
-                              .read(wishlistProvider.notifier)
-                              .toggleWishlist(product);
+                          ref.read(wishlistProvider.notifier).toggleWishlist(product);
                           ScaffoldMessenger.of(context).clearSnackBars();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                isFav
-                                    ? 'Removed from wishlist'
-                                    : 'Added to wishlist',
+                                isFav ? 'Removed from wishlist' : 'Added to wishlist',
                               ),
                               duration: const Duration(seconds: 1),
                               behavior: SnackBarBehavior.floating,
@@ -177,146 +108,122 @@ class ProductCard extends ConsumerWidget {
                     ),
                   ),
 
-                  // Share button (bottom-right)
+                  // Floating Rating Badge (Bottom Right of Image)
                   Positioned(
-                    bottom: AppTheme.spaceS,
-                    right: AppTheme.spaceS,
-                    child: GestureDetector(
-                      onTap: () {
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          builder: (context) =>
-                              ShareEarnBottomSheet(product: product),
-                        );
-                      },
-                      behavior: HitTestBehavior.opaque,
-                      child: Container(
-                        padding: const EdgeInsets.all(7),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surface
-                              .withValues(alpha: 0.92),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.10),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
+                    bottom: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.95),
+                        borderRadius: BorderRadius.circular(6),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.10),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.star_rounded,
+                            color: AppTheme.primaryColor,
+                            size: 13,
+                          ),
+                          const SizedBox(width: 2),
+                          Text(
+                            product.rating > 0
+                                ? product.rating.toStringAsFixed(2)
+                                : '5.00',
+                            style: const TextStyle(
+                              color: Color(0xFF1F2937),
+                              fontWeight: FontWeight.w700,
+                              fontSize: 11,
                             ),
-                          ],
-                        ),
-                        child: Icon(
-                          Remix.share_forward_line,
-                          color: Theme.of(context).colorScheme.onSurface,
-                          size: 18,
-                        ),
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            '|',
+                            style: TextStyle(
+                              color: Colors.grey.shade400,
+                              fontSize: 10,
+                            ),
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            '${product.reviewCount > 0 ? product.reviewCount : 3}',
+                            style: const TextStyle(
+                              color: Color(0xFF1F2937),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ],
               ),
-            ),  // end Expanded
+            ),
 
-            // ── Product Info — fixed layout so price is never clipped ──────
+            // ── Product Details (Title & Price Row) ───────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Subcategory tag
+                  // Product Title — Single line, clean dark font
                   Text(
-                    product.subcategory.toUpperCase(),
+                    product.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.45),
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
-                      fontSize: 9,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-
-                  // Product title
-                  Text(
-                    product.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurface,
-                      height: 1.25,
                       fontWeight: FontWeight.w600,
-                      fontSize: 12.5,
+                      fontSize: 14,
+                      height: 1.2,
                     ),
                   ),
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 4),
 
-                  // Rating row
+                  // Price & Discount Row
                   Row(
                     children: [
-                      const Icon(Icons.star_rounded,
-                          color: AppTheme.accentColor, size: 13),
-                      const SizedBox(width: 2),
+                      // Sale Price in Teal Accent
                       Text(
-                        product.rating.toStringAsFixed(1),
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 11,
-                        ),
-                      ),
-                      const SizedBox(width: 3),
-                      Text(
-                        '(${product.reviewCount})',
-                        style: TextStyle(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.4),
-                          fontSize: 10,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 5),
-
-                  // Price row — always fully visible, never clipped
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          currency.formatPrice(product.price),
-                          style: const TextStyle(
-                            color: AppTheme.primaryColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13.5,
-                          ),
-                          overflow: TextOverflow.ellipsis,
+                        currency.formatPrice(product.price),
+                        style: const TextStyle(
+                          color: AppTheme.primaryColor,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
                         ),
                       ),
                       if (product.originalPrice > product.price) ...[
                         const SizedBox(width: 5),
-                        Flexible(
-                          child: Text(
-                            currency.formatPrice(product.originalPrice),
-                            style: TextStyle(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withValues(alpha: 0.38),
-                              decoration: TextDecoration.lineThrough,
-                              fontSize: 10.5,
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                        Text(
+                          currency.formatPrice(product.originalPrice),
+                          style: TextStyle(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.40),
+                            decoration: TextDecoration.lineThrough,
+                            fontSize: 11.5,
+                          ),
+                        ),
+                      ],
+                      if (product.discountPercentage > 0) ...[
+                        const SizedBox(width: 5),
+                        Text(
+                          '${product.discountPercentage.toStringAsFixed(2)}%',
+                          style: TextStyle(
+                            color: AppTheme.primaryColor.withValues(alpha: 0.85),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 11.5,
                           ),
                         ),
                       ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/widgets/custom_button.dart';
 
@@ -8,6 +9,7 @@ class EmptyState extends StatelessWidget {
   final String description;
   final String? buttonText;
   final VoidCallback? onButtonPressed;
+  final String? lottieUrl;
 
   const EmptyState({
     super.key,
@@ -16,24 +18,58 @@ class EmptyState extends StatelessWidget {
     required this.description,
     this.buttonText,
     this.onButtonPressed,
+    this.lottieUrl,
   });
+
+  String? get _resolvedLottieUrl {
+    if (lottieUrl != null && lottieUrl!.isNotEmpty) return lottieUrl;
+    if (icon == Icons.shopping_bag_outlined || icon == Icons.shopping_cart_outlined) {
+      return 'https://assets5.lottiefiles.com/packages/lf20_qh5z2fdq.json';
+    }
+    if (icon == Icons.favorite_outline_rounded || icon == Icons.favorite_border_rounded) {
+      return 'https://assets9.lottiefiles.com/packages/lf20_3bp4f07l.json';
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final lottie = _resolvedLottieUrl;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceXXL),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.all(AppTheme.spaceXL),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.05),
-                shape: BoxShape.circle,
+            if (lottie != null)
+              SizedBox(
+                height: 180,
+                width: 180,
+                child: Lottie.network(
+                  lottie,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      padding: const EdgeInsets.all(AppTheme.spaceXL),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor.withValues(alpha: 0.05),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(icon, size: 64, color: AppTheme.primaryColor),
+                    );
+                  },
+                ),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.all(AppTheme.spaceXL),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryColor.withValues(alpha: 0.05),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 64, color: AppTheme.primaryColor),
               ),
-              child: Icon(icon, size: 64, color: AppTheme.primaryColor),
-            ),
             const SizedBox(height: AppTheme.spaceXL),
             Text(
               title,

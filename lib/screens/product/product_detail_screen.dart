@@ -646,7 +646,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                 SizedBox(
                                   height: responsive.spacing(AppTheme.spaceM),
                                 ),
-                                Row(
+                                Wrap(
+                                  spacing: responsive.spacing(AppTheme.spaceS),
+                                  runSpacing: responsive.spacing(AppTheme.spaceS),
                                   children: product.sizes.map((sz) {
                                     final isSelected = _selectedSize == sz;
                                     return GestureDetector(
@@ -662,11 +664,6 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                         ),
                                         width: responsive.spacing(45),
                                         height: responsive.spacing(45),
-                                        margin: EdgeInsets.only(
-                                          right: responsive.spacing(
-                                            AppTheme.spaceM,
-                                          ),
-                                        ),
                                         decoration: BoxDecoration(
                                           color: isSelected
                                               ? AppTheme.primaryColor

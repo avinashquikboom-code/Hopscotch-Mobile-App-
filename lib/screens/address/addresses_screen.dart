@@ -1,54 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/widgets/custom_button.dart';
 import 'package:hopscotch/models/address_model.dart';
+import 'package:hopscotch/repositories/address_repository.dart';
 
-class AddressesScreen extends StatefulWidget {
+class AddressesScreen extends ConsumerStatefulWidget {
   const AddressesScreen({super.key});
 
   @override
-  State<AddressesScreen> createState() => _AddressesScreenState();
+  ConsumerState<AddressesScreen> createState() => _AddressesScreenState();
 }
 
-class _AddressesScreenState extends State<AddressesScreen> {
-  final List<AddressModel> _addresses = [
-    AddressModel(
-      id: '1',
-      fullName: 'John Doe',
-      phone: '+91 98765 43210',
-      addressLine1: '123 Fashion Street',
-      addressLine2: 'Apartment 4B',
-      city: 'Mumbai',
-      state: 'Maharashtra',
-      pincode: '400001',
-      country: 'India',
-      isDefault: true,
-      type: 'home',
-    ),
-    AddressModel(
-      id: '2',
-      fullName: 'John Doe',
-      phone: '+91 98765 43210',
-      addressLine1: '456 Business Park',
-      addressLine2: 'Floor 12, Tower A',
-      city: 'Mumbai',
-      state: 'Maharashtra',
-      pincode: '400051',
-      country: 'India',
-      isDefault: false,
-      type: 'work',
-    ),
-  ];
-
+class _AddressesScreenState extends ConsumerState<AddressesScreen> {
   void _setDefaultAddress(String addressId) {
     HapticFeedback.lightImpact();
-    setState(() {
-      for (var address in _addresses) {
-        address.isDefault = (address.id == addressId);
-      }
-    });
+    ref.read(addressNotifierProvider.notifier).setDefault(addressId);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Default address updated'),
@@ -61,9 +30,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
 
   void _deleteAddress(String addressId) {
     HapticFeedback.mediumImpact();
-    setState(() {
-      _addresses.removeWhere((a) => a.id == addressId);
-    });
+    ref.read(addressNotifierProvider.notifier).deleteAddress(addressId);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Address deleted'),
@@ -82,9 +49,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
       builder: (context) => _AddAddressBottomSheet(
         onAdd: (address) {
           HapticFeedback.lightImpact();
-          setState(() {
-            _addresses.add(address);
-          });
+          ref.read(addressNotifierProvider.notifier).addAddress(address);
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -102,19 +67,21 @@ class _AddressesScreenState extends State<AddressesScreen> {
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
+    final addresses = ref.watch(addressNotifierProvider);
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: Text('My Addresses', style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
-      body: _addresses.isEmpty
+      body: addresses.isEmpty
           ? _buildEmptyState()
           : ListView.builder(
               padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
-              itemCount: _addresses.length,
+              itemCount: addresses.length,
               itemBuilder: (context, index) {
-                final address = _addresses[index];
+                final address = addresses[index];
                 return TweenAnimationBuilder<double>(
                   key: ValueKey(address.id),
                   tween: Tween(begin: 0.0, end: 1.0),
@@ -262,12 +229,27 @@ class _AddressesScreenState extends State<AddressesScreen> {
                 color: AppTheme.textPrimaryColor,
               ),
             ),
-            SizedBox(height: responsive.spacing(4)),
-            Text(
-              address.phone,
-              style: responsive.bodyMedium.copyWith(
-                color: AppTheme.textSecondaryColor,
-              ),
+            SizedBox(height: responsive.spacing(6)),
+            Row(
+              children: [
+                Icon(
+                  Icons.phone_android_rounded,
+                  size: responsive.iconSize(14),
+                  color: AppTheme.primaryColor,
+                ),
+                SizedBox(width: responsive.spacing(6)),
+                Text(
+                  address.phone.trim().isNotEmpty
+                      ? 'Mobile: ${address.phone}'
+                      : 'Mobile Number: Not Provided',
+                  style: responsive.bodyMedium.copyWith(
+                    color: address.phone.trim().isNotEmpty
+                        ? AppTheme.textPrimaryColor
+                        : Colors.red.shade700,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceM)),
             // Address
