@@ -10,7 +10,7 @@
     <uses-permission android:name="android.permission.READ_SMS"/>
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <application
-        android:label="FCI Seller E-commerce"
+        android:label="FCI Seller"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:requestLegacyExternalStorage="true"

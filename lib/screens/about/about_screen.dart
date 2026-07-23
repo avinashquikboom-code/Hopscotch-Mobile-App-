@@ -49,7 +49,7 @@ class AboutScreen extends StatelessWidget {
                   ),
                   SizedBox(height: responsive.spacing(AppTheme.spaceM)),
                   Text(
-                    'FCI SELLER E-COMMERCE',
+                    'FCI SELLER',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: responsive.fontSize18,

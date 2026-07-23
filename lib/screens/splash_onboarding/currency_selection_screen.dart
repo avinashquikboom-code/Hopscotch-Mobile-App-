@@ -58,7 +58,7 @@ class _CurrencySelectionScreenState
                     ),
                     SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
                     Text(
-                      'FCI SELLER E-COMMERCE',
+                      'FCI SELLER',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppTheme.textPrimaryColor,
