@@ -153,7 +153,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
     setState(() {
       _isPlacingOrder = true;
-      _paymentProcessingStep = 'CREATING RAZORPAY ORDER...';
+      _paymentProcessingStep = 'OPENING RAZORPAY GATEWAY...';
     });
 
     try {
@@ -164,10 +164,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final razorpayOrderId = orderData['razorpayOrderId']?.toString();
       final amount = orderData['amount'] as int? ?? (totalAmount * 100).toInt();
       final currency = orderData['currency']?.toString() ?? 'INR';
-      final keyId = orderData['keyId']?.toString() ?? 'rzp_test_1DP5mmOlF5G5ag';
+      final keyId = (orderData['keyId']?.toString() ?? '').trim();
 
-      final isRealOrder =
-          razorpayOrderId != null && !razorpayOrderId.startsWith('order_demo_');
       final validKey = (keyId.isNotEmpty && !keyId.startsWith('YOUR_'))
           ? keyId
           : 'rzp_test_1DP5mmOlF5G5ag';
@@ -177,28 +175,26 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         'amount': amount,
         'name': 'FCI Seller / Hopscotch',
         'description': '${cart.length} item(s) purchase',
-        if (isRealOrder && razorpayOrderId != null) 'order_id': razorpayOrderId,
-        if (isRealOrder && razorpayOrderId != null) 'currency': currency,
+        'retry': {'enabled': true, 'max_count': 1},
+        'send_sms_hash': true,
+        if (razorpayOrderId != null && !razorpayOrderId.startsWith('order_demo_'))
+          'order_id': razorpayOrderId,
+        if (razorpayOrderId != null && !razorpayOrderId.startsWith('order_demo_'))
+          'currency': currency,
         'prefill': {
           'contact': _phoneController.text.isNotEmpty
               ? _phoneController.text
               : '9876543210',
           'email': 'customer@example.com',
         },
+        'external': {
+          'wallets': ['paytm']
+        },
         'theme': {'color': '#0d9488'},
       };
 
-      try {
-        _razorpay.open(options);
-      } catch (e) {
-        _handleRazorpaySuccess(PaymentSuccessResponse.fromMap({
-          'payment_id': 'pay_demo_${DateTime.now().millisecondsSinceEpoch}',
-          'order_id': razorpayOrderId ?? 'order_demo',
-          'signature': 'sig_demo',
-        }));
-      }
+      _razorpay.open(options);
     } catch (e) {
-      // In case of unexpected environment issues, handle payment verification fallback
       _handleRazorpaySuccess(PaymentSuccessResponse.fromMap({
         'payment_id': 'pay_demo_${DateTime.now().millisecondsSinceEpoch}',
         'order_id': 'order_demo',
