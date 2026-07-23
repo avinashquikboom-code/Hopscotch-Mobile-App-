@@ -438,52 +438,61 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'ORDER NUMBER',
-                          style: TextStyle(
-                            fontSize: responsive.fontSize10,
-                            fontWeight: FontWeight.w800,
-                            color: colorScheme.onSurface.withValues(alpha: 0.5),
-                            letterSpacing: 0.8,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'ORDER NUMBER',
+                            style: TextStyle(
+                              fontSize: responsive.fontSize10,
+                              fontWeight: FontWeight.w800,
+                              color: colorScheme.onSurface.withValues(alpha: 0.5),
+                              letterSpacing: 0.8,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '#${order.id}',
-                          style: TextStyle(
-                            fontSize: responsive.fontSize18,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.primaryColor,
+                          const SizedBox(height: 2),
+                          Text(
+                            '#${order.id}',
+                            style: TextStyle(
+                              fontSize: responsive.fontSize18,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.primaryColor,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Placed on ${order.orderDate}',
-                          style: TextStyle(
-                            fontSize: responsive.fontSize11,
-                            color: colorScheme.onSurface.withValues(alpha: 0.5),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Placed on ${order.orderDate}',
+                            style: TextStyle(
+                              fontSize: responsive.fontSize11,
+                              color: colorScheme.onSurface.withValues(alpha: 0.5),
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                      decoration: BoxDecoration(
-                        color: statusColor.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+                        ],
                       ),
-                      child: Text(
-                        order.status.toUpperCase(),
-                        style: TextStyle(
-                          color: statusColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: responsive.fontSize11,
-                          letterSpacing: 0.5,
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                        decoration: BoxDecoration(
+                          color: statusColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+                        ),
+                        child: Text(
+                          order.status.toUpperCase(),
+                          style: TextStyle(
+                            color: statusColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: responsive.fontSize11,
+                            letterSpacing: 0.5,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ),
