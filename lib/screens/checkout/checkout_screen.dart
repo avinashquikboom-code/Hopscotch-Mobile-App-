@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -104,9 +105,43 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   // ── Razorpay ────────────────────────────────────────────────────────────
   late Razorpay _razorpay;
+  Timer? _razorpayTimeoutTimer;
 
   String? _selectedAddressId;
   bool _showItemSummary = false;
+
+  void _cancelRazorpayTimeout() {
+    _razorpayTimeoutTimer?.cancel();
+    _razorpayTimeoutTimer = null;
+  }
+
+  void _startRazorpayTimeout() {
+    _cancelRazorpayTimeout();
+    _razorpayTimeoutTimer = Timer(const Duration(seconds: 15), () {
+      if (mounted && _isPlacingOrder) {
+        setState(() {
+          _isPlacingOrder = false;
+          _paymentProcessingStep = null;
+        });
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Razorpay window closed or timed out. Switched to Cash on Delivery (COD).'),
+            backgroundColor: Colors.orange.shade800,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            action: SnackBarAction(
+              label: 'PLACE COD ORDER',
+              textColor: Colors.white,
+              onPressed: () {
+                setState(() => _selectedPayment = 'COD');
+              },
+            ),
+          ),
+        );
+      }
+    });
+  }
 
   @override
   void initState() {
@@ -167,6 +202,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   @override
   void dispose() {
+    _cancelRazorpayTimeout();
     _firstNameController.dispose();
     _lastNameController.dispose();
     _addressController.dispose();
@@ -181,6 +217,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   // ── Razorpay handlers ───────────────────────────────────────────────────
   void _handleRazorpaySuccess(PaymentSuccessResponse response) async {
+    _cancelRazorpayTimeout();
     setState(() => _paymentProcessingStep = 'VERIFYING PAYMENT SIGNATURE...');
     final cart = ref.read(cartProvider);
     final cartNotifier = ref.read(cartProvider.notifier);
@@ -226,6 +263,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   void _handleRazorpayError(PaymentFailureResponse response) {
+    _cancelRazorpayTimeout();
     if (mounted) {
       setState(() => _isPlacingOrder = false);
       final msg = response.code == Razorpay.PAYMENT_CANCELLED
@@ -243,6 +281,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
+    _cancelRazorpayTimeout();
     if (mounted) {
       setState(() => _isPlacingOrder = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -299,18 +338,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           'amount': amount,
           'name': 'FCI Seller / Hopscotch',
           'description': '${cart.length} item(s) purchase',
-          'retry': {'enabled': true, 'max_count': 4},
+          'retry': {'enabled': true, 'max_count': 2},
           'send_sms_hash': true,
-          if (razorpayOrderId != null && !razorpayOrderId.startsWith('order_demo_'))
+          if (razorpayOrderId != null && !razorpayOrderId.startsWith('order_demo_') && !razorpayOrderId.startsWith('order_'))
             'order_id': razorpayOrderId,
-          'currency': currency,
+          'currency': 'INR',
           'prefill': {
             'contact': contact,
             'email': email,
           },
           'theme': {'color': '#0d9488'},
           'modal': {
-            'confirm_close': false,
+            'confirm_close': true,
             'handleback': true,
             'backdropclose': true,
           },
@@ -319,8 +358,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           },
         };
         try {
+          _startRazorpayTimeout();
           _razorpay.open(options);
         } catch (sdkErr) {
+          _cancelRazorpayTimeout();
           debugPrint('Razorpay SDK opening error: $sdkErr');
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -1189,15 +1230,33 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               child: Center(
                                 child: _isPlacingOrder
                                     ? Row(
-                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
-                                          const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white)),
-                                          const SizedBox(width: 10),
+                                          const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+                                          const SizedBox(width: 8),
                                           Flexible(
                                             child: Text(
                                               _paymentProcessingStep ?? 'Processing...',
                                               style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
                                               overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          GestureDetector(
+                                            onTap: () {
+                                              _cancelRazorpayTimeout();
+                                              setState(() {
+                                                _isPlacingOrder = false;
+                                                _paymentProcessingStep = null;
+                                              });
+                                            },
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                              decoration: BoxDecoration(
+                                                color: Colors.black.withValues(alpha: 0.3),
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              child: const Text('CANCEL ✕', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                                             ),
                                           ),
                                         ],
