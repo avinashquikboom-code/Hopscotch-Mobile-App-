@@ -912,23 +912,26 @@ class _AddressFormBottomSheetState extends State<_AddressFormBottomSheet> {
                     SizedBox(height: responsive.spacing(AppTheme.spaceM)),
 
                     // Default Address Switch
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      activeTrackColor: AppTheme.primaryColor,
-                      title: const Text(
-                        'Set as Default Address',
-                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                    Material(
+                      color: Colors.transparent,
+                      child: SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        activeTrackColor: AppTheme.primaryColor,
+                        title: const Text(
+                          'Set as Default Address',
+                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                        ),
+                        subtitle: const Text(
+                          'Use this address automatically for future orders',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                        value: _isDefault,
+                        onChanged: (val) {
+                          setState(() {
+                            _isDefault = val;
+                          });
+                        },
                       ),
-                      subtitle: const Text(
-                        'Use this address automatically for future orders',
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
-                      value: _isDefault,
-                      onChanged: (val) {
-                        setState(() {
-                          _isDefault = val;
-                        });
-                      },
                     ),
                   ],
                 ),

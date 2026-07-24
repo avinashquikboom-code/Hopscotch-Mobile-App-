@@ -338,44 +338,47 @@ class ProfileScreen extends ConsumerWidget {
   }) {
     final responsive = context.responsive;
     final colorScheme = Theme.of(context).colorScheme;
-    return ListTile(
-      contentPadding: EdgeInsets.symmetric(
-        horizontal: responsive.spacing(AppTheme.spaceL),
-        vertical: responsive.spacing(8),
-      ),
-      leading: Container(
-        padding: EdgeInsets.all(responsive.spacing(8)),
-        decoration: BoxDecoration(
-          color: colorScheme.primary.withValues(alpha: 0.08),
-          shape: BoxShape.circle,
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: responsive.spacing(AppTheme.spaceL),
+          vertical: responsive.spacing(8),
         ),
-        child: Icon(
-          icon,
-          color: colorScheme.primary,
-          size: responsive.iconSize(20),
+        leading: Container(
+          padding: EdgeInsets.all(responsive.spacing(8)),
+          decoration: BoxDecoration(
+            color: colorScheme.primary.withValues(alpha: 0.08),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            color: colorScheme.primary,
+            size: responsive.iconSize(20),
+          ),
         ),
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: colorScheme.onSurface,
-          fontSize: responsive.fontSize14,
+        title: Text(
+          title,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: colorScheme.onSurface,
+            fontSize: responsive.fontSize14,
+          ),
         ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(
-          color: colorScheme.onSurface.withValues(alpha: 0.6),
-          fontSize: responsive.fontSize11,
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(
+            color: colorScheme.onSurface.withValues(alpha: 0.6),
+            fontSize: responsive.fontSize11,
+          ),
         ),
+        trailing: Icon(
+          Icons.arrow_forward_ios_rounded,
+          size: responsive.iconSize(14),
+          color: colorScheme.onSurface.withValues(alpha: 0.4),
+        ),
+        onTap: onTap,
       ),
-      trailing: Icon(
-        Icons.arrow_forward_ios_rounded,
-        size: responsive.iconSize(14),
-        color: colorScheme.onSurface.withValues(alpha: 0.4),
-      ),
-      onTap: onTap,
     );
   }
 }

@@ -53,37 +53,35 @@ class CurrencySelectorButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentCurrency = ref.watch(currencyProvider);
-
-    return ListTile(
-      leading: const Icon(Icons.attach_money),
-      title: const Text('Currency'),
-      subtitle: Text(_getCurrencyName(currentCurrency)),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            currentCurrency.symbol,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        leading: const Icon(Icons.attach_money),
+        title: const Text('Currency'),
+        subtitle: Text(currentCurrency.name),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              currentCurrency.symbol,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
-          const Icon(Icons.arrow_forward_ios),
-        ],
+            const SizedBox(width: 8),
+            const Icon(Icons.arrow_forward_ios, size: 14),
+          ],
+        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CurrencySelector(),
+            ),
+          );
+        },
       ),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const CurrencySelector(),
-          ),
-        );
-      },
     );
-  }
-
-  String _getCurrencyName(AppCurrency currency) {
-    return currency.name;
   }
 }

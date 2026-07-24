@@ -56,32 +56,35 @@ class LanguageSelectorButton extends ConsumerWidget {
     final currentCurrency = ref.watch(currencyProvider);
     final l10n = AppLocalizations.of(context)!;
 
-    return ListTile(
-      leading: const Icon(Icons.language),
-      title: Text(l10n.language),
-      subtitle: Text(_getLanguageName(currentLanguage, l10n)),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            currentCurrency.symbol,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        leading: const Icon(Icons.language),
+        title: Text(l10n.language),
+        subtitle: Text(_getLanguageName(currentLanguage, l10n)),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              currentCurrency.symbol,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
-          const Icon(Icons.arrow_forward_ios),
-        ],
+            const SizedBox(width: 8),
+            const Icon(Icons.arrow_forward_ios),
+          ],
+        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const LanguageSelector(),
+            ),
+          );
+        },
       ),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const LanguageSelector(),
-          ),
-        );
-      },
     );
   }
 
