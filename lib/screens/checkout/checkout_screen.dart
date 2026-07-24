@@ -14,6 +14,69 @@ import 'package:hopscotch/repositories/payment_repository.dart';
 import 'package:hopscotch/repositories/address_repository.dart';
 import 'package:hopscotch/repositories/profile_repository.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:intl/intl.dart';
+
+const List<String> _kDefaultCountries = [
+  'India', 'United States', 'United Kingdom', 'UAE (Dubai)',
+  'Bahrain', 'Malaysia', 'Mauritius', 'Fiji', 'Guyana',
+  'Suriname', 'Trinidad & Tobago', 'Australia', 'Canada',
+  'Germany', 'France', 'Japan', 'Singapore', 'Saudi Arabia',
+  'Qatar', 'Kuwait', 'Oman', 'South Africa', 'New Zealand',
+  'Netherlands', 'Spain', 'Italy', 'Switzerland', 'China', 'Brazil', 'Mexico',
+];
+
+String _matchCountryName(String rawCountry, List<String> availableCountries) {
+  if (rawCountry.trim().isEmpty) return availableCountries.isNotEmpty ? availableCountries.first : 'India';
+  final trimmed = rawCountry.trim();
+
+  // 1. Exact match
+  if (availableCountries.contains(trimmed)) return trimmed;
+
+  // 2. Case-insensitive match
+  for (final c in availableCountries) {
+    if (c.toLowerCase() == trimmed.toLowerCase()) return c;
+  }
+
+  // 3. ISO Code mapping (e.g. IN -> India, US -> United States, AE -> UAE (Dubai))
+  const isoMap = {
+    'IN': 'India',
+    'US': 'United States',
+    'GB': 'United Kingdom',
+    'AE': 'UAE (Dubai)',
+    'BH': 'Bahrain',
+    'MY': 'Malaysia',
+    'MU': 'Mauritius',
+    'FJ': 'Fiji',
+    'GY': 'Guyana',
+    'SR': 'Suriname',
+    'TT': 'Trinidad & Tobago',
+    'AU': 'Australia',
+    'CA': 'Canada',
+    'DE': 'Germany',
+    'FR': 'France',
+    'JP': 'Japan',
+    'SG': 'Singapore',
+    'SA': 'Saudi Arabia',
+    'QA': 'Qatar',
+    'KW': 'Kuwait',
+    'OM': 'Oman',
+    'ZA': 'South Africa',
+    'NZ': 'New Zealand',
+    'NL': 'Netherlands',
+    'ES': 'Spain',
+  };
+
+  if (isoMap.containsKey(trimmed.toUpperCase())) {
+    final mappedName = isoMap[trimmed.toUpperCase()]!;
+    for (final c in availableCountries) {
+      if (c.toLowerCase() == mappedName.toLowerCase() || c.contains(mappedName)) {
+        return c;
+      }
+    }
+  }
+
+  return availableCountries.contains('India') ? 'India' : (availableCountries.isNotEmpty ? availableCountries.first : 'India');
+}
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -86,7 +149,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         _phoneController.text = defaultAddr.phone;
       }
       if (defaultAddr.country.isNotEmpty) {
-        _selectedCountry = defaultAddr.country;
+        _selectedCountry = _matchCountryName(defaultAddr.country, _kDefaultCountries);
       }
     });
   }
@@ -681,7 +744,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             ?.map((c) => c['name']?.toString() ?? '')
             .where((name) => name.isNotEmpty)
             .toList();
-    final countriesList = (apiList != null && apiList.isNotEmpty) ? apiList : <String>[];
+    final countriesList = (apiList != null && apiList.isNotEmpty) ? apiList : _kDefaultCountries;
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -851,7 +914,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             ),
                             const SizedBox(height: 14),
                             DropdownButtonFormField<String>(
-                              value: countriesList.contains(_selectedCountry) ? _selectedCountry : (countriesList.isNotEmpty ? countriesList.first : null),
+                              value: _matchCountryName(_selectedCountry, countriesList),
                               decoration: InputDecoration(
                                 labelText: 'Country',
                                 labelStyle: TextStyle(fontSize: responsive.fontSize13, color: colorScheme.onSurface.withValues(alpha: 0.6)),
@@ -1264,7 +1327,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       _zipController.text = addr.pincode;
                       _phoneController.text = addr.phone;
                       if (addr.country.isNotEmpty) {
-                        _selectedCountry = addr.country;
+                        _selectedCountry = _matchCountryName(addr.country, _kDefaultCountries);
                       }
                     });
                     ScaffoldMessenger.of(context).clearSnackBars();

@@ -7,6 +7,7 @@ import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/widgets/custom_button.dart';
 import 'package:hopscotch/models/address_model.dart';
 import 'package:hopscotch/repositories/address_repository.dart';
+import 'package:hopscotch/repositories/config_repository.dart';
 
 class AddressesScreen extends ConsumerStatefulWidget {
   const AddressesScreen({super.key});
@@ -636,7 +637,7 @@ class _TypeDetails {
   _TypeDetails(this.label, this.icon, this.color);
 }
 
-class _AddressFormBottomSheet extends StatefulWidget {
+class _AddressFormBottomSheet extends ConsumerStatefulWidget {
   final AddressModel? existingAddress;
   final Function(AddressModel) onSave;
 
@@ -646,10 +647,10 @@ class _AddressFormBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<_AddressFormBottomSheet> createState() => _AddressFormBottomSheetState();
+  ConsumerState<_AddressFormBottomSheet> createState() => _AddressFormBottomSheetState();
 }
 
-class _AddressFormBottomSheetState extends State<_AddressFormBottomSheet> {
+class _AddressFormBottomSheetState extends ConsumerState<_AddressFormBottomSheet> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _fullNameController;
   late final TextEditingController _phoneController;
@@ -659,6 +660,7 @@ class _AddressFormBottomSheetState extends State<_AddressFormBottomSheet> {
   late final TextEditingController _stateController;
   late final TextEditingController _pincodeController;
   late String _selectedType;
+  late String _selectedCountry;
   late bool _isDefault;
 
   @override
@@ -673,6 +675,7 @@ class _AddressFormBottomSheetState extends State<_AddressFormBottomSheet> {
     _stateController = TextEditingController(text: addr?.state ?? '');
     _pincodeController = TextEditingController(text: addr?.pincode ?? '');
     _selectedType = addr?.type ?? 'home';
+    _selectedCountry = (addr?.country != null && addr!.country.trim().isNotEmpty) ? addr.country : 'India';
     _isDefault = addr?.isDefault ?? false;
   }
 
@@ -699,7 +702,7 @@ class _AddressFormBottomSheetState extends State<_AddressFormBottomSheet> {
         city: _cityController.text.trim(),
         state: _stateController.text.trim(),
         pincode: _pincodeController.text.trim(),
-        country: 'India',
+        country: _selectedCountry,
         type: _selectedType,
         isDefault: _isDefault,
       );
@@ -907,6 +910,36 @@ class _AddressFormBottomSheetState extends State<_AddressFormBottomSheet> {
                           return 'Please enter pincode';
                         }
                         return null;
+                      },
+                    ),
+                    SizedBox(height: responsive.spacing(AppTheme.spaceM)),
+
+                    // Dynamic Country Dropdown
+                    Builder(
+                      builder: (context) {
+                        final countriesAsync = ref.watch(apiCountriesProvider);
+                        final apiList = countriesAsync.value
+                            ?.map((c) => c['name']?.toString() ?? '')
+                            .where((name) => name.isNotEmpty)
+                            .toList();
+                        final countriesList = (apiList != null && apiList.isNotEmpty) ? apiList : ['India'];
+
+                        return DropdownButtonFormField<String>(
+                          value: countriesList.contains(_selectedCountry)
+                              ? _selectedCountry
+                              : (countriesList.isNotEmpty ? countriesList.first : null),
+                          decoration: InputDecoration(
+                            labelText: 'Country *',
+                            prefixIcon: const Icon(Icons.public_rounded, size: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          ),
+                          items: countriesList
+                              .map((c) => DropdownMenuItem(value: c, child: Text(c, style: TextStyle(fontSize: responsive.fontSize14))))
+                              .toList(),
+                          onChanged: (val) => setState(() => _selectedCountry = val ?? 'India'),
+                          validator: (v) => v == null || v.isEmpty ? 'Please select a country' : null,
+                        );
                       },
                     ),
                     SizedBox(height: responsive.spacing(AppTheme.spaceM)),
