@@ -44,6 +44,9 @@ class OrderNotifier extends StateNotifier<AsyncValue<List<OrderModel>>> {
   ///     the order with a placeholder.
   Future<OrderModel> placeOrder({
     List<CartItemModel>? items,
+    double? subtotal,
+    double? shippingFee,
+    double? taxAmount,
     double? totalAmount,
     String? address,
     String? paymentMethod,
@@ -62,21 +65,45 @@ class OrderNotifier extends StateNotifier<AsyncValue<List<OrderModel>>> {
         address: address,
         items: formattedItems,
         paymentMethod: paymentMethod ?? 'COD',
+        subtotal: subtotal,
+        shippingFee: shippingFee,
+        taxAmount: taxAmount,
+        totalAmount: totalAmount,
       );
       final rawOrder = response.data['data'] ?? response.data;
       final newOrder = OrderModel.fromJson(
         rawOrder is Map<String, dynamic>
             ? rawOrder
-            : {'id': '', 'status': 'PENDING', 'totalAmount': totalAmount ?? 0},
+            : {
+                'id': '',
+                'status': 'PENDING',
+                'items': items?.map((e) => e.toJson()).toList(),
+                'subtotal': subtotal ?? 0,
+                'shippingFee': shippingFee ?? 0,
+                'taxAmount': taxAmount ?? 0,
+                'totalAmount': totalAmount ?? 0,
+              },
       );
       await fetchOrders();
       return newOrder;
     } catch (e) {
       // Create local fallback if offline/guest mode
+      final itemsSubtotal = items?.fold<double>(
+            0.0,
+            (sum, item) => sum + (item.product.price * item.quantity),
+          ) ??
+          0.0;
+      final calculatedSubtotal = subtotal ?? itemsSubtotal;
+      final calculatedShipping = shippingFee ?? (calculatedSubtotal > 999 ? 0.0 : 99.0);
+      final calculatedTax = taxAmount ?? 0.0;
+
       final fallback = OrderModel(
         id: 'ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}',
         items: items ?? [],
-        totalAmount: totalAmount ?? 0,
+        subtotal: calculatedSubtotal,
+        shippingFee: calculatedShipping,
+        taxAmount: calculatedTax,
+        totalAmount: totalAmount ?? (calculatedSubtotal + calculatedShipping + calculatedTax),
         orderDate: DateTime.now().toIso8601String(),
         status: 'Processing',
         shippingAddress: address ?? '',

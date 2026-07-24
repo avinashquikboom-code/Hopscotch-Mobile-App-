@@ -28,20 +28,39 @@ class OrderModel {
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
+    final parsedItems = CartItemModel.listFromJson(json['items'] ?? json['orderItems']);
+    final itemsSubtotal = parsedItems.fold<double>(
+      0.0,
+      (sum, item) => sum + (item.product.price * item.quantity),
+    );
+
+    final rawSubtotal = _asDouble(json['subtotal'] ?? json['subTotal'] ?? json['sub_total']);
+    final subtotal = rawSubtotal > 0 ? rawSubtotal : itemsSubtotal;
+
+    final rawTax = _asDouble(json['taxAmount'] ?? json['totalTax'] ?? json['tax_amount'] ?? json['tax']);
+    final rawShipping = _asDouble(json['shippingFee'] ?? json['shipping_fee'] ?? json['shippingAmount'] ?? json['shipping_amount'] ?? json['shipping']);
+
+    final parsedTotal = json['totalAmount'] is num
+        ? (json['totalAmount'] as num).toDouble()
+        : double.tryParse('${json['totalAmount'] ?? json['total']}');
+    final totalAmount = parsedTotal ?? (subtotal + rawShipping + rawTax);
+
+    final shippingFee = (rawShipping == 0 && totalAmount > (subtotal + rawTax))
+        ? (totalAmount - subtotal - rawTax)
+        : rawShipping;
+
     return OrderModel(
       id: (json['id'] ?? json['_id'] ?? '').toString(),
-      items: CartItemModel.listFromJson(json['items'] ?? json['orderItems']),
-      totalAmount: json['totalAmount'] is num
-          ? (json['totalAmount'] as num).toDouble()
-          : double.tryParse('${json['totalAmount'] ?? json['total']}') ?? 0.0,
+      items: parsedItems,
+      totalAmount: totalAmount,
       orderDate: (json['orderDate'] ?? json['createdAt'] ?? json['created_at'] ?? '').toString(),
       status: (json['status'] ?? 'Pending').toString(),
       shippingAddress: _parseAddress(json['shippingAddress'] ?? json['address']),
       paymentMethod: (json['paymentMethod'] ?? json['payment_method'] ?? '').toString(),
       trackingNumber: json['trackingNumber'] as String? ?? json['tracking_number'] as String?,
-      taxAmount: _asDouble(json['taxAmount'] ?? json['totalTax'] ?? json['tax_amount'] ?? json['tax']),
-      subtotal: _asDouble(json['subtotal'] ?? json['subTotal'] ?? json['sub_total']),
-      shippingFee: _asDouble(json['shippingFee'] ?? json['shipping_fee'] ?? json['shippingAmount'] ?? json['shipping_amount'] ?? json['shipping']),
+      taxAmount: rawTax,
+      subtotal: subtotal,
+      shippingFee: shippingFee,
     );
   }
 

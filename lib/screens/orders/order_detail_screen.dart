@@ -1134,7 +1134,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                                 value: currency.formatPrice(
                                     order.subtotal > 0
                                         ? order.subtotal
-                                        : (order.totalAmount - order.shippingFee - order.taxAmount)),
+                                        : order.items.fold(0.0, (sum, item) => sum + (item.product.price * item.quantity))),
                                 responsive: responsive,
                                 colorScheme: colorScheme,
                               ),
@@ -1155,7 +1155,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                                     ? (() {
                                         final base = order.subtotal > 0
                                             ? order.subtotal
-                                            : (order.totalAmount - order.shippingFee - order.taxAmount);
+                                            : order.items.fold(0.0, (sum, item) => sum + (item.product.price * item.quantity));
                                         final pct = base > 0 ? (order.taxAmount / base) * 100 : 0.0;
                                         final pctStr = pct > 0
                                             ? ' (${pct % 1 == 0 ? pct.toInt() : pct.toStringAsFixed(1)}%)'

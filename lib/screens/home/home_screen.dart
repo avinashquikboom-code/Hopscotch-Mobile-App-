@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
@@ -68,13 +67,11 @@ final userLocationProvider = FutureProvider<UserLocation>((ref) async {
     Position? pos = await Geolocator.getLastKnownPosition();
 
     // 4. If last known is null, request current position with a timeout
-    if (pos == null) {
-      pos = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.low,
-        ),
-      ).timeout(const Duration(seconds: 4));
-    }
+    pos ??= await Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.low,
+      ),
+    ).timeout(const Duration(seconds: 4));
 
     // 5. Geocode the coordinates with a timeout
     final placemarks = await placemarkFromCoordinates(
@@ -238,7 +235,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         : (isTablet ? 400 : topPadding + 116 + imageArea);
 
     // Rotating search hints (Flipkart style)
-    const _searchHints = [
+    const searchHints = [
       'silk sarees',
       'kurtas',
       'lehengas',
@@ -266,17 +263,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: GestureDetector(
               onTap: () => context.push('/search'),
               behavior: HitTestBehavior.opaque,
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
                   children: [
-                    Icon(Icons.search_rounded, color: Colors.white70, size: 22),
-                    SizedBox(width: 10),
+                    const Icon(Icons.search_rounded, color: Colors.white70, size: 22),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: AnimatedSearchHint(
                         prefix: 'Search for ',
-                        hints: _searchHints,
-                        style: TextStyle(color: Colors.white70, fontSize: 14),
+                        hints: searchHints,
+                        style: const TextStyle(color: Colors.white70, fontSize: 14),
                       ),
                     ),
                   ],
@@ -440,6 +437,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             child: _TrendingHighlightsSectionHeader(
               title: l10n.trendingHighlights,
+              onSeeAll: () => safeNavigate(
+                context,
+                '/products?section=trending',
+              ),
+              seeAllLabel: 'Show All',
             ),
           ),
         ),

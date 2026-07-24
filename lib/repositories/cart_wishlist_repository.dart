@@ -208,7 +208,10 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
   bool get hasExclusiveTax => state.any(
       (item) => item.product.taxType.toUpperCase() == 'EXCLUSIVE' && item.product.taxPercent > 0);
 
-  double get shippingFee => state.isEmpty ? 0.0 : 150.00;
+  double get shippingFee {
+    if (state.isEmpty) return 0.0;
+    return subtotal > 999 ? 0.0 : 99.0;
+  }
 
   double get totalAmount {
     if (state.isEmpty) return 0.0;
