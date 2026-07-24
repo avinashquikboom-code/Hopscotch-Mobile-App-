@@ -8,6 +8,7 @@ import 'package:hopscotch/utils/dev_logger.dart';
 
 class AddressRepository {
   static const String _kAddressPrefsKey = 'user_saved_addresses_v1';
+  static const String _kAddressHasLoadedKey = 'user_saved_addresses_has_loaded_v1';
   final AddressApi? _api;
 
   AddressRepository([this._api]);
@@ -55,28 +56,40 @@ class AddressRepository {
   ];
 
   Future<List<AddressModel>> loadAddresses() async {
-    List<AddressModel> diskAddresses = [];
+    final prefs = await SharedPreferences.getInstance();
+    final hasLoadedBefore = prefs.getBool(_kAddressHasLoadedKey) ?? false;
+
+    // 1. Try fetching from remote API if API client is available
+    if (_api != null) {
+      try {
+        final apiList = await _api.fetchAddresses();
+        await saveAddresses(apiList);
+        await prefs.setBool(_kAddressHasLoadedKey, true);
+        return apiList;
+      } catch (e) {
+        DevLogger.logError('Failed to fetch addresses from API: $e', context: 'AddressRepository');
+      }
+    }
+
+    // 2. Fallback to local disk storage
     try {
-      final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString(_kAddressPrefsKey);
-      if (raw != null && raw.isNotEmpty) {
+      if (raw != null) {
         final decoded = jsonDecode(raw) as List;
-        diskAddresses = decoded.map((e) => AddressModel.fromJson(e as Map<String, dynamic>)).toList();
+        return decoded.map((e) => AddressModel.fromJson(e as Map<String, dynamic>)).toList();
       }
     } catch (e) {
       DevLogger.logError('Failed to load addresses from disk: $e', context: 'AddressRepository');
     }
 
-    if (_api != null) {
-      // Sync from API in background or if disk is empty
-      _api.fetchAddresses().then((apiList) {
-        if (apiList.isNotEmpty) {
-          saveAddresses(apiList);
-        }
-      }).catchError((_) {});
+    // 3. Fallback to default initial mock addresses ONLY if app has never initialized
+    if (!hasLoadedBefore) {
+      await saveAddresses(_defaultInitial);
+      await prefs.setBool(_kAddressHasLoadedKey, true);
+      return _defaultInitial;
     }
 
-    return diskAddresses.isNotEmpty ? diskAddresses : _defaultInitial;
+    return [];
   }
 
   Future<void> saveAddresses(List<AddressModel> list) async {
@@ -84,6 +97,7 @@ class AddressRepository {
       final prefs = await SharedPreferences.getInstance();
       final encoded = jsonEncode(list.map((e) => e.toJson()).toList());
       await prefs.setString(_kAddressPrefsKey, encoded);
+      await prefs.setBool(_kAddressHasLoadedKey, true);
     } catch (e) {
       DevLogger.logError('Failed to save addresses to disk: $e', context: 'AddressRepository');
     }
@@ -162,14 +176,14 @@ class AddressNotifier extends StateNotifier<List<AddressModel>> {
     }).toList();
     state = updated;
     await _repository.saveAddresses(updated);
-    _repository.apiUpdate(address).catchError((_) {});
+    await _repository.apiUpdate(address);
   }
 
   Future<void> deleteAddress(String id) async {
     final updated = state.where((a) => a.id != id).toList();
     state = updated;
     await _repository.saveAddresses(updated);
-    _repository.apiDelete(id).catchError((_) {});
+    await _repository.apiDelete(id);
   }
 
   Future<void> setDefault(String id) async {
@@ -179,7 +193,7 @@ class AddressNotifier extends StateNotifier<List<AddressModel>> {
     }).toList();
     state = updated;
     await _repository.saveAddresses(updated);
-    _repository.apiSetDefault(id).catchError((_) {});
+    await _repository.apiSetDefault(id);
   }
 }
 

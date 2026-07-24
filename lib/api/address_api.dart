@@ -9,8 +9,6 @@ class AddressApi {
   static const List<String> _baseEndpoints = [
     '/api/addresses',
     '/api/v1/addresses',
-    '/api/v1/user/addresses',
-    '/mobile/addresses',
   ];
 
   Future<List<AddressModel>> fetchAddresses() async {
