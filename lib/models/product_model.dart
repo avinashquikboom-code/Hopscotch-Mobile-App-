@@ -1,3 +1,5 @@
+import 'package:hopscotch/constants/app_urls.dart';
+
 String _asString(dynamic value, [String fallback = '']) {
   if (value == null) return fallback;
   return value.toString();
@@ -279,21 +281,47 @@ class ProductModel {
       originalPrice: _asDouble(json['originalPrice'] ?? json['original_price'] ?? json['price']),
       discountPercentage: _asDouble(json['discountPercentage'] ?? json['discount_percentage']),
       imageUrl: () {
-        final direct = json['imageUrl'] ?? json['image_url'] ?? json['image'];
+        final direct = json['imageUrl'] ?? json['image_url'] ?? json['image'] ?? json['coverImage'] ?? json['thumbnail'];
         if (direct != null && direct.toString().trim().isNotEmpty) {
-          return direct.toString().trim();
+          return AppUrls.resolveUrl(direct.toString());
         }
         final imgs = json['images'];
         if (imgs is List && imgs.isNotEmpty) {
           final first = imgs.first;
-          if (first is String) return first;
+          if (first is String && first.trim().isNotEmpty) {
+            return AppUrls.resolveUrl(first);
+          }
           if (first is Map) {
-            return (first['url'] ?? first['imageUrl'] ?? first['image_url'] ?? '').toString();
+            final u = (first['url'] ?? first['imageUrl'] ?? first['image_url'] ?? first['src'] ?? '').toString();
+            if (u.trim().isNotEmpty) return AppUrls.resolveUrl(u);
           }
         }
         return '';
       }(),
-      additionalImages: _asStringList(json['additionalImages'] ?? json['additional_images']),
+      additionalImages: () {
+        final list = <String>[];
+        final addImgs = json['additionalImages'] ?? json['additional_images'] ?? json['gallery'];
+        if (addImgs is List) {
+          for (final item in addImgs) {
+            String urlStr = '';
+            if (item is String) urlStr = item;
+            if (item is Map) urlStr = (item['url'] ?? item['imageUrl'] ?? item['image_url'] ?? item['src'] ?? '').toString();
+            final resolved = AppUrls.resolveUrl(urlStr);
+            if (resolved.isNotEmpty && !list.contains(resolved)) list.add(resolved);
+          }
+        }
+        final imgs = json['images'];
+        if (imgs is List) {
+          for (final item in imgs) {
+            String urlStr = '';
+            if (item is String) urlStr = item;
+            if (item is Map) urlStr = (item['url'] ?? item['imageUrl'] ?? item['image_url'] ?? item['src'] ?? '').toString();
+            final resolved = AppUrls.resolveUrl(urlStr);
+            if (resolved.isNotEmpty && !list.contains(resolved)) list.add(resolved);
+          }
+        }
+        return list;
+      }(),
       categoryId: _asString(json['categoryId'] ?? json['category_id'] ?? json['category']),
       subcategory: _asString(json['subcategory'], 'Collections'),
       rating: _asDouble(json['rating']),

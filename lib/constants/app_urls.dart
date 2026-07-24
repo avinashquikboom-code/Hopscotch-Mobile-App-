@@ -9,13 +9,11 @@ class AppUrls {
     }
     final trimmed = url.trim();
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-      if (trimmed.contains('cloudinary.com')) {
-        return trimmed;
-      }
-      if (trimmed.contains('localhost:') || trimmed.contains('127.0.0.1:') || trimmed.contains('api.fciseller.com')) {
+      if (trimmed.contains('localhost:') || trimmed.contains('127.0.0.1:')) {
         try {
           final uri = Uri.parse(trimmed);
-          return '$mobileBaseUrl${uri.path}';
+          final pathWithQuery = uri.hasQuery ? '${uri.path}?${uri.query}' : uri.path;
+          return '$mobileBaseUrl$pathWithQuery';
         } catch (_) {
           return trimmed;
         }

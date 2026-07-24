@@ -17,6 +17,8 @@ import 'package:hopscotch/widgets/share_earn_bottom_sheet.dart';
 import 'package:hopscotch/widgets/fullscreen_image_viewer.dart';
 import 'package:hopscotch/utils/navigation_utils.dart';
 
+import 'package:hopscotch/constants/app_urls.dart';
+
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
   final String? heroTagPrefix;
@@ -261,7 +263,19 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             _selectedColor = product.colors.first;
           }
 
-          final imageList = [product.imageUrl, ...product.additionalImages];
+          final rawImageList = <String>[
+            if (product.imageUrl.trim().isNotEmpty) AppUrls.resolveUrl(product.imageUrl),
+            ...product.additionalImages.map(AppUrls.resolveUrl),
+            if (product.variants.isNotEmpty)
+              ...product.variants
+                  .map((v) => AppUrls.resolveUrl(v.imageUrl))
+                  .where((url) => url.isNotEmpty),
+          ];
+
+          final imageList = rawImageList.where((url) => url.trim().isNotEmpty).toSet().toList();
+          if (imageList.isEmpty) {
+            imageList.add('https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800');
+          }
 
           return NestedScrollView(
             headerSliverBuilder: (context, innerBoxIsScrolled) {
