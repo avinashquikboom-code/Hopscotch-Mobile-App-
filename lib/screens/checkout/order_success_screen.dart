@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/widgets/custom_button.dart';
+import 'package:hopscotch/utils/invoice_generator.dart';
+import 'package:hopscotch/repositories/order_repository.dart';
+import 'package:hopscotch/models/order_model.dart';
 import 'package:lottie/lottie.dart';
 
-class OrderSuccessScreen extends StatefulWidget {
+class OrderSuccessScreen extends ConsumerStatefulWidget {
   final String orderId;
 
   const OrderSuccessScreen({super.key, required this.orderId});
 
   @override
-  State<OrderSuccessScreen> createState() => _OrderSuccessScreenState();
+  ConsumerState<OrderSuccessScreen> createState() => _OrderSuccessScreenState();
 }
 
-class _OrderSuccessScreenState extends State<OrderSuccessScreen>
+class _OrderSuccessScreenState extends ConsumerState<OrderSuccessScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
@@ -467,7 +471,38 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                         height: responsive.spacing(54),
                         width: double.infinity,
                         child: CustomButton(
+                          text: '📄 DOWNLOAD PDF INVOICE',
+                          onPressed: () {
+                            final ordersAsync = ref.read(orderProvider);
+                            final orders = ordersAsync.value ?? [];
+                            OrderModel? targetOrder;
+                            try {
+                              targetOrder = orders.firstWhere((o) => o.id == widget.orderId);
+                            } catch (_) {
+                              if (orders.isNotEmpty) targetOrder = orders.first;
+                            }
+                            if (targetOrder != null) {
+                              InvoiceGenerator.generateAndDownloadInvoice(order: targetOrder);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Invoice ready in My Orders section.'),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      ),
+
+                      SizedBox(height: responsive.spacing(12)),
+
+                      SizedBox(
+                        height: responsive.spacing(54),
+                        width: double.infinity,
+                        child: CustomButton(
                           text: 'TRACK MY ORDER',
+                          isOutlined: true,
                           onPressed: () {
                             if (widget.orderId.isNotEmpty) {
                               context.go('/track-order/${widget.orderId}');

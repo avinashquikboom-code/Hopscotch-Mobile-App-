@@ -63,6 +63,8 @@ dependencies:
   lottie: ^3.1.2
   gallery_saver_plus: ^3.2.9
   path_provider: ^2.1.1
+  pdf: ^3.11.1
+  printing: ^5.13.1
 
   # Local Database
   sqflite: ^2.3.0
