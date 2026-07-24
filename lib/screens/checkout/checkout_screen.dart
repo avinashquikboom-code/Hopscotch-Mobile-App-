@@ -12,6 +12,7 @@ import 'package:hopscotch/providers/currency_provider.dart';
 import 'package:hopscotch/repositories/config_repository.dart';
 import 'package:hopscotch/repositories/payment_repository.dart';
 import 'package:hopscotch/repositories/address_repository.dart';
+import 'package:hopscotch/repositories/profile_repository.dart';
 
 // ---------------------------------------------------------------------------
 // Country list (includes all 8 new countries)
@@ -172,28 +173,33 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   void _handleRazorpayError(PaymentFailureResponse response) {
-    if (response.code == Razorpay.PAYMENT_CANCELLED) {
+    if (mounted) {
       setState(() => _isPlacingOrder = false);
+      final msg = response.code == Razorpay.PAYMENT_CANCELLED
+          ? 'Payment cancelled by user.'
+          : 'Payment failed: ${response.message ?? "Transaction declined"}';
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Payment cancelled by user.'),
-          backgroundColor: Colors.orange,
+        SnackBar(
+          content: Text(msg),
+          backgroundColor: response.code == Razorpay.PAYMENT_CANCELLED ? Colors.orange.shade800 : AppTheme.errorColor,
           behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
-      return;
     }
-
-    // In test/demo mode when live keys aren't set in backend, complete test payment gracefully
-    _handleRazorpaySuccess(PaymentSuccessResponse.fromMap({
-      'payment_id': 'pay_demo_${DateTime.now().millisecondsSinceEpoch}',
-      'order_id': 'order_demo',
-      'signature': 'sig_demo',
-    }));
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
-    setState(() => _isPlacingOrder = false);
+    if (mounted) {
+      setState(() => _isPlacingOrder = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Redirected to external wallet: ${response.walletName ?? "Wallet"}'),
+          backgroundColor: AppTheme.primaryColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   Future<void> _openRazorpay() async {
@@ -218,44 +224,60 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final currency = orderData['currency']?.toString() ?? 'INR';
       final keyId = (orderData['keyId']?.toString() ?? '').trim();
 
-      // A key is "real" only when it's a live key or a registered test key
-      // that isn't the generic placeholder used as fallback
-      final bool isRealKey = keyId.isNotEmpty &&
+      final bool hasKey = keyId.isNotEmpty &&
           !keyId.startsWith('YOUR_') &&
-          keyId != 'your-razorpay-key-id' &&
-          keyId != 'rzp_test_1DP5mmOlF5G5ag'; // generic demo key with no merchant account
+          keyId != 'your-razorpay-key-id';
 
-      if (isRealKey) {
-        // ── Real key: open native Razorpay SDK ──────────────────────────
+      if (hasKey) {
+        final profileUser = ref.read(profileNotifierProvider);
+        final userPhone = profileUser?['phone']?.toString();
+        final userEmail = profileUser?['email']?.toString();
+        final contact = _phoneController.text.trim().isNotEmpty
+            ? _phoneController.text.trim()
+            : (userPhone?.isNotEmpty == true ? userPhone! : '9876543210');
+        final email = (userEmail != null && userEmail.trim().isNotEmpty)
+            ? userEmail.trim()
+            : 'customer@example.com';
+
+        // ── Launch Native Razorpay Payment Sheet Modal ───────────────────
         final options = <String, dynamic>{
           'key': keyId,
           'amount': amount,
           'name': 'FCI Seller / Hopscotch',
           'description': '${cart.length} item(s) purchase',
-          'retry': {'enabled': true, 'max_count': 1},
+          'retry': {'enabled': true, 'max_count': 4},
           'send_sms_hash': true,
           if (razorpayOrderId != null && !razorpayOrderId.startsWith('order_demo_'))
             'order_id': razorpayOrderId,
-          if (razorpayOrderId != null && !razorpayOrderId.startsWith('order_demo_'))
-            'currency': currency,
+          'currency': currency,
           'prefill': {
-            'contact': _phoneController.text.isNotEmpty
-                ? _phoneController.text
-                : '9876543210',
-            'email': 'customer@example.com',
+            'contact': contact,
+            'email': email,
           },
-          'external': {'wallets': ['paytm']},
           'theme': {'color': '#0d9488'},
+          'modal': {
+            'confirm_close': false,
+            'handleback': true,
+            'backdropclose': true,
+          },
+          'external': {
+            'wallets': ['paytm', 'mobikwik']
+          },
         };
         try {
           _razorpay.open(options);
         } catch (sdkErr) {
-          debugPrint('Razorpay SDK opening notice: $sdkErr');
-          _handleRazorpaySuccess(PaymentSuccessResponse.fromMap({
-            'payment_id': 'pay_demo_${DateTime.now().millisecondsSinceEpoch}',
-            'order_id': razorpayOrderId ?? 'order_demo',
-            'signature': 'sig_demo',
-          }));
+          debugPrint('Razorpay SDK opening error: $sdkErr');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to launch Razorpay: $sdkErr'),
+                backgroundColor: AppTheme.errorColor,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+            setState(() => _isPlacingOrder = false);
+          }
         }
       } else {
         // ── Placeholder / unregistered key: simulate payment flow ────────

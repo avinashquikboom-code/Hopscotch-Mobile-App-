@@ -62,6 +62,7 @@ class ProductCard extends ConsumerWidget {
                               fit: BoxFit.cover,
                               width: double.infinity,
                               height: double.infinity,
+                              memCacheWidth: 400,
                               placeholder: (_, __) => _buildPlaceholder(context),
                               errorWidget: (_, __, ___) => _buildPlaceholder(context),
                             )

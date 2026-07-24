@@ -184,6 +184,7 @@ class ProductModel {
   final double taxPercent;
   final String taxType;
   final String? hsnCode;
+  final double shippingCharge;
 
   String get name => title;
 
@@ -211,6 +212,7 @@ class ProductModel {
     this.taxPercent = 0.0,
     this.taxType = 'EXCLUSIVE',
     this.hsnCode,
+    this.shippingCharge = 0.0,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -373,6 +375,7 @@ class ProductModel {
       taxPercent: parsedTaxRate,
       taxType: parsedTaxType,
       hsnCode: parsedHsn.isNotEmpty ? parsedHsn : null,
+      shippingCharge: _asDouble(json['shippingCharge'] ?? json['shipping_charge'] ?? json['shippingFee'] ?? json['shipping_fee']),
     );
   }
 
@@ -400,6 +403,7 @@ class ProductModel {
       'taxPercent': taxPercent,
       'taxType': taxType,
       'hsnCode': hsnCode,
+      'shippingCharge': shippingCharge,
     };
   }
 
