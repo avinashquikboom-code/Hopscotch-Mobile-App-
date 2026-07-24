@@ -167,9 +167,18 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
     });
   }
 
+  double get taxAmount {
+    return state.fold(0.0, (sum, item) {
+      final p = item.product;
+      if (p.taxType.toUpperCase() == 'INCLUSIVE') return sum;
+      final rate = p.taxPercent > 0 ? p.taxPercent : 18.0;
+      return sum + ((p.price * item.quantity) * (rate / 100));
+    });
+  }
+
   double get totalAmount {
     if (state.isEmpty) return 0.0;
-    return subtotal + 15.00 + (subtotal * 0.08);
+    return subtotal + 150.00 + taxAmount;
   }
 
   double get getTotalAmount => totalAmount;

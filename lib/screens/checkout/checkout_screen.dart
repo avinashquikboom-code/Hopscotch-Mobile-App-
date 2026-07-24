@@ -637,7 +637,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       const SizedBox(height: 8),
                       _priceRow(responsive, colorScheme, 'Shipping', currency.formatPrice(150.00)),
                       const SizedBox(height: 8),
-                      _priceRow(responsive, colorScheme, 'Tax (8%)', currency.formatPrice(cartNotifier.subtotal * 0.08)),
+                      _priceRow(responsive, colorScheme, 'Tax', currency.formatPrice(cartNotifier.taxAmount)),
                       const Divider(height: 24),
                       _priceRow(responsive, colorScheme, 'Order Total', currency.formatPrice(cartNotifier.totalAmount), isTotal: true),
                     ],

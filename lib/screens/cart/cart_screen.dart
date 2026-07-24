@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hopscotch/theme/app_theme.dart';
+import 'package:hopscotch/constants/app_colors.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/repositories/cart_wishlist_repository.dart';
 import 'package:hopscotch/widgets/state_widgets.dart';
@@ -114,7 +115,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 
     final double subtotal = cart.fold(0.0, (sum, item) => sum + (item.product.price * item.quantity));
     const double shipping = 150.00;
-    final double tax = subtotal * 0.08;
+    final double tax = cartNotifier.taxAmount;
     final double giftCost = _includeGiftWrapping ? _giftWrappingCost : 0.0;
     final double totalAmount = subtotal + shipping + tax + giftCost;
 
@@ -134,7 +135,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final totalLabelText = l10n?.totalLabel ?? 'Total';
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF8FAFC),
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -638,7 +639,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: isDark
-                          ? const Color(0xFF1E1E1E)
+                          ? AppColors.darkSurface
                           : Colors.white,
                       border: Border(
                         top: BorderSide(
