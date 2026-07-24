@@ -89,10 +89,11 @@ class AddressRepository {
     }
   }
 
-  Future<void> apiCreate(AddressModel address) async {
+  Future<AddressModel?> apiCreate(AddressModel address) async {
     if (_api != null) {
-      await _api.createAddress(address);
+      return await _api.createAddress(address);
     }
+    return null;
   }
 
   Future<void> apiUpdate(AddressModel address) async {
@@ -142,7 +143,15 @@ class AddressNotifier extends StateNotifier<List<AddressModel>> {
     updated.add(address);
     state = updated;
     await _repository.saveAddresses(updated);
-    _repository.apiCreate(address).catchError((_) {});
+    
+    try {
+      final serverAddress = await _repository.apiCreate(address);
+      if (serverAddress != null && serverAddress.id.isNotEmpty) {
+        final synced = state.map((a) => a.id == address.id ? serverAddress : a).toList();
+        state = synced;
+        await _repository.saveAddresses(synced);
+      }
+    } catch (_) {}
   }
 
   Future<void> updateAddress(AddressModel address) async {

@@ -52,10 +52,52 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   late Razorpay _razorpay;
   static const String _razorpayKeyId = 'YOUR_RAZORPAY_KEY_ID'; // Replace with actual key
 
+  String? _selectedAddressId;
+
   @override
   void initState() {
     super.initState();
     _initRazorpay();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _autoFillDefaultAddress();
+    });
+  }
+
+  void _autoFillDefaultAddress() {
+    final addresses = ref.read(addressNotifierProvider);
+    if (addresses.isEmpty) return;
+
+    final defaultAddr = addresses.firstWhere(
+      (a) => a.isDefault,
+      orElse: () => addresses.first,
+    );
+
+    final parts = defaultAddr.fullName.trim().split(' ');
+    setState(() {
+      _selectedAddressId = defaultAddr.id;
+      if (_firstNameController.text.isEmpty) {
+        _firstNameController.text = parts.first;
+      }
+      if (_lastNameController.text.isEmpty) {
+        _lastNameController.text = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+      }
+      if (_addressController.text.isEmpty) {
+        _addressController.text = defaultAddr.addressLine1 +
+            (defaultAddr.addressLine2.isNotEmpty ? ', ${defaultAddr.addressLine2}' : '');
+      }
+      if (_cityController.text.isEmpty) {
+        _cityController.text = defaultAddr.city;
+      }
+      if (_zipController.text.isEmpty) {
+        _zipController.text = defaultAddr.pincode;
+      }
+      if (_phoneController.text.isEmpty) {
+        _phoneController.text = defaultAddr.phone;
+      }
+      if (_kCountries.contains(defaultAddr.country)) {
+        _selectedCountry = defaultAddr.country;
+      }
+    });
   }
 
   void _initRazorpay() {
@@ -109,6 +151,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             taxAmount: cartNotifier.taxAmount,
             totalAmount: cartNotifier.totalAmount,
             address: address,
+            addressId: (int.tryParse(_selectedAddressId ?? '') != null) ? _selectedAddressId : null,
             paymentMethod: 'Razorpay',
           );
       cartNotifier.clearCart();
@@ -278,6 +321,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             taxAmount: cartNotifier.taxAmount,
             totalAmount: cartNotifier.totalAmount,
             address: address,
+            addressId: (int.tryParse(_selectedAddressId ?? '') != null) ? _selectedAddressId : null,
             paymentMethod: _selectedPayment,
           );
 
@@ -836,6 +880,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     HapticFeedback.lightImpact();
                     final parts = addr.fullName.trim().split(' ');
                     setState(() {
+                      _selectedAddressId = addr.id;
                       _firstNameController.text = parts.first;
                       _lastNameController.text = parts.length > 1 ? parts.sublist(1).join(' ') : '';
                       _addressController.text = addr.addressLine1 + (addr.addressLine2.isNotEmpty ? ', ${addr.addressLine2}' : '');

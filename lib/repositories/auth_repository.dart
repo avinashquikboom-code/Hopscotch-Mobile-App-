@@ -4,6 +4,7 @@ import 'package:hopscotch/api/api_service.dart';
 import 'package:hopscotch/models/user_model.dart';
 import 'package:hopscotch/firebase/firebase_auth_service.dart';
 import 'package:hopscotch/core/session_manager.dart';
+import 'package:hopscotch/repositories/profile_repository.dart';
 
 class AuthRepository {
   final AuthApi _authApi;
@@ -124,10 +125,8 @@ class AuthRepository {
       final response = await _authApi.getProfile();
       if (response.statusCode == 200) {
         final raw = response.data;
-        final userData = (raw is Map<String, dynamic>)
-            ? (raw['data'] ?? raw['user'] ?? raw)
-            : raw;
-        if (userData is Map<String, dynamic>) {
+        if (raw is Map<String, dynamic>) {
+          final userData = ProfileRepository.extractUserMap(raw);
           return UserModel.fromJson(userData);
         }
       }

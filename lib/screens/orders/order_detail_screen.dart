@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/repositories/order_repository.dart';
+import 'package:hopscotch/repositories/cart_wishlist_repository.dart';
 import 'package:hopscotch/repositories/notification_repository.dart';
 import 'package:hopscotch/providers/currency_provider.dart';
 import 'package:hopscotch/models/order_model.dart';
@@ -572,7 +573,6 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
     }
 
     final order = activeOrder;
-    final statusColor = _getStatusColor(order.status);
     final statusIcon = _getStatusIcon(order.status);
     final currentStep = _getStatusStep(order.status);
     final isCancellable = _isCancellable(order.status);
@@ -702,17 +702,47 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                           ),
                           const SizedBox(height: 14),
                           // Order number
-                          Text(
-                            '#${order.id}',
-                            style: TextStyle(
-                              fontSize: clampDouble(
-                                  responsive.fontSize24, 20, 32),
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white,
-                              letterSpacing: 0.5,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
+                          // Order number with 1-tap copy
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '#${order.id}',
+                                  style: TextStyle(
+                                    fontSize: clampDouble(
+                                        responsive.fontSize24, 20, 32),
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    letterSpacing: 0.5,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ),
+                              IconButton(
+                                icon: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(Icons.copy_rounded, color: Colors.white, size: 14),
+                                ),
+                                onPressed: () {
+                                  Clipboard.setData(ClipboardData(text: order.id));
+                                  HapticFeedback.lightImpact();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: const Text('Order ID copied to clipboard! 📋'),
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: AppTheme.primaryColor,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                    ),
+                                  );
+                                },
+                                tooltip: 'Copy Order ID',
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 4),
                           Text(

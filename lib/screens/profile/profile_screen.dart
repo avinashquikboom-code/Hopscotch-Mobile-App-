@@ -111,7 +111,9 @@ class ProfileScreen extends ConsumerWidget {
                             ),
                           ),
                           child: () {
-                            final rawUrl = userProfile?['avatarUrl']?.toString();
+                            final rawUrl = userProfile?['avatarUrl']?.toString() ??
+                                userProfile?['avatar']?.toString() ??
+                                userProfile?['avatar_url']?.toString();
                             final avatarUrl = rawUrl != null && rawUrl.isNotEmpty
                                 ? AppUrls.resolveUrl(rawUrl)
                                 : null;
@@ -218,6 +220,14 @@ class ProfileScreen extends ConsumerWidget {
                         title: l10n.orderHistory,
                         subtitle: l10n.orderHistoryDesc,
                         onTap: () => context.push('/my-orders'),
+                      ),
+                      const Divider(height: 1),
+                      _buildOptionTile(
+                        context: context,
+                        icon: Icons.location_on_outlined,
+                        title: 'Saved Addresses',
+                        subtitle: 'Manage shipping addresses and defaults',
+                        onTap: () => context.push('/addresses'),
                       ),
                       const Divider(height: 1),
                       _buildOptionTile(

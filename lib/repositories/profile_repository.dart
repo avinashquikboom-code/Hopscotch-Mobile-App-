@@ -22,7 +22,7 @@ class ProfileRepository {
     _cachedProfile = null;
     _cacheTime = null;
     _inflight = null;
-    SharedPreferences.getInstance().then((prefs) => prefs.remove(_kProfilePrefsKey)).catchError((_) {});
+    SharedPreferences.getInstance().then((prefs) => prefs.remove(_kProfilePrefsKey)).catchError((_) => false);
   }
 
   final ApiService _apiService;
@@ -71,8 +71,31 @@ class ProfileRepository {
     }
   }
 
+  static Map<String, dynamic> extractUserMap(Map<String, dynamic> raw) {
+    Map<String, dynamic> current = raw;
+
+    if (current.containsKey('data') && current['data'] is Map<String, dynamic>) {
+      current = current['data'] as Map<String, dynamic>;
+    }
+    if (current.containsKey('user') && current['user'] is Map<String, dynamic>) {
+      current = current['user'] as Map<String, dynamic>;
+    }
+
+    final result = Map<String, dynamic>.from(current);
+
+    // Normalize avatar URL field names
+    final avatar = result['avatarUrl'] ?? result['avatar'] ?? result['avatar_url'];
+    if (avatar != null && avatar.toString().isNotEmpty) {
+      result['avatarUrl'] = avatar.toString();
+      result['avatar'] = avatar.toString();
+    }
+
+    return result;
+  }
+
   Future<void> updateCache(Map<String, dynamic> data) async {
-    final merged = Map<String, dynamic>.from(_cachedProfile ?? {})..addAll(data);
+    final cleanData = extractUserMap(data);
+    final merged = Map<String, dynamic>.from(_cachedProfile ?? {})..addAll(cleanData);
     _cachedProfile = merged;
     _cacheTime = DateTime.now();
     await _saveToDisk(merged);
@@ -83,7 +106,8 @@ class ProfileRepository {
       final prefs = await SharedPreferences.getInstance();
       final rawJson = prefs.getString(_kProfilePrefsKey);
       if (rawJson != null && rawJson.isNotEmpty) {
-        return jsonDecode(rawJson) as Map<String, dynamic>;
+        final rawMap = jsonDecode(rawJson) as Map<String, dynamic>;
+        return extractUserMap(rawMap);
       }
     } catch (e) {
       DevLogger.logError('Failed to load profile from disk: $e', context: 'ProfileRepository');
@@ -94,7 +118,8 @@ class ProfileRepository {
   Future<void> _saveToDisk(Map<String, dynamic> profile) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_kProfilePrefsKey, jsonEncode(profile));
+      final cleanProfile = extractUserMap(profile);
+      await prefs.setString(_kProfilePrefsKey, jsonEncode(cleanProfile));
     } catch (e) {
       DevLogger.logError('Failed to save profile to disk: $e', context: 'ProfileRepository');
     }
@@ -107,10 +132,7 @@ class ProfileRepository {
       if (response.statusCode == 200) {
         final raw = response.data;
         if (raw is Map<String, dynamic>) {
-          final userMap = raw['data'] ?? raw['user'] ?? raw;
-          if (userMap is Map<String, dynamic>) {
-            return userMap;
-          }
+          return extractUserMap(raw);
         }
       }
       return null;

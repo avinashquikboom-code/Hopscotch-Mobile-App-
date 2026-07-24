@@ -57,6 +57,10 @@ class AddressApi {
   }
 
   Future<AddressModel?> updateAddress(AddressModel address) async {
+    // Non-numeric mock IDs (e.g. 'addr_office') are local-only and cannot be parsed by backend Prisma
+    if (int.tryParse(address.id) == null) {
+      return address;
+    }
     for (final endpoint in _baseEndpoints) {
       try {
         final response = await _apiService.put(
@@ -78,6 +82,10 @@ class AddressApi {
   }
 
   Future<bool> deleteAddress(String id) async {
+    // Non-numeric mock IDs (e.g. 'addr_office') are local-only and cannot be parsed by backend Prisma
+    if (int.tryParse(id) == null) {
+      return true;
+    }
     for (final endpoint in _baseEndpoints) {
       try {
         final response = await _apiService.delete('$endpoint/$id');
@@ -90,6 +98,10 @@ class AddressApi {
   }
 
   Future<bool> setDefaultAddress(String id) async {
+    // Non-numeric mock IDs (e.g. 'addr_office') are local-only and cannot be parsed by backend Prisma
+    if (int.tryParse(id) == null) {
+      return true;
+    }
     for (final endpoint in _baseEndpoints) {
       try {
         final response = await _apiService.patch('$endpoint/$id/default');
