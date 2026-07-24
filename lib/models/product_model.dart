@@ -179,6 +179,9 @@ class ProductModel {
   final bool isTrending;
   final bool isNewArrival;
   final bool isFeatured;
+  final double taxPercent;
+  final String taxType;
+  final String? hsnCode;
 
   const ProductModel({
     required this.id,
@@ -201,9 +204,24 @@ class ProductModel {
     this.isTrending = false,
     this.isNewArrival = false,
     this.isFeatured = false,
+    this.taxPercent = 0.0,
+    this.taxType = 'EXCLUSIVE',
+    this.hsnCode,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
+    final effectiveTax = json['effectiveTaxRule'] ?? json['taxRule'];
+    final parsedTaxRate = _asDouble(
+      json['taxPercent'] ?? json['tax_percent'] ?? (effectiveTax is Map ? (effectiveTax['rate'] ?? effectiveTax['taxPercent']) : null),
+    );
+    final parsedTaxType = _asString(
+      json['taxType'] ?? json['tax_type'] ?? (effectiveTax is Map ? (effectiveTax['taxType'] ?? effectiveTax['type']) : null),
+      'EXCLUSIVE',
+    );
+    final parsedHsn = _asString(
+      json['hsnCode'] ?? json['hsn_code'] ?? (effectiveTax is Map ? effectiveTax['hsnCode'] : null),
+    );
+
     return ProductModel(
       id: _asString(json['id'] ?? json['_id']),
       title: _asString(json['title'] ?? json['name']),
@@ -273,6 +291,9 @@ class ProductModel {
       isTrending: _asBool(json['isTrending'] ?? json['is_trending']),
       isNewArrival: _asBool(json['isNewArrival'] ?? json['is_new_arrival']),
       isFeatured: _asBool(json['isFeatured'] ?? json['is_featured']),
+      taxPercent: parsedTaxRate,
+      taxType: parsedTaxType,
+      hsnCode: parsedHsn.isNotEmpty ? parsedHsn : null,
     );
   }
 
