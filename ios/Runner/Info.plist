@@ -5,11 +5,15 @@
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Camera access is required for image search.</string>
+	<string>Camera access is required for profile pictures and visual image search.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Photo library access is required for image search.</string>
+	<string>Photo library access is required for uploading profile pictures and image search.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Allow FCISeller to save product images to your Photos library.</string>
+	<string>Allow FCI Seller to save product images to your Photos library.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Location access is required to auto-fill delivery addresses and estimate local shipping speed.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Location access is required for real-time order delivery tracking.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
