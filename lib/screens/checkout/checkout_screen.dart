@@ -676,22 +676,75 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     isDark,
                     colorScheme,
                     children: [
-                      // Product thumbnails strip
+                      // Product Itemized List & Prices
                       if (cart.isNotEmpty) ...[
-                        SizedBox(
-                          height: 56,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: cart.length,
-                            separatorBuilder: (_, __) => const SizedBox(width: 8),
-                            itemBuilder: (context, i) {
-                              final img = cart[i].product.imageUrl;
-                              return ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.network(img, width: 56, height: 56, fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => Container(width: 56, height: 56, color: colorScheme.outline.withValues(alpha: 0.1))),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: colorScheme.outline.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: colorScheme.outline.withValues(alpha: 0.1)),
+                          ),
+                          child: Column(
+                            children: cart.map((item) {
+                              final itemTotal = item.product.price * item.quantity;
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 6),
+                                child: Row(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.network(
+                                        item.product.imageUrl,
+                                        width: 40,
+                                        height: 40,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) => Container(
+                                          width: 40,
+                                          height: 40,
+                                          color: colorScheme.outline.withValues(alpha: 0.1),
+                                          child: const Icon(Icons.shopping_bag_outlined, size: 18, color: Colors.grey),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            item.product.title,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontSize: responsive.fontSize12,
+                                              fontWeight: FontWeight.bold,
+                                              color: colorScheme.onSurface,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            '${item.quantity} × ${currency.formatPrice(item.product.price)}',
+                                            style: TextStyle(
+                                              fontSize: responsive.fontSize11,
+                                              color: colorScheme.onSurface.withValues(alpha: 0.6),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Text(
+                                      currency.formatPrice(itemTotal),
+                                      style: TextStyle(
+                                        fontSize: responsive.fontSize13,
+                                        fontWeight: FontWeight.bold,
+                                        color: colorScheme.onSurface,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               );
-                            },
+                            }).toList(),
                           ),
                         ),
                         const SizedBox(height: 16),

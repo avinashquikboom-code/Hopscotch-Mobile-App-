@@ -8,8 +8,16 @@ class AppUrls {
       return '';
     }
     final trimmed = url.trim();
+    if (trimmed == 'null' || trimmed == 'undefined' || trimmed == 'N/A' || trimmed == 'none') {
+      return '';
+    }
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-      if (trimmed.contains('localhost:') || trimmed.contains('127.0.0.1:')) {
+      if (trimmed.contains('localhost') ||
+          trimmed.contains('127.0.0.1') ||
+          trimmed.contains('10.0.2.2') ||
+          trimmed.contains(':5001') ||
+          trimmed.contains(':5000') ||
+          trimmed.contains(':3000')) {
         try {
           final uri = Uri.parse(trimmed);
           final pathWithQuery = uri.hasQuery ? '${uri.path}?${uri.query}' : uri.path;

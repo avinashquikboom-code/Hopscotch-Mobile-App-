@@ -46,10 +46,10 @@ enum AppCurrency {
     return inrPrice * rateFromINR;
   }
 
-  /// Format price with this currency symbol
-  String formatPrice(double priceInINR) {
+  /// Format price with this currency symbol (shows 2 decimal places for order total precision)
+  String formatPrice(double priceInINR, {bool alwaysShowDecimals = true}) {
     final convertedPrice = convertFromINR(priceInINR);
-    if (convertedPrice == convertedPrice.truncate()) {
+    if (!alwaysShowDecimals && convertedPrice == convertedPrice.truncate()) {
       return '$symbol${convertedPrice.toInt()}';
     }
     return '$symbol${convertedPrice.toStringAsFixed(2)}';

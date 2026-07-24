@@ -185,6 +185,8 @@ class ProductModel {
   final String taxType;
   final String? hsnCode;
 
+  String get name => title;
+
   const ProductModel({
     required this.id,
     required this.title,

@@ -272,7 +272,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   .where((url) => url.isNotEmpty),
           ];
 
-          final imageList = rawImageList.where((url) => url.trim().isNotEmpty).toSet().toList();
+          final imageList = rawImageList.where((url) => url.trim().isNotEmpty && url != 'https://api.fciseller.com/' && url != 'https://api.fciseller.com').toSet().toList();
           if (imageList.isEmpty) {
             imageList.add('https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800');
           }
@@ -395,13 +395,18 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                             ),
                                           );
                                         },
-                                        errorBuilder: (context, error, stackTrace) => Container(
-                                          color: AppTheme.primaryColor.withValues(alpha: 0.04),
-                                          child: Center(
-                                            child: Icon(
-                                              Icons.checkroom_rounded,
-                                              color: AppTheme.primaryColor.withValues(alpha: 0.15),
-                                              size: responsive.iconSize(80),
+                                        errorBuilder: (context, error, stackTrace) => Image.network(
+                                          'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800',
+                                          fit: BoxFit.cover,
+                                          width: double.infinity,
+                                          errorBuilder: (_, __, ___) => Container(
+                                            color: AppTheme.primaryColor.withValues(alpha: 0.04),
+                                            child: Center(
+                                              child: Icon(
+                                                Icons.checkroom_rounded,
+                                                color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                                                size: responsive.iconSize(80),
+                                              ),
                                             ),
                                           ),
                                         ),

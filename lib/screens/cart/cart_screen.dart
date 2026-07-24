@@ -9,6 +9,8 @@ import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/repositories/cart_wishlist_repository.dart';
 import 'package:hopscotch/l10n/app_localizations.dart';
 import 'package:hopscotch/providers/currency_provider.dart';
+import 'package:hopscotch/constants/app_urls.dart';
+import 'package:hopscotch/models/cart_item_model.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -243,6 +245,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           shippingText: shippingText,
                           taxPercentText: taxPercentText,
                           totalText: totalText,
+                          cartItems: cart,
                         ),
                       ],
                     ),
@@ -623,7 +626,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   children: [
                     Expanded(
                       child: Text(
-                        product.name,
+                        product.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -828,7 +831,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     );
   }
 
-  // ── Order Summary Card ─────────────────────────────────────────────────────
+  // ── Order Summary Card (Redesigned Luxury UI) ─────────────────────────────
   Widget _buildOrderSummaryCard(
     BuildContext context, {
     required ResponsiveText responsive,
@@ -846,61 +849,269 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     required String shippingText,
     required String taxPercentText,
     required String totalText,
+    List<CartItemModel>? cartItems,
   }) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.12)),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: isDark
+              ? colorScheme.outline.withValues(alpha: 0.2)
+              : AppTheme.primaryColor.withValues(alpha: 0.15),
+          width: 1.2,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 3),
+            color: AppTheme.primaryColor.withValues(alpha: isDark ? 0.08 : 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            orderSummaryText.toUpperCase(),
-            style: TextStyle(
-              fontSize: responsive.fontSize11,
-              fontWeight: FontWeight.w900,
-              color: colorScheme.onSurface.withValues(alpha: 0.5),
-              letterSpacing: 1.5,
-            ),
+          // Header Badge Row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.receipt_long_rounded,
+                      color: AppTheme.primaryColor,
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    orderSummaryText.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: responsive.fontSize12,
+                      fontWeight: FontWeight.w900,
+                      color: colorScheme.onSurface,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.verified_user_rounded, color: Color(0xFF10B981), size: 12),
+                    SizedBox(width: 4),
+                    Text(
+                      'SECURE',
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF10B981),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
+
+          // Itemized Product Price Breakdown Inside Card
+          if (cartItems != null && cartItems.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: colorScheme.outline.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: colorScheme.outline.withValues(alpha: 0.1)),
+              ),
+              child: Column(
+                children: cartItems.map((item) {
+                  final itemTotal = item.product.price * item.quantity;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            AppUrls.resolveUrl(item.product.imageUrl),
+                            width: 36,
+                            height: 36,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              width: 36,
+                              height: 36,
+                              color: Colors.grey.shade200,
+                              child: const Icon(Icons.shopping_bag_outlined, size: 16, color: Colors.grey),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.product.title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: responsive.fontSize12,
+                                  fontWeight: FontWeight.bold,
+                                  color: colorScheme.onSurface,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${item.quantity} × ${currency.formatPrice(item.product.price)}',
+                                style: TextStyle(
+                                  fontSize: responsive.fontSize10,
+                                  color: colorScheme.onSurface.withValues(alpha: 0.6),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text(
+                          currency.formatPrice(itemTotal),
+                          style: TextStyle(
+                            fontSize: responsive.fontSize12,
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+          const SizedBox(height: 18),
+
+          // Breakdown Rows
           _buildSummaryRow(subtotalText, currency.formatPrice(subtotal), responsive, colorScheme),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
+
           _buildSummaryRow(
             shippingText,
             shipping > 0 ? currency.formatPrice(shipping) : 'FREE',
             responsive,
             colorScheme,
-            valueColor: shipping == 0 ? const Color(0xFF10B981) : null,
+            valueWidget: shipping == 0
+                ? Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'FREE SHIPPING 🎉',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF10B981),
+                      ),
+                    ),
+                  )
+                : null,
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
+
           _buildSummaryRow(
             hasInclusive ? '$taxPercentText (Incl.)' : taxPercentText,
             currency.formatPrice(tax),
             responsive,
             colorScheme,
           ),
+
           if (_includeGiftWrapping) ...[
-            const SizedBox(height: 10),
-            _buildSummaryRow('Gift Wrapping', currency.formatPrice(_giftWrappingCost), responsive, colorScheme),
+            const SizedBox(height: 12),
+            _buildSummaryRow(
+              'Gift Wrapping',
+              currency.formatPrice(_giftWrappingCost),
+              responsive,
+              colorScheme,
+            ),
           ],
-          const Divider(height: 28, thickness: 1),
-          _buildSummaryRow(
-            totalText,
-            currency.formatPrice(totalAmount),
-            responsive,
-            colorScheme,
-            isTotal: true,
+
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Divider(height: 1, thickness: 1),
+          ),
+
+          // Luxury Grand Total Pill Row
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppTheme.primaryColor.withValues(alpha: isDark ? 0.2 : 0.08),
+                  AppTheme.primaryColor.withValues(alpha: isDark ? 0.08 : 0.02),
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: AppTheme.primaryColor.withValues(alpha: 0.25),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      totalText.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: responsive.fontSize11,
+                        fontWeight: FontWeight.w900,
+                        color: colorScheme.onSurface,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    Text(
+                      hasInclusive ? 'Taxes & charges included' : 'Final Order Total',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: colorScheme.onSurface.withValues(alpha: 0.5),
+                      ),
+                    ),
+                  ],
+                ),
+                Text(
+                  currency.formatPrice(totalAmount),
+                  style: TextStyle(
+                    fontSize: responsive.fontSize20,
+                    fontWeight: FontWeight.w900,
+                    color: AppTheme.primaryColor,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -913,6 +1124,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     ResponsiveText responsive,
     ColorScheme colorScheme, {
     bool isTotal = false,
+    Widget? valueWidget,
     Color? valueColor,
   }) {
     return Row(
@@ -926,14 +1138,15 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             color: isTotal ? colorScheme.onSurface : colorScheme.onSurface.withValues(alpha: 0.7),
           ),
         ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: isTotal ? responsive.fontSize18 : responsive.fontSize13,
-            fontWeight: isTotal ? FontWeight.w900 : FontWeight.bold,
-            color: valueColor ?? (isTotal ? AppTheme.primaryColor : colorScheme.onSurface),
-          ),
-        ),
+        valueWidget ??
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: isTotal ? responsive.fontSize18 : responsive.fontSize13,
+                fontWeight: isTotal ? FontWeight.w900 : FontWeight.bold,
+                color: valueColor ?? (isTotal ? AppTheme.primaryColor : colorScheme.onSurface),
+              ),
+            ),
       ],
     );
   }
