@@ -167,18 +167,52 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
     });
   }
 
-  double get taxAmount {
+  double get exclusiveTaxAmount {
     return state.fold(0.0, (sum, item) {
       final p = item.product;
-      if (p.taxType.toUpperCase() == 'INCLUSIVE') return sum;
-      final rate = p.taxPercent > 0 ? p.taxPercent : 18.0;
-      return sum + ((p.price * item.quantity) * (rate / 100));
+      final type = p.taxType.toUpperCase();
+      if (type == 'EXCLUSIVE' && p.taxPercent > 0) {
+        return sum + ((p.price * item.quantity) * (p.taxPercent / 100));
+      }
+      return sum;
     });
   }
 
+  double get inclusiveTaxAmount {
+    return state.fold(0.0, (sum, item) {
+      final p = item.product;
+      final type = p.taxType.toUpperCase();
+      if (type == 'INCLUSIVE' && p.taxPercent > 0) {
+        final lineSubtotal = p.price * item.quantity;
+        final lineTax = lineSubtotal - (lineSubtotal / (1 + (p.taxPercent / 100)));
+        return sum + lineTax;
+      }
+      return sum;
+    });
+  }
+
+  double get totalTaxAmount {
+    final explicit = exclusiveTaxAmount + inclusiveTaxAmount;
+    if (explicit > 0) return explicit;
+    // Standard GST fallback (18% inclusive) when no explicit tax rule is attached to product
+    return subtotal > 0 ? (subtotal - (subtotal / 1.18)) : 0.0;
+  }
+
+  double get taxAmount => totalTaxAmount;
+
+  bool get hasInclusiveTax {
+    if (hasExclusiveTax) return false;
+    return true;
+  }
+
+  bool get hasExclusiveTax => state.any(
+      (item) => item.product.taxType.toUpperCase() == 'EXCLUSIVE' && item.product.taxPercent > 0);
+
+  double get shippingFee => state.isEmpty ? 0.0 : 150.00;
+
   double get totalAmount {
     if (state.isEmpty) return 0.0;
-    return subtotal + 150.00 + taxAmount;
+    return subtotal + shippingFee + exclusiveTaxAmount;
   }
 
   double get getTotalAmount => totalAmount;

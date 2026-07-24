@@ -1132,21 +1132,39 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                               _buildSummaryRow(
                                 label: 'Subtotal',
                                 value: currency.formatPrice(
-                                    order.totalAmount > 99
-                                        ? order.totalAmount - 0
-                                        : order.totalAmount),
+                                    order.subtotal > 0
+                                        ? order.subtotal
+                                        : (order.totalAmount - order.shippingFee - order.taxAmount)),
                                 responsive: responsive,
                                 colorScheme: colorScheme,
                               ),
                               const SizedBox(height: 10),
                               _buildSummaryRow(
                                 label: 'Shipping',
-                                value: order.totalAmount > 1000
-                                    ? 'FREE'
-                                    : currency.formatPrice(99),
+                                value: order.shippingFee > 0
+                                    ? currency.formatPrice(order.shippingFee)
+                                    : 'FREE',
                                 responsive: responsive,
                                 colorScheme: colorScheme,
                                 valueColor: const Color(0xFF10B981),
+                              ),
+                              const SizedBox(height: 10),
+                              _buildSummaryRow(
+                                label: 'GST / Tax',
+                                value: order.taxAmount > 0
+                                    ? (() {
+                                        final base = order.subtotal > 0
+                                            ? order.subtotal
+                                            : (order.totalAmount - order.shippingFee - order.taxAmount);
+                                        final pct = base > 0 ? (order.taxAmount / base) * 100 : 0.0;
+                                        final pctStr = pct > 0
+                                            ? ' (${pct % 1 == 0 ? pct.toInt() : pct.toStringAsFixed(1)}%)'
+                                            : '';
+                                        return '${currency.formatPrice(order.taxAmount)}$pctStr';
+                                      })()
+                                    : 'Included in price',
+                                responsive: responsive,
+                                colorScheme: colorScheme,
                               ),
                               const SizedBox(height: 10),
                               _buildSummaryRow(

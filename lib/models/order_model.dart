@@ -9,6 +9,9 @@ class OrderModel {
   final String shippingAddress;
   final String paymentMethod;
   final String? trackingNumber;
+  final double taxAmount;
+  final double subtotal;
+  final double shippingFee;
 
   const OrderModel({
     required this.id,
@@ -19,6 +22,9 @@ class OrderModel {
     required this.shippingAddress,
     required this.paymentMethod,
     this.trackingNumber,
+    this.taxAmount = 0.0,
+    this.subtotal = 0.0,
+    this.shippingFee = 0.0,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -33,7 +39,16 @@ class OrderModel {
       shippingAddress: _parseAddress(json['shippingAddress'] ?? json['address']),
       paymentMethod: (json['paymentMethod'] ?? json['payment_method'] ?? '').toString(),
       trackingNumber: json['trackingNumber'] as String? ?? json['tracking_number'] as String?,
+      taxAmount: _asDouble(json['taxAmount'] ?? json['totalTax'] ?? json['tax_amount'] ?? json['tax']),
+      subtotal: _asDouble(json['subtotal'] ?? json['subTotal'] ?? json['sub_total']),
+      shippingFee: _asDouble(json['shippingFee'] ?? json['shipping_fee'] ?? json['shippingAmount'] ?? json['shipping_amount'] ?? json['shipping']),
     );
+  }
+
+  static double _asDouble(dynamic val) {
+    if (val is num) return val.toDouble();
+    if (val is String) return double.tryParse(val) ?? 0.0;
+    return 0.0;
   }
 
   Map<String, dynamic> toJson() {
@@ -46,6 +61,9 @@ class OrderModel {
       'shippingAddress': shippingAddress,
       'paymentMethod': paymentMethod,
       'trackingNumber': trackingNumber,
+      'taxAmount': taxAmount,
+      'subtotal': subtotal,
+      'shippingFee': shippingFee,
     };
   }
 

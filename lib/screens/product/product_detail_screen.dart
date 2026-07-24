@@ -558,7 +558,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                           ),
                                         ),
                                       ],
-                                      if (product.taxPercent > 0 || product.taxType.isNotEmpty) ...[
+                                      if (product.taxPercent > 0 || (product.taxType.toUpperCase() != 'NONE' && product.taxType.isNotEmpty)) ...[
                                         SizedBox(width: responsive.spacing(8)),
                                         Container(
                                           padding: EdgeInsets.symmetric(
@@ -574,8 +574,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                           ),
                                           child: Text(
                                             product.taxPercent > 0
-                                                ? 'GST @ ${product.taxPercent.toStringAsFixed(0)}% (${product.taxType.toUpperCase() == 'INCLUSIVE' ? 'Inclusive' : '+ GST extra'})'
-                                                : 'GST (${product.taxType})',
+                                                ? 'GST @ ${product.taxPercent.toStringAsFixed(product.taxPercent % 1 == 0 ? 0 : 2)}% (${product.taxType.toUpperCase() == 'INCLUSIVE' ? 'Inclusive' : '+ GST extra'})'
+                                                : (product.taxType.toUpperCase() == 'INCLUSIVE' ? 'Incl. GST' : 'GST Applicable'),
                                             style: TextStyle(
                                               fontSize: responsive.fontSize11,
                                               fontWeight: FontWeight.bold,

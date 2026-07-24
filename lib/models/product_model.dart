@@ -210,16 +210,65 @@ class ProductModel {
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
-    final effectiveTax = json['effectiveTaxRule'] ?? json['taxRule'];
+    final categoryObj = json['category'] is Map<String, dynamic>
+        ? json['category'] as Map<String, dynamic>
+        : null;
+    final effectiveTax = json['effectiveTaxRule'] ??
+        json['taxRule'] ??
+        json['tax_rule'] ??
+        (categoryObj != null
+            ? (categoryObj['effectiveTaxRule'] ??
+                categoryObj['taxRule'] ??
+                categoryObj['tax_rule'])
+            : null);
+
     final parsedTaxRate = _asDouble(
-      json['taxPercent'] ?? json['tax_percent'] ?? (effectiveTax is Map ? (effectiveTax['rate'] ?? effectiveTax['taxPercent']) : null),
+      json['taxPercent'] ??
+          json['tax_percent'] ??
+          json['taxRate'] ??
+          json['tax_rate'] ??
+          json['rate'] ??
+          json['gstPercent'] ??
+          json['gst_percent'] ??
+          json['gstRate'] ??
+          json['taxAmount'] ??
+          json['tax_amount'] ??
+          (effectiveTax is Map
+              ? (effectiveTax['rate'] ??
+                  effectiveTax['taxPercent'] ??
+                  effectiveTax['taxRate'] ??
+                  effectiveTax['tax_rate'])
+              : null) ??
+          (categoryObj != null
+              ? (categoryObj['taxPercent'] ??
+                  categoryObj['taxRate'] ??
+                  categoryObj['tax_rate'] ??
+                  categoryObj['rate'])
+              : null),
     );
+
     final parsedTaxType = _asString(
-      json['taxType'] ?? json['tax_type'] ?? (effectiveTax is Map ? (effectiveTax['taxType'] ?? effectiveTax['type']) : null),
-      'EXCLUSIVE',
+      json['taxType'] ??
+          json['tax_type'] ??
+          json['type'] ??
+          (effectiveTax is Map
+              ? (effectiveTax['taxType'] ??
+                  effectiveTax['type'] ??
+                  effectiveTax['tax_type'])
+              : null) ??
+          (categoryObj != null
+              ? (categoryObj['taxType'] ??
+                  categoryObj['tax_type'] ??
+                  categoryObj['type'])
+              : null),
+      parsedTaxRate > 0 ? 'EXCLUSIVE' : 'NONE',
     );
+
     final parsedHsn = _asString(
-      json['hsnCode'] ?? json['hsn_code'] ?? (effectiveTax is Map ? effectiveTax['hsnCode'] : null),
+      json['hsnCode'] ??
+          json['hsn_code'] ??
+          (effectiveTax is Map ? effectiveTax['hsnCode'] : null) ??
+          (categoryObj != null ? categoryObj['hsnCode'] : null),
     );
 
     return ProductModel(
@@ -318,6 +367,9 @@ class ProductModel {
       'isTrending': isTrending,
       'isNewArrival': isNewArrival,
       'isFeatured': isFeatured,
+      'taxPercent': taxPercent,
+      'taxType': taxType,
+      'hsnCode': hsnCode,
     };
   }
 
@@ -351,6 +403,9 @@ class ProductModel {
     bool? isTrending,
     bool? isNewArrival,
     bool? isFeatured,
+    double? taxPercent,
+    String? taxType,
+    String? hsnCode,
   }) {
     return ProductModel(
       id: id ?? this.id,
@@ -372,6 +427,9 @@ class ProductModel {
       isTrending: isTrending ?? this.isTrending,
       isNewArrival: isNewArrival ?? this.isNewArrival,
       isFeatured: isFeatured ?? this.isFeatured,
+      taxPercent: taxPercent ?? this.taxPercent,
+      taxType: taxType ?? this.taxType,
+      hsnCode: hsnCode ?? this.hsnCode,
     );
   }
 

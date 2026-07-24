@@ -113,11 +113,12 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final double subtotal = cart.fold(0.0, (sum, item) => sum + (item.product.price * item.quantity));
-    const double shipping = 150.00;
+    final double subtotal = cartNotifier.subtotal;
+    final double shipping = cartNotifier.shippingFee;
     final double tax = cartNotifier.taxAmount;
+    final bool hasInclusive = cartNotifier.hasInclusiveTax;
     final double giftCost = _includeGiftWrapping ? _giftWrappingCost : 0.0;
-    final double totalAmount = subtotal + shipping + tax + giftCost;
+    final double totalAmount = cartNotifier.totalAmount + giftCost;
 
     final yourBagTitle = l10n?.yourBag ?? 'Your Bag';
     final clearText = l10n?.clear ?? 'Clear';
@@ -130,7 +131,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final orderSummaryText = l10n?.orderSummary ?? 'Order Summary';
     final subtotalText = l10n?.subtotal ?? 'Subtotal';
     final shippingText = l10n?.shipping ?? 'Shipping';
-    final taxPercentText = l10n?.taxPercent ?? 'Estimated Tax';
+    final taxPercentText = l10n?.tax ?? 'GST / Tax';
     final totalText = l10n?.total ?? 'Total';
     final totalLabelText = l10n?.totalLabel ?? 'Total';
 
@@ -604,7 +605,12 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                               const SizedBox(height: 10),
                               _buildSummaryRow(shippingText, currency.formatPrice(shipping), responsive, colorScheme),
                               const SizedBox(height: 10),
-                              _buildSummaryRow(taxPercentText, currency.formatPrice(tax), responsive, colorScheme),
+                              _buildSummaryRow(
+                                hasInclusive ? '$taxPercentText (Incl.)' : taxPercentText,
+                                currency.formatPrice(tax),
+                                responsive,
+                                colorScheme,
+                              ),
                               if (_includeGiftWrapping) ...[
                                 const SizedBox(height: 10),
                                 _buildSummaryRow(giftWrappingText, currency.formatPrice(_giftWrappingCost), responsive, colorScheme),
