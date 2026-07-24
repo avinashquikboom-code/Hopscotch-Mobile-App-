@@ -210,6 +210,13 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
 
   double get shippingFee {
     if (state.isEmpty) return 0.0;
+    double productShipping = 0.0;
+    for (final item in state) {
+      if (item.product.shippingCharge > 0) {
+        productShipping += item.product.shippingCharge * item.quantity;
+      }
+    }
+    if (productShipping > 0) return productShipping;
     return subtotal > 999 ? 0.0 : 99.0;
   }
 
