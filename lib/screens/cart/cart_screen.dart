@@ -1052,11 +1052,23 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           const SizedBox(height: 12),
 
           _buildSummaryRow(
-            taxPercentText,
+            hasInclusive ? 'GST (already included)' : 'GST (added)',
             currency.formatPrice(tax),
             responsive,
             colorScheme,
+            isInfo: hasInclusive,
           ),
+          if (hasInclusive) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Price shown is inclusive of ${currency.formatPrice(tax)} GST',
+              style: TextStyle(
+                fontSize: 11,
+                color: Colors.grey.shade600,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
 
           if (_includeGiftWrapping) ...[
             const SizedBox(height: 12),
@@ -1138,6 +1150,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     ResponsiveText responsive,
     ColorScheme colorScheme, {
     bool isTotal = false,
+    bool isInfo = false,
     Widget? valueWidget,
     Color? valueColor,
   }) {
@@ -1149,7 +1162,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           style: TextStyle(
             fontSize: isTotal ? responsive.fontSize15 : responsive.fontSize13,
             fontWeight: isTotal ? FontWeight.w900 : FontWeight.w500,
-            color: isTotal ? colorScheme.onSurface : colorScheme.onSurface.withValues(alpha: 0.7),
+            color: isInfo
+                ? Colors.grey.shade500
+                : (isTotal ? colorScheme.onSurface : colorScheme.onSurface.withValues(alpha: 0.7)),
+            fontStyle: isInfo ? FontStyle.italic : FontStyle.normal,
           ),
         ),
         valueWidget ??
@@ -1157,8 +1173,12 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               value,
               style: TextStyle(
                 fontSize: isTotal ? responsive.fontSize18 : responsive.fontSize13,
-                fontWeight: isTotal ? FontWeight.w900 : FontWeight.bold,
-                color: valueColor ?? (isTotal ? AppTheme.primaryColor : colorScheme.onSurface),
+                fontWeight: isTotal ? FontWeight.w900 : (isInfo ? FontWeight.w400 : FontWeight.bold),
+                color: valueColor ??
+                    (isTotal
+                        ? AppTheme.primaryColor
+                        : (isInfo ? Colors.grey.shade500 : colorScheme.onSurface)),
+                fontStyle: isInfo ? FontStyle.italic : FontStyle.normal,
               ),
             ),
       ],

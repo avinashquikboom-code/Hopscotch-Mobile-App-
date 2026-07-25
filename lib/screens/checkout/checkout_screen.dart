@@ -679,7 +679,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     );
   }
 
-  Widget _priceRow(ResponsiveText responsive, ColorScheme colorScheme, String label, String value, {bool isTotal = false, bool isDiscount = false}) {
+  Widget _priceRow(ResponsiveText responsive, ColorScheme colorScheme, String label, String value, {bool isTotal = false, bool isDiscount = false, bool isInfo = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -688,17 +688,23 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           style: TextStyle(
             fontSize: isTotal ? responsive.fontSize14 : responsive.fontSize13,
             fontWeight: isTotal ? FontWeight.w800 : FontWeight.w500,
-            color: isTotal ? colorScheme.onSurface : colorScheme.onSurface.withValues(alpha: 0.65),
+            color: isInfo
+                ? Colors.grey.shade500
+                : (isTotal ? colorScheme.onSurface : colorScheme.onSurface.withValues(alpha: 0.65)),
+            fontStyle: isInfo ? FontStyle.italic : FontStyle.normal,
           ),
         ),
         Text(
           value,
           style: TextStyle(
             fontSize: isTotal ? responsive.fontSize16 : responsive.fontSize13,
-            fontWeight: isTotal ? FontWeight.w900 : FontWeight.w700,
+            fontWeight: isTotal ? FontWeight.w900 : (isInfo ? FontWeight.w400 : FontWeight.w700),
             color: isTotal
                 ? AppTheme.primaryColor
-                : (isDiscount ? const Color(0xFF059669) : colorScheme.onSurface),
+                : (isDiscount
+                    ? const Color(0xFF059669)
+                    : (isInfo ? Colors.grey.shade500 : colorScheme.onSurface)),
+            fontStyle: isInfo ? FontStyle.italic : FontStyle.normal,
           ),
         ),
       ],
@@ -1141,9 +1147,21 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             _priceRow(
                               responsive,
                               colorScheme,
-                              'Estimated Tax (GST)',
+                              cartNotifier.hasInclusiveTax ? 'GST (already included)' : 'GST (added)',
                               currency.formatPrice(cartNotifier.taxAmount),
+                              isInfo: cartNotifier.hasInclusiveTax,
                             ),
+                            if (cartNotifier.hasInclusiveTax) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                'Price shown is inclusive of ${currency.formatPrice(cartNotifier.taxAmount)} GST',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey.shade600,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ],
                             const Divider(height: 24),
                             _priceRow(responsive, colorScheme, 'Total Amount', currency.formatPrice(cartNotifier.totalAmount), isTotal: true),
                           ],
