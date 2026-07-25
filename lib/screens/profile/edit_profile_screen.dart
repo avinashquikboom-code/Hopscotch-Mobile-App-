@@ -5,10 +5,10 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
-import 'package:hopscotch/api/api_service.dart';
 import 'package:hopscotch/api/auth_api.dart';
 import 'package:hopscotch/widgets/toast_notification.dart';
 import 'package:hopscotch/repositories/profile_repository.dart';
+import 'package:hopscotch/providers/api_provider.dart';
 import 'package:hopscotch/widgets/user_avatar.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -140,7 +140,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     });
 
     try {
-      final apiService = ApiService();
+      final apiService = ref.read(apiServiceProvider);
       final authApi = AuthApi(apiService);
       
       final firstName = _firstNameController.text.trim();
