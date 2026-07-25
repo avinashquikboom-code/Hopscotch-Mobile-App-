@@ -718,14 +718,19 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      currency.formatPrice(product.price * item.quantity),
-                      style: TextStyle(
-                        fontSize: responsive.fontSize15,
-                        fontWeight: FontWeight.w900,
-                        color: colorScheme.onSurface,
+                    Flexible(
+                      child: Text(
+                        currency.formatPrice(product.price * item.quantity),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: responsive.fontSize15,
+                          fontWeight: FontWeight.w900,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 8),
 
                     // Quantity selector pill (- QTY +)
                     Container(
@@ -1047,7 +1052,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           const SizedBox(height: 12),
 
           _buildSummaryRow(
-            hasInclusive ? '$taxPercentText (Incl.)' : taxPercentText,
+            taxPercentText,
             currency.formatPrice(tax),
             responsive,
             colorScheme,

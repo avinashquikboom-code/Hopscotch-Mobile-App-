@@ -94,7 +94,7 @@ class OrderNotifier extends StateNotifier<AsyncValue<List<OrderModel>>> {
           ) ??
           0.0;
       final calculatedSubtotal = subtotal ?? itemsSubtotal;
-      final calculatedShipping = shippingFee ?? (calculatedSubtotal > 999 ? 0.0 : 99.0);
+      final calculatedShipping = shippingFee ?? (calculatedSubtotal >= 999 ? 0.0 : 0.0);
       final calculatedTax = taxAmount ?? 0.0;
 
       final fallback = OrderModel(

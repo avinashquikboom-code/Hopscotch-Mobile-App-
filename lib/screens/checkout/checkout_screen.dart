@@ -1141,7 +1141,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             _priceRow(
                               responsive,
                               colorScheme,
-                              cartNotifier.hasInclusiveTax ? 'Estimated Tax (GST Incl.)' : 'Estimated Tax (GST)',
+                              'Estimated Tax (GST)',
                               currency.formatPrice(cartNotifier.taxAmount),
                             ),
                             const Divider(height: 24),

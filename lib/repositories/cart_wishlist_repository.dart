@@ -153,13 +153,16 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
     _saveToPrefs();
   }
 
+  double _round2(double val) => (val * 100.0).roundToDouble() / 100.0;
+
   double get subtotal {
-    return state.fold(
+    final raw = state.fold(
         0.0, (sum, item) => sum + (item.product.price * item.quantity));
+    return _round2(raw);
   }
 
   double get totalDiscount {
-    return state.fold(0.0, (sum, item) {
+    final raw = state.fold(0.0, (sum, item) {
       final original = item.product.originalPrice;
       final current = item.product.price;
       if (original > current) {
@@ -167,10 +170,11 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
       }
       return sum;
     });
+    return _round2(raw);
   }
 
   double get exclusiveTaxAmount {
-    return state.fold(0.0, (sum, item) {
+    final raw = state.fold(0.0, (sum, item) {
       final p = item.product;
       final type = p.taxType.toUpperCase();
       if (type == 'EXCLUSIVE' && p.taxPercent > 0) {
@@ -178,10 +182,11 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
       }
       return sum;
     });
+    return _round2(raw);
   }
 
   double get inclusiveTaxAmount {
-    return state.fold(0.0, (sum, item) {
+    final raw = state.fold(0.0, (sum, item) {
       final p = item.product;
       final type = p.taxType.toUpperCase();
       if (type == 'INCLUSIVE' && p.taxPercent > 0) {
@@ -191,13 +196,14 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
       }
       return sum;
     });
+    return _round2(raw);
   }
 
   double get totalTaxAmount {
     final explicit = exclusiveTaxAmount + inclusiveTaxAmount;
-    if (explicit > 0) return explicit;
+    if (explicit > 0) return _round2(explicit);
     // Standard GST fallback (18% inclusive) when no explicit tax rule is attached to product
-    return subtotal > 0 ? (subtotal - (subtotal / 1.18)) : 0.0;
+    return _round2(subtotal > 0 ? (subtotal - (subtotal / 1.18)) : 0.0);
   }
 
   double get taxAmount => totalTaxAmount;
@@ -212,19 +218,21 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
 
   double get shippingFee {
     if (state.isEmpty) return 0.0;
+    // Free shipping threshold: orders >= ₹999 get free shipping
+    if (subtotal >= 999) return 0.0;
+
     double productShipping = 0.0;
     for (final item in state) {
       if (item.product.shippingCharge > 0) {
         productShipping += item.product.shippingCharge * item.quantity;
       }
     }
-    if (productShipping > 0) return productShipping;
-    return subtotal > 999 ? 0.0 : 99.0;
+    return _round2(productShipping);
   }
 
   double get totalAmount {
     if (state.isEmpty) return 0.0;
-    return subtotal + shippingFee + exclusiveTaxAmount;
+    return _round2(subtotal + shippingFee + taxAmount);
   }
 
   double get getTotalAmount => totalAmount;

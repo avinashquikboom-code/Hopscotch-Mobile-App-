@@ -106,8 +106,15 @@ ProductModel mapBackendToMobileProduct(Map<String, dynamic> raw) {
     }
   }
 
-  if (sizes.isEmpty) sizes = ['S', 'M', 'L', 'XL'];
-  if (colors.isEmpty) colors = ['Beige', 'Black', 'Olive'];
+  double shippingCharge = 0.0;
+  final rawShipping = raw['shippingCharge'] ?? raw['shipping_charge'] ?? raw['shippingFee'] ?? raw['shipping_fee'];
+  if (rawShipping != null) {
+    if (rawShipping is num) {
+      shippingCharge = rawShipping.toDouble();
+    } else {
+      shippingCharge = double.tryParse(rawShipping.toString()) ?? 0.0;
+    }
+  }
 
   return ProductModel(
     id: id,
@@ -129,6 +136,7 @@ ProductModel mapBackendToMobileProduct(Map<String, dynamic> raw) {
     isTrending: isTrending,
     isNewArrival: isNewArrival,
     isFeatured: isFeatured,
+    shippingCharge: shippingCharge,
   );
 }
 
@@ -247,18 +255,6 @@ class ProductRepository {
   }
 
   Future<List<ProductModel>> getProductsByCategory(String categoryIdOrName) async {
-    try {
-      final response = await _apiService.get('/api/categories/$categoryIdOrName/products');
-      if (response.statusCode == 200) {
-        final data = response.data;
-        final List? rawList = data is Map ? data['data'] : data;
-        if (rawList != null && rawList.isNotEmpty) {
-          return rawList
-              .map((item) => mapBackendToMobileProduct(Map<String, dynamic>.from(item)))
-              .toList();
-        }
-      }
-    } catch (_) {}
 
     final products = await getProducts();
     if (products.isEmpty) return [];
