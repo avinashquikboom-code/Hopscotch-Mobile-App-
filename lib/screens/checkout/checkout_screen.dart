@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as dev;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -50,9 +51,14 @@ const List<String> _kDefaultCountries = [
   'Mexico',
 ];
 
-String _matchCountryName(String rawCountry, List<String> availableCountries) {
-  if (rawCountry.trim().isEmpty)
+String _matchCountryName(
+  String rawCountry,
+  List<String> availableCountries, {
+  Map<String, String>? isoMap,
+}) {
+  if (rawCountry.trim().isEmpty) {
     return availableCountries.isNotEmpty ? availableCountries.first : 'India';
+  }
   final trimmed = rawCountry.trim();
 
   // 1. Exact match
@@ -63,36 +69,8 @@ String _matchCountryName(String rawCountry, List<String> availableCountries) {
     if (c.toLowerCase() == trimmed.toLowerCase()) return c;
   }
 
-  // 3. ISO Code mapping (e.g. IN -> India, US -> United States, AE -> UAE (Dubai))
-  const isoMap = {
-    'IN': 'India',
-    'US': 'United States',
-    'GB': 'United Kingdom',
-    'AE': 'UAE (Dubai)',
-    'BH': 'Bahrain',
-    'MY': 'Malaysia',
-    'MU': 'Mauritius',
-    'FJ': 'Fiji',
-    'GY': 'Guyana',
-    'SR': 'Suriname',
-    'TT': 'Trinidad & Tobago',
-    'AU': 'Australia',
-    'CA': 'Canada',
-    'DE': 'Germany',
-    'FR': 'France',
-    'JP': 'Japan',
-    'SG': 'Singapore',
-    'SA': 'Saudi Arabia',
-    'QA': 'Qatar',
-    'KW': 'Kuwait',
-    'OM': 'Oman',
-    'ZA': 'South Africa',
-    'NZ': 'New Zealand',
-    'NL': 'Netherlands',
-    'ES': 'Spain',
-  };
-
-  if (isoMap.containsKey(trimmed.toUpperCase())) {
+  // 3. ISO Code mapping dynamically passed from API
+  if (isoMap != null && isoMap.containsKey(trimmed.toUpperCase())) {
     final mappedName = isoMap[trimmed.toUpperCase()]!;
     for (final c in availableCountries) {
       if (c.toLowerCase() == mappedName.toLowerCase() ||
@@ -139,13 +117,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   bool _showItemSummary = false;
 
   void _cancelRazorpayTimeout() {
-    _razorpayTimeoutTimer?.cancel();
-    _razorpayTimeoutTimer = null;
+    if (_razorpayTimeoutTimer != null) {
+      dev.log('Cancelling active Razorpay timeout timer', name: 'Razorpay');
+      _razorpayTimeoutTimer?.cancel();
+      _razorpayTimeoutTimer = null;
+    }
   }
 
   void _startRazorpayTimeout() {
     _cancelRazorpayTimeout();
+    dev.log('Starting 15s Razorpay timeout timer', name: 'Razorpay');
     _razorpayTimeoutTimer = Timer(const Duration(seconds: 15), () {
+      dev.log('Razorpay timeout triggered after 15 seconds', name: 'Razorpay');
       if (mounted && _isPlacingOrder) {
         setState(() {
           _isPlacingOrder = false;
@@ -221,21 +204,43 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         _phoneController.text = defaultAddr.phone;
       }
       if (defaultAddr.country.isNotEmpty) {
+        final countriesData = ref.read(apiCountriesProvider).value;
+        final apiList = countriesData
+            ?.map((c) => c['name']?.toString() ?? '')
+            .where((name) => name.isNotEmpty)
+            .toList();
+        final countriesList = (apiList != null && apiList.isNotEmpty)
+            ? apiList
+            : _kDefaultCountries;
+        final apiIsoMap = <String, String>{};
+        if (countriesData != null) {
+          for (final c in countriesData) {
+            final code = c['code']?.toString().toUpperCase();
+            final name = c['name']?.toString();
+            if (code != null && code.isNotEmpty && name != null && name.isNotEmpty) {
+              apiIsoMap[code] = name;
+            }
+          }
+        }
         _selectedCountry = _matchCountryName(
           defaultAddr.country,
-          _kDefaultCountries,
+          countriesList,
+          isoMap: apiIsoMap,
         );
       }
     });
   }
 
   void _initRazorpay() {
+    dev.log('Initializing Razorpay SDK event listeners', name: 'Razorpay');
     try {
       _razorpay = Razorpay();
       _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handleRazorpaySuccess);
       _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handleRazorpayError);
       _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
-    } catch (e) {
+      dev.log('Razorpay SDK event listeners registered successfully', name: 'Razorpay');
+    } catch (e, stackTrace) {
+      dev.log('Error initializing Razorpay SDK plugin: $e', name: 'Razorpay', error: e, stackTrace: stackTrace);
       debugPrint('Razorpay plugin initialization notice: $e');
     }
   }
@@ -251,12 +256,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     _phoneController.dispose();
     try {
       _razorpay.clear();
+      dev.log('Razorpay instance cleared on widget dispose', name: 'Razorpay');
     } catch (_) {}
     super.dispose();
   }
 
   // ── Razorpay handlers ───────────────────────────────────────────────────
   void _handleRazorpaySuccess(PaymentSuccessResponse response) async {
+    dev.log(
+      'EVENT_PAYMENT_SUCCESS received: paymentId=${response.paymentId}, orderId=${response.orderId}, signature=${response.signature}',
+      name: 'Razorpay',
+    );
     _cancelRazorpayTimeout();
     setState(() => _paymentProcessingStep = 'VERIFYING PAYMENT SIGNATURE...');
     final cart = ref.read(cartProvider);
@@ -269,6 +279,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       if (response.paymentId != null &&
           response.orderId != null &&
           response.signature != null) {
+        dev.log('Verifying Razorpay payment signature via backend API', name: 'Razorpay');
         await ref
             .read(paymentRepositoryProvider)
             .verifyRazorpayPayment(
@@ -279,6 +290,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       }
 
       setState(() => _paymentProcessingStep = 'PLACING ORDER...');
+      dev.log('Placing order on backend with Razorpay payment method', name: 'Razorpay');
       final order = await ref
           .read(orderProvider.notifier)
           .placeOrder(
@@ -293,9 +305,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 : null,
             paymentMethod: 'Razorpay',
           );
+      dev.log('Order placed successfully via Razorpay: #${order.id}', name: 'Razorpay');
       cartNotifier.clearCart();
       if (mounted) context.go('/order-success?orderId=${order.id}');
-    } catch (e) {
+    } catch (e, stackTrace) {
+      dev.log('Error completing order after Razorpay success: $e', name: 'Razorpay', error: e, stackTrace: stackTrace);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -311,6 +325,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   void _handleRazorpayError(PaymentFailureResponse response) {
+    dev.log(
+      'EVENT_PAYMENT_ERROR received: code=${response.code}, message=${response.message}',
+      name: 'Razorpay',
+      error: response.message,
+    );
     _cancelRazorpayTimeout();
     if (mounted) {
       setState(() => _isPlacingOrder = false);
@@ -333,6 +352,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
+    dev.log(
+      'EVENT_EXTERNAL_WALLET received: walletName=${response.walletName}',
+      name: 'Razorpay',
+    );
     _cancelRazorpayTimeout();
     if (mounted) {
       setState(() => _isPlacingOrder = false);
@@ -350,10 +373,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   Future<void> _openRazorpay() async {
     final cart = ref.read(cartProvider);
-    if (cart.isEmpty) return;
+    if (cart.isEmpty) {
+      dev.log('Cart is empty, aborting Razorpay checkout', name: 'Razorpay');
+      return;
+    }
 
     final cartNotifier = ref.read(cartProvider.notifier);
     final totalAmount = cartNotifier.totalAmount;
+    dev.log('Initiating Razorpay checkout: itemsCount=${cart.length}, totalAmount=₹$totalAmount', name: 'Razorpay');
 
     setState(() {
       _isPlacingOrder = true;
@@ -364,13 +391,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final amtInPaise = (totalAmount * 100).round();
       final currency = ref.read(currencyProvider).code;
 
+      dev.log('Requesting Razorpay order creation from backend: amount=₹$totalAmount ($amtInPaise paise), currency=$currency', name: 'Razorpay');
       final orderData = await ref
           .read(paymentRepositoryProvider)
-          .createRazorpayOrder(amount: totalAmount);
+          .createRazorpayOrder(amount: totalAmount, cartItems: cart);
 
       final razorpayOrderId = orderData['razorpayOrderId'] as String?;
       final amount = orderData['amount'] as int? ?? amtInPaise;
       final keyId = (orderData['keyId']?.toString() ?? '').trim();
+
+      dev.log('Backend order creation response: razorpayOrderId=$razorpayOrderId, keyId=$keyId, amount=$amount paise', name: 'Razorpay');
 
       final bool hasKey =
           keyId.isNotEmpty &&
@@ -395,9 +425,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           'description': '${cart.length} item(s) purchase',
           'retry': {'enabled': true, 'max_count': 2},
           'send_sms_hash': true,
-          if (razorpayOrderId != null &&
-              !razorpayOrderId.startsWith('order_demo_') &&
-              !razorpayOrderId.startsWith('order_'))
+          if (razorpayOrderId != null && razorpayOrderId.isNotEmpty)
             'order_id': razorpayOrderId,
           'currency': 'INR',
           'prefill': {'contact': contact, 'email': email},
@@ -412,10 +440,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           },
         };
         try {
+          dev.log('Opening Razorpay SDK with options: $options', name: 'Razorpay');
           _startRazorpayTimeout();
           _razorpay.open(options);
-        } catch (sdkErr) {
+        } catch (sdkErr, stackTrace) {
           _cancelRazorpayTimeout();
+          dev.log('Error launching Razorpay SDK window: $sdkErr', name: 'Razorpay', error: sdkErr, stackTrace: stackTrace);
           debugPrint('Razorpay SDK opening error: $sdkErr');
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -429,31 +459,26 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           }
         }
       } else {
-        if (mounted) {
-          setState(() => _paymentProcessingStep = 'PROCESSING PAYMENT...');
-        }
-        await Future.delayed(const Duration(milliseconds: 1200));
-        if (mounted) {
-          setState(() => _paymentProcessingStep = 'VERIFYING TRANSACTION...');
-        }
-        await Future.delayed(const Duration(milliseconds: 800));
-
-        _handleRazorpaySuccess(
-          PaymentSuccessResponse.fromMap({
-            'payment_id': 'pay_demo_${DateTime.now().millisecondsSinceEpoch}',
-            'order_id': razorpayOrderId ?? 'order_demo',
-            'signature': 'sig_demo',
-          }),
+        dev.log('Razorpay Key ID missing or invalid ($keyId)', name: 'Razorpay');
+        throw Exception('Razorpay Key ID is not configured on server.');
+      }
+    } catch (e, stackTrace) {
+      dev.log('Razorpay payment initialization failed: $e', name: 'Razorpay', error: e, stackTrace: stackTrace);
+      _cancelRazorpayTimeout();
+      if (mounted) {
+        setState(() => _isPlacingOrder = false);
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not start payment: ${e.toString().replaceAll('Exception: ', '')}. Please try again.'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
         );
       }
-    } catch (e) {
-      _handleRazorpaySuccess(
-        PaymentSuccessResponse.fromMap({
-          'payment_id': 'pay_demo_${DateTime.now().millisecondsSinceEpoch}',
-          'order_id': 'order_demo',
-          'signature': 'sig_demo',
-        }),
-      );
     }
   }
 
@@ -964,6 +989,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final countriesList = (apiList != null && apiList.isNotEmpty)
         ? apiList
         : _kDefaultCountries;
+
+    final apiIsoMap = <String, String>{};
+    if (countriesAsync.value != null) {
+      for (final c in countriesAsync.value!) {
+        final code = c['code']?.toString().toUpperCase();
+        final name = c['name']?.toString();
+        if (code != null && code.isNotEmpty && name != null && name.isNotEmpty) {
+          apiIsoMap[code] = name;
+        }
+      }
+    }
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -1233,6 +1269,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               value: _matchCountryName(
                                 _selectedCountry,
                                 countriesList,
+                                isoMap: apiIsoMap,
                               ),
                               decoration: InputDecoration(
                                 labelText: 'Country',
@@ -1881,9 +1918,28 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       _zipController.text = addr.pincode;
                       _phoneController.text = addr.phone;
                       if (addr.country.isNotEmpty) {
+                        final countriesData = ref.read(apiCountriesProvider).value;
+                        final apiList = countriesData
+                            ?.map((c) => c['name']?.toString() ?? '')
+                            .where((name) => name.isNotEmpty)
+                            .toList();
+                        final countriesList = (apiList != null && apiList.isNotEmpty)
+                            ? apiList
+                            : _kDefaultCountries;
+                        final apiIsoMap = <String, String>{};
+                        if (countriesData != null) {
+                          for (final c in countriesData) {
+                            final code = c['code']?.toString().toUpperCase();
+                            final name = c['name']?.toString();
+                            if (code != null && code.isNotEmpty && name != null && name.isNotEmpty) {
+                              apiIsoMap[code] = name;
+                            }
+                          }
+                        }
                         _selectedCountry = _matchCountryName(
                           addr.country,
-                          _kDefaultCountries,
+                          countriesList,
+                          isoMap: apiIsoMap,
                         );
                       }
                     });
