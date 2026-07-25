@@ -1051,22 +1051,22 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           ),
           const SizedBox(height: 12),
 
-          _buildSummaryRow(
-            hasInclusive ? 'GST (already included)' : 'GST (added)',
-            currency.formatPrice(tax),
-            responsive,
-            colorScheme,
-            isInfo: hasInclusive,
-          ),
-          if (hasInclusive) ...[
-            const SizedBox(height: 4),
-            Text(
-              'Price shown is inclusive of ${currency.formatPrice(tax)} GST',
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.grey.shade600,
-                fontStyle: FontStyle.italic,
+          if (ref.read(cartProvider.notifier).taxBreakdown.length > 1) ...[
+            for (final item in ref.read(cartProvider.notifier).taxBreakdown) ...[
+              const SizedBox(height: 6),
+              _buildSummaryRow(
+                item['name'] as String,
+                currency.formatPrice(item['taxAmount'] as double),
+                responsive,
+                colorScheme,
               ),
+            ],
+          ] else if (tax > 0) ...[
+            _buildSummaryRow(
+              'GST',
+              currency.formatPrice(tax),
+              responsive,
+              colorScheme,
             ),
           ],
 

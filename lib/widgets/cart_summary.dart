@@ -1,21 +1,36 @@
 import 'package:flutter/material.dart';
 
+class TaxBreakdownItem {
+  final String name;
+  final double rate;
+  final String taxType; // 'INCLUSIVE' or 'EXCLUSIVE'
+  final double taxAmount;
+
+  TaxBreakdownItem({
+    required this.name,
+    required this.rate,
+    required this.taxType,
+    required this.taxAmount,
+  });
+}
+
 /// Reusable order summary card widget displaying itemized charges and tax breakdown.
-/// Makes it visually clear whether tax is INCLUDED (MRP) or EXCLUSIVE (added extra).
+/// Total ALWAYS equals Subtotal + Delivery Charge + GST.
 Widget buildOrderSummary({
   required BuildContext context,
   required double subtotal,
   required double deliveryCharge,
   required double taxAmount,
-  required String taxType, // 'INCLUSIVE' or 'EXCLUSIVE'
+  required String taxType,
   required double totalAmount,
+  List<TaxBreakdownItem>? taxBreakdown,
   String currencySymbol = '₹',
 }) {
-  final isInclusive = taxType.toUpperCase().contains('INCLUSIVE');
-
   String formatPrice(double amount) {
     return '$currencySymbol${amount.toStringAsFixed(2)}';
   }
+
+  final hasMultipleBreakdown = taxBreakdown != null && taxBreakdown.length > 1;
 
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -28,33 +43,19 @@ Widget buildOrderSummary({
         valueColor: deliveryCharge == 0 ? const Color(0xFF10B981) : null,
       ),
 
-      // FIX: clarify inclusive tax isn't an addition
-      if (isInclusive)
-        _summaryRow(
-          'GST (already included)',
-          formatPrice(taxAmount),
-          context,
-          isInfo: true, // muted/italic style, not a bold addable line
-        )
-      else
-        _summaryRow('GST (added)', formatPrice(taxAmount), context),
+      if (hasMultipleBreakdown) ...[
+        for (final item in taxBreakdown)
+          _summaryRow(
+            item.name,
+            formatPrice(item.taxAmount),
+            context,
+          ),
+      ] else if (taxAmount > 0) ...[
+        _summaryRow('GST', formatPrice(taxAmount), context),
+      ],
 
       const Divider(height: 16),
       _summaryRow('Total Amount', formatPrice(totalAmount), context, isBold: true),
-
-      // Extra clarity line — directly clarifies "why total didn't change"
-      if (isInclusive)
-        Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Text(
-            'Price shown is inclusive of ${formatPrice(taxAmount)} GST',
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey.shade600,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-        ),
     ],
   );
 }
@@ -64,13 +65,12 @@ Widget _summaryRow(
   String value,
   BuildContext context, {
   bool isBold = false,
-  bool isInfo = false,
   Color? valueColor,
 }) {
   final colorScheme = Theme.of(context).colorScheme;
 
   return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
+    padding: const EdgeInsets.symmetric(vertical: 5),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -79,8 +79,7 @@ Widget _summaryRow(
           style: TextStyle(
             fontSize: isBold ? 15 : 13.5,
             fontWeight: isBold ? FontWeight.w700 : FontWeight.w400,
-            color: isInfo ? Colors.grey.shade500 : (isBold ? colorScheme.onSurface : Colors.grey.shade700),
-            fontStyle: isInfo ? FontStyle.italic : FontStyle.normal,
+            color: isBold ? colorScheme.onSurface : Colors.grey.shade700,
           ),
         ),
         Text(
@@ -88,10 +87,7 @@ Widget _summaryRow(
           style: TextStyle(
             fontSize: isBold ? 17 : 13.5,
             fontWeight: isBold ? FontWeight.w800 : FontWeight.w600,
-            color: valueColor ??
-                (isBold
-                    ? colorScheme.primary
-                    : (isInfo ? Colors.grey.shade500 : colorScheme.onSurface)),
+            color: valueColor ?? (isBold ? colorScheme.primary : colorScheme.onSurface),
           ),
         ),
       ],

@@ -1144,22 +1144,22 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             const SizedBox(height: 10),
                             _priceRow(responsive, colorScheme, 'Delivery Charge', currency.formatPrice(cartNotifier.shippingFee)),
                             const SizedBox(height: 10),
-                            _priceRow(
-                              responsive,
-                              colorScheme,
-                              cartNotifier.hasInclusiveTax ? 'GST (already included)' : 'GST (added)',
-                              currency.formatPrice(cartNotifier.taxAmount),
-                              isInfo: cartNotifier.hasInclusiveTax,
-                            ),
-                            if (cartNotifier.hasInclusiveTax) ...[
-                              const SizedBox(height: 4),
-                              Text(
-                                'Price shown is inclusive of ${currency.formatPrice(cartNotifier.taxAmount)} GST',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.grey.shade600,
-                                  fontStyle: FontStyle.italic,
+                            if (cartNotifier.taxBreakdown.length > 1) ...[
+                              for (final item in cartNotifier.taxBreakdown) ...[
+                                const SizedBox(height: 6),
+                                _priceRow(
+                                  responsive,
+                                  colorScheme,
+                                  item['name'] as String,
+                                  currency.formatPrice(item['taxAmount'] as double),
                                 ),
+                              ],
+                            ] else if (cartNotifier.taxAmount > 0) ...[
+                              _priceRow(
+                                responsive,
+                                colorScheme,
+                                'GST',
+                                currency.formatPrice(cartNotifier.taxAmount),
                               ),
                             ],
                             const Divider(height: 24),
