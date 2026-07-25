@@ -5,53 +5,10 @@ import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/repositories/coupon_repository.dart';
 import 'package:hopscotch/repositories/notification_repository.dart';
+import 'package:hopscotch/providers/coupon_provider.dart';
 
-class CouponModel {
-  final String id;
-  final String title;
-  final String description;
-  final String code;
-  final int discount;
-  final String type;
-  final double minOrder;
-  final double maxDiscount;
-  final DateTime expiry;
-  final String category;
-  final bool isExclusive;
-  final bool isApplied;
-
-  CouponModel({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.code,
-    required this.discount,
-    required this.type,
-    required this.minOrder,
-    required this.maxDiscount,
-    required this.expiry,
-    required this.category,
-    this.isExclusive = false,
-    this.isApplied = false,
-  });
-
-  CouponModel copyWith({bool? isApplied}) {
-    return CouponModel(
-      id: id,
-      title: title,
-      description: description,
-      code: code,
-      discount: discount,
-      type: type,
-      minOrder: minOrder,
-      maxDiscount: maxDiscount,
-      expiry: expiry,
-      category: category,
-      isExclusive: isExclusive,
-      isApplied: isApplied ?? this.isApplied,
-    );
-  }
-}
+import 'package:hopscotch/models/coupon_model.dart';
+export 'package:hopscotch/models/coupon_model.dart';
 
 class CouponsScreen extends ConsumerStatefulWidget {
   const CouponsScreen({super.key});
@@ -155,25 +112,29 @@ class _CouponsScreenState extends ConsumerState<CouponsScreen> {
   void _applyCoupon(CouponModel coupon) {
     final responsive = context.responsive;
     HapticFeedback.mediumImpact();
+    final isCurrentlyApplied = coupon.isApplied;
     setState(() {
       final index = _coupons.indexWhere((c) => c.id == coupon.id);
       if (index != -1) {
-        _coupons[index] = coupon.copyWith(isApplied: !coupon.isApplied);
+        _coupons[index] = coupon.copyWith(isApplied: !isCurrentlyApplied);
       }
     });
 
-    if (!coupon.isApplied) {
+    if (!isCurrentlyApplied) {
+      ref.read(appliedCouponProvider.notifier).applyCoupon(coupon);
       ref.read(notificationProvider.notifier).addNotification(
         title: 'Discount Offer Applied 🔥',
         body: 'Coupon ${coupon.code} (${coupon.title}) has been applied to your session!',
         type: 'offer',
       );
+    } else {
+      ref.read(appliedCouponProvider.notifier).removeCoupon();
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          coupon.isApplied ? 'Coupon removed' : 'Coupon applied!',
+          !isCurrentlyApplied ? 'Coupon applied!' : 'Coupon removed',
           style: TextStyle(fontSize: responsive.fontSize14),
         ),
         backgroundColor: AppTheme.primaryColor,

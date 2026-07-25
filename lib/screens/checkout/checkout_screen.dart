@@ -15,8 +15,8 @@ import 'package:hopscotch/repositories/config_repository.dart';
 import 'package:hopscotch/repositories/payment_repository.dart';
 import 'package:hopscotch/repositories/address_repository.dart';
 import 'package:hopscotch/repositories/profile_repository.dart';
+import 'package:hopscotch/providers/coupon_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:intl/intl.dart';
 
 const List<String> _kDefaultCountries = [
   'India',
@@ -379,8 +379,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     }
 
     final cartNotifier = ref.read(cartProvider.notifier);
-    final totalAmount = cartNotifier.totalAmount;
-    dev.log('Initiating Razorpay checkout: itemsCount=${cart.length}, totalAmount=₹$totalAmount', name: 'Razorpay');
+    final appliedCoupon = ref.read(appliedCouponProvider);
+    final discount = ref.read(appliedCouponProvider.notifier).calculateDiscount(cartNotifier.subtotal);
+    final rawTotalPayable = (cartNotifier.subtotal - discount + cartNotifier.shippingFee + cartNotifier.taxAmount);
+    final totalAmount = (rawTotalPayable * 100.0).roundToDouble() / 100.0;
+
+    dev.log('Initiating Razorpay checkout: itemsCount=${cart.length}, subtotal=₹${cartNotifier.subtotal}, discount=₹$discount, shipping=₹${cartNotifier.shippingFee}, tax=₹${cartNotifier.taxAmount} => totalAmount=₹$totalAmount', name: 'Razorpay');
 
     setState(() {
       _isPlacingOrder = true;
@@ -391,10 +395,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final amtInPaise = (totalAmount * 100).round();
       final currency = ref.read(currencyProvider).code;
 
-      dev.log('Requesting Razorpay order creation from backend: amount=₹$totalAmount ($amtInPaise paise), currency=$currency', name: 'Razorpay');
+      dev.log('Requesting Razorpay order creation from backend: amount=₹$totalAmount ($amtInPaise paise), currency=$currency, couponCode=${appliedCoupon?.code}', name: 'Razorpay');
       final orderData = await ref
           .read(paymentRepositoryProvider)
-          .createRazorpayOrder(amount: totalAmount, cartItems: cart);
+          .createRazorpayOrder(
+            amount: totalAmount,
+            cartItems: cart,
+            couponCode: appliedCoupon?.code,
+            discountAmount: discount,
+          );
 
       final razorpayOrderId = orderData['razorpayOrderId'] as String?;
       final amount = orderData['amount'] as int? ?? amtInPaise;
@@ -981,6 +990,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final cart = ref.watch(cartProvider);
     final cartNotifier = ref.read(cartProvider.notifier);
     final currency = ref.watch(currencyProvider);
+    final appliedCoupon = ref.watch(appliedCouponProvider);
+    final couponDiscount = ref.read(appliedCouponProvider.notifier).calculateDiscount(cartNotifier.subtotal);
+    final totalPayable = (cartNotifier.subtotal - couponDiscount + cartNotifier.shippingFee + cartNotifier.taxAmount).clamp(0.0, double.infinity);
     final countriesAsync = ref.watch(apiCountriesProvider);
     final apiList = countriesAsync.value
         ?.map((c) => c['name']?.toString() ?? '')
@@ -1551,6 +1563,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               'Subtotal',
                               currency.formatPrice(cartNotifier.subtotal),
                             ),
+                            if (couponDiscount > 0) ...[
+                              const SizedBox(height: 10),
+                              _priceRow(
+                                responsive,
+                                colorScheme,
+                                'Coupon Discount (${appliedCoupon?.code})',
+                                '-${currency.formatPrice(couponDiscount)}',
+                                isDiscount: true,
+                              ),
+                            ],
                             const SizedBox(height: 10),
                             _priceRow(
                               responsive,
@@ -1591,7 +1613,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               responsive,
                               colorScheme,
                               'Total Amount',
-                              currency.formatPrice(cartNotifier.totalAmount),
+                              currency.formatPrice(totalPayable),
                               isTotal: true,
                             ),
                           ],
@@ -1649,7 +1671,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                currency.formatPrice(cartNotifier.totalAmount),
+                                currency.formatPrice(totalPayable),
                                 style: TextStyle(
                                   fontSize: responsive.fontSize20,
                                   fontWeight: FontWeight.w900,

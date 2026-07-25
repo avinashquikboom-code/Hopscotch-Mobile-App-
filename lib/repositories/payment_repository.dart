@@ -20,6 +20,8 @@ class PaymentRepository {
     int? orderId,
     double? amount,
     List<CartItemModel>? cartItems,
+    String? couponCode,
+    double? discountAmount,
   }) async {
     final amtInPaise = (((amount ?? 100)) * 100).round();
     final itemsPayload = cartItems
@@ -32,7 +34,7 @@ class PaymentRepository {
         .toList();
 
     dev.log(
-      'Creating Razorpay order on backend API: amount=₹$amount ($amtInPaise paise), itemsCount=${itemsPayload?.length ?? 0}',
+      'Creating Razorpay order on backend API: amount=₹$amount ($amtInPaise paise), itemsCount=${itemsPayload?.length ?? 0}, couponCode=$couponCode, discount=₹$discountAmount',
       name: 'PaymentRepository',
     );
     try {
@@ -44,6 +46,10 @@ class PaymentRepository {
           if (itemsPayload != null && itemsPayload.isNotEmpty)
             'items': itemsPayload,
           if (orderId != null) 'orderId': orderId,
+          if (couponCode != null && couponCode.isNotEmpty)
+            'couponCode': couponCode,
+          if (discountAmount != null && discountAmount > 0)
+            'discountAmount': discountAmount,
         },
       );
       if (response.statusCode == 200 && response.data != null) {

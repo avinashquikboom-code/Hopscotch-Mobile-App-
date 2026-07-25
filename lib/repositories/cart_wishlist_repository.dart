@@ -280,7 +280,8 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
         productShipping += item.product.shippingCharge * item.quantity;
       }
     }
-    return _round2(productShipping);
+    // Default standard delivery fee of ₹99 for orders under ₹999 if no product shipping specified
+    return _round2(productShipping > 0 ? productShipping : 99.0);
   }
 
   double get totalAmount {
