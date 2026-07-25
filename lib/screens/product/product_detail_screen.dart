@@ -321,7 +321,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           ),
                           child: IconButton(
                             icon: Icon(
-                              Icons.arrow_back_rounded,
+                              Icons.adaptive.arrow_back,
                               size: responsive.iconSize(20),
                               color: AppTheme.textPrimaryColor,
                             ),

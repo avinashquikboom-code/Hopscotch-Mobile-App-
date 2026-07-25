@@ -426,7 +426,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
           style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 1.2),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+          icon: Icon(Icons.adaptive.arrow_back, color: Colors.white, size: responsive.iconSize(18)),
           onPressed: () {
             if (context.canPop()) {
               context.pop();

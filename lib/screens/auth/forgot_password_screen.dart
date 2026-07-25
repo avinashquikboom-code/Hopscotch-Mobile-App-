@@ -172,7 +172,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(
-            Icons.arrow_back_rounded,
+            Icons.adaptive.arrow_back,
             color: AppTheme.textPrimaryColor,
             size: responsive.iconSize(24),
           ),

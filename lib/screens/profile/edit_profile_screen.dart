@@ -213,7 +213,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           ),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, size: responsive.iconSize(24)),
+          icon: Icon(Icons.adaptive.arrow_back, size: responsive.iconSize(24)),
           onPressed: () {
             if (context.canPop()) {
               context.pop();

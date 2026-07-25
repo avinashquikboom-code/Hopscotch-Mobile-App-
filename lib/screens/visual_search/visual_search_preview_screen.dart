@@ -118,7 +118,7 @@ class _VisualSearchPreviewScreenState
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.adaptive.arrow_back, color: Colors.white),
           onPressed: () => context.pop(),
         ),
         actions: [

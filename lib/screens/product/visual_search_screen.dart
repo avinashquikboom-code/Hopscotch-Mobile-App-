@@ -301,7 +301,7 @@ class _VisualSearchScreenState extends ConsumerState<VisualSearchScreen> with Ti
                 child: Container(
                   color: Colors.black.withValues(alpha: 0.5),
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                    icon: Icon(Icons.adaptive.arrow_back, color: Colors.white),
                     onPressed: () => context.pop(),
                   ),
                 ),

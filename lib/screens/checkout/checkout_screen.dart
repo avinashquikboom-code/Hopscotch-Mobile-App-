@@ -1093,7 +1093,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         ),
         leading: IconButton(
           icon: Icon(
-            Icons.arrow_back_ios_new_rounded,
+            Icons.adaptive.arrow_back,
             size: responsive.iconSize(20),
           ),
           onPressed: () {
