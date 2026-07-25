@@ -237,8 +237,6 @@ class ProductModel {
           json['gstPercent'] ??
           json['gst_percent'] ??
           json['gstRate'] ??
-          json['taxAmount'] ??
-          json['tax_amount'] ??
           (effectiveTax is Map
               ? (effectiveTax['rate'] ??
                   effectiveTax['taxPercent'] ??

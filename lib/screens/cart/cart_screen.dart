@@ -57,11 +57,14 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   }
 
   String _resolveCartItemImage(dynamic item) {
-    if (item is CartItemModel && item.selectedImage != null && item.selectedImage!.trim().isNotEmpty) {
+    if (item is CartItemModel &&
+        item.selectedImage != null &&
+        item.selectedImage!.trim().isNotEmpty) {
       return AppUrls.resolveUrl(item.selectedImage!);
     }
     try {
-      if (item.selectedImage != null && item.selectedImage.toString().trim().isNotEmpty) {
+      if (item.selectedImage != null &&
+          item.selectedImage.toString().trim().isNotEmpty) {
         return AppUrls.resolveUrl(item.selectedImage.toString());
       }
     } catch (_) {}
@@ -72,12 +75,15 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       ...List<String>.from(product.additionalImages ?? []),
     ];
 
-    if (item.selectedColor != null && item.selectedColor!.toString().trim().isNotEmpty) {
+    if (item.selectedColor != null &&
+        item.selectedColor!.toString().trim().isNotEmpty) {
       final colorLower = item.selectedColor!.toString().trim().toLowerCase();
 
       if (product.variants != null) {
         for (final v in product.variants) {
-          if (v.color?.toLowerCase() == colorLower && v.imageUrl != null && v.imageUrl!.isNotEmpty) {
+          if (v.color?.toLowerCase() == colorLower &&
+              v.imageUrl != null &&
+              v.imageUrl!.isNotEmpty) {
             return AppUrls.resolveUrl(v.imageUrl!);
           }
         }
@@ -113,7 +119,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     // Free shipping threshold calculations
     const double freeShippingThreshold = 1000.0;
     final double remainingForFreeShipping = freeShippingThreshold - subtotal;
-    final double freeShippingProgress = (subtotal / freeShippingThreshold).clamp(0.0, 1.0);
+    final double freeShippingProgress = (subtotal / freeShippingThreshold)
+        .clamp(0.0, 1.0);
 
     final yourBagTitle = l10n?.yourBag ?? 'Your Shopping Bag';
     final clearText = l10n?.clear ?? 'Clear';
@@ -159,9 +166,14 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 ),
                 style: TextButton.styleFrom(
                   foregroundColor: colorScheme.error,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   backgroundColor: colorScheme.error.withValues(alpha: 0.1),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                 ),
               ),
             ),
@@ -204,7 +216,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 fontSize: responsive.fontSize11,
                                 fontWeight: FontWeight.w900,
                                 letterSpacing: 1.5,
-                                color: colorScheme.onSurface.withValues(alpha: 0.5),
+                                color: colorScheme.onSurface.withValues(
+                                  alpha: 0.5,
+                                ),
                               ),
                             ),
                           ],
@@ -216,7 +230,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: cart.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 14),
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 14),
                           itemBuilder: (context, index) {
                             final item = cart[index];
                             return _buildCartItemCard(
@@ -233,7 +248,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                         const SizedBox(height: 24),
 
                         // Luxury Gift Wrapping Card
-                        _buildGiftWrappingCard(context, responsive, colorScheme, isDark, currency),
+                        _buildGiftWrappingCard(
+                          context,
+                          responsive,
+                          colorScheme,
+                          isDark,
+                          currency,
+                        ),
                         const SizedBox(height: 24),
 
                         // Order Summary Card
@@ -267,13 +288,22 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   right: 0,
                   bottom: 0,
                   child: Container(
-                    padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(context).padding.bottom + 16),
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      16,
+                      20,
+                      MediaQuery.of(context).padding.bottom + 16,
+                    ),
                     decoration: BoxDecoration(
                       color: colorScheme.surface,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                          color: Colors.black.withValues(
+                            alpha: isDark ? 0.3 : 0.08,
+                          ),
                           blurRadius: 20,
                           offset: const Offset(0, -6),
                         ),
@@ -293,7 +323,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                   fontSize: responsive.fontSize10,
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: 1.5,
-                                  color: colorScheme.onSurface.withValues(alpha: 0.5),
+                                  color: colorScheme.onSurface.withValues(
+                                    alpha: 0.5,
+                                  ),
                                 ),
                               ),
                               Text(
@@ -319,7 +351,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                               backgroundColor: AppTheme.primaryColor,
                               foregroundColor: Colors.white,
                               elevation: 4,
-                              shadowColor: AppTheme.primaryColor.withValues(alpha: 0.4),
+                              shadowColor: AppTheme.primaryColor.withValues(
+                                alpha: 0.4,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
@@ -368,7 +402,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               height: 170,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppTheme.primaryColor.withValues(alpha: isDark ? 0.12 : 0.06),
+                color: AppTheme.primaryColor.withValues(
+                  alpha: isDark ? 0.12 : 0.06,
+                ),
                 border: Border.all(
                   color: AppTheme.primaryColor.withValues(alpha: 0.2),
                   width: 1.5,
@@ -446,7 +482,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 foregroundColor: Colors.white,
                 elevation: 4,
                 shadowColor: AppTheme.primaryColor.withValues(alpha: 0.3),
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 16,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -461,7 +500,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   Widget _categoryChip(BuildContext context, String label, String route) {
     final colorScheme = Theme.of(context).colorScheme;
     return ActionChip(
-      label: Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+      label: Text(
+        label,
+        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+      ),
       backgroundColor: colorScheme.surface,
       surfaceTintColor: Colors.transparent,
       side: BorderSide(color: colorScheme.outline.withValues(alpha: 0.15)),
@@ -471,7 +513,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   }
 
   // ── Checkout Stepper Header ────────────────────────────────────────────────
-  Widget _buildCheckoutStepper(BuildContext context, ColorScheme colorScheme, bool isDark) {
+  Widget _buildCheckoutStepper(
+    BuildContext context,
+    ColorScheme colorScheme,
+    bool isDark,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
@@ -483,16 +529,29 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _stepItem(context, '1. BAG', isActive: true, isDone: false),
-          Container(width: 24, height: 1, color: colorScheme.outline.withValues(alpha: 0.2)),
+          Container(
+            width: 24,
+            height: 1,
+            color: colorScheme.outline.withValues(alpha: 0.2),
+          ),
           _stepItem(context, '2. DELIVERY', isActive: false, isDone: false),
-          Container(width: 24, height: 1, color: colorScheme.outline.withValues(alpha: 0.2)),
+          Container(
+            width: 24,
+            height: 1,
+            color: colorScheme.outline.withValues(alpha: 0.2),
+          ),
           _stepItem(context, '3. PAYMENT', isActive: false, isDone: false),
         ],
       ),
     );
   }
 
-  Widget _stepItem(BuildContext context, String label, {required bool isActive, required bool isDone}) {
+  Widget _stepItem(
+    BuildContext context,
+    String label, {
+    required bool isActive,
+    required bool isDone,
+  }) {
     final colorScheme = Theme.of(context).colorScheme;
     return Text(
       label,
@@ -500,7 +559,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         fontSize: 11,
         fontWeight: isActive ? FontWeight.w900 : FontWeight.w600,
         letterSpacing: 1.0,
-        color: isActive ? AppTheme.primaryColor : colorScheme.onSurface.withValues(alpha: 0.4),
+        color: isActive
+            ? AppTheme.primaryColor
+            : colorScheme.onSurface.withValues(alpha: 0.4),
       ),
     );
   }
@@ -523,7 +584,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         gradient: LinearGradient(
           colors: hasFreeShipping
               ? [const Color(0xFF0F766E), const Color(0xFF0D9488)]
-              : [AppTheme.primaryColor.withValues(alpha: 0.12), AppTheme.primaryColor.withValues(alpha: 0.04)],
+              : [
+                  AppTheme.primaryColor.withValues(alpha: 0.12),
+                  AppTheme.primaryColor.withValues(alpha: 0.04),
+                ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -540,7 +604,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           Row(
             children: [
               Icon(
-                hasFreeShipping ? Icons.local_shipping_rounded : Icons.local_shipping_outlined,
+                hasFreeShipping
+                    ? Icons.local_shipping_rounded
+                    : Icons.local_shipping_outlined,
                 color: hasFreeShipping ? Colors.white : AppTheme.primaryColor,
                 size: 20,
               ),
@@ -554,7 +620,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.5,
-                    color: hasFreeShipping ? Colors.white : colorScheme.onSurface,
+                    color: hasFreeShipping
+                        ? Colors.white
+                        : colorScheme.onSurface,
                   ),
                 ),
               ),
@@ -568,7 +636,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 value: progress,
                 minHeight: 6,
                 backgroundColor: colorScheme.outline.withValues(alpha: 0.15),
-                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  AppTheme.primaryColor,
+                ),
               ),
             ),
           ],
@@ -618,7 +688,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 imageUrl,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Center(
-                  child: Icon(Icons.image_not_supported_outlined, color: colorScheme.onSurface.withValues(alpha: 0.3)),
+                  child: Icon(
+                    Icons.image_not_supported_outlined,
+                    color: colorScheme.onSurface.withValues(alpha: 0.3),
+                  ),
                 ),
               ),
             ),
@@ -664,9 +737,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   spacing: 6,
                   runSpacing: 4,
                   children: [
-                    if (item.selectedSize != null && item.selectedSize!.toString().isNotEmpty)
+                    if (item.selectedSize != null &&
+                        item.selectedSize!.toString().isNotEmpty)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: colorScheme.outline.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(6),
@@ -680,9 +757,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           ),
                         ),
                       ),
-                    if (item.selectedColor != null && item.selectedColor!.toString().isNotEmpty)
+                    if (item.selectedColor != null &&
+                        item.selectedColor!.toString().isNotEmpty)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: colorScheme.outline.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(6),
@@ -704,7 +785,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                               style: TextStyle(
                                 fontSize: responsive.fontSize10,
                                 fontWeight: FontWeight.w600,
-                                color: colorScheme.onSurface.withValues(alpha: 0.7),
+                                color: colorScheme.onSurface.withValues(
+                                  alpha: 0.7,
+                                ),
                               ),
                             ),
                           ],
@@ -746,7 +829,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             constraints: const BoxConstraints(),
                             onPressed: () {
                               HapticFeedback.lightImpact();
-                              cartNotifier.updateQuantity(item.id, item.quantity - 1);
+                              cartNotifier.updateQuantity(
+                                item.id,
+                                item.quantity - 1,
+                              );
                             },
                           ),
                           Padding(
@@ -766,7 +852,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             constraints: const BoxConstraints(),
                             onPressed: () {
                               HapticFeedback.lightImpact();
-                              cartNotifier.updateQuantity(item.id, item.quantity + 1);
+                              cartNotifier.updateQuantity(
+                                item.id,
+                                item.quantity + 1,
+                              );
                             },
                           ),
                         ],
@@ -805,7 +894,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               color: Colors.amber.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.card_giftcard_rounded, color: Colors.amber, size: 22),
+            child: const Icon(
+              Icons.card_giftcard_rounded,
+              color: Colors.amber,
+              size: 22,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -878,7 +971,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryColor.withValues(alpha: isDark ? 0.08 : 0.05),
+            color: AppTheme.primaryColor.withValues(
+              alpha: isDark ? 0.08 : 0.05,
+            ),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -923,14 +1018,21 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF10B981).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.verified_user_rounded, color: Color(0xFF10B981), size: 12),
+                    Icon(
+                      Icons.verified_user_rounded,
+                      color: Color(0xFF10B981),
+                      size: 12,
+                    ),
                     SizedBox(width: 4),
                     Text(
                       'SECURE',
@@ -955,7 +1057,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               decoration: BoxDecoration(
                 color: colorScheme.outline.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: colorScheme.outline.withValues(alpha: 0.1)),
+                border: Border.all(
+                  color: colorScheme.outline.withValues(alpha: 0.1),
+                ),
               ),
               child: Column(
                 children: cartItems.map((item) {
@@ -975,7 +1079,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                               width: 36,
                               height: 36,
                               color: Colors.grey.shade200,
-                              child: const Icon(Icons.shopping_bag_outlined, size: 16, color: Colors.grey),
+                              child: const Icon(
+                                Icons.shopping_bag_outlined,
+                                size: 16,
+                                color: Colors.grey,
+                              ),
                             ),
                           ),
                         ),
@@ -999,7 +1107,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 '${item.quantity} × ${currency.formatPrice(item.product.price)}',
                                 style: TextStyle(
                                   fontSize: responsive.fontSize10,
-                                  color: colorScheme.onSurface.withValues(alpha: 0.6),
+                                  color: colorScheme.onSurface.withValues(
+                                    alpha: 0.6,
+                                  ),
                                 ),
                               ),
                             ],
@@ -1023,7 +1133,12 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           const SizedBox(height: 18),
 
           // Breakdown Rows
-          _buildSummaryRow(subtotalText, currency.formatPrice(subtotal), responsive, colorScheme),
+          _buildSummaryRow(
+            subtotalText,
+            currency.formatPrice(subtotal),
+            responsive,
+            colorScheme,
+          ),
           const SizedBox(height: 12),
 
           _buildSummaryRow(
@@ -1033,7 +1148,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             colorScheme,
             valueWidget: shipping == 0
                 ? Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF10B981).withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12),
@@ -1052,7 +1170,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           const SizedBox(height: 12),
 
           if (ref.read(cartProvider.notifier).taxBreakdown.length > 1) ...[
-            for (final item in ref.read(cartProvider.notifier).taxBreakdown) ...[
+            for (final item
+                in ref.read(cartProvider.notifier).taxBreakdown) ...[
               const SizedBox(height: 6),
               _buildSummaryRow(
                 item['name'] as String,
@@ -1061,9 +1180,16 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 colorScheme,
               ),
             ],
-          ] else if (tax > 0) ...[
+          ] else if (ref.read(cartProvider.notifier).taxBreakdown.isNotEmpty) ...[
             _buildSummaryRow(
-              'GST',
+              ref.read(cartProvider.notifier).taxBreakdown.first['name'] as String,
+              currency.formatPrice(tax),
+              responsive,
+              colorScheme,
+            ),
+          ] else ...[
+            _buildSummaryRow(
+              ref.read(cartProvider.notifier).taxRateLabel,
               currency.formatPrice(tax),
               responsive,
               colorScheme,
@@ -1119,7 +1245,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                       ),
                     ),
                     Text(
-                      hasInclusive ? 'Taxes & charges included' : 'Final Order Total',
+                      hasInclusive
+                          ? 'Taxes & charges included'
+                          : 'Final Order Total',
                       style: TextStyle(
                         fontSize: 10,
                         color: colorScheme.onSurface.withValues(alpha: 0.5),
@@ -1164,7 +1292,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             fontWeight: isTotal ? FontWeight.w900 : FontWeight.w500,
             color: isInfo
                 ? Colors.grey.shade500
-                : (isTotal ? colorScheme.onSurface : colorScheme.onSurface.withValues(alpha: 0.7)),
+                : (isTotal
+                      ? colorScheme.onSurface
+                      : colorScheme.onSurface.withValues(alpha: 0.7)),
             fontStyle: isInfo ? FontStyle.italic : FontStyle.normal,
           ),
         ),
@@ -1172,12 +1302,19 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             Text(
               value,
               style: TextStyle(
-                fontSize: isTotal ? responsive.fontSize18 : responsive.fontSize13,
-                fontWeight: isTotal ? FontWeight.w900 : (isInfo ? FontWeight.w400 : FontWeight.bold),
-                color: valueColor ??
+                fontSize: isTotal
+                    ? responsive.fontSize18
+                    : responsive.fontSize13,
+                fontWeight: isTotal
+                    ? FontWeight.w900
+                    : (isInfo ? FontWeight.w400 : FontWeight.bold),
+                color:
+                    valueColor ??
                     (isTotal
                         ? AppTheme.primaryColor
-                        : (isInfo ? Colors.grey.shade500 : colorScheme.onSurface)),
+                        : (isInfo
+                              ? Colors.grey.shade500
+                              : colorScheme.onSurface)),
                 fontStyle: isInfo ? FontStyle.italic : FontStyle.normal,
               ),
             ),

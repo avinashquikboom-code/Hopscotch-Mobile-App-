@@ -50,8 +50,14 @@ Widget buildOrderSummary({
             formatPrice(item.taxAmount),
             context,
           ),
-      ] else if (taxAmount > 0) ...[
-        _summaryRow('GST', formatPrice(taxAmount), context),
+      ] else if (taxBreakdown != null && taxBreakdown.isNotEmpty) ...[
+        _summaryRow(
+          taxBreakdown.first.name,
+          formatPrice(taxAmount),
+          context,
+        ),
+      ] else ...[
+        _summaryRow('GST / Tax', formatPrice(taxAmount), context),
       ],
 
       const Divider(height: 16),

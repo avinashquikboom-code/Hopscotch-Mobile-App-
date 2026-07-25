@@ -155,19 +155,11 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
 
   double _round2(double val) => (val * 100.0).roundToDouble() / 100.0;
 
-  double get baseSubtotal {
-    final raw = state.fold(0.0, (sum, item) {
-      final p = item.product;
-      final lineGross = p.price * item.quantity;
-      final rate = p.taxPercent > 0 ? p.taxPercent : 18.0;
-      final isExclusive = p.taxType.toUpperCase().contains('EXCLUSIVE');
-      final lineBase = isExclusive ? lineGross : lineGross / (1 + (rate / 100));
-      return sum + lineBase;
-    });
+  double get subtotal {
+    final raw = state.fold(
+        0.0, (sum, item) => sum + (item.product.price * item.quantity));
     return _round2(raw);
   }
-
-  double get subtotal => baseSubtotal;
 
   double get totalDiscount {
     final raw = state.fold(0.0, (sum, item) {
@@ -186,8 +178,9 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
       final p = item.product;
       final type = p.taxType.toUpperCase();
       final isExclusive = type.contains('EXCLUSIVE');
-      if (isExclusive && p.taxPercent > 0) {
-        return sum + ((p.price * item.quantity) * (p.taxPercent / 100));
+      final rate = p.taxPercent > 0 ? p.taxPercent : 18.0;
+      if (isExclusive && rate > 0) {
+        return sum + ((p.price * item.quantity) * (rate / 100));
       }
       return sum;
     });
@@ -201,13 +194,27 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
       final isInclusive = !type.contains('EXCLUSIVE');
       final rate = p.taxPercent > 0 ? p.taxPercent : 18.0;
       if (isInclusive && rate > 0) {
-        final lineGross = p.price * item.quantity;
-        final lineBase = lineGross / (1 + (rate / 100));
-        return sum + (lineGross - lineBase);
+        return sum + ((p.price * item.quantity) * (rate / 100));
       }
       return sum;
     });
     return _round2(raw);
+  }
+
+  double get effectiveTaxPercent {
+    if (state.isEmpty) return 18.0;
+    for (final item in state) {
+      if (item.product.taxPercent > 0) {
+        return item.product.taxPercent;
+      }
+    }
+    return 18.0;
+  }
+
+  String get taxRateLabel {
+    final rate = effectiveTaxPercent;
+    final formatted = rate % 1 == 0 ? rate.toInt().toString() : rate.toStringAsFixed(1);
+    return 'GST / Tax ($formatted%)';
   }
 
   double get totalTaxAmount {
@@ -236,9 +243,8 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
       final taxType = isExclusive ? 'EXCLUSIVE' : 'INCLUSIVE';
       final name = 'GST ${rate.toStringAsFixed(rate % 1 == 0 ? 0 : 1)}%';
 
-      final lineGross = p.price * item.quantity;
-      final lineBase = isExclusive ? lineGross : lineGross / (1 + (rate / 100));
-      final lineTax = isExclusive ? lineGross * (rate / 100) : lineGross - lineBase;
+      final lineSubtotal = p.price * item.quantity;
+      final lineTax = lineSubtotal * (rate / 100);
 
       final key = '${rate}_$taxType';
       if (map.containsKey(key)) {
@@ -247,7 +253,7 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
           'name': name,
           'rate': rate,
           'taxType': taxType,
-          'taxableAmount': _round2((existing['taxableAmount'] as double) + lineBase),
+          'taxableAmount': _round2((existing['taxableAmount'] as double) + lineSubtotal),
           'taxAmount': _round2((existing['taxAmount'] as double) + lineTax),
         };
       } else {
@@ -255,7 +261,7 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
           'name': name,
           'rate': rate,
           'taxType': taxType,
-          'taxableAmount': _round2(lineBase),
+          'taxableAmount': _round2(lineSubtotal),
           'taxAmount': _round2(lineTax),
         };
       }
