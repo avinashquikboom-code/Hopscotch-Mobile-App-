@@ -92,11 +92,12 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
     } catch (_) {}
   }
 
-  void addToCart(ProductModel product, {String? size, String? color}) {
+  void addToCart(ProductModel product, {String? size, String? color, String? selectedImage}) {
     final existingIndex = state.indexWhere((item) =>
         item.product.id == product.id &&
         item.selectedSize == size &&
-        item.selectedColor == color);
+        item.selectedColor == color &&
+        item.selectedImage == selectedImage);
 
     if (existingIndex != -1) {
       state = [
@@ -113,6 +114,7 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
         quantity: 1,
         selectedSize: size,
         selectedColor: color,
+        selectedImage: selectedImage,
       );
       state = [...state, newItem];
     }

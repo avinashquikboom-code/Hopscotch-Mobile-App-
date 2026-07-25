@@ -53,7 +53,30 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     super.dispose();
   }
 
-  void _triggerAddToCart(product) async {
+  String _getCurrentSelectedImage(ProductModel product) {
+    final rawImageList = <String>[
+      if (product.imageUrl.trim().isNotEmpty) AppUrls.resolveUrl(product.imageUrl),
+      ...product.additionalImages.map(AppUrls.resolveUrl),
+      if (product.variants.isNotEmpty)
+        ...product.variants
+            .map((v) => AppUrls.resolveUrl(v.imageUrl))
+            .where((url) => url.isNotEmpty),
+    ];
+
+    final imageList = rawImageList
+        .where((url) =>
+            url.trim().isNotEmpty &&
+            url != 'https://api.fciseller.com/' &&
+            url != 'https://api.fciseller.com')
+        .toSet()
+        .toList();
+    if (imageList.isNotEmpty && _activeImageIndex < imageList.length) {
+      return imageList[_activeImageIndex];
+    }
+    return product.imageUrl;
+  }
+
+  void _triggerAddToCart(ProductModel product) async {
     if (_isAddingToCart || _showCartSuccess) return;
     HapticFeedback.mediumImpact();
     setState(() {
@@ -70,10 +93,14 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       });
     }
 
-    // Add to cart
-    ref
-        .read(cartProvider.notifier)
-        .addToCart(product, size: _selectedSize, color: _selectedColor);
+    // Add to cart with currently active viewed image
+    final currentImg = _getCurrentSelectedImage(product);
+    ref.read(cartProvider.notifier).addToCart(
+          product,
+          size: _selectedSize,
+          color: _selectedColor,
+          selectedImage: currentImg,
+        );
 
     HapticFeedback.lightImpact();
 
@@ -1156,12 +1183,12 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       HapticFeedback.heavyImpact();
-                      ref
-                          .read(cartProvider.notifier)
-                          .addToCart(
+                      final currentImg = _getCurrentSelectedImage(product);
+                      ref.read(cartProvider.notifier).addToCart(
                             product,
                             size: _selectedSize,
                             color: _selectedColor,
+                            selectedImage: currentImg,
                           );
                       // Go straight to checkout screen!
                       safeNavigate(context, '/checkout');

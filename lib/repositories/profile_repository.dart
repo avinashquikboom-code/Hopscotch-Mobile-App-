@@ -5,6 +5,7 @@ import 'package:hopscotch/api/api_service.dart';
 import 'package:hopscotch/api/auth_api.dart';
 import 'package:hopscotch/providers/api_provider.dart';
 import 'package:hopscotch/utils/dev_logger.dart';
+import 'package:hopscotch/constants/app_urls.dart';
 
 class ProfileRepository {
   static Map<String, dynamic>? _cachedProfile;
@@ -34,22 +35,11 @@ class ProfileRepository {
       return _cachedProfile;
     }
 
-    if (_cachedProfile == null) {
+    if (_cachedProfile == null && !forceRefresh) {
       final diskProfile = await _loadFromDisk();
       if (diskProfile != null) {
         _cachedProfile = diskProfile;
         _cacheTime = DateTime.now();
-        if (!forceRefresh) {
-          // Trigger background fetch to sync changes without blocking UI
-          _fetchFromApi().then((fresh) {
-            if (fresh != null) {
-              _cachedProfile = fresh;
-              _cacheTime = DateTime.now();
-              _saveToDisk(fresh);
-            }
-          }).catchError((_) {});
-          return diskProfile;
-        }
       }
     }
 
@@ -64,8 +54,9 @@ class ProfileRepository {
         _cachedProfile = profile;
         _cacheTime = DateTime.now();
         await _saveToDisk(profile);
+        return profile;
       }
-      return profile;
+      return _cachedProfile;
     } finally {
       _inflight = null;
     }
@@ -83,11 +74,21 @@ class ProfileRepository {
 
     final result = Map<String, dynamic>.from(current);
 
-    // Normalize avatar URL field names
-    final avatar = result['avatarUrl'] ?? result['avatar'] ?? result['avatar_url'];
-    if (avatar != null && avatar.toString().isNotEmpty) {
-      result['avatarUrl'] = avatar.toString();
-      result['avatar'] = avatar.toString();
+    // Normalize all possible avatar URL field names and resolve relative URLs
+    final avatar = result['avatarUrl'] ??
+        result['avatar'] ??
+        result['avatar_url'] ??
+        result['profileImage'] ??
+        result['profile_image'] ??
+        result['image'] ??
+        result['photo'];
+
+    if (avatar != null && avatar.toString().trim().isNotEmpty) {
+      final resolvedUrl = AppUrls.resolveUrl(avatar.toString().trim());
+      result['avatarUrl'] = resolvedUrl;
+      result['avatar'] = resolvedUrl;
+      result['avatar_url'] = resolvedUrl;
+      result['profileImage'] = resolvedUrl;
     }
 
     return result;
@@ -163,9 +164,16 @@ class ProfileNotifier extends StateNotifier<Map<String, dynamic>?> {
   }
 
   Future<void> loadProfile() async {
-    final profile = await _repository.getProfile();
-    if (profile != null) {
-      state = profile;
+    // 1. Immediately emit cached profile from disk so avatar displays instantly
+    final diskProfile = await _repository._loadFromDisk();
+    if (diskProfile != null) {
+      state = diskProfile;
+    }
+
+    // 2. Fetch fresh profile from API to ensure state stays 100% synced after app restart
+    final freshProfile = await _repository.getProfile(forceRefresh: true);
+    if (freshProfile != null) {
+      state = freshProfile;
     }
   }
 

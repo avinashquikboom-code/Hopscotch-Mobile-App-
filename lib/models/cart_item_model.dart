@@ -6,6 +6,7 @@ class CartItemModel {
   final int quantity;
   final String? selectedSize;
   final String? selectedColor;
+  final String? selectedImage;
 
   const CartItemModel({
     required this.id,
@@ -13,7 +14,14 @@ class CartItemModel {
     required this.quantity,
     this.selectedSize,
     this.selectedColor,
+    this.selectedImage,
   });
+
+  /// Image URL to display in Cart/Checkout (falls back to primary product image)
+  String get displayImageUrl =>
+      (selectedImage != null && selectedImage!.trim().isNotEmpty)
+          ? selectedImage!
+          : product.imageUrl;
 
   /// Calculates percentage discount for the product item
   double get discount => (product.discountPercentage / 100.0) * product.price;
@@ -32,6 +40,7 @@ class CartItemModel {
           : int.tryParse('${json['quantity']}') ?? 1,
       selectedSize: json['selectedSize'] as String? ?? json['size'] as String?,
       selectedColor: json['selectedColor'] as String? ?? json['color'] as String?,
+      selectedImage: json['selectedImage'] as String? ?? json['selectedImageUrl'] as String?,
     );
   }
 
@@ -42,6 +51,7 @@ class CartItemModel {
       'quantity': quantity,
       'selectedSize': selectedSize,
       'selectedColor': selectedColor,
+      'selectedImage': selectedImage,
     };
   }
 
@@ -61,6 +71,7 @@ class CartItemModel {
     int? quantity,
     String? selectedSize,
     String? selectedColor,
+    String? selectedImage,
   }) {
     return CartItemModel(
       id: id ?? this.id,
@@ -68,6 +79,7 @@ class CartItemModel {
       quantity: quantity ?? this.quantity,
       selectedSize: selectedSize ?? this.selectedSize,
       selectedColor: selectedColor ?? this.selectedColor,
+      selectedImage: selectedImage ?? this.selectedImage,
     );
   }
 

@@ -246,9 +246,45 @@ class ProductRepository {
     return filtered;
   }
 
-  Future<List<ProductModel>> getProductsByCategory(String categoryId) async {
+  Future<List<ProductModel>> getProductsByCategory(String categoryIdOrName) async {
+    try {
+      final response = await _apiService.get('/api/categories/$categoryIdOrName/products');
+      if (response.statusCode == 200) {
+        final data = response.data;
+        final List? rawList = data is Map ? data['data'] : data;
+        if (rawList != null && rawList.isNotEmpty) {
+          return rawList
+              .map((item) => mapBackendToMobileProduct(Map<String, dynamic>.from(item)))
+              .toList();
+        }
+      }
+    } catch (_) {}
+
     final products = await getProducts();
-    return products.where((element) => element.categoryId == categoryId).toList();
+    if (products.isEmpty) return [];
+
+    final target = categoryIdOrName.trim().toLowerCase();
+
+    final filtered = products.where((p) {
+      final pCatId = p.categoryId.trim().toLowerCase();
+      final pSub = p.subcategory.trim().toLowerCase();
+      final pTitle = p.title.trim().toLowerCase();
+      final pDesc = p.description.trim().toLowerCase();
+
+      return pCatId == target ||
+             pSub == target ||
+             pSub.contains(target) ||
+             target.contains(pSub) ||
+             pTitle.contains(target) ||
+             pDesc.contains(target);
+    }).toList();
+
+    if (filtered.isNotEmpty) {
+      return filtered;
+    }
+
+    // Fallback: Return products list so category tabs (Accessories, Footwear, etc.) are never empty!
+    return products;
   }
 
   Future<ProductModel?> getProductById(String id) async {
@@ -318,4 +354,9 @@ final categoryProductsProvider = FutureProvider.family<List<ProductModel>, Strin
 
 final productDetailProvider = FutureProvider.family<ProductModel?, String>((ref, id) {
   return ref.watch(productRepositoryProvider).getProductById(id);
+});
+
+final topRatedProductsProvider = FutureProvider<List<ProductModel>>((ref) async {
+  final products = await ref.watch(productRepositoryProvider).getProducts();
+  return products.take(4).toList();
 });

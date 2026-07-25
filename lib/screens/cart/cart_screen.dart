@@ -57,6 +57,15 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   }
 
   String _resolveCartItemImage(dynamic item) {
+    if (item is CartItemModel && item.selectedImage != null && item.selectedImage!.trim().isNotEmpty) {
+      return AppUrls.resolveUrl(item.selectedImage!);
+    }
+    try {
+      if (item.selectedImage != null && item.selectedImage.toString().trim().isNotEmpty) {
+        return AppUrls.resolveUrl(item.selectedImage.toString());
+      }
+    } catch (_) {}
+
     final product = item.product;
     final allImages = [
       if (product.imageUrl.isNotEmpty) product.imageUrl as String,
@@ -69,7 +78,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       if (product.variants != null) {
         for (final v in product.variants) {
           if (v.color?.toLowerCase() == colorLower && v.imageUrl != null && v.imageUrl!.isNotEmpty) {
-            return v.imageUrl!;
+            return AppUrls.resolveUrl(v.imageUrl!);
           }
         }
       }
@@ -78,10 +87,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         (url) => url.toLowerCase().contains(colorLower),
         orElse: () => '',
       );
-      if (matchedImage.isNotEmpty) return matchedImage;
+      if (matchedImage.isNotEmpty) return AppUrls.resolveUrl(matchedImage);
     }
 
-    return product.imageUrl;
+    return AppUrls.resolveUrl(product.imageUrl);
   }
 
   @override
@@ -953,7 +962,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: Image.network(
-                            AppUrls.resolveUrl(item.product.imageUrl),
+                            _resolveCartItemImage(item),
                             width: 36,
                             height: 36,
                             fit: BoxFit.cover,

@@ -188,7 +188,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // 0.65 gives a nice tall card with plenty of image + room for info.
     final double childAspectRatio = isDesktop ? 0.72 : (isTablet ? 0.70 : 0.72);
 
-    final double trendingHeight = isDesktop ? 310 : (isTablet ? 295 : 280);
+    final double trendingHeight = isDesktop ? 240 : (isTablet ? 220 : 205);
 
     final location = ref.watch(userLocationProvider);
     final topPadding = MediaQuery.of(context).padding.top;
@@ -198,6 +198,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     final trendingAsync = ref.watch(trendingProductsProvider);
     final newArrivalsAsync = ref.watch(newArrivalsProvider);
+    final topRatedAsync = ref.watch(topRatedProductsProvider);
     final bannersAsync = ref.watch(bannersProvider);
 
     final bool hasCircuitBreakerError =
@@ -498,8 +499,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   itemBuilder: (context, index) {
                     final product = products[index];
                     return Container(
-                      width: responsive.spacing(195),
-                      margin: EdgeInsets.only(right: responsive.spacing(14)),
+                      width: responsive.spacing(155),
+                      margin: EdgeInsets.only(right: responsive.spacing(12)),
                       child: TrendingProductCard(
                         product: product,
                         heroTagPrefix: 'home_trending',
@@ -520,8 +521,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 itemCount: 3,
                 itemBuilder: (context, index) => Container(
-                  width: responsive.spacing(195),
-                  margin: EdgeInsets.only(right: responsive.spacing(14)),
+                  width: responsive.spacing(155),
+                  margin: EdgeInsets.only(right: responsive.spacing(12)),
                   child: const ProductCardSkeleton(),
                 ),
               ),
@@ -586,6 +587,72 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 );
               }
+              final displayProducts = products.take(6).toList();
+              return SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  childAspectRatio: 0.58,
+                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final product = displayProducts[index];
+                  return ProductCard(
+                    product: product,
+                    heroTagPrefix: 'home_new',
+                    onTap: () => safeNavigate(
+                      context,
+                      '/product/${product.id}?heroTagPrefix=home_new',
+                    ),
+                  );
+                }, childCount: displayProducts.length),
+              );
+            },
+            loading: () => SliverGrid(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+                childAspectRatio: 0.58,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => const ProductCardSkeleton(),
+                childCount: 6,
+              ),
+            ),
+            error: (err, stack) => SliverToBoxAdapter(
+              child: Center(child: Text('${l10n.error}: $err')),
+            ),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+        ),
+
+        // ── EXPLORE COLLECTION HEADER ──
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+            child: _ExploreCollectionHeader(
+              title: 'Explore Collection',
+              subtitle: 'Find your next favourite product.',
+              onSeeAll: () =>
+                  safeNavigate(context, '/products?section=top_rated'),
+            ),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: SizedBox(height: responsive.spacing(AppTheme.spaceS)),
+        ),
+
+        // ── EXPLORE COLLECTION 2x2 GRID SECTION ──
+        SliverPadding(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+          sliver: topRatedAsync.when(
+            data: (products) {
+              if (products.isEmpty) {
+                return const SliverToBoxAdapter(child: SizedBox.shrink());
+              }
               final displayProducts = products.take(4).toList();
               return SliverGrid(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -598,10 +665,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   final product = displayProducts[index];
                   return ProductCard(
                     product: product,
-                    heroTagPrefix: 'home_new',
+                    heroTagPrefix: 'home_top_rated',
                     onTap: () => safeNavigate(
                       context,
-                      '/product/${product.id}?heroTagPrefix=home_new',
+                      '/product/${product.id}?heroTagPrefix=home_top_rated',
                     ),
                   );
                 }, childCount: displayProducts.length),
@@ -630,7 +697,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       // Category Tab Selected
       final selectedCategory = categories[_selectedTab - 1];
       final categoryProductsAsync = ref.watch(
-        categoryProductsProvider(selectedCategory.id.toString()),
+        categoryProductsProvider(selectedCategory.name.isNotEmpty ? selectedCategory.name : selectedCategory.id.toString()),
       );
 
       slivers.addAll([
@@ -884,7 +951,10 @@ class _ProfileAvatarButtonState extends ConsumerState<_ProfileAvatarButton> {
       }
     }
 
-    final rawAvatarUrl = userProfile?['avatarUrl']?.toString();
+    final rawAvatarUrl = userProfile?['avatarUrl']?.toString() ??
+        userProfile?['avatar']?.toString() ??
+        userProfile?['avatar_url']?.toString() ??
+        userProfile?['profileImage']?.toString();
     final avatarUrl = (rawAvatarUrl != null && rawAvatarUrl.isNotEmpty)
         ? AppUrls.resolveUrl(rawAvatarUrl)
         : null;
@@ -1281,6 +1351,113 @@ class _NewGuardSectionHeader extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// EXPLORE COLLECTION SECTION HEADER (WITH DIVIDER)
+// ─────────────────────────────────────────────────────────────
+
+class _ExploreCollectionHeader extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final VoidCallback? onSeeAll;
+
+  const _ExploreCollectionHeader({
+    required this.title,
+    required this.subtitle,
+    this.onSeeAll,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: colorScheme.onSurface,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w400,
+                      color: colorScheme.onSurface.withValues(alpha: 0.55),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (onSeeAll != null)
+              GestureDetector(
+                onTap: onSeeAll,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF0d9488), Color(0xFF14b8a6)],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF0d9488).withValues(alpha: 0.25),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Show All',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      SizedBox(width: 3),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 10,
+                        color: Colors.white,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Divider(
+          height: 1,
+          thickness: 0.8,
+          color: colorScheme.onSurface.withValues(alpha: 0.15),
+        ),
+      ],
     );
   }
 }

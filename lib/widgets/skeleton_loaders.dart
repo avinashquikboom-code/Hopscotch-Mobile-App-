@@ -43,6 +43,7 @@ class ProductCardSkeleton extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppTheme.radiusL),
         border: Border.all(color: Theme.of(context).colorScheme.outline),
       ),
+      clipBehavior: Clip.antiAlias,
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -58,8 +59,8 @@ class ProductCardSkeleton extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: EdgeInsets.symmetric(
-                horizontal: AppTheme.spaceM,
-                vertical: AppTheme.spaceS,
+                horizontal: 8,
+                vertical: 4,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,17 +68,18 @@ class ProductCardSkeleton extends StatelessWidget {
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      SkeletonLoader(width: 50, height: 11),
-                      SizedBox(height: 4),
-                      SkeletonLoader(width: double.infinity, height: 13),
+                      SkeletonLoader(width: 45, height: 9),
+                      SizedBox(height: 3),
+                      SkeletonLoader(width: double.infinity, height: 11),
                     ],
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      SkeletonLoader(width: 55, height: 15),
-                      SkeletonLoader(width: 35, height: 12),
+                      SkeletonLoader(width: 45, height: 12),
+                      SkeletonLoader(width: 28, height: 10),
                     ],
                   ),
                 ],

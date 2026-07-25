@@ -113,7 +113,8 @@ class ProfileScreen extends ConsumerWidget {
                           child: () {
                             final rawUrl = userProfile?['avatarUrl']?.toString() ??
                                 userProfile?['avatar']?.toString() ??
-                                userProfile?['avatar_url']?.toString();
+                                userProfile?['avatar_url']?.toString() ??
+                                userProfile?['profileImage']?.toString();
                             final avatarUrl = rawUrl != null && rawUrl.isNotEmpty
                                 ? AppUrls.resolveUrl(rawUrl)
                                 : null;

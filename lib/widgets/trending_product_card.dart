@@ -107,9 +107,9 @@ class TrendingProductCard extends ConsumerWidget {
 
                   // Overlay Price & Tagline Text at Bottom of Image
                   Positioned(
-                    left: 12,
-                    right: 12,
-                    bottom: 12,
+                    left: 10,
+                    right: 10,
+                    bottom: 8,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
@@ -121,7 +121,7 @@ class TrendingProductCard extends ConsumerWidget {
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w900,
-                            fontSize: 15.5,
+                            fontSize: 14.0,
                             letterSpacing: -0.3,
                             shadows: [
                               Shadow(
@@ -132,7 +132,7 @@ class TrendingProductCard extends ConsumerWidget {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 1),
                         Text(
                           taglineText,
                           maxLines: 1,
@@ -140,7 +140,7 @@ class TrendingProductCard extends ConsumerWidget {
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.90),
                             fontWeight: FontWeight.w500,
-                            fontSize: 11.5,
+                            fontSize: 11.0,
                             letterSpacing: 0.1,
                             shadows: const [
                               Shadow(
@@ -160,33 +160,33 @@ class TrendingProductCard extends ConsumerWidget {
 
             // ── Bottom Brand Logo / Typography Footer Bar ────────────────
             Container(
-              height: 52,
+              height: 42,
               width: double.infinity,
               color: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
               alignment: Alignment.center,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Brand Icon logo box
                   Container(
-                    width: 20,
-                    height: 20,
+                    width: 18,
+                    height: 18,
                     decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xFF0F172A), width: 2),
+                      border: Border.all(color: const Color(0xFF0F172A), width: 1.8),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     alignment: Alignment.center,
                     child: const Text(
                       'P',
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 10,
                         fontWeight: FontWeight.w900,
                         color: Color(0xFF0F172A),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 5),
                   Flexible(
                     child: Text(
                       brandName,
@@ -196,8 +196,8 @@ class TrendingProductCard extends ConsumerWidget {
                       style: const TextStyle(
                         color: Color(0xFF0F172A),
                         fontWeight: FontWeight.w900,
-                        fontSize: 13.5,
-                        letterSpacing: 1.2,
+                        fontSize: 12.0,
+                        letterSpacing: 1.0,
                       ),
                     ),
                   ),
