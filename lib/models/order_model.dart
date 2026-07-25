@@ -12,6 +12,8 @@ class OrderModel {
   final double taxAmount;
   final double subtotal;
   final double shippingFee;
+  final bool giftWrapped;
+  final double giftWrapCharge;
 
   const OrderModel({
     required this.id,
@@ -25,6 +27,8 @@ class OrderModel {
     this.taxAmount = 0.0,
     this.subtotal = 0.0,
     this.shippingFee = 0.0,
+    this.giftWrapped = false,
+    this.giftWrapCharge = 0.0,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -39,14 +43,16 @@ class OrderModel {
 
     final rawTax = _asDouble(json['taxAmount'] ?? json['totalTax'] ?? json['tax_amount'] ?? json['tax']);
     final rawShipping = _asDouble(json['shippingFee'] ?? json['shipping_fee'] ?? json['shippingAmount'] ?? json['shipping_amount'] ?? json['shipping']);
+    final isGiftWrapped = json['giftWrapped'] == true || json['gift_wrapped'] == true;
+    final giftWrapCharge = _asDouble(json['giftWrapCharge'] ?? json['gift_wrap_charge']);
 
     final parsedTotal = json['totalAmount'] is num
         ? (json['totalAmount'] as num).toDouble()
         : double.tryParse('${json['totalAmount'] ?? json['total']}');
-    final totalAmount = parsedTotal ?? (subtotal + rawShipping + rawTax);
+    final totalAmount = parsedTotal ?? (subtotal + rawShipping + rawTax + giftWrapCharge);
 
-    final shippingFee = (rawShipping == 0 && totalAmount > (subtotal + rawTax))
-        ? (totalAmount - subtotal - rawTax)
+    final shippingFee = (rawShipping == 0 && totalAmount > (subtotal + rawTax + giftWrapCharge))
+        ? (totalAmount - subtotal - rawTax - giftWrapCharge)
         : rawShipping;
 
     return OrderModel(
@@ -61,6 +67,8 @@ class OrderModel {
       taxAmount: rawTax,
       subtotal: subtotal,
       shippingFee: shippingFee,
+      giftWrapped: isGiftWrapped,
+      giftWrapCharge: giftWrapCharge,
     );
   }
 

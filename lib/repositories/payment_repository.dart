@@ -20,11 +20,13 @@ class PaymentRepository {
     int? orderId,
     double? amount,
     List<CartItemModel>? cartItems,
+    List<Map<String, dynamic>>? items,
     String? couponCode,
     double? discountAmount,
+    bool? giftWrap,
   }) async {
     final amtInPaise = (((amount ?? 100)) * 100).round();
-    final itemsPayload = cartItems
+    final itemsPayload = items ?? cartItems
         ?.map((item) => {
               'productId': item.product.id,
               'quantity': item.quantity,
@@ -34,7 +36,7 @@ class PaymentRepository {
         .toList();
 
     dev.log(
-      'Creating Razorpay order on backend API: amount=₹$amount ($amtInPaise paise), itemsCount=${itemsPayload?.length ?? 0}, couponCode=$couponCode, discount=₹$discountAmount',
+      'Creating Razorpay order on backend API: amount=₹$amount ($amtInPaise paise), itemsCount=${itemsPayload?.length ?? 0}, couponCode=$couponCode, discount=₹$discountAmount, giftWrap=$giftWrap',
       name: 'PaymentRepository',
     );
     try {
@@ -50,6 +52,7 @@ class PaymentRepository {
             'couponCode': couponCode,
           if (discountAmount != null && discountAmount > 0)
             'discountAmount': discountAmount,
+          if (giftWrap != null) 'giftWrap': giftWrap,
         },
       );
       if (response.statusCode == 200 && response.data != null) {

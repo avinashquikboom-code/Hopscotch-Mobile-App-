@@ -34,6 +34,7 @@ class OrdersApi {
     String? razorpayOrderId,
     String? razorpayPaymentId,
     String? razorpaySignature,
+    bool? giftWrap,
   }) async {
     return await _apiService.post(
       '/api/v1/mobile/orders',
@@ -49,6 +50,7 @@ class OrdersApi {
         if (razorpayOrderId != null) 'razorpayOrderId': razorpayOrderId,
         if (razorpayPaymentId != null) 'razorpayPaymentId': razorpayPaymentId,
         if (razorpaySignature != null) 'razorpaySignature': razorpaySignature,
+        if (giftWrap != null) 'giftWrap': giftWrap,
       },
     );
   }

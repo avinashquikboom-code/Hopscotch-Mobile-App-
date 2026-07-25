@@ -16,6 +16,7 @@ import 'package:hopscotch/repositories/payment_repository.dart';
 import 'package:hopscotch/repositories/address_repository.dart';
 import 'package:hopscotch/repositories/profile_repository.dart';
 import 'package:hopscotch/providers/coupon_provider.dart';
+import 'package:hopscotch/providers/gift_wrap_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 const List<String> _kDefaultCountries = [
@@ -291,6 +292,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
       setState(() => _paymentProcessingStep = 'PLACING ORDER...');
       dev.log('Placing order on backend with Razorpay payment method', name: 'Razorpay');
+      final isGiftWrapped = ref.read(isGiftWrappedProvider);
       final order = await ref
           .read(orderProvider.notifier)
           .placeOrder(
@@ -304,6 +306,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 ? _selectedAddressId
                 : null,
             paymentMethod: 'Razorpay',
+            giftWrap: isGiftWrapped,
           );
       dev.log('Order placed successfully via Razorpay: #${order.id}', name: 'Razorpay');
       cartNotifier.clearCart();
@@ -379,12 +382,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     }
 
     final cartNotifier = ref.read(cartProvider.notifier);
+    final giftWrapConfig = ref.read(giftWrapConfigProvider).valueOrNull ?? const GiftWrapConfig(enabled: true, charge: 49.0);
+    final isGiftWrapped = ref.read(isGiftWrappedProvider);
+    final giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled) ? giftWrapConfig.charge : 0.0;
     final appliedCoupon = ref.read(appliedCouponProvider);
     final discount = ref.read(appliedCouponProvider.notifier).calculateDiscount(cartNotifier.subtotal);
-    final rawTotalPayable = (cartNotifier.subtotal - discount + cartNotifier.shippingFee + cartNotifier.taxAmount);
+    final rawTotalPayable = (cartNotifier.subtotal - discount + cartNotifier.shippingFee + cartNotifier.taxAmount + giftWrapCharge);
     final totalAmount = (rawTotalPayable * 100.0).roundToDouble() / 100.0;
 
-    dev.log('Initiating Razorpay checkout: itemsCount=${cart.length}, subtotal=₹${cartNotifier.subtotal}, discount=₹$discount, shipping=₹${cartNotifier.shippingFee}, tax=₹${cartNotifier.taxAmount} => totalAmount=₹$totalAmount', name: 'Razorpay');
+    dev.log('Initiating Razorpay checkout: itemsCount=${cart.length}, subtotal=₹${cartNotifier.subtotal}, discount=₹$discount, shipping=₹${cartNotifier.shippingFee}, tax=₹${cartNotifier.taxAmount}, giftWrap=₹$giftWrapCharge => totalAmount=₹$totalAmount', name: 'Razorpay');
 
     setState(() {
       _isPlacingOrder = true;
@@ -395,7 +401,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final amtInPaise = (totalAmount * 100).round();
       final currency = ref.read(currencyProvider).code;
 
-      dev.log('Requesting Razorpay order creation from backend: amount=₹$totalAmount ($amtInPaise paise), currency=$currency, couponCode=${appliedCoupon?.code}', name: 'Razorpay');
+      dev.log('Requesting Razorpay order creation from backend: amount=₹$totalAmount ($amtInPaise paise), currency=$currency, couponCode=${appliedCoupon?.code}, giftWrap=$isGiftWrapped', name: 'Razorpay');
       final orderData = await ref
           .read(paymentRepositoryProvider)
           .createRazorpayOrder(
@@ -403,6 +409,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             cartItems: cart,
             couponCode: appliedCoupon?.code,
             discountAmount: discount,
+            giftWrap: isGiftWrapped,
           );
 
       final razorpayOrderId = orderData['razorpayOrderId'] as String?;
@@ -519,6 +526,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           '${_addressController.text}, ${_cityController.text}, '
           '$_selectedCountry - ${_zipController.text}';
 
+      final isGiftWrapped = ref.read(isGiftWrappedProvider);
       final order = await ref
           .read(orderProvider.notifier)
           .placeOrder(
@@ -532,6 +540,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 ? _selectedAddressId
                 : null,
             paymentMethod: _selectedPayment,
+            giftWrap: isGiftWrapped,
           );
 
       cartNotifier.clearCart();
@@ -990,9 +999,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final cart = ref.watch(cartProvider);
     final cartNotifier = ref.read(cartProvider.notifier);
     final currency = ref.watch(currencyProvider);
+    final giftWrapConfig = ref.watch(giftWrapConfigProvider).valueOrNull ?? const GiftWrapConfig(enabled: true, charge: 49.0);
+    final isGiftWrapped = ref.watch(isGiftWrappedProvider);
+    final double giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled) ? giftWrapConfig.charge : 0.0;
     final appliedCoupon = ref.watch(appliedCouponProvider);
     final couponDiscount = ref.read(appliedCouponProvider.notifier).calculateDiscount(cartNotifier.subtotal);
-    final totalPayable = (cartNotifier.subtotal - couponDiscount + cartNotifier.shippingFee + cartNotifier.taxAmount).clamp(0.0, double.infinity);
+    final totalPayable = (cartNotifier.subtotal - couponDiscount + cartNotifier.shippingFee + cartNotifier.taxAmount + giftWrapCharge).clamp(0.0, double.infinity);
     final countriesAsync = ref.watch(apiCountriesProvider);
     final apiList = countriesAsync.value
         ?.map((c) => c['name']?.toString() ?? '')
@@ -1361,6 +1373,72 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           ],
                         ),
 
+                        if (giftWrapConfig.enabled) ...[
+                          const SizedBox(height: 20),
+                          _sectionHeader(
+                            context,
+                            responsive,
+                            Icons.card_giftcard_rounded,
+                            'GIFT WRAPPING',
+                          ),
+                          _sectionCard(
+                            context,
+                            isDark,
+                            colorScheme,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: Colors.amber.withValues(alpha: 0.15),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.card_giftcard_rounded,
+                                      color: Colors.amber,
+                                      size: 22,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'LUXURY GIFT WRAPPING',
+                                          style: TextStyle(
+                                            fontSize: responsive.fontSize11,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 0.8,
+                                            color: colorScheme.onSurface,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'Includes luxury box & satin ribbon (${currency.formatPrice(giftWrapConfig.charge)})',
+                                          style: TextStyle(
+                                            fontSize: responsive.fontSize10,
+                                            color: colorScheme.onSurface.withValues(alpha: 0.5),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Switch(
+                                    value: isGiftWrapped,
+                                    activeColor: AppTheme.primaryColor,
+                                    onChanged: (val) {
+                                      HapticFeedback.lightImpact();
+                                      ref.read(isGiftWrappedProvider.notifier).toggle(val);
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+
                         const SizedBox(height: 20),
 
                         // ── PAYMENT METHOD ──
@@ -1606,6 +1684,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                 colorScheme,
                                 cartNotifier.taxRateLabel,
                                 currency.formatPrice(cartNotifier.taxAmount),
+                              ),
+                            ],
+                            if (isGiftWrapped && giftWrapConfig.enabled) ...[
+                              const SizedBox(height: 10),
+                              _priceRow(
+                                responsive,
+                                colorScheme,
+                                'Gift Wrapping',
+                                currency.formatPrice(giftWrapConfig.charge),
                               ),
                             ],
                             const Divider(height: 24),
