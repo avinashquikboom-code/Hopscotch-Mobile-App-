@@ -9,7 +9,7 @@ import 'package:hopscotch/api/api_service.dart';
 import 'package:hopscotch/api/auth_api.dart';
 import 'package:hopscotch/widgets/toast_notification.dart';
 import 'package:hopscotch/repositories/profile_repository.dart';
-import 'package:hopscotch/constants/app_urls.dart';
+import 'package:hopscotch/widgets/user_avatar.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -233,46 +233,27 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 onTap: _showImagePickerBottomSheet,
                 child: Stack(
                   children: [
-                    CircleAvatar(
-                      radius: responsive.iconSize(54),
-                      backgroundColor: AppTheme.primaryColor.withValues(
-                        alpha: 0.08,
-                      ),
-                      backgroundImage: _profileImage != null
-                          ? FileImage(_profileImage!) as ImageProvider
-                          : () {
-                              final rawUrl = userProfile?['avatarUrl']?.toString() ??
-                                  userProfile?['avatar']?.toString() ??
-                                  userProfile?['avatar_url']?.toString();
-                              final resolvedUrl = (rawUrl != null && rawUrl.isNotEmpty)
-                                  ? AppUrls.resolveUrl(rawUrl)
-                                  : null;
-                              return resolvedUrl != null ? NetworkImage(resolvedUrl) : null;
-                            }(),
-                      onBackgroundImageError: (_profileImage != null ||
-                              (userProfile?['avatarUrl'] != null && userProfile!['avatarUrl'].toString().isNotEmpty) ||
-                              (userProfile?['avatar'] != null && userProfile!['avatar'].toString().isNotEmpty))
-                          ? (exception, stackTrace) {}
-                          : null,
-                      child: (_profileImage == null &&
-                              (userProfile?['avatarUrl'] == null || userProfile!['avatarUrl'].toString().isEmpty) &&
-                              (userProfile?['avatar'] == null || userProfile!['avatar'].toString().isEmpty))
-                          ? Text(
-                              (() {
-                                final firstName = userProfile?['firstName']?.toString() ?? '';
-                                final name = userProfile?['name']?.toString() ?? 'U';
-                                return (firstName.isNotEmpty ? firstName : name)
-                                    .substring(0, 1)
-                                    .toUpperCase();
-                              })(),
-                              style: TextStyle(
-                                fontSize: responsive.fontSize32,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.primaryColor,
-                              ),
-                            )
-                          : null,
-                    ),
+                    _profileImage != null
+                        ? CircleAvatar(
+                            radius: responsive.iconSize(50),
+                            backgroundColor: AppTheme.surfaceColor,
+                            backgroundImage: FileImage(_profileImage!),
+                          )
+                        : () {
+                            final rawUrl = userProfile?['avatarUrl']?.toString() ??
+                                userProfile?['avatar']?.toString() ??
+                                userProfile?['avatar_url']?.toString();
+                            final firstName = userProfile?['firstName']?.toString() ?? '';
+                            final name = userProfile?['name']?.toString() ?? 'U';
+                            final initial = (firstName.isNotEmpty ? firstName : name).substring(0, 1);
+                            return UserAvatar(
+                              avatarUrl: rawUrl,
+                              initials: initial,
+                              radius: responsive.iconSize(50),
+                              backgroundColor: AppTheme.surfaceColor,
+                              textColor: AppTheme.primaryColor,
+                            );
+                          }(),
                     Positioned(
                       bottom: 0,
                       right: 0,

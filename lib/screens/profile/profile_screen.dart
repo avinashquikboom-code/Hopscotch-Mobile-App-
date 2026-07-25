@@ -6,9 +6,9 @@ import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/repositories/profile_repository.dart';
 import 'package:hopscotch/repositories/cart_wishlist_repository.dart';
 import 'package:hopscotch/api/api_service.dart';
-import 'package:hopscotch/constants/app_urls.dart';
 import 'package:hopscotch/api/auth_api.dart';
 import 'package:hopscotch/widgets/toast_notification.dart';
+import 'package:hopscotch/widgets/user_avatar.dart';
 import 'package:hopscotch/l10n/app_localizations.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -115,23 +115,15 @@ class ProfileScreen extends ConsumerWidget {
                                 userProfile?['avatar']?.toString() ??
                                 userProfile?['avatar_url']?.toString() ??
                                 userProfile?['profileImage']?.toString();
-                            final avatarUrl = rawUrl != null && rawUrl.isNotEmpty
-                                ? AppUrls.resolveUrl(rawUrl)
-                                : null;
-                            return CircleAvatar(
+                            final firstName = userProfile?['firstName']?.toString() ?? '';
+                            final name = userProfile?['name']?.toString() ?? '';
+                            final initial = (firstName.isNotEmpty ? firstName : (name.isNotEmpty ? name : 'U')).substring(0, 1);
+                            return UserAvatar(
+                              avatarUrl: rawUrl,
+                              initials: initial,
                               radius: responsive.iconSize(54),
-                              backgroundImage: avatarUrl != null
-                                  ? NetworkImage(avatarUrl)
-                                  : null,
-                              onBackgroundImageError: avatarUrl != null
-                                  ? (exception, stackTrace) {}
-                                  : null,
-                              child: avatarUrl == null
-                                  ? Icon(
-                                      Icons.person,
-                                      size: responsive.iconSize(54),
-                                    )
-                                  : null,
+                              backgroundColor: AppTheme.surfaceColor,
+                              textColor: AppTheme.textPrimaryColor,
                             );
                           }(),
                         ),

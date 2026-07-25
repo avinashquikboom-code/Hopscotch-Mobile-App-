@@ -22,6 +22,7 @@ import 'package:hopscotch/widgets/visual_search_bottom_sheet.dart';
 import 'package:hopscotch/repositories/profile_repository.dart';
 import 'package:hopscotch/constants/app_urls.dart';
 import 'package:hopscotch/widgets/flipkart_category_strip.dart';
+import 'package:hopscotch/widgets/user_avatar.dart';
 import 'package:hopscotch/utils/navigation_utils.dart';
 
 // ─────────────────────────────────────────────────────────────
@@ -998,32 +999,12 @@ class _ProfileAvatarButtonState extends ConsumerState<_ProfileAvatarButton> {
               color: colorScheme.surface,
             ),
             clipBehavior: Clip.antiAlias,
-            child: CircleAvatar(
+            child: UserAvatar(
+              avatarUrl: avatarUrl,
+              initials: initials,
+              radius: 17,
               backgroundColor: colorScheme.surface,
-              backgroundImage:
-                  (avatarUrl != null && avatarUrl.toString().isNotEmpty)
-                  ? NetworkImage(avatarUrl)
-                  : null,
-              onBackgroundImageError:
-                  (avatarUrl != null && avatarUrl.toString().isNotEmpty)
-                  ? (exception, stackTrace) {}
-                  : null,
-              child: (avatarUrl != null && avatarUrl.toString().isNotEmpty)
-                  ? null
-                  : (initials != null
-                        ? Text(
-                            initials,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.primary,
-                            ),
-                          )
-                        : Icon(
-                            Icons.person_outline_rounded,
-                            size: 18,
-                            color: colorScheme.onSurface.withValues(alpha: 0.6),
-                          )),
+              textColor: colorScheme.primary,
             ),
           ),
         ),
