@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// Responsive text utility for consistent font scaling across the app
 /// Based on screen width with base reference of 375px (iPhone SE)
@@ -13,8 +14,8 @@ class ResponsiveText {
     return screenWidth / baseWidth;
   }
 
-  /// Clamped scale between 0.8 and 1.2 to prevent extreme scaling
-  double get clampedScale => _scale.clamp(0.8, 1.2);
+  /// Clamped scale between 0.85 and 1.18 to prevent extreme scaling
+  double get clampedScale => _scale.clamp(0.85, 1.18);
 
   /// Responsive font size
   double fontSize(double baseSize) {
@@ -60,67 +61,67 @@ class ResponsiveText {
   double get space40 => spacing(40);
 
   // Text styles with responsive fonts
-  TextStyle get headline1 => TextStyle(
+  TextStyle get headline1 => GoogleFonts.plusJakartaSans(
         fontSize: fontSize(32),
         fontWeight: FontWeight.bold,
         height: 1.2,
       );
 
-  TextStyle get headline2 => TextStyle(
+  TextStyle get headline2 => GoogleFonts.plusJakartaSans(
         fontSize: fontSize(28),
         fontWeight: FontWeight.bold,
         height: 1.2,
       );
 
-  TextStyle get headline3 => TextStyle(
+  TextStyle get headline3 => GoogleFonts.plusJakartaSans(
         fontSize: fontSize(24),
         fontWeight: FontWeight.bold,
         height: 1.2,
       );
 
-  TextStyle get headline4 => TextStyle(
+  TextStyle get headline4 => GoogleFonts.plusJakartaSans(
         fontSize: fontSize(20),
         fontWeight: FontWeight.bold,
         height: 1.2,
       );
 
-  TextStyle get headline5 => TextStyle(
+  TextStyle get headline5 => GoogleFonts.plusJakartaSans(
         fontSize: fontSize(18),
         fontWeight: FontWeight.w600,
         height: 1.2,
       );
 
-  TextStyle get bodyLarge => TextStyle(
+  TextStyle get bodyLarge => GoogleFonts.plusJakartaSans(
         fontSize: fontSize(16),
         fontWeight: FontWeight.normal,
         height: 1.5,
       );
 
-  TextStyle get bodyMedium => TextStyle(
+  TextStyle get bodyMedium => GoogleFonts.plusJakartaSans(
         fontSize: fontSize(14),
         fontWeight: FontWeight.normal,
         height: 1.5,
       );
 
-  TextStyle get bodySmall => TextStyle(
+  TextStyle get bodySmall => GoogleFonts.plusJakartaSans(
         fontSize: fontSize(12),
         fontWeight: FontWeight.normal,
         height: 1.5,
       );
 
-  TextStyle get caption => TextStyle(
+  TextStyle get caption => GoogleFonts.plusJakartaSans(
         fontSize: fontSize(11),
         fontWeight: FontWeight.normal,
         height: 1.4,
       );
 
-  TextStyle get button => TextStyle(
+  TextStyle get button => GoogleFonts.plusJakartaSans(
         fontSize: fontSize(16),
         fontWeight: FontWeight.w600,
         height: 1.2,
       );
 
-  TextStyle get label => TextStyle(
+  TextStyle get label => GoogleFonts.plusJakartaSans(
         fontSize: fontSize(14),
         fontWeight: FontWeight.w500,
         height: 1.4,

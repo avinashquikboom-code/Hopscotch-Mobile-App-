@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hopscotch/theme/app_theme.dart';
-import 'package:hopscotch/constants/app_colors.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/repositories/product_repository.dart';
 import 'package:hopscotch/repositories/cart_wishlist_repository.dart';
@@ -574,32 +573,6 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                             fontSize: responsive.fontSize14,
                                             color: AppTheme.textLightColor,
                                             decoration: TextDecoration.lineThrough,
-                                          ),
-                                        ),
-                                      ],
-                                      if (product.taxPercent > 0 || (product.taxType.toUpperCase() != 'NONE' && product.taxType.isNotEmpty)) ...[
-                                        SizedBox(width: responsive.spacing(8)),
-                                        Container(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: responsive.spacing(8),
-                                            vertical: responsive.spacing(3),
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: AppColors.primaryBg,
-                                            borderRadius: BorderRadius.circular(4),
-                                            border: Border.all(
-                                              color: AppColors.primaryBorder,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            product.taxPercent > 0
-                                                ? 'GST @ ${product.taxPercent.toStringAsFixed(product.taxPercent % 1 == 0 ? 0 : 2)}% (${product.taxType.toUpperCase() == 'INCLUSIVE' ? 'Inclusive' : '+ GST extra'})'
-                                                : (product.taxType.toUpperCase() == 'INCLUSIVE' ? 'Incl. GST' : 'GST Applicable'),
-                                            style: TextStyle(
-                                              fontSize: responsive.fontSize11,
-                                              fontWeight: FontWeight.bold,
-                                              color: AppColors.primary,
-                                            ),
                                           ),
                                         ),
                                       ],

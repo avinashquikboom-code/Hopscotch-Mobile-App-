@@ -82,6 +82,17 @@ class MyApp extends ConsumerWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       locale: language.locale,
+      builder: (context, child) {
+        final mediaQuery = MediaQuery.of(context);
+        // Calculate screen-based responsive font scale (clamped between 0.85 and 1.18)
+        final responsiveScale = (mediaQuery.size.width / 390.0).clamp(0.85, 1.18);
+        return MediaQuery(
+          data: mediaQuery.copyWith(
+            textScaler: TextScaler.linear(responsiveScale),
+          ),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
   }
 }

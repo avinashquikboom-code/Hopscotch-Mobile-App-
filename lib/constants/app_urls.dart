@@ -1,6 +1,6 @@
 class AppUrls {
   // Base API URLs
-  // static const String mobileBaseUrl = 'http://192.168.1.102:5001';
+  //static const String mobileBaseUrl = 'http://192.168.1.100:5001';
   static const String mobileBaseUrl = 'https://api.fciseller.com';
 
   static String resolveUrl(String? url) {
@@ -8,7 +8,10 @@ class AppUrls {
       return '';
     }
     final trimmed = url.trim();
-    if (trimmed == 'null' || trimmed == 'undefined' || trimmed == 'N/A' || trimmed == 'none') {
+    if (trimmed == 'null' ||
+        trimmed == 'undefined' ||
+        trimmed == 'N/A' ||
+        trimmed == 'none') {
       return '';
     }
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
@@ -20,7 +23,9 @@ class AppUrls {
           trimmed.contains(':3000')) {
         try {
           final uri = Uri.parse(trimmed);
-          final pathWithQuery = uri.hasQuery ? '${uri.path}?${uri.query}' : uri.path;
+          final pathWithQuery = uri.hasQuery
+              ? '${uri.path}?${uri.query}'
+              : uri.path;
           return '$mobileBaseUrl$pathWithQuery';
         } catch (_) {
           return trimmed;

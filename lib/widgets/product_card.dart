@@ -230,19 +230,6 @@ class ProductCard extends ConsumerWidget {
                       ],
                     ],
                   ),
-                  if (product.taxPercent > 0 || product.taxType.toUpperCase() != 'NONE') ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      product.taxType.toUpperCase() == 'INCLUSIVE'
-                          ? 'Incl. GST'
-                          : '+ GST (${product.taxPercent.toStringAsFixed(product.taxPercent % 1 == 0 ? 0 : 1)}%)',
-                      style: TextStyle(
-                        color: AppTheme.primaryColor.withValues(alpha: 0.75),
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),

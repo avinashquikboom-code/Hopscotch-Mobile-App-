@@ -4,7 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:hopscotch/constants/app_urls.dart';
 import 'package:hopscotch/models/product_model.dart';
 import 'package:hopscotch/providers/currency_provider.dart';
-import 'package:hopscotch/theme/app_theme.dart';
 
 class TrendingProductCard extends ConsumerWidget {
   final ProductModel product;
@@ -26,23 +25,41 @@ class TrendingProductCard extends ConsumerWidget {
         : 'product_image_${product.id}';
 
     final resolvedImageUrl = AppUrls.resolveUrl(product.imageUrl);
-    final displayTitle = product.title.isNotEmpty ? product.title : 'Product';
 
-    final offerText = product.discountPercentage > 0
-        ? 'Min. ${product.discountPercentage.toInt()}% Off'
-        : 'From ${currency.formatPrice(product.price)}';
+    // Formatted price (e.g. "Under ₹499" or "From ₹399")
+    final priceOverlayText = product.price > 0
+        ? 'Under ${currency.formatPrice(product.price)}'
+        : (product.discountPercentage > 0
+            ? 'Up To ${product.discountPercentage.toInt()}% Off'
+            : 'Special Offer');
+
+    // Sub-tagline overlay (e.g., "Up To 80% Off" or "Crested In Luxury")
+    final taglineText = product.discountPercentage > 0
+        ? 'Up To ${product.discountPercentage.toInt()}% Off'
+        : (product.subcategory.isNotEmpty
+            ? product.subcategory
+            : 'Crested In Luxury');
+
+    // Brand Name for the bottom white footer bar
+    final brandName = product.title.isNotEmpty
+        ? product.title.toUpperCase()
+        : 'POWERLOOK';
 
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(22),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: const Color(0xFFE2E8F0),
+            width: 1.2,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 12,
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
               offset: const Offset(0, 4),
             ),
           ],
@@ -50,7 +67,7 @@ class TrendingProductCard extends ConsumerWidget {
         clipBehavior: Clip.antiAlias,
         child: Column(
           children: [
-            // ── Image Section with Floating Brand/Title Pill ────────────
+            // ── Top Image Area with Gradient & White Text Overlay ────────
             Expanded(
               child: Stack(
                 children: [
@@ -70,82 +87,121 @@ class TrendingProductCard extends ConsumerWidget {
                     ),
                   ),
 
-                  // White Brand/Product Pill at the bottom of the image area
-                  Positioned(
-                    bottom: 0,
-                    left: 14,
-                    right: 14,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  // Dark Bottom Gradient Overlay
+                  Positioned.fill(
+                    child: DecoratedBox(
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(12),
-                          topRight: Radius.circular(12),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: 0.05),
+                            Colors.black.withValues(alpha: 0.85),
+                          ],
+                          stops: const [0.35, 0.65, 1.0],
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.10),
-                            blurRadius: 6,
-                            offset: const Offset(0, -2),
-                          ),
-                        ],
                       ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Brand logo icon
-                          const Icon(
-                            Icons.adjust_rounded,
-                            size: 13,
-                            color: AppTheme.primaryColor,
+                    ),
+                  ),
+
+                  // Overlay Price & Tagline Text at Bottom of Image
+                  Positioned(
+                    left: 12,
+                    right: 12,
+                    bottom: 12,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          priceOverlayText,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 15.5,
+                            letterSpacing: -0.3,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black54,
+                                blurRadius: 4,
+                                offset: Offset(0, 1),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 1),
-                          Text(
-                            displayTitle.toUpperCase(),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Color(0xFF1F2937),
-                              fontWeight: FontWeight.w800,
-                              fontSize: 9.5,
-                              letterSpacing: 0.6,
-                            ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          taglineText,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.90),
+                            fontWeight: FontWeight.w500,
+                            fontSize: 11.5,
+                            letterSpacing: 0.1,
+                            shadows: const [
+                              Shadow(
+                                color: Colors.black45,
+                                blurRadius: 3,
+                                offset: Offset(0, 1),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
 
-            // ── Soft Teal Offer Banner Footer ────────────────────────────
+            // ── Bottom Brand Logo / Typography Footer Bar ────────────────
             Container(
+              height: 52,
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 6),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Color(0xFFCCFBF1), // Soft teal tint
-                    Color(0xFFE0F2FE), // Soft cyan tint
-                  ],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ),
-              ),
-              child: Text(
-                offerText,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Color(0xFF0F766E),
-                  fontWeight: FontWeight.w800,
-                  fontSize: 13.5,
-                  letterSpacing: -0.2,
-                ),
+              color: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Brand Icon logo box
+                  Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: const Color(0xFF0F172A), width: 2),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Text(
+                      'P',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      brandName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Color(0xFF0F172A),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 13.5,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -156,11 +212,11 @@ class TrendingProductCard extends ConsumerWidget {
 
   Widget _buildPlaceholder(BuildContext context) {
     return Container(
-      color: AppTheme.primaryColor.withValues(alpha: 0.08),
-      child: Center(
+      color: const Color(0xFF0F766E).withValues(alpha: 0.08),
+      child: const Center(
         child: Icon(
           Icons.checkroom_rounded,
-          color: AppTheme.primaryColor.withValues(alpha: 0.25),
+          color: Color(0xFF0F766E),
           size: 44,
         ),
       ),
