@@ -177,7 +177,8 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
     final raw = state.fold(0.0, (sum, item) {
       final p = item.product;
       final type = p.taxType.toUpperCase();
-      if (type == 'EXCLUSIVE' && p.taxPercent > 0) {
+      final isInclusive = type.contains('INCLUSIVE');
+      if (!isInclusive && p.taxPercent > 0) {
         return sum + ((p.price * item.quantity) * (p.taxPercent / 100));
       }
       return sum;
@@ -189,7 +190,8 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
     final raw = state.fold(0.0, (sum, item) {
       final p = item.product;
       final type = p.taxType.toUpperCase();
-      if (type == 'INCLUSIVE' && p.taxPercent > 0) {
+      final isInclusive = type.contains('INCLUSIVE');
+      if (isInclusive && p.taxPercent > 0) {
         final lineSubtotal = p.price * item.quantity;
         final lineTax = lineSubtotal - (lineSubtotal / (1 + (p.taxPercent / 100)));
         return sum + lineTax;
@@ -213,8 +215,10 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
     return true;
   }
 
-  bool get hasExclusiveTax => state.any(
-      (item) => item.product.taxType.toUpperCase() == 'EXCLUSIVE' && item.product.taxPercent > 0);
+  bool get hasExclusiveTax => state.any((item) {
+        final type = item.product.taxType.toUpperCase();
+        return !type.contains('INCLUSIVE') && item.product.taxPercent > 0;
+      });
 
   double get shippingFee {
     if (state.isEmpty) return 0.0;
