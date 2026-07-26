@@ -181,6 +181,7 @@ class ProductModel {
   final bool isTrending;
   final bool isNewArrival;
   final bool isFeatured;
+  final String? taxRuleId;
   final double taxPercent;
   final String taxType;
   final String? hsnCode;
@@ -211,6 +212,7 @@ class ProductModel {
     this.isTrending = false,
     this.isNewArrival = false,
     this.isFeatured = false,
+    this.taxRuleId,
     this.taxPercent = 0.0,
     this.taxType = 'EXCLUSIVE',
     this.hsnCode,
@@ -376,6 +378,7 @@ class ProductModel {
       isTrending: _asBool(json['isTrending'] ?? json['is_trending']),
       isNewArrival: _asBool(json['isNewArrival'] ?? json['is_new_arrival']),
       isFeatured: _asBool(json['isFeatured'] ?? json['is_featured']),
+      taxRuleId: _asString(json['taxRuleId'] ?? json['tax_rule_id'] ?? (effectiveTax is Map ? effectiveTax['id'] : null)),
       taxPercent: parsedTaxRate,
       taxType: parsedTaxType,
       hsnCode: parsedHsn.isNotEmpty ? parsedHsn : null,
@@ -406,6 +409,7 @@ class ProductModel {
       'isTrending': isTrending,
       'isNewArrival': isNewArrival,
       'isFeatured': isFeatured,
+      'taxRuleId': taxRuleId,
       'taxPercent': taxPercent,
       'taxType': taxType,
       'hsnCode': hsnCode,

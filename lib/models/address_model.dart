@@ -76,7 +76,7 @@ class AddressModel {
       pincode: (json['pincode'] ?? json['zipCode'] ?? json['zip'] ?? json['postalCode'] ?? '').toString(),
       country: (json['country'] ?? 'India').toString(),
       isDefault: json['isDefault'] as bool? ?? json['default'] as bool? ?? false,
-      type: (json['type'] ?? 'home').toString(),
+      type: (json['type'] ?? json['label'] ?? 'home').toString(),
     );
   }
 
