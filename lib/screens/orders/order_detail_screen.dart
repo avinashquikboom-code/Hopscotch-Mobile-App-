@@ -787,7 +787,14 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                             _buildSummaryRow(label: 'Estimated GST Tax', value: currency.formatPrice(order.taxAmount), responsive: responsive, colorScheme: colorScheme),
                             if (order.giftWrapped || order.giftWrapCharge > 0) ...[
                               const SizedBox(height: 8),
-                              _buildSummaryRow(label: 'Gift Wrapping', value: currency.formatPrice(order.giftWrapCharge > 0 ? order.giftWrapCharge : 49.0), responsive: responsive, colorScheme: colorScheme),
+                              _buildSummaryRow(
+                                label: 'Gift Wrapping',
+                                value: order.giftWrapCharge > 0
+                                    ? currency.formatPrice(order.giftWrapCharge)
+                                    : 'FREE',
+                                responsive: responsive,
+                                colorScheme: colorScheme,
+                              ),
                             ],
                             const SizedBox(height: 8),
                             _buildSummaryRow(label: 'Payment Method', value: paymentMethodText, responsive: responsive, colorScheme: colorScheme),

@@ -17,6 +17,7 @@ import 'package:hopscotch/widgets/fullscreen_image_viewer.dart';
 import 'package:hopscotch/utils/navigation_utils.dart';
 
 import 'package:hopscotch/constants/app_urls.dart';
+import 'package:hopscotch/providers/gift_wrap_provider.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
@@ -649,9 +650,40 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                   ),
                                 ],
                               ),
-                              SizedBox(
-                                height: responsive.spacing(AppTheme.spaceXL),
-                              ),
+                              // Gift Wrap Highlight Banner
+                              if (product.isGiftWrapAvailable) ...[
+                                Builder(
+                                  builder: (context) {
+                                    final giftWrapConfig = ref.watch(giftWrapConfigProvider).valueOrNull ?? const GiftWrapConfig(enabled: true, charge: 49.0);
+                                    final effectiveCharge = product.giftWrapCharge > 0 ? product.giftWrapCharge : giftWrapConfig.charge;
+                                    return Container(
+                                      margin: EdgeInsets.only(bottom: responsive.spacing(AppTheme.spaceM)),
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                      decoration: BoxDecoration(
+                                        color: Colors.amber.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.card_giftcard_rounded, color: Colors.amber, size: 20),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: Text(
+                                              'Gift Wrapping available for ${currency.formatPrice(effectiveCharge)}',
+                                              style: TextStyle(
+                                                fontSize: responsive.fontSize12,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppTheme.textPrimaryColor,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
 
 
 

@@ -205,7 +205,7 @@ class InvoiceGenerator {
                       _pdfPriceRow('Shipping Fee:', currencyFmt.format(order.shippingFee)),
                       if (order.giftWrapped || order.giftWrapCharge > 0) ...[
                         pw.SizedBox(height: 3),
-                        _pdfPriceRow('Gift Wrapping:', currencyFmt.format(order.giftWrapCharge > 0 ? order.giftWrapCharge : 49.0)),
+                        _pdfPriceRow('Gift Wrapping:', currencyFmt.format(order.giftWrapCharge)),
                       ],
                       pw.SizedBox(height: 3),
                       _pdfPriceRow('GST / Tax Amount:', currencyFmt.format(order.taxAmount)),

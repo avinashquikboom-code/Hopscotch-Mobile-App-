@@ -10,12 +10,16 @@ class GiftWrapConfig {
     required this.charge,
   });
 
-  factory GiftWrapConfig.fromJson(Map<String, dynamic> json) {
-    final data = json['data'] ?? json;
+  factory GiftWrapConfig.fromJson(dynamic json) {
+    if (json is! Map) {
+      return const GiftWrapConfig(enabled: true, charge: 49.0);
+    }
+    final map = Map<String, dynamic>.from(json);
+    final data = map['data'] is Map ? Map<String, dynamic>.from(map['data']) : map;
     final enabledVal = data['enabled'] ?? true;
     final chargeVal = data['charge'] ?? 49;
     return GiftWrapConfig(
-      enabled: enabledVal == true || enabledVal.toString() == 'true',
+      enabled: enabledVal == true || enabledVal.toString().toLowerCase() == 'true',
       charge: chargeVal is num ? chargeVal.toDouble() : double.tryParse('$chargeVal') ?? 49.0,
     );
   }

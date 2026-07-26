@@ -11,6 +11,7 @@ import 'package:hopscotch/l10n/app_localizations.dart';
 import 'package:hopscotch/providers/currency_provider.dart';
 import 'package:hopscotch/constants/app_urls.dart';
 import 'package:hopscotch/models/cart_item_model.dart';
+import 'package:hopscotch/providers/gift_wrap_provider.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -20,9 +21,6 @@ class CartScreen extends ConsumerStatefulWidget {
 }
 
 class _CartScreenState extends ConsumerState<CartScreen> {
-  bool _includeGiftWrapping = false;
-  final double _giftWrappingCost = 250.00;
-
   Color _parseColor(String? colorStr) {
     if (colorStr == null || colorStr.trim().isEmpty) return Colors.teal;
     final str = colorStr.trim().toLowerCase();
@@ -113,7 +111,24 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final double shipping = cartNotifier.shippingFee;
     final double tax = cartNotifier.taxAmount;
     final bool hasInclusive = cartNotifier.hasInclusiveTax;
-    final double giftCost = _includeGiftWrapping ? _giftWrappingCost : 0.0;
+
+    final giftWrapConfig = ref.watch(giftWrapConfigProvider).valueOrNull ?? const GiftWrapConfig(enabled: true, charge: 49.0);
+    final isGiftWrapped = ref.watch(isGiftWrappedProvider);
+
+    double giftWrappingCost = giftWrapConfig.charge;
+    double customGiftWrapSum = 0.0;
+    bool hasCustomGiftWrap = false;
+    for (final item in cart) {
+      if (item.product.isGiftWrapAvailable && item.product.giftWrapCharge > 0) {
+        customGiftWrapSum += item.product.giftWrapCharge;
+        hasCustomGiftWrap = true;
+      }
+    }
+    if (hasCustomGiftWrap && customGiftWrapSum > 0) {
+      giftWrappingCost = customGiftWrapSum;
+    }
+
+    final double giftCost = (isGiftWrapped && giftWrapConfig.enabled) ? giftWrappingCost : 0.0;
     final double totalAmount = cartNotifier.totalAmount + giftCost;
 
     // Free shipping threshold calculations
@@ -254,6 +269,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           colorScheme,
                           isDark,
                           currency,
+                          isGiftWrapped: isGiftWrapped,
+                          giftWrappingCost: giftWrappingCost,
+                          isEnabled: giftWrapConfig.enabled,
                         ),
                         const SizedBox(height: 24),
 
@@ -877,8 +895,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     ResponsiveText responsive,
     ColorScheme colorScheme,
     bool isDark,
-    dynamic currency,
-  ) {
+    dynamic currency, {
+    required bool isGiftWrapped,
+    required double giftWrappingCost,
+    required bool isEnabled,
+  }) {
+    if (!isEnabled) return const SizedBox.shrink();
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -916,7 +939,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Includes luxury box & satin ribbon (${currency.formatPrice(_giftWrappingCost)})',
+                  'Includes luxury box & satin ribbon (${currency.formatPrice(giftWrappingCost)})',
                   style: TextStyle(
                     fontSize: responsive.fontSize10,
                     color: colorScheme.onSurface.withValues(alpha: 0.5),
@@ -926,11 +949,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             ),
           ),
           Switch(
-            value: _includeGiftWrapping,
+            value: isGiftWrapped,
             activeColor: AppTheme.primaryColor,
             onChanged: (val) {
               HapticFeedback.lightImpact();
-              setState(() => _includeGiftWrapping = val);
+              ref.read(isGiftWrappedProvider.notifier).toggle(val);
             },
           ),
         ],
@@ -1196,11 +1219,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             ),
           ],
 
-          if (_includeGiftWrapping) ...[
+          if (giftCost > 0) ...[
             const SizedBox(height: 12),
             _buildSummaryRow(
               'Gift Wrapping',
-              currency.formatPrice(_giftWrappingCost),
+              currency.formatPrice(giftCost),
               responsive,
               colorScheme,
             ),
