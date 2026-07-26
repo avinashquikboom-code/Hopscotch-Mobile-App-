@@ -1720,7 +1720,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                 responsive,
                                 colorScheme,
                                 'Gift Wrapping',
-                                currency.formatPrice(giftWrapConfig.charge),
+                                currency.formatPrice(giftWrapCharge),
                               ),
                             ],
                             const Divider(height: 24),
