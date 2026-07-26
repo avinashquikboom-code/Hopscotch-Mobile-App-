@@ -573,37 +573,51 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                 runSpacing: responsive.spacing(AppTheme.spaceM),
                                 spacing: responsive.spacing(AppTheme.spaceM),
                                 children: [
-                                  // Prices
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.baseline,
-                                    textBaseline: TextBaseline.alphabetic,
+                                  // Prices & Tax Label
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.baseline,
+                                        textBaseline: TextBaseline.alphabetic,
+                                        children: [
+                                          Text(
+                                            currency.formatPrice(_selectedVariantPrice ?? product.price),
+                                            style: TextStyle(
+                                              fontSize: responsive.fontSize20,
+                                              color: AppTheme.primaryColor,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          if (product.originalPrice >
+                                              product.price) ...[
+                                            SizedBox(
+                                              width: responsive.spacing(
+                                                AppTheme.spaceM,
+                                              ),
+                                            ),
+                                            Text(
+                                              currency.formatPrice(product.originalPrice),
+                                              style: TextStyle(
+                                                fontSize: responsive.fontSize14,
+                                                color: AppTheme.textLightColor,
+                                                decoration: TextDecoration.lineThrough,
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                      SizedBox(height: responsive.spacing(2)),
                                       Text(
-                                        currency.formatPrice(_selectedVariantPrice ?? product.price),
+                                        _getTaxLabel(product),
                                         style: TextStyle(
-                                          fontSize: responsive.fontSize20,
-                                          color: AppTheme.primaryColor,
-                                          fontWeight: FontWeight.bold,
+                                          fontSize: responsive.fontSize11,
+                                          color: AppTheme.textSecondaryColor,
+                                          fontWeight: FontWeight.w500,
                                         ),
                                       ),
-                                      if (product.originalPrice >
-                                          product.price) ...[
-                                        SizedBox(
-                                          width: responsive.spacing(
-                                            AppTheme.spaceM,
-                                          ),
-                                        ),
-                                        Text(
-                                          currency.formatPrice(product.originalPrice),
-                                          style: TextStyle(
-                                            fontSize: responsive.fontSize14,
-                                            color: AppTheme.textLightColor,
-                                            decoration: TextDecoration.lineThrough,
-                                          ),
-                                        ),
-                                      ],
                                     ],
                                   ),
                                   // Rating summary
@@ -1280,4 +1294,20 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       ),
     );
   }
+
+  String _getTaxLabel(ProductModel product) {
+    final isInclusive = product.taxType.trim().toUpperCase() == 'INCLUSIVE';
+    final rate = product.taxPercent > 0 ? product.taxPercent : 0.0;
+    final rateStr = rate % 1 == 0 ? rate.toInt().toString() : rate.toStringAsFixed(1);
+
+    if (rate > 0) {
+      if (isInclusive) {
+        return 'Inclusive of all taxes ($rateStr% GST)';
+      } else {
+        return '+ $rateStr% GST extra';
+      }
+    }
+    return 'Inclusive of all taxes';
+  }
 }
+

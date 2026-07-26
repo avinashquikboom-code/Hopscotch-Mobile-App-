@@ -1196,9 +1196,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           ),
           const SizedBox(height: 12),
 
-          if (ref.read(cartProvider.notifier).taxBreakdown.length > 1) ...[
-            for (final item
-                in ref.read(cartProvider.notifier).taxBreakdown) ...[
+          if (ref.watch(cartProvider.notifier).taxBreakdown.length > 1) ...[
+            for (final item in ref.watch(cartProvider.notifier).taxBreakdown) ...[
               const SizedBox(height: 6),
               _buildSummaryRow(
                 item['name'] as String,
@@ -1207,21 +1206,24 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 colorScheme,
               ),
             ],
-          ] else if (ref
-              .read(cartProvider.notifier)
-              .taxBreakdown
-              .isNotEmpty) ...[
+          ] else if (ref.watch(cartProvider.notifier).taxBreakdown.isNotEmpty) ...[
             _buildSummaryRow(
-              ref.read(cartProvider.notifier).taxBreakdown.first['name']
-                  as String,
+              ref.watch(cartProvider.notifier).taxBreakdown.first['name'] as String,
+              currency.formatPrice(tax),
+              responsive,
+              colorScheme,
+            ),
+          ] else if (tax > 0) ...[
+            _buildSummaryRow(
+              ref.watch(cartProvider.notifier).taxRateLabel,
               currency.formatPrice(tax),
               responsive,
               colorScheme,
             ),
           ] else ...[
             _buildSummaryRow(
-              ref.read(cartProvider.notifier).taxRateLabel,
-              currency.formatPrice(tax),
+              'GST / Tax',
+              'Included',
               responsive,
               colorScheme,
             ),

@@ -282,7 +282,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     }
 
     final giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled) ? giftWrappingCost : 0.0;
-    final appliedCoupon = ref.read(appliedCouponProvider);
     final discount = ref.read(appliedCouponProvider.notifier).calculateDiscount(cartNotifier.subtotal);
     final rawTotalPayable = (cartNotifier.subtotal - discount + cartNotifier.shippingFee + cartNotifier.exclusiveTaxAmount + giftWrapCharge).clamp(0.0, double.infinity);
     return (rawTotalPayable * 100.0).roundToDouble() / 100.0;
@@ -1735,12 +1734,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                 cartNotifier.taxBreakdown.first['name'] as String,
                                 currency.formatPrice(cartNotifier.taxAmount),
                               ),
-                            ] else ...[
+                            ] else if (cartNotifier.taxAmount > 0) ...[
                               _priceRow(
                                 responsive,
                                 colorScheme,
                                 cartNotifier.taxRateLabel,
                                 currency.formatPrice(cartNotifier.taxAmount),
+                              ),
+                            ] else ...[
+                              _priceRow(
+                                responsive,
+                                colorScheme,
+                                'GST / Tax',
+                                'Included',
                               ),
                             ],
                             if (isGiftWrapped && giftWrapConfig.enabled) ...[
