@@ -185,6 +185,8 @@ class ProductModel {
   final String taxType;
   final String? hsnCode;
   final double shippingCharge;
+  final bool isGiftWrapAvailable;
+  final double giftWrapCharge;
 
   String get name => title;
 
@@ -213,6 +215,8 @@ class ProductModel {
     this.taxType = 'EXCLUSIVE',
     this.hsnCode,
     this.shippingCharge = 0.0,
+    this.isGiftWrapAvailable = true,
+    this.giftWrapCharge = 0.0,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -374,6 +378,8 @@ class ProductModel {
       taxType: parsedTaxType,
       hsnCode: parsedHsn.isNotEmpty ? parsedHsn : null,
       shippingCharge: _asDouble(json['shippingCharge'] ?? json['shipping_charge'] ?? json['shippingFee'] ?? json['shipping_fee']),
+      isGiftWrapAvailable: _asBool(json['isGiftWrapAvailable'] ?? json['is_gift_wrap_available'], true),
+      giftWrapCharge: _asDouble(json['giftWrapCharge'] ?? json['gift_wrap_charge']),
     );
   }
 

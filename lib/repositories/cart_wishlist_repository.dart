@@ -178,7 +178,7 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
       final p = item.product;
       final type = p.taxType.toUpperCase();
       final isExclusive = type.contains('EXCLUSIVE');
-      final rate = p.taxPercent > 0 ? p.taxPercent : 18.0;
+      final rate = p.taxPercent;
       if (isExclusive && rate > 0) {
         return sum + ((p.price * item.quantity) * (rate / 100));
       }
@@ -192,7 +192,7 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
       final p = item.product;
       final type = p.taxType.toUpperCase();
       final isInclusive = !type.contains('EXCLUSIVE');
-      final rate = p.taxPercent > 0 ? p.taxPercent : 18.0;
+      final rate = p.taxPercent;
       if (isInclusive && rate > 0) {
         return sum + ((p.price * item.quantity) * (rate / 100));
       }
@@ -202,13 +202,8 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
   }
 
   double get effectiveTaxPercent {
-    if (state.isEmpty) return 18.0;
-    for (final item in state) {
-      if (item.product.taxPercent > 0) {
-        return item.product.taxPercent;
-      }
-    }
-    return 18.0;
+    if (state.isEmpty) return 0.0;
+    return state.first.product.taxPercent;
   }
 
   String get taxRateLabel {
@@ -237,7 +232,7 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
     final Map<String, Map<String, dynamic>> map = {};
     for (final item in state) {
       final p = item.product;
-      final rate = p.taxPercent > 0 ? p.taxPercent : 18.0;
+      final rate = p.taxPercent;
       final rawType = p.taxType.toUpperCase();
       final isExclusive = rawType.contains('EXCLUSIVE');
       final taxType = isExclusive ? 'EXCLUSIVE' : 'INCLUSIVE';
@@ -271,17 +266,13 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
 
   double get shippingFee {
     if (state.isEmpty) return 0.0;
-    // Free shipping threshold: orders >= ₹999 get free shipping
     if (subtotal >= 999) return 0.0;
 
     double productShipping = 0.0;
     for (final item in state) {
-      if (item.product.shippingCharge > 0) {
-        productShipping += item.product.shippingCharge * item.quantity;
-      }
+      productShipping += item.product.shippingCharge * item.quantity;
     }
-    // Default standard delivery fee of ₹99 for orders under ₹999 if no product shipping specified
-    return _round2(productShipping > 0 ? productShipping : 99.0);
+    return _round2(productShipping);
   }
 
   double get totalAmount {

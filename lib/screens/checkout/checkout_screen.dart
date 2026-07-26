@@ -437,7 +437,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         final options = <String, dynamic>{
           'key': keyId,
           'amount': amount,
-          'name': 'FCI Seller / Hopscotch',
+          'name': 'FCI Seller',
           'description': '${cart.length} item(s) purchase',
           'retry': {'enabled': true, 'max_count': 2},
           'send_sms_hash': true,

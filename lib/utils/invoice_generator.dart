@@ -225,7 +225,7 @@ class InvoiceGenerator {
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
-                pw.Text('Thank you for shopping with Hopscotch / FCI Seller!', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.teal900)),
+                pw.Text('Thank you for shopping with FCI Seller!', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.teal900)),
                 pw.Text('Computer-generated tax invoice. No signature required.', style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey700)),
               ],
             ),
