@@ -173,13 +173,17 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
     return _round2(raw);
   }
 
+  bool _isInclusiveTax(String taxType) {
+    return taxType.trim().toUpperCase() == 'INCLUSIVE';
+  }
+
   double get exclusiveTaxAmount {
     final raw = state.fold(0.0, (sum, item) {
       final p = item.product;
       final type = p.taxType.toUpperCase();
-      final isExclusive = type.contains('EXCLUSIVE');
-      final rate = p.taxPercent;
-      if (isExclusive && rate > 0) {
+      final isInclusive = _isInclusiveTax(type);
+      final rate = p.taxPercent > 0 ? p.taxPercent : 18.0;
+      if (!isInclusive && rate > 0) {
         return sum + ((p.price * item.quantity) * (rate / 100));
       }
       return sum;
@@ -191,8 +195,8 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
     final raw = state.fold(0.0, (sum, item) {
       final p = item.product;
       final type = p.taxType.toUpperCase();
-      final isInclusive = !type.contains('EXCLUSIVE');
-      final rate = p.taxPercent;
+      final isInclusive = _isInclusiveTax(type);
+      final rate = p.taxPercent > 0 ? p.taxPercent : 18.0;
       if (isInclusive && rate > 0) {
         return sum + ((p.price * item.quantity) * (rate / 100));
       }
@@ -202,8 +206,9 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
   }
 
   double get effectiveTaxPercent {
-    if (state.isEmpty) return 0.0;
-    return state.first.product.taxPercent;
+    if (state.isEmpty) return 18.0;
+    final rate = state.first.product.taxPercent;
+    return rate > 0 ? rate : 18.0;
   }
 
   String get taxRateLabel {
@@ -220,22 +225,23 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
 
   bool get hasInclusiveTax => state.any((item) {
         final type = item.product.taxType.toUpperCase();
-        return !type.contains('EXCLUSIVE');
+        return _isInclusiveTax(type);
       });
 
   bool get hasExclusiveTax => state.any((item) {
         final type = item.product.taxType.toUpperCase();
-        return type.contains('EXCLUSIVE') && item.product.taxPercent > 0;
+        return !_isInclusiveTax(type);
       });
 
   List<dynamic> get taxBreakdown {
     final Map<String, Map<String, dynamic>> map = {};
     for (final item in state) {
       final p = item.product;
-      final rate = p.taxPercent;
+      final rate = p.taxPercent > 0 ? p.taxPercent : 18.0;
+      if (rate <= 0) continue;
       final rawType = p.taxType.toUpperCase();
-      final isExclusive = rawType.contains('EXCLUSIVE');
-      final taxType = isExclusive ? 'EXCLUSIVE' : 'INCLUSIVE';
+      final isInclusive = _isInclusiveTax(rawType);
+      final taxType = isInclusive ? 'INCLUSIVE' : 'EXCLUSIVE';
       final name = 'GST ${rate.toStringAsFixed(rate % 1 == 0 ? 0 : 1)}%';
 
       final lineSubtotal = p.price * item.quantity;

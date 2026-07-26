@@ -232,7 +232,7 @@ class ProductModel {
                 categoryObj['tax_rule'])
             : null);
 
-    final parsedTaxRate = _asDouble(
+    final parsedTaxRateRaw = _asDouble(
       json['taxPercent'] ??
           json['tax_percent'] ??
           json['taxRate'] ??
@@ -253,7 +253,9 @@ class ProductModel {
                   categoryObj['tax_rate'] ??
                   categoryObj['rate'])
               : null),
+      -1.0,
     );
+    final parsedTaxRate = parsedTaxRateRaw >= 0 ? parsedTaxRateRaw : 18.0;
 
     final parsedTaxType = _asString(
       json['taxType'] ??
@@ -269,7 +271,7 @@ class ProductModel {
                   categoryObj['tax_type'] ??
                   categoryObj['type'])
               : null),
-      parsedTaxRate > 0 ? 'EXCLUSIVE' : 'NONE',
+      'EXCLUSIVE',
     );
 
     final parsedHsn = _asString(
