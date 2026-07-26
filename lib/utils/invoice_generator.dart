@@ -208,7 +208,7 @@ class InvoiceGenerator {
                         _pdfPriceRow('Gift Wrapping:', currencyFmt.format(order.giftWrapCharge)),
                       ],
                       pw.SizedBox(height: 3),
-                      _pdfPriceRow('GST / Tax Amount:', currencyFmt.format(order.taxAmount)),
+                      _pdfPriceRow('Tax Amount:', currencyFmt.format(order.taxAmount)),
                       pw.Divider(thickness: 0.5, color: PdfColors.grey400),
                       _pdfPriceRow('GRAND TOTAL:', currencyFmt.format(order.totalAmount), isTotal: true),
                     ],

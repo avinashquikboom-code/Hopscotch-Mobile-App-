@@ -231,7 +231,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get giftWrappingDesc => 'Premium boxed wrap with note card';
 
   @override
-  String get taxPercent => 'GST / Tax';
+  String get taxPercent => 'Tax';
 
   @override
   String get totalLabel => 'TOTAL';

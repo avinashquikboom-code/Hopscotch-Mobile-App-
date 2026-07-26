@@ -561,7 +561,7 @@ abstract class AppLocalizations {
   /// Tax percentage label
   ///
   /// In en, this message translates to:
-  /// **'GST / Tax'**
+  /// **'Tax'**
   String get taxPercent;
 
   /// Total label in checkout

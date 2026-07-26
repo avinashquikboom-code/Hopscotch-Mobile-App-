@@ -214,7 +214,7 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
   String get taxRateLabel {
     final rate = effectiveTaxPercent;
     final formatted = rate % 1 == 0 ? rate.toInt().toString() : rate.toStringAsFixed(1);
-    return 'GST / Tax ($formatted%)';
+    return 'Tax ($formatted%)';
   }
 
   double get totalTaxAmount {
@@ -242,7 +242,7 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
       final rawType = p.taxType.toUpperCase();
       final isInclusive = _isInclusiveTax(rawType);
       final taxType = isInclusive ? 'INCLUSIVE' : 'EXCLUSIVE';
-      final name = 'GST ${rate.toStringAsFixed(rate % 1 == 0 ? 0 : 1)}%';
+      final name = 'Tax ${rate.toStringAsFixed(rate % 1 == 0 ? 0 : 1)}%';
 
       final lineSubtotal = p.price * item.quantity;
       final lineTax = lineSubtotal * (rate / 100);

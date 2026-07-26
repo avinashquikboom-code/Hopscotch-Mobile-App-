@@ -112,7 +112,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final double tax = cartNotifier.taxAmount;
     final bool hasInclusive = cartNotifier.hasInclusiveTax;
 
-    final giftWrapConfig = ref.watch(giftWrapConfigProvider).valueOrNull ?? const GiftWrapConfig(enabled: true, charge: 49.0);
+    final giftWrapConfig =
+        ref.watch(giftWrapConfigProvider).valueOrNull ??
+        const GiftWrapConfig(enabled: true, charge: 49.0);
     final isGiftWrapped = ref.watch(isGiftWrappedProvider);
 
     double giftWrappingCost = giftWrapConfig.charge;
@@ -128,7 +130,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       giftWrappingCost = customGiftWrapSum;
     }
 
-    final double giftCost = (isGiftWrapped && giftWrapConfig.enabled) ? giftWrappingCost : 0.0;
+    final double giftCost = (isGiftWrapped && giftWrapConfig.enabled)
+        ? giftWrappingCost
+        : 0.0;
     final double totalAmount = cartNotifier.totalAmount + giftCost;
 
     // Free shipping threshold calculations
@@ -142,7 +146,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final orderSummaryText = l10n?.orderSummary ?? 'Order Summary';
     final subtotalText = l10n?.subtotal ?? 'Subtotal';
     final shippingText = l10n?.shipping ?? 'Shipping';
-    final taxPercentText = l10n?.tax ?? 'GST / Tax';
+    final taxPercentText = l10n?.tax ?? 'Tax';
     final totalText = l10n?.total ?? 'Total';
 
     return Scaffold(
@@ -1203,9 +1207,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 colorScheme,
               ),
             ],
-          ] else if (ref.read(cartProvider.notifier).taxBreakdown.isNotEmpty) ...[
+          ] else if (ref
+              .read(cartProvider.notifier)
+              .taxBreakdown
+              .isNotEmpty) ...[
             _buildSummaryRow(
-              ref.read(cartProvider.notifier).taxBreakdown.first['name'] as String,
+              ref.read(cartProvider.notifier).taxBreakdown.first['name']
+                  as String,
               currency.formatPrice(tax),
               responsive,
               colorScheme,

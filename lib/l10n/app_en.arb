@@ -292,7 +292,7 @@
   "@giftWrappingDesc": {
     "description": "Gift wrapping description"
   },
-  "taxPercent": "GST / Tax",
+  "taxPercent": "Tax",
   "@taxPercent": {
     "description": "Tax percentage label"
   },

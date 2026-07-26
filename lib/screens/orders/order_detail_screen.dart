@@ -784,7 +784,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                             const SizedBox(height: 8),
                             _buildSummaryRow(label: 'Shipping Charge', value: order.shippingFee > 0 ? currency.formatPrice(order.shippingFee) : 'FREE', responsive: responsive, colorScheme: colorScheme, valueColor: const Color(0xFF059669)),
                             const SizedBox(height: 8),
-                            _buildSummaryRow(label: 'Estimated GST Tax', value: currency.formatPrice(order.taxAmount), responsive: responsive, colorScheme: colorScheme),
+                            _buildSummaryRow(label: 'Estimated Tax', value: currency.formatPrice(order.taxAmount), responsive: responsive, colorScheme: colorScheme),
                             if (order.giftWrapped || order.giftWrapCharge > 0) ...[
                               const SizedBox(height: 8),
                               _buildSummaryRow(

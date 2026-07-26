@@ -57,7 +57,7 @@ Widget buildOrderSummary({
           context,
         ),
       ] else ...[
-        _summaryRow('GST / Tax', formatPrice(taxAmount), context),
+        _summaryRow('Tax', formatPrice(taxAmount), context),
       ],
 
       const Divider(height: 16),
