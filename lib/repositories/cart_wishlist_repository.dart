@@ -182,7 +182,7 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
       final p = item.product;
       final type = p.taxType.toUpperCase();
       final isInclusive = _isInclusiveTax(type);
-      final rate = p.taxPercent > 0 ? p.taxPercent : 18.0;
+      final rate = p.taxPercent > 0 ? p.taxPercent : 0.0;
       if (!isInclusive && rate > 0) {
         return sum + ((p.price * item.quantity) * (rate / 100));
       }
@@ -196,7 +196,7 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
       final p = item.product;
       final type = p.taxType.toUpperCase();
       final isInclusive = _isInclusiveTax(type);
-      final rate = p.taxPercent > 0 ? p.taxPercent : 18.0;
+      final rate = p.taxPercent > 0 ? p.taxPercent : 0.0;
       if (isInclusive && rate > 0) {
         return sum + ((p.price * item.quantity) * (rate / 100));
       }
@@ -206,9 +206,9 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
   }
 
   double get effectiveTaxPercent {
-    if (state.isEmpty) return 18.0;
+    if (state.isEmpty) return 0.0;
     final rate = state.first.product.taxPercent;
-    return rate > 0 ? rate : 18.0;
+    return rate > 0 ? rate : 0.0;
   }
 
   String get taxRateLabel {
@@ -237,7 +237,7 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
     final Map<String, Map<String, dynamic>> map = {};
     for (final item in state) {
       final p = item.product;
-      final rate = p.taxPercent > 0 ? p.taxPercent : 18.0;
+      final rate = p.taxPercent > 0 ? p.taxPercent : 0.0;
       if (rate <= 0) continue;
       final rawType = p.taxType.toUpperCase();
       final isInclusive = _isInclusiveTax(rawType);

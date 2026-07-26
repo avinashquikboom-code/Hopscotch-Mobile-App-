@@ -255,7 +255,7 @@ class ProductModel {
               : null),
       -1.0,
     );
-    final parsedTaxRate = parsedTaxRateRaw >= 0 ? parsedTaxRateRaw : 18.0;
+    final parsedTaxRate = parsedTaxRateRaw >= 0 ? parsedTaxRateRaw : 0.0;
 
     final parsedTaxType = _asString(
       json['taxType'] ??
