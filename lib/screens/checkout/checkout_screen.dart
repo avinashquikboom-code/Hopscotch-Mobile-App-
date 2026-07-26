@@ -139,7 +139,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text(
-              'Razorpay window closed or timed out. Switched to Cash on Delivery (COD).',
+              'Payment was not completed. You can try again.',
             ),
             backgroundColor: Colors.orange.shade800,
             behavior: SnackBarBehavior.floating,
@@ -147,10 +147,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               borderRadius: BorderRadius.circular(10),
             ),
             action: SnackBarAction(
-              label: 'PLACE COD ORDER',
+              label: 'RETRY PAYMENT',
               textColor: Colors.white,
               onPressed: () {
-                setState(() => _selectedPayment = 'COD');
+                _openRazorpay();
               },
             ),
           ),
@@ -284,7 +284,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled) ? giftWrappingCost : 0.0;
     final appliedCoupon = ref.read(appliedCouponProvider);
     final discount = ref.read(appliedCouponProvider.notifier).calculateDiscount(cartNotifier.subtotal);
-    final rawTotalPayable = (cartNotifier.subtotal - discount + cartNotifier.shippingFee + cartNotifier.taxAmount + giftWrapCharge).clamp(0.0, double.infinity);
+    final rawTotalPayable = (cartNotifier.subtotal - discount + cartNotifier.shippingFee + cartNotifier.exclusiveTaxAmount + giftWrapCharge).clamp(0.0, double.infinity);
     return (rawTotalPayable * 100.0).roundToDouble() / 100.0;
   }
 
@@ -430,7 +430,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled) ? giftWrappingCost : 0.0;
     final appliedCoupon = ref.read(appliedCouponProvider);
     final discount = ref.read(appliedCouponProvider.notifier).calculateDiscount(cartNotifier.subtotal);
-    final rawTotalPayable = (cartNotifier.subtotal - discount + cartNotifier.shippingFee + cartNotifier.taxAmount + giftWrapCharge);
+    final rawTotalPayable = (cartNotifier.subtotal - discount + cartNotifier.shippingFee + cartNotifier.exclusiveTaxAmount + giftWrapCharge);
     final totalAmount = (rawTotalPayable * 100.0).roundToDouble() / 100.0;
 
     dev.log('Initiating Razorpay checkout: itemsCount=${cart.length}, subtotal=₹${cartNotifier.subtotal}, discount=₹$discount, shipping=₹${cartNotifier.shippingFee}, tax=₹${cartNotifier.taxAmount}, giftWrap=₹$giftWrapCharge => totalAmount=₹$totalAmount', name: 'Razorpay');
@@ -1061,7 +1061,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final double giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled) ? giftWrappingCost : 0.0;
     final appliedCoupon = ref.watch(appliedCouponProvider);
     final couponDiscount = ref.read(appliedCouponProvider.notifier).calculateDiscount(cartNotifier.subtotal);
-    final totalPayable = (cartNotifier.subtotal - couponDiscount + cartNotifier.shippingFee + cartNotifier.taxAmount + giftWrapCharge).clamp(0.0, double.infinity);
+    final totalPayable = (cartNotifier.subtotal - couponDiscount + cartNotifier.shippingFee + cartNotifier.exclusiveTaxAmount + giftWrapCharge).clamp(0.0, double.infinity);
     final countriesAsync = ref.watch(apiCountriesProvider);
     final apiList = countriesAsync.value
         ?.map((c) => c['name']?.toString() ?? '')

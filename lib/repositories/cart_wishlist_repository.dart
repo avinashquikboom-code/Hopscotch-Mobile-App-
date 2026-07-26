@@ -198,7 +198,9 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
       final isInclusive = _isInclusiveTax(type);
       final rate = p.taxPercent > 0 ? p.taxPercent : 0.0;
       if (isInclusive && rate > 0) {
-        return sum + ((p.price * item.quantity) * (rate / 100));
+        final lineTotal = p.price * item.quantity;
+        final lineTax = lineTotal - (lineTotal / (1 + rate / 100));
+        return sum + lineTax;
       }
       return sum;
     });
@@ -207,8 +209,12 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
 
   double get effectiveTaxPercent {
     if (state.isEmpty) return 0.0;
-    final rate = state.first.product.taxPercent;
-    return rate > 0 ? rate : 0.0;
+    final rates = state.map((i) => i.product.taxPercent).toSet();
+    if (rates.length == 1) {
+      final rate = rates.first;
+      return rate > 0 ? rate : 0.0;
+    }
+    return 0.0;
   }
 
   String get taxRateLabel {
@@ -245,7 +251,9 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
       final name = 'Tax ${rate.toStringAsFixed(rate % 1 == 0 ? 0 : 1)}%';
 
       final lineSubtotal = p.price * item.quantity;
-      final lineTax = lineSubtotal * (rate / 100);
+      final lineTax = isInclusive
+          ? lineSubtotal - (lineSubtotal / (1 + rate / 100))
+          : lineSubtotal * (rate / 100);
 
       final key = '${rate}_$taxType';
       if (map.containsKey(key)) {
@@ -283,7 +291,7 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
 
   double get totalAmount {
     if (state.isEmpty) return 0.0;
-    return _round2(subtotal + shippingFee + taxAmount);
+    return _round2(subtotal + shippingFee + exclusiveTaxAmount);
   }
 
   double get getTotalAmount => totalAmount;
