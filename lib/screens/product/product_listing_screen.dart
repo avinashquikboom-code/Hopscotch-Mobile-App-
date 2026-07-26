@@ -32,7 +32,7 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
   final ScrollController _scrollController = ScrollController();
   List<ProductModel> _filteredProducts = [];
   bool _isLoadingMore = false;
-  int _displayLimit = 6;
+  int _displayLimit = 100;
 
   // Sorting state
   String _sortBy = 'Recommended'; // Recommended, LowToHigh, HighToLow, Rating

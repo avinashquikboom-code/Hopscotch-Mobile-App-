@@ -230,8 +230,8 @@ class ProductRepository {
   Future<List<ProductModel>> getTrendingProducts() async {
     final products = await getProducts();
     final filtered = products.where((element) => element.isTrending).toList();
-    if (filtered.isEmpty && products.isNotEmpty) {
-      return products.take(6).toList();
+    if (filtered.length < 3 && products.isNotEmpty) {
+      return products;
     }
     return filtered;
   }
@@ -239,8 +239,8 @@ class ProductRepository {
   Future<List<ProductModel>> getNewArrivals() async {
     final products = await getProducts();
     final filtered = products.where((element) => element.isNewArrival).toList();
-    if (filtered.isEmpty && products.isNotEmpty) {
-      return products.reversed.take(6).toList();
+    if (filtered.length < 3 && products.isNotEmpty) {
+      return products;
     }
     return filtered;
   }
@@ -248,8 +248,8 @@ class ProductRepository {
   Future<List<ProductModel>> getFeaturedProducts() async {
     final products = await getProducts();
     final filtered = products.where((element) => element.isFeatured).toList();
-    if (filtered.isEmpty && products.isNotEmpty) {
-      return products.take(6).toList();
+    if (filtered.length < 3 && products.isNotEmpty) {
+      return products;
     }
     return filtered;
   }
