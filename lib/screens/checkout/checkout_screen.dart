@@ -384,7 +384,21 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final cartNotifier = ref.read(cartProvider.notifier);
     final giftWrapConfig = ref.read(giftWrapConfigProvider).valueOrNull ?? const GiftWrapConfig(enabled: true, charge: 49.0);
     final isGiftWrapped = ref.read(isGiftWrappedProvider);
-    final giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled) ? giftWrapConfig.charge : 0.0;
+
+    double giftWrappingCost = giftWrapConfig.charge;
+    double customGiftWrapSum = 0.0;
+    bool hasCustomGiftWrap = false;
+    for (final item in cart) {
+      if (item.product.isGiftWrapAvailable && item.product.giftWrapCharge > 0) {
+        customGiftWrapSum += item.product.giftWrapCharge;
+        hasCustomGiftWrap = true;
+      }
+    }
+    if (hasCustomGiftWrap && customGiftWrapSum > 0) {
+      giftWrappingCost = customGiftWrapSum;
+    }
+
+    final giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled) ? giftWrappingCost : 0.0;
     final appliedCoupon = ref.read(appliedCouponProvider);
     final discount = ref.read(appliedCouponProvider.notifier).calculateDiscount(cartNotifier.subtotal);
     final rawTotalPayable = (cartNotifier.subtotal - discount + cartNotifier.shippingFee + cartNotifier.taxAmount + giftWrapCharge);
@@ -1001,7 +1015,21 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final currency = ref.watch(currencyProvider);
     final giftWrapConfig = ref.watch(giftWrapConfigProvider).valueOrNull ?? const GiftWrapConfig(enabled: true, charge: 49.0);
     final isGiftWrapped = ref.watch(isGiftWrappedProvider);
-    final double giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled) ? giftWrapConfig.charge : 0.0;
+
+    double giftWrappingCost = giftWrapConfig.charge;
+    double customGiftWrapSum = 0.0;
+    bool hasCustomGiftWrap = false;
+    for (final item in cart) {
+      if (item.product.isGiftWrapAvailable && item.product.giftWrapCharge > 0) {
+        customGiftWrapSum += item.product.giftWrapCharge;
+        hasCustomGiftWrap = true;
+      }
+    }
+    if (hasCustomGiftWrap && customGiftWrapSum > 0) {
+      giftWrappingCost = customGiftWrapSum;
+    }
+
+    final double giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled) ? giftWrappingCost : 0.0;
     final appliedCoupon = ref.watch(appliedCouponProvider);
     final couponDiscount = ref.read(appliedCouponProvider.notifier).calculateDiscount(cartNotifier.subtotal);
     final totalPayable = (cartNotifier.subtotal - couponDiscount + cartNotifier.shippingFee + cartNotifier.taxAmount + giftWrapCharge).clamp(0.0, double.infinity);
