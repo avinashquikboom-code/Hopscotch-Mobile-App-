@@ -289,7 +289,7 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
 
   double get totalAmount {
     if (state.isEmpty) return 0.0;
-    return _round2(subtotal + shippingFee + taxAmount);
+    return _round2(subtotal + shippingFee + exclusiveTaxAmount);
   }
 
   double get getTotalAmount => totalAmount;

@@ -137,7 +137,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final double couponDiscount = ref
         .read(appliedCouponProvider.notifier)
         .calculateDiscount(subtotal);
-    final double totalAmount = (subtotal - couponDiscount + shipping + cartNotifier.taxAmount + giftCost)
+    final double totalAmount = (subtotal - couponDiscount + shipping + cartNotifier.exclusiveTaxAmount + giftCost)
         .clamp(0.0, double.infinity);
 
     // Free shipping threshold calculations
