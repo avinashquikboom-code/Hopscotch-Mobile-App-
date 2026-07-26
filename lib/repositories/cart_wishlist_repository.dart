@@ -249,7 +249,7 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
       final isInclusive = _isInclusiveTax(rawType);
       final taxType = isInclusive ? 'INCLUSIVE' : 'EXCLUSIVE';
       final rateStr = rate % 1 == 0 ? rate.toInt().toString() : rate.toStringAsFixed(1);
-      final name = isInclusive ? 'GST ($rateStr% Included)' : 'GST ($rateStr%)';
+      final name = 'Tax ($rateStr%)';
 
       final lineSubtotal = p.price * item.quantity;
       final lineTax = isInclusive

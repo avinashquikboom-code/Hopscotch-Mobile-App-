@@ -1732,7 +1732,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                 responsive,
                                 colorScheme,
                                 cartNotifier.taxBreakdown.first['name'] as String,
-                                currency.formatPrice(cartNotifier.taxAmount),
+                                currency.formatPrice(
+                                  cartNotifier.taxBreakdown.first['taxAmount'] as double,
+                                ),
                               ),
                             ] else if (cartNotifier.taxAmount > 0) ...[
                               _priceRow(
@@ -1745,8 +1747,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               _priceRow(
                                 responsive,
                                 colorScheme,
-                                'GST / Tax',
-                                'Included',
+                                'Tax',
+                                currency.formatPrice(cartNotifier.taxAmount),
                               ),
                             ],
                             if (isGiftWrapped && giftWrapConfig.enabled) ...[

@@ -1302,9 +1302,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
 
     if (rate > 0) {
       if (isInclusive) {
-        return 'Inclusive of all taxes ($rateStr% GST)';
+        return 'Inclusive of all taxes ($rateStr% Tax)';
       } else {
-        return '+ $rateStr% GST extra';
+        return '+ $rateStr% Tax extra';
       }
     }
     return 'Inclusive of all taxes';

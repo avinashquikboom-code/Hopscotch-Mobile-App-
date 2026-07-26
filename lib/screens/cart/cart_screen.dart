@@ -1209,7 +1209,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           ] else if (ref.watch(cartProvider.notifier).taxBreakdown.isNotEmpty) ...[
             _buildSummaryRow(
               ref.watch(cartProvider.notifier).taxBreakdown.first['name'] as String,
-              currency.formatPrice(tax),
+              currency.formatPrice(
+                (ref.watch(cartProvider.notifier).taxBreakdown.first['taxAmount'] as double?) ?? tax,
+              ),
               responsive,
               colorScheme,
             ),
@@ -1222,8 +1224,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             ),
           ] else ...[
             _buildSummaryRow(
-              'GST / Tax',
-              'Included',
+              'Tax',
+              currency.formatPrice(tax),
               responsive,
               colorScheme,
             ),

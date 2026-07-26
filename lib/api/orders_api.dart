@@ -21,6 +21,21 @@ class OrdersApi {
   Future<Response> getOrderById(String orderId) async {
     return await _apiService.get('/api/orders/$orderId');
   }
+
+  Future<Response> calculateCheckout({
+    String? couponCode,
+    bool? giftWrap,
+    List<dynamic>? items,
+  }) async {
+    return await _apiService.post(
+      '/api/orders/calculate',
+      data: {
+        if (couponCode != null) 'couponCode': couponCode,
+        if (giftWrap != null) 'giftWrap': giftWrap,
+        if (items != null) 'items': items,
+      },
+    );
+  }
   
   Future<Response> createOrder({
     String? addressId,
