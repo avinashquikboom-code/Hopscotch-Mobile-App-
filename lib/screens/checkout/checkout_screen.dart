@@ -304,7 +304,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         (cartNotifier.subtotal -
                 discount +
                 cartNotifier.shippingFee +
-                cartNotifier.taxAmount +
+                cartNotifier.exclusiveTaxAmount +
                 giftWrapCharge)
             .clamp(0.0, double.infinity);
     return (rawTotalPayable * 100.0).roundToDouble() / 100.0;
@@ -478,7 +478,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         (cartNotifier.subtotal -
         discount +
         cartNotifier.shippingFee +
-        cartNotifier.taxAmount +
+        cartNotifier.exclusiveTaxAmount +
         giftWrapCharge);
     final totalAmount = (rawTotalPayable * 100.0).roundToDouble() / 100.0;
 
@@ -1147,7 +1147,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         (cartNotifier.subtotal -
                 couponDiscount +
                 cartNotifier.shippingFee +
-                cartNotifier.taxAmount +
+                cartNotifier.exclusiveTaxAmount +
                 giftWrapCharge)
             .clamp(0.0, double.infinity);
     final countriesAsync = ref.watch(apiCountriesProvider);
