@@ -525,7 +525,7 @@ abstract class AppLocalizations {
   /// Tax label
   ///
   /// In en, this message translates to:
-  /// **'Tax'**
+  /// **'Taxes'**
   String get tax;
 
   /// Gift wrapping option

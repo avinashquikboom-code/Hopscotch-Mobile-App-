@@ -218,9 +218,7 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
   }
 
   String get taxRateLabel {
-    final rate = effectiveTaxPercent;
-    final formatted = rate % 1 == 0 ? rate.toInt().toString() : rate.toStringAsFixed(1);
-    return 'Tax ($formatted%)';
+    return 'Taxes';
   }
 
   double get totalTaxAmount {
@@ -248,8 +246,7 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
       final rawType = p.taxType.toUpperCase();
       final isInclusive = _isInclusiveTax(rawType);
       final taxType = isInclusive ? 'INCLUSIVE' : 'EXCLUSIVE';
-      final rateStr = rate % 1 == 0 ? rate.toInt().toString() : rate.toStringAsFixed(1);
-      final name = 'Tax ($rateStr%)';
+      final name = 'Taxes';
 
       final lineSubtotal = p.price * item.quantity;
       final lineTax = isInclusive
@@ -292,7 +289,7 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
 
   double get totalAmount {
     if (state.isEmpty) return 0.0;
-    return _round2(subtotal + shippingFee + exclusiveTaxAmount);
+    return _round2(subtotal + shippingFee + taxAmount);
   }
 
   double get getTotalAmount => totalAmount;

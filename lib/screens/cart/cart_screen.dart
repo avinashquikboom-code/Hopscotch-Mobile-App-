@@ -12,6 +12,7 @@ import 'package:hopscotch/providers/currency_provider.dart';
 import 'package:hopscotch/constants/app_urls.dart';
 import 'package:hopscotch/models/cart_item_model.dart';
 import 'package:hopscotch/providers/gift_wrap_provider.dart';
+import 'package:hopscotch/providers/coupon_provider.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -133,7 +134,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final double giftCost = (isGiftWrapped && giftWrapConfig.enabled)
         ? giftWrappingCost
         : 0.0;
-    final double totalAmount = cartNotifier.totalAmount + giftCost;
+    final double couponDiscount = ref
+        .read(appliedCouponProvider.notifier)
+        .calculateDiscount(subtotal);
+    final double totalAmount = (subtotal - couponDiscount + shipping + cartNotifier.taxAmount + giftCost)
+        .clamp(0.0, double.infinity);
 
     // Free shipping threshold calculations
     const double freeShippingThreshold = 1000.0;
@@ -146,7 +151,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final orderSummaryText = l10n?.orderSummary ?? 'Order Summary';
     final subtotalText = l10n?.subtotal ?? 'Subtotal';
     final shippingText = l10n?.shipping ?? 'Shipping';
-    final taxPercentText = l10n?.tax ?? 'Tax';
+    final taxPercentText = l10n?.tax ?? 'Taxes';
     final totalText = l10n?.total ?? 'Total';
 
     return Scaffold(
@@ -985,6 +990,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     required String totalText,
     List<CartItemModel>? cartItems,
   }) {
+    final appliedCoupon = ref.watch(appliedCouponProvider);
+    final double couponDiscount = ref
+        .read(appliedCouponProvider.notifier)
+        .calculateDiscount(subtotal);
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -1196,11 +1206,23 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           ),
           const SizedBox(height: 12),
 
+          if (couponDiscount > 0) ...[
+            const SizedBox(height: 12),
+            _buildSummaryRow(
+              'Coupon Discount (${appliedCoupon?.code ?? ""})',
+              '-${currency.formatPrice(couponDiscount)}',
+              responsive,
+              colorScheme,
+            ),
+          ],
+
           if (ref.watch(cartProvider.notifier).taxBreakdown.length > 1) ...[
             for (final item in ref.watch(cartProvider.notifier).taxBreakdown) ...[
               const SizedBox(height: 6),
               _buildSummaryRow(
-                item['name'] as String,
+                item['taxType'] == 'INCLUSIVE'
+                    ? '${item['name']} (Incl.)'
+                    : item['name'] as String,
                 currency.formatPrice(item['taxAmount'] as double),
                 responsive,
                 colorScheme,
@@ -1208,7 +1230,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             ],
           ] else if (ref.watch(cartProvider.notifier).taxBreakdown.isNotEmpty) ...[
             _buildSummaryRow(
-              ref.watch(cartProvider.notifier).taxBreakdown.first['name'] as String,
+              ref.watch(cartProvider.notifier).taxBreakdown.first['taxType'] == 'INCLUSIVE'
+                  ? '${ref.watch(cartProvider.notifier).taxBreakdown.first['name']} (Incl.)'
+                  : ref.watch(cartProvider.notifier).taxBreakdown.first['name'] as String,
               currency.formatPrice(
                 (ref.watch(cartProvider.notifier).taxBreakdown.first['taxAmount'] as double?) ?? tax,
               ),
@@ -1217,14 +1241,14 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             ),
           ] else if (tax > 0) ...[
             _buildSummaryRow(
-              ref.watch(cartProvider.notifier).taxRateLabel,
+              hasInclusive ? 'Taxes (Incl.)' : 'Taxes',
               currency.formatPrice(tax),
               responsive,
               colorScheme,
             ),
           ] else ...[
             _buildSummaryRow(
-              'Tax',
+              'Taxes',
               currency.formatPrice(tax),
               responsive,
               colorScheme,

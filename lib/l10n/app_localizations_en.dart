@@ -212,7 +212,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shipping => 'Shipping';
 
   @override
-  String get tax => 'Tax';
+  String get tax => 'Taxes';
 
   @override
   String get giftWrapping => 'Gift Wrapping';

@@ -116,6 +116,77 @@ ProductModel mapBackendToMobileProduct(Map<String, dynamic> raw) {
     }
   }
 
+  // ── Tax parsing ──────────────────────────────────────────────────────────
+  // Mirrors ProductModel.fromJson so that products loaded from list endpoints
+  // (home / category / trending cards) carry GST into the cart & checkout.
+  // Without this the fields fall back to the constructor defaults (0% /
+  // EXCLUSIVE) and the order summary shows "Tax ₹0.00".
+  final categoryObj = raw['category'] is Map ? raw['category'] as Map : null;
+  final effectiveTax = raw['effectiveTaxRule'] ??
+      raw['taxRule'] ??
+      raw['tax_rule'] ??
+      (categoryObj != null
+          ? (categoryObj['effectiveTaxRule'] ??
+              categoryObj['taxRule'] ??
+              categoryObj['tax_rule'])
+          : null);
+
+  double parseTaxRate(dynamic v) {
+    if (v == null) return -1.0;
+    if (v is num) return v.toDouble();
+    return double.tryParse(v.toString()) ?? -1.0;
+  }
+
+  final rawTaxRate = raw['taxPercent'] ??
+      raw['tax_percent'] ??
+      raw['taxRate'] ??
+      raw['tax_rate'] ??
+      raw['gstPercent'] ??
+      raw['gst_percent'] ??
+      raw['gstRate'] ??
+      (effectiveTax is Map
+          ? (effectiveTax['rate'] ??
+              effectiveTax['taxPercent'] ??
+              effectiveTax['taxRate'] ??
+              effectiveTax['tax_rate'])
+          : null) ??
+      (categoryObj != null
+          ? (categoryObj['taxPercent'] ??
+              categoryObj['taxRate'] ??
+              categoryObj['tax_rate'] ??
+              categoryObj['rate'])
+          : null);
+  final parsedTaxRate = parseTaxRate(rawTaxRate);
+  final taxPercent = parsedTaxRate >= 0 ? parsedTaxRate : 0.0;
+
+  final rawTaxType = raw['taxType'] ??
+      raw['tax_type'] ??
+      raw['type'] ??
+      (effectiveTax is Map
+          ? (effectiveTax['taxType'] ??
+              effectiveTax['type'] ??
+              effectiveTax['tax_type'])
+          : null) ??
+      (categoryObj != null
+          ? (categoryObj['taxType'] ??
+              categoryObj['tax_type'] ??
+              categoryObj['type'])
+          : null);
+  final taxType = (rawTaxType != null && rawTaxType.toString().trim().isNotEmpty)
+      ? rawTaxType.toString()
+      : 'EXCLUSIVE';
+
+  final taxRuleId = (raw['taxRuleId'] ??
+          raw['tax_rule_id'] ??
+          (effectiveTax is Map ? effectiveTax['id'] : null))
+      ?.toString();
+
+  final hsnCode = (raw['hsnCode'] ??
+          raw['hsn_code'] ??
+          (effectiveTax is Map ? effectiveTax['hsnCode'] : null) ??
+          (categoryObj != null ? categoryObj['hsnCode'] : null))
+      ?.toString();
+
   return ProductModel(
     id: id,
     title: title,
@@ -136,6 +207,10 @@ ProductModel mapBackendToMobileProduct(Map<String, dynamic> raw) {
     isTrending: isTrending,
     isNewArrival: isNewArrival,
     isFeatured: isFeatured,
+    taxRuleId: taxRuleId,
+    taxPercent: taxPercent,
+    taxType: taxType,
+    hsnCode: hsnCode,
     shippingCharge: shippingCharge,
   );
 }
@@ -145,7 +220,7 @@ class ProductRepository {
   // All filter methods (trending, newArrivals, featured) share ONE fetch.
   static List<ProductModel>? _cachedProducts;
   static DateTime? _cacheTime;
-  static const Duration _cacheTtl = Duration(minutes: 5);
+  static const Duration _cacheTtl = Duration.zero;
   // In-flight deduplication: if a fetch is already running, await it instead
   // of firing a second identical HTTP request.
   static Future<List<ProductModel>>? _inflight;

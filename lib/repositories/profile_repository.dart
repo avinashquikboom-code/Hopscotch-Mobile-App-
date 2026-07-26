@@ -10,7 +10,7 @@ import 'package:hopscotch/constants/app_urls.dart';
 class ProfileRepository {
   static Map<String, dynamic>? _cachedProfile;
   static DateTime? _cacheTime;
-  static const Duration _cacheTtl = Duration(minutes: 5);
+  static const Duration _cacheTtl = Duration.zero;
   static Future<Map<String, dynamic>?>? _inflight;
   static const String _kProfilePrefsKey = 'cached_user_profile_data';
 

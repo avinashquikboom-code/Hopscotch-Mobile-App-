@@ -218,7 +218,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           for (final c in countriesData) {
             final code = c['code']?.toString().toUpperCase();
             final name = c['name']?.toString();
-            if (code != null && code.isNotEmpty && name != null && name.isNotEmpty) {
+            if (code != null &&
+                code.isNotEmpty &&
+                name != null &&
+                name.isNotEmpty) {
               apiIsoMap[code] = name;
             }
           }
@@ -239,9 +242,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handleRazorpaySuccess);
       _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handleRazorpayError);
       _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
-      dev.log('Razorpay SDK event listeners registered successfully', name: 'Razorpay');
+      dev.log(
+        'Razorpay SDK event listeners registered successfully',
+        name: 'Razorpay',
+      );
     } catch (e, stackTrace) {
-      dev.log('Error initializing Razorpay SDK plugin: $e', name: 'Razorpay', error: e, stackTrace: stackTrace);
+      dev.log(
+        'Error initializing Razorpay SDK plugin: $e',
+        name: 'Razorpay',
+        error: e,
+        stackTrace: stackTrace,
+      );
       debugPrint('Razorpay plugin initialization notice: $e');
     }
   }
@@ -265,7 +276,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   double _calculateFinalTotalPayable() {
     final cart = ref.read(cartProvider);
     final cartNotifier = ref.read(cartProvider.notifier);
-    final giftWrapConfig = ref.read(giftWrapConfigProvider).valueOrNull ?? const GiftWrapConfig(enabled: true, charge: 49.0);
+    final giftWrapConfig =
+        ref.read(giftWrapConfigProvider).valueOrNull ??
+        const GiftWrapConfig(enabled: true, charge: 49.0);
     final isGiftWrapped = ref.read(isGiftWrappedProvider);
 
     double giftWrappingCost = giftWrapConfig.charge;
@@ -281,9 +294,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       giftWrappingCost = customGiftWrapSum;
     }
 
-    final giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled) ? giftWrappingCost : 0.0;
-    final discount = ref.read(appliedCouponProvider.notifier).calculateDiscount(cartNotifier.subtotal);
-    final rawTotalPayable = (cartNotifier.subtotal - discount + cartNotifier.shippingFee + cartNotifier.exclusiveTaxAmount + giftWrapCharge).clamp(0.0, double.infinity);
+    final giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled)
+        ? giftWrappingCost
+        : 0.0;
+    final discount = ref
+        .read(appliedCouponProvider.notifier)
+        .calculateDiscount(cartNotifier.subtotal);
+    final rawTotalPayable =
+        (cartNotifier.subtotal -
+                discount +
+                cartNotifier.shippingFee +
+                cartNotifier.taxAmount +
+                giftWrapCharge)
+            .clamp(0.0, double.infinity);
     return (rawTotalPayable * 100.0).roundToDouble() / 100.0;
   }
 
@@ -306,8 +329,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       if (response.orderId != null &&
           response.paymentId != null &&
           response.signature != null) {
-        setState(() => _paymentProcessingStep = 'VERIFYING PAYMENT SIGNATURE...');
-        dev.log('Verifying Razorpay payment signature via backend API', name: 'Razorpay');
+        setState(
+          () => _paymentProcessingStep = 'VERIFYING PAYMENT SIGNATURE...',
+        );
+        dev.log(
+          'Verifying Razorpay payment signature via backend API',
+          name: 'Razorpay',
+        );
         await ref
             .read(paymentRepositoryProvider)
             .verifyRazorpayPayment(
@@ -318,7 +346,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       }
 
       setState(() => _paymentProcessingStep = 'PLACING ORDER...');
-      dev.log('Placing order on backend with Razorpay payment method', name: 'Razorpay');
+      dev.log(
+        'Placing order on backend with Razorpay payment method',
+        name: 'Razorpay',
+      );
       final isGiftWrapped = ref.read(isGiftWrappedProvider);
       final finalTotal = _calculateFinalTotalPayable();
       final order = await ref
@@ -336,11 +367,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             paymentMethod: 'Razorpay',
             giftWrap: isGiftWrapped,
           );
-      dev.log('Order placed successfully via Razorpay: #${order.id}', name: 'Razorpay');
+      dev.log(
+        'Order placed successfully via Razorpay: #${order.id}',
+        name: 'Razorpay',
+      );
       cartNotifier.clearCart();
       if (mounted) context.go('/order-success?orderId=${order.id}');
     } catch (e, stackTrace) {
-      dev.log('Error completing order after Razorpay success: $e', name: 'Razorpay', error: e, stackTrace: stackTrace);
+      dev.log(
+        'Error completing order after Razorpay success: $e',
+        name: 'Razorpay',
+        error: e,
+        stackTrace: stackTrace,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -410,7 +449,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     }
 
     final cartNotifier = ref.read(cartProvider.notifier);
-    final giftWrapConfig = ref.read(giftWrapConfigProvider).valueOrNull ?? const GiftWrapConfig(enabled: true, charge: 49.0);
+    final giftWrapConfig =
+        ref.read(giftWrapConfigProvider).valueOrNull ??
+        const GiftWrapConfig(enabled: true, charge: 49.0);
     final isGiftWrapped = ref.read(isGiftWrappedProvider);
 
     double giftWrappingCost = giftWrapConfig.charge;
@@ -426,13 +467,25 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       giftWrappingCost = customGiftWrapSum;
     }
 
-    final giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled) ? giftWrappingCost : 0.0;
+    final giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled)
+        ? giftWrappingCost
+        : 0.0;
     final appliedCoupon = ref.read(appliedCouponProvider);
-    final discount = ref.read(appliedCouponProvider.notifier).calculateDiscount(cartNotifier.subtotal);
-    final rawTotalPayable = (cartNotifier.subtotal - discount + cartNotifier.shippingFee + cartNotifier.exclusiveTaxAmount + giftWrapCharge);
+    final discount = ref
+        .read(appliedCouponProvider.notifier)
+        .calculateDiscount(cartNotifier.subtotal);
+    final rawTotalPayable =
+        (cartNotifier.subtotal -
+        discount +
+        cartNotifier.shippingFee +
+        cartNotifier.taxAmount +
+        giftWrapCharge);
     final totalAmount = (rawTotalPayable * 100.0).roundToDouble() / 100.0;
 
-    dev.log('Initiating Razorpay checkout: itemsCount=${cart.length}, subtotal=₹${cartNotifier.subtotal}, discount=₹$discount, shipping=₹${cartNotifier.shippingFee}, tax=₹${cartNotifier.taxAmount}, giftWrap=₹$giftWrapCharge => totalAmount=₹$totalAmount', name: 'Razorpay');
+    dev.log(
+      'Initiating Razorpay checkout: itemsCount=${cart.length}, subtotal=₹${cartNotifier.subtotal}, discount=₹$discount, shipping=₹${cartNotifier.shippingFee}, tax=₹${cartNotifier.taxAmount}, giftWrap=₹$giftWrapCharge => totalAmount=₹$totalAmount',
+      name: 'Razorpay',
+    );
 
     setState(() {
       _isPlacingOrder = true;
@@ -443,7 +496,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final amtInPaise = (totalAmount * 100).round();
       final currency = ref.read(currencyProvider).code;
 
-      dev.log('Requesting Razorpay order creation from backend: amount=₹$totalAmount ($amtInPaise paise), currency=$currency, couponCode=${appliedCoupon?.code}, giftWrap=$isGiftWrapped', name: 'Razorpay');
+      dev.log(
+        'Requesting Razorpay order creation from backend: amount=₹$totalAmount ($amtInPaise paise), currency=$currency, couponCode=${appliedCoupon?.code}, giftWrap=$isGiftWrapped',
+        name: 'Razorpay',
+      );
       final orderData = await ref
           .read(paymentRepositoryProvider)
           .createRazorpayOrder(
@@ -458,7 +514,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final amount = orderData['amount'] as int? ?? amtInPaise;
       final keyId = (orderData['keyId']?.toString() ?? '').trim();
 
-      dev.log('Backend order creation response: razorpayOrderId=$razorpayOrderId, keyId=$keyId, amount=$amount paise', name: 'Razorpay');
+      dev.log(
+        'Backend order creation response: razorpayOrderId=$razorpayOrderId, keyId=$keyId, amount=$amount paise',
+        name: 'Razorpay',
+      );
 
       final bool hasKey =
           keyId.isNotEmpty &&
@@ -498,12 +557,20 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           },
         };
         try {
-          dev.log('Opening Razorpay SDK with options: $options', name: 'Razorpay');
+          dev.log(
+            'Opening Razorpay SDK with options: $options',
+            name: 'Razorpay',
+          );
           _startRazorpayTimeout();
           _razorpay.open(options);
         } catch (sdkErr, stackTrace) {
           _cancelRazorpayTimeout();
-          dev.log('Error launching Razorpay SDK window: $sdkErr', name: 'Razorpay', error: sdkErr, stackTrace: stackTrace);
+          dev.log(
+            'Error launching Razorpay SDK window: $sdkErr',
+            name: 'Razorpay',
+            error: sdkErr,
+            stackTrace: stackTrace,
+          );
           debugPrint('Razorpay SDK opening error: $sdkErr');
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -517,18 +584,28 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           }
         }
       } else {
-        dev.log('Razorpay Key ID missing or invalid ($keyId)', name: 'Razorpay');
+        dev.log(
+          'Razorpay Key ID missing or invalid ($keyId)',
+          name: 'Razorpay',
+        );
         throw Exception('Razorpay Key ID is not configured on server.');
       }
     } catch (e, stackTrace) {
-      dev.log('Razorpay payment initialization failed: $e', name: 'Razorpay', error: e, stackTrace: stackTrace);
+      dev.log(
+        'Razorpay payment initialization failed: $e',
+        name: 'Razorpay',
+        error: e,
+        stackTrace: stackTrace,
+      );
       _cancelRazorpayTimeout();
       if (mounted) {
         setState(() => _isPlacingOrder = false);
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Could not start payment: ${e.toString().replaceAll('Exception: ', '')}. Please try again.'),
+            content: Text(
+              'Could not start payment: ${e.toString().replaceAll('Exception: ', '')}. Please try again.',
+            ),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -1041,7 +1118,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final cart = ref.watch(cartProvider);
     final cartNotifier = ref.read(cartProvider.notifier);
     final currency = ref.watch(currencyProvider);
-    final giftWrapConfig = ref.watch(giftWrapConfigProvider).valueOrNull ?? const GiftWrapConfig(enabled: true, charge: 49.0);
+    final giftWrapConfig =
+        ref.watch(giftWrapConfigProvider).valueOrNull ??
+        const GiftWrapConfig(enabled: true, charge: 49.0);
     final isGiftWrapped = ref.watch(isGiftWrappedProvider);
 
     double giftWrappingCost = giftWrapConfig.charge;
@@ -1057,10 +1136,20 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       giftWrappingCost = customGiftWrapSum;
     }
 
-    final double giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled) ? giftWrappingCost : 0.0;
+    final double giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled)
+        ? giftWrappingCost
+        : 0.0;
     final appliedCoupon = ref.watch(appliedCouponProvider);
-    final couponDiscount = ref.read(appliedCouponProvider.notifier).calculateDiscount(cartNotifier.subtotal);
-    final totalPayable = (cartNotifier.subtotal - couponDiscount + cartNotifier.shippingFee + cartNotifier.exclusiveTaxAmount + giftWrapCharge).clamp(0.0, double.infinity);
+    final couponDiscount = ref
+        .read(appliedCouponProvider.notifier)
+        .calculateDiscount(cartNotifier.subtotal);
+    final totalPayable =
+        (cartNotifier.subtotal -
+                couponDiscount +
+                cartNotifier.shippingFee +
+                cartNotifier.taxAmount +
+                giftWrapCharge)
+            .clamp(0.0, double.infinity);
     final countriesAsync = ref.watch(apiCountriesProvider);
     final apiList = countriesAsync.value
         ?.map((c) => c['name']?.toString() ?? '')
@@ -1075,7 +1164,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       for (final c in countriesAsync.value!) {
         final code = c['code']?.toString().toUpperCase();
         final name = c['name']?.toString();
-        if (code != null && code.isNotEmpty && name != null && name.isNotEmpty) {
+        if (code != null &&
+            code.isNotEmpty &&
+            name != null &&
+            name.isNotEmpty) {
           apiIsoMap[code] = name;
         }
       }
@@ -1142,40 +1234,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 letterSpacing: 1.5,
               ),
             ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: const Color(0xFF059669).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.lock_rounded,
-                    size: 12,
-                    color: Color(0xFF059669),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'SSL ENCRYPTED',
-                    style: TextStyle(
-                      fontSize: responsive.fontSize10,
-                      color: const Color(0xFF047857),
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
         leading: IconButton(
-          icon: Icon(
-            Icons.adaptive.arrow_back,
-            size: responsive.iconSize(20),
-          ),
+          icon: Icon(Icons.adaptive.arrow_back, size: responsive.iconSize(20)),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -1447,7 +1509,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                   Container(
                                     padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
-                                      color: Colors.amber.withValues(alpha: 0.15),
+                                      color: Colors.amber.withValues(
+                                        alpha: 0.15,
+                                      ),
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(
@@ -1459,7 +1523,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                   const SizedBox(width: 14),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           'LUXURY GIFT WRAPPING',
@@ -1475,7 +1540,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                           'Includes luxury box & satin ribbon (${currency.formatPrice(giftWrapConfig.charge)})',
                                           style: TextStyle(
                                             fontSize: responsive.fontSize10,
-                                            color: colorScheme.onSurface.withValues(alpha: 0.5),
+                                            color: colorScheme.onSurface
+                                                .withValues(alpha: 0.5),
                                           ),
                                         ),
                                       ],
@@ -1486,7 +1552,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                     activeColor: AppTheme.primaryColor,
                                     onChanged: (val) {
                                       HapticFeedback.lightImpact();
-                                      ref.read(isGiftWrappedProvider.notifier).toggle(val);
+                                      ref
+                                          .read(isGiftWrappedProvider.notifier)
+                                          .toggle(val);
                                     },
                                   ),
                                 ],
@@ -1721,33 +1789,40 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                 _priceRow(
                                   responsive,
                                   colorScheme,
-                                  item['name'] as String,
+                                  item['taxType'] == 'INCLUSIVE'
+                                      ? '${item['name']} (Incl.)'
+                                      : item['name'] as String,
                                   currency.formatPrice(
                                     item['taxAmount'] as double,
                                   ),
                                 ),
                               ],
-                            ] else if (cartNotifier.taxBreakdown.isNotEmpty) ...[
+                            ] else if (cartNotifier
+                                .taxBreakdown
+                                .isNotEmpty) ...[
                               _priceRow(
                                 responsive,
                                 colorScheme,
-                                cartNotifier.taxBreakdown.first['name'] as String,
+                                cartNotifier.taxBreakdown.first['taxType'] == 'INCLUSIVE'
+                                    ? '${cartNotifier.taxBreakdown.first['name']} (Incl.)'
+                                    : cartNotifier.taxBreakdown.first['name'] as String,
                                 currency.formatPrice(
-                                  cartNotifier.taxBreakdown.first['taxAmount'] as double,
+                                  cartNotifier.taxBreakdown.first['taxAmount']
+                                      as double,
                                 ),
                               ),
                             ] else if (cartNotifier.taxAmount > 0) ...[
                               _priceRow(
                                 responsive,
                                 colorScheme,
-                                cartNotifier.taxRateLabel,
+                                cartNotifier.hasInclusiveTax ? 'Taxes (Incl.)' : 'Taxes',
                                 currency.formatPrice(cartNotifier.taxAmount),
                               ),
                             ] else ...[
                               _priceRow(
                                 responsive,
                                 colorScheme,
-                                'Tax',
+                                'Taxes',
                                 currency.formatPrice(cartNotifier.taxAmount),
                               ),
                             ],
@@ -2092,12 +2167,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       _zipController.text = addr.pincode;
                       _phoneController.text = addr.phone;
                       if (addr.country.isNotEmpty) {
-                        final countriesData = ref.read(apiCountriesProvider).value;
+                        final countriesData = ref
+                            .read(apiCountriesProvider)
+                            .value;
                         final apiList = countriesData
                             ?.map((c) => c['name']?.toString() ?? '')
                             .where((name) => name.isNotEmpty)
                             .toList();
-                        final countriesList = (apiList != null && apiList.isNotEmpty)
+                        final countriesList =
+                            (apiList != null && apiList.isNotEmpty)
                             ? apiList
                             : _kDefaultCountries;
                         final apiIsoMap = <String, String>{};
@@ -2105,7 +2183,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           for (final c in countriesData) {
                             final code = c['code']?.toString().toUpperCase();
                             final name = c['name']?.toString();
-                            if (code != null && code.isNotEmpty && name != null && name.isNotEmpty) {
+                            if (code != null &&
+                                code.isNotEmpty &&
+                                name != null &&
+                                name.isNotEmpty) {
                               apiIsoMap[code] = name;
                             }
                           }

@@ -260,7 +260,7 @@
   "@shipping": {
     "description": "Shipping label"
   },
-  "tax": "Tax",
+  "tax": "Taxes",
   "@tax": {
     "description": "Tax label"
   },

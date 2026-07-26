@@ -8,7 +8,7 @@ import 'package:hopscotch/models/category_model.dart';
 class CategoryRepository {
   static List<CategoryModel>? _cachedCategories;
   static DateTime? _cacheTime;
-  static const Duration _cacheTtl = Duration(minutes: 10);
+  static const Duration _cacheTtl = Duration.zero;
   static Future<List<CategoryModel>>? _inflight;
 
   static bool get _isCacheValid =>

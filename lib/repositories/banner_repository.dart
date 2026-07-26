@@ -8,7 +8,7 @@ import 'package:hopscotch/models/banner_model.dart';
 class BannerRepository {
   static List<BannerModel>? _cachedBanners;
   static DateTime? _cacheTime;
-  static const Duration _cacheTtl = Duration(minutes: 10);
+  static const Duration _cacheTtl = Duration.zero;
   static Future<List<BannerModel>>? _inflight;
 
   static bool get _isCacheValid =>
