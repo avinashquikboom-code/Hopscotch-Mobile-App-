@@ -262,24 +262,52 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     super.dispose();
   }
 
+  double _calculateFinalTotalPayable() {
+    final cart = ref.read(cartProvider);
+    final cartNotifier = ref.read(cartProvider.notifier);
+    final giftWrapConfig = ref.read(giftWrapConfigProvider).valueOrNull ?? const GiftWrapConfig(enabled: true, charge: 49.0);
+    final isGiftWrapped = ref.read(isGiftWrappedProvider);
+
+    double giftWrappingCost = giftWrapConfig.charge;
+    double customGiftWrapSum = 0.0;
+    bool hasCustomGiftWrap = false;
+    for (final item in cart) {
+      if (item.product.isGiftWrapAvailable && item.product.giftWrapCharge > 0) {
+        customGiftWrapSum += item.product.giftWrapCharge;
+        hasCustomGiftWrap = true;
+      }
+    }
+    if (hasCustomGiftWrap && customGiftWrapSum > 0) {
+      giftWrappingCost = customGiftWrapSum;
+    }
+
+    final giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled) ? giftWrappingCost : 0.0;
+    final appliedCoupon = ref.read(appliedCouponProvider);
+    final discount = ref.read(appliedCouponProvider.notifier).calculateDiscount(cartNotifier.subtotal);
+    final rawTotalPayable = (cartNotifier.subtotal - discount + cartNotifier.shippingFee + cartNotifier.taxAmount + giftWrapCharge).clamp(0.0, double.infinity);
+    return (rawTotalPayable * 100.0).roundToDouble() / 100.0;
+  }
+
   // ── Razorpay handlers ───────────────────────────────────────────────────
   void _handleRazorpaySuccess(PaymentSuccessResponse response) async {
     dev.log(
-      'EVENT_PAYMENT_SUCCESS received: paymentId=${response.paymentId}, orderId=${response.orderId}, signature=${response.signature}',
+      'Razorpay payment success event received: paymentId=${response.paymentId}, orderId=${response.orderId}, signature=${response.signature}',
       name: 'Razorpay',
     );
     _cancelRazorpayTimeout();
-    setState(() => _paymentProcessingStep = 'VERIFYING PAYMENT SIGNATURE...');
+
     final cart = ref.read(cartProvider);
     final cartNotifier = ref.read(cartProvider.notifier);
     final address =
         '${_firstNameController.text} ${_lastNameController.text}, '
         '${_addressController.text}, ${_cityController.text}, '
         '$_selectedCountry - ${_zipController.text}';
+
     try {
-      if (response.paymentId != null &&
-          response.orderId != null &&
+      if (response.orderId != null &&
+          response.paymentId != null &&
           response.signature != null) {
+        setState(() => _paymentProcessingStep = 'VERIFYING PAYMENT SIGNATURE...');
         dev.log('Verifying Razorpay payment signature via backend API', name: 'Razorpay');
         await ref
             .read(paymentRepositoryProvider)
@@ -293,6 +321,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       setState(() => _paymentProcessingStep = 'PLACING ORDER...');
       dev.log('Placing order on backend with Razorpay payment method', name: 'Razorpay');
       final isGiftWrapped = ref.read(isGiftWrappedProvider);
+      final finalTotal = _calculateFinalTotalPayable();
       final order = await ref
           .read(orderProvider.notifier)
           .placeOrder(
@@ -300,7 +329,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             subtotal: cartNotifier.subtotal,
             shippingFee: cartNotifier.shippingFee,
             taxAmount: cartNotifier.taxAmount,
-            totalAmount: cartNotifier.totalAmount,
+            totalAmount: finalTotal,
             address: address,
             addressId: (int.tryParse(_selectedAddressId ?? '') != null)
                 ? _selectedAddressId
@@ -548,7 +577,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             subtotal: cartNotifier.subtotal,
             shippingFee: cartNotifier.shippingFee,
             taxAmount: cartNotifier.taxAmount,
-            totalAmount: cartNotifier.totalAmount,
+            totalAmount: _calculateFinalTotalPayable(),
             address: address,
             addressId: (int.tryParse(_selectedAddressId ?? '') != null)
                 ? _selectedAddressId
