@@ -378,7 +378,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                                           HapticFeedback.lightImpact();
                                           safeNavigate(
                                             context,
-                                            '/products?categoryId=${selectedCategory.id}&subcategory=${sub.name}&categoryName=${sub.name}',
+                                            '/products?categoryId=${sub.id}&subCategoryId=${sub.id}&subcategory=${Uri.encodeComponent(sub.name)}&categoryName=${Uri.encodeComponent(sub.name)}',
                                           );
                                         },
                                         child: Container(
@@ -479,7 +479,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                                           HapticFeedback.lightImpact();
                                           safeNavigate(
                                             context,
-                                            '/products?categoryId=${selectedCategory.id}&subcategory=${sub.name}&categoryName=${sub.name}',
+                                            '/products?categoryId=${sub.id}&subCategoryId=${sub.id}&subcategory=${Uri.encodeComponent(sub.name)}&categoryName=${Uri.encodeComponent(sub.name)}',
                                           );
                                         },
                                         child: Column(

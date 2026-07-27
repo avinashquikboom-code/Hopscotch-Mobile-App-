@@ -270,6 +270,7 @@ class AppPages {
         path: AppRoutes.products,
         pageBuilder: (context, state) {
           final categoryId = state.uri.queryParameters['categoryId'];
+          final subCategoryId = state.uri.queryParameters['subCategoryId'];
           final subcategory = state.uri.queryParameters['subcategory'];
           final filter = state.uri.queryParameters['filter'];
           final categoryName = state.uri.queryParameters['categoryName'] ?? 'Elite Clothing';
@@ -278,6 +279,7 @@ class AppPages {
             key: _pageKey(state),
             child: ProductListingScreen(
               categoryId: categoryId,
+              subCategoryId: subCategoryId,
               subcategory: subcategory,
               filter: filter,
               categoryName: categoryName,

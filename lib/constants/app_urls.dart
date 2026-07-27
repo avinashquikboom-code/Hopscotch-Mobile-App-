@@ -1,6 +1,5 @@
 class AppUrls {
-  // Base API URLs
-  //static const String mobileBaseUrl = 'http://192.168.1.100:5001';
+  // static const String mobileBaseUrl = 'http://192.168.1.4:5001';
   static const String mobileBaseUrl = 'https://api.fciseller.com';
 
   static String resolveUrl(String? url) {

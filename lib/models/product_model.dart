@@ -170,6 +170,9 @@ class ProductModel {
   final String imageUrl;
   final List<String> additionalImages;
   final String categoryId;
+  final String? parentCategoryId;
+  final String? subCategoryId;
+  final String? subCategoryName;
   final String subcategory;
   final double rating;
   final int reviewCount;
@@ -201,6 +204,9 @@ class ProductModel {
     required this.imageUrl,
     this.additionalImages = const [],
     required this.categoryId,
+    this.parentCategoryId,
+    this.subCategoryId,
+    this.subCategoryName,
     this.subcategory = 'Collections',
     required this.rating,
     required this.reviewCount,
@@ -225,6 +231,32 @@ class ProductModel {
     final categoryObj = json['category'] is Map<String, dynamic>
         ? json['category'] as Map<String, dynamic>
         : null;
+    final categoryParentObj = (categoryObj != null && categoryObj['parent'] is Map<String, dynamic>)
+        ? categoryObj['parent'] as Map<String, dynamic>
+        : null;
+
+    final parentCategoryId = json['parentCategoryId'] != null
+        ? _asString(json['parentCategoryId'])
+        : (categoryParentObj != null
+            ? _asString(categoryParentObj['id'])
+            : (categoryObj != null && categoryObj['parentId'] == null
+                ? _asString(categoryObj['id'])
+                : null));
+
+    final subCategoryId = json['subCategoryId'] != null
+        ? _asString(json['subCategoryId'])
+        : (categoryObj != null && categoryObj['parentId'] != null
+            ? _asString(categoryObj['id'])
+            : null);
+
+    final subCategoryName = json['subCategoryName'] != null
+        ? _asString(json['subCategoryName'])
+        : (json['subCategory'] != null
+            ? _asString(json['subCategory'])
+            : (categoryObj != null && categoryObj['parentId'] != null
+                ? _asString(categoryObj['name'])
+                : null));
+
     final effectiveTax = json['effectiveTaxRule'] ??
         json['taxRule'] ??
         json['tax_rule'] ??
@@ -333,7 +365,10 @@ class ProductModel {
         return list;
       }(),
       categoryId: _asString(json['categoryId'] ?? json['category_id'] ?? json['category']),
-      subcategory: _asString(json['subcategory'], 'Collections'),
+      parentCategoryId: parentCategoryId,
+      subCategoryId: subCategoryId,
+      subCategoryName: subCategoryName,
+      subcategory: subCategoryName ?? _asString(json['subcategory'], 'Collections'),
       rating: _asDouble(json['rating']),
       reviewCount: _asInt(json['reviewCount'] ?? json['review_count']),
       reviews: ProductReviewModel.listFromJson(json['reviews']),
@@ -399,6 +434,9 @@ class ProductModel {
       'imageUrl': imageUrl,
       'additionalImages': additionalImages,
       'categoryId': categoryId,
+      'parentCategoryId': parentCategoryId,
+      'subCategoryId': subCategoryId,
+      'subCategoryName': subCategoryName,
       'subcategory': subcategory,
       'rating': rating,
       'reviewCount': reviewCount,

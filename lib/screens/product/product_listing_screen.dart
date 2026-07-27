@@ -11,6 +11,7 @@ import 'package:hopscotch/utils/navigation_utils.dart';
 
 class ProductListingScreen extends ConsumerStatefulWidget {
   final String? categoryId;
+  final String? subCategoryId;
   final String? subcategory;
   final String? filter;
   final String categoryName;
@@ -18,6 +19,7 @@ class ProductListingScreen extends ConsumerStatefulWidget {
   const ProductListingScreen({
     super.key,
     this.categoryId,
+    this.subCategoryId,
     this.subcategory,
     this.filter,
     required this.categoryName,
@@ -81,33 +83,37 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
   List<ProductModel> _applyFiltersAndSort(List<ProductModel> allProducts) {
     List<ProductModel> result = List.from(allProducts);
 
-    // Filter by category (supports ID, name, or subcategory fallback)
-    if (widget.categoryId != null && widget.categoryId!.isNotEmpty) {
-      final catIdLower = widget.categoryId!.toLowerCase();
-      final catNameLower = widget.categoryName.toLowerCase();
+    final subCatId = widget.subCategoryId;
+    final catId = widget.categoryId;
+    final subName = widget.subcategory?.trim().toLowerCase();
 
-      final categoryMatches = result.where((p) =>
-        p.categoryId == widget.categoryId ||
-        p.categoryId.toLowerCase() == catIdLower ||
+    // 1. If explicit subCategoryId is provided, filter strictly by subcategory ID
+    if (subCatId != null && subCatId.isNotEmpty) {
+      final targetSubId = subCatId.toLowerCase();
+      result = result.where((p) =>
+        (p.subCategoryId != null && p.subCategoryId!.toLowerCase() == targetSubId) ||
+        p.categoryId.toLowerCase() == targetSubId
+      ).toList();
+    }
+    // 2. Else if categoryId is provided (top-level category view)
+    else if (catId != null && catId.isNotEmpty) {
+      final targetCatId = catId.toLowerCase();
+      final catNameLower = widget.categoryName.trim().toLowerCase();
+
+      result = result.where((p) =>
+        p.categoryId.toLowerCase() == targetCatId ||
+        (p.parentCategoryId != null && p.parentCategoryId!.toLowerCase() == targetCatId) ||
         p.subcategory.toLowerCase() == catNameLower
       ).toList();
-
-      if (categoryMatches.isNotEmpty) {
-        result = categoryMatches;
-      }
     }
 
-    // Filter by subcategory
-    if (widget.subcategory != null && widget.subcategory!.isNotEmpty) {
-      final subLower = widget.subcategory!.toLowerCase();
+    // 3. Additional strict subcategory name filter if provided without subCategoryId
+    if ((subCatId == null || subCatId.isEmpty) && subName != null && subName.isNotEmpty) {
       final subMatches = result.where((p) =>
-        p.subcategory.toLowerCase() == subLower ||
-        p.title.toLowerCase().contains(subLower)
+        p.subcategory.toLowerCase() == subName ||
+        (p.subCategoryName != null && p.subCategoryName!.toLowerCase() == subName)
       ).toList();
-
-      if (subMatches.isNotEmpty) {
-        result = subMatches;
-      }
+      result = subMatches;
     }
 
     // Filter by standard filters (trending / new)

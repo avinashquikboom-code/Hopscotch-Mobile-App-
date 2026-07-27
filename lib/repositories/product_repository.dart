@@ -187,6 +187,12 @@ ProductModel mapBackendToMobileProduct(Map<String, dynamic> raw) {
           (categoryObj != null ? categoryObj['hsnCode'] : null))
       ?.toString();
 
+  final categoryParentObj = categoryObj != null && categoryObj['parent'] is Map ? categoryObj['parent'] as Map : null;
+  final parentCategoryId = raw['parentCategoryId']?.toString() ?? (categoryParentObj != null ? categoryParentObj['id']?.toString() : null) ?? (categoryObj != null && categoryObj['parentId'] == null ? categoryObj['id']?.toString() : null) ?? categoryId;
+  final subCategoryId = raw['subCategoryId']?.toString() ?? (categoryObj != null && categoryObj['parentId'] != null ? categoryObj['id']?.toString() : null);
+  final subCategoryName = raw['subCategoryName']?.toString() ?? raw['subCategory']?.toString() ?? (categoryObj != null && categoryObj['parentId'] != null ? categoryObj['name']?.toString() : null);
+  final mainCategoryName = raw['categoryName']?.toString() ?? (categoryParentObj != null ? categoryParentObj['name']?.toString() : null) ?? categoryName;
+
   return ProductModel(
     id: id,
     title: title,
@@ -197,7 +203,10 @@ ProductModel mapBackendToMobileProduct(Map<String, dynamic> raw) {
     imageUrl: imageUrl,
     additionalImages: additionalImages,
     categoryId: categoryId,
-    subcategory: categoryName,
+    parentCategoryId: parentCategoryId,
+    subCategoryId: subCategoryId,
+    subCategoryName: subCategoryName,
+    subcategory: subCategoryName ?? mainCategoryName,
     rating: rating,
     reviewCount: reviewCount,
     reviews: [],
@@ -216,146 +225,103 @@ ProductModel mapBackendToMobileProduct(Map<String, dynamic> raw) {
 }
 
 class ProductRepository {
-  // ── In-memory cache to prevent duplicate API calls (rate-limit fix) ──────
-  // All filter methods (trending, newArrivals, featured) share ONE fetch.
   static List<ProductModel>? _cachedProducts;
-  static DateTime? _cacheTime;
-  static const Duration _cacheTtl = Duration.zero;
-  // In-flight deduplication: if a fetch is already running, await it instead
-  // of firing a second identical HTTP request.
-  static Future<List<ProductModel>>? _inflight;
-
-  static bool get _isCacheValid =>
-      _cachedProducts != null &&
-      _cacheTime != null &&
-      DateTime.now().difference(_cacheTime!) < _cacheTtl;
-
-  /// Call this to force a fresh fetch (e.g. on pull-to-refresh).
-  static void clearCache() {
-    _cachedProducts = null;
-    _cacheTime = null;
-    _inflight = null;
-  }
+  static DateTime? _lastFetchTime;
+  static const Duration _cacheTtl = Duration(minutes: 2);
 
   final ApiService _apiService;
 
   ProductRepository(this._apiService);
 
+  static bool get _isCacheValid =>
+      _cachedProducts != null &&
+      _lastFetchTime != null &&
+      DateTime.now().difference(_lastFetchTime!) < _cacheTtl;
+
+  static void clearCache() {
+    _cachedProducts = null;
+    _lastFetchTime = null;
+  }
+
   Future<List<ProductModel>> getProducts({bool forceRefresh = false}) async {
-    // 1. Return from cache if still valid and no forced refresh.
     if (!forceRefresh && _isCacheValid) {
-      DevLogger.logError('ProductRepository: returning cached products (${_cachedProducts!.length})', context: 'ProductRepository');
+      DevLogger.log('📦 Using cached products (${_cachedProducts!.length} items)');
       return _cachedProducts!;
     }
 
-    // 2. Deduplicate: if a fetch is already in-flight, await it.
-    if (_inflight != null) {
-      DevLogger.logError('ProductRepository: awaiting in-flight fetch', context: 'ProductRepository');
-      return _inflight!;
-    }
-
-    // 3. Start a fresh fetch and store the Future for deduplication.
-    _inflight = _fetchFromApi();
-    try {
-      final products = await _inflight!;
-      _cachedProducts = products;
-      _cacheTime = DateTime.now();
-      return products;
-    } finally {
-      _inflight = null;
-    }
-  }
-
-  Future<List<ProductModel>> _fetchFromApi() async {
     try {
       final response = await _apiService.get(AppUrls.products);
+
       if (response.statusCode == 200) {
         final data = response.data;
-        List? rawList;
-        if (data is Map) {
-          final dataField = data['data'];
-          if (dataField is Map) {
-            rawList = dataField['products'] as List?;
-          } else if (dataField is List) {
-            rawList = dataField;
+        List<dynamic> list = [];
+
+        if (data is Map<String, dynamic>) {
+          if (data['data'] != null && data['data']['products'] is List) {
+            list = data['data']['products'] as List;
+          } else if (data['products'] is List) {
+            list = data['products'] as List;
+          } else if (data['data'] is List) {
+            list = data['data'] as List;
           }
+        } else if (data is List) {
+          list = data;
         }
-        if (rawList != null) {
-          return rawList
-              .map((e) => mapBackendToMobileProduct(
-                    Map<String, dynamic>.from(e),
-                  ))
-              .toList();
+
+        final products = list
+            .map((item) => mapBackendToMobileProduct(item as Map<String, dynamic>))
+            .toList();
+
+        if (products.isNotEmpty) {
+          _cachedProducts = products;
+          _lastFetchTime = DateTime.now();
+          DevLogger.log('✅ Updated product cache (${products.length} items)');
+          return products;
         }
       }
     } catch (e) {
-      DevLogger.logError('Error fetching products: $e',
-          context: 'ProductRepository');
-      // Return stale cache on error rather than crashing the UI.
-      if (_cachedProducts != null) {
-        DevLogger.logError('ProductRepository: returning stale cache after error',
-            context: 'ProductRepository');
-        return _cachedProducts!;
-      }
-      throw Exception('Failed to fetch products');
+      DevLogger.logError('❌ Failed to fetch products from backend API: $e', context: 'ProductRepository');
     }
+
+    if (_cachedProducts != null) {
+      return _cachedProducts!;
+    }
+
     return [];
   }
 
   Future<List<ProductModel>> getTrendingProducts() async {
     final products = await getProducts();
-    final filtered = products.where((element) => element.isTrending).toList();
-    if (filtered.length < 3 && products.isNotEmpty) {
-      return products;
-    }
-    return filtered;
+    return products.where((p) => p.isTrending).toList();
   }
 
   Future<List<ProductModel>> getNewArrivals() async {
     final products = await getProducts();
-    final filtered = products.where((element) => element.isNewArrival).toList();
-    if (filtered.length < 3 && products.isNotEmpty) {
-      return products;
-    }
-    return filtered;
+    return products.where((p) => p.isNewArrival).toList();
   }
 
   Future<List<ProductModel>> getFeaturedProducts() async {
     final products = await getProducts();
-    final filtered = products.where((element) => element.isFeatured).toList();
-    if (filtered.length < 3 && products.isNotEmpty) {
-      return products;
-    }
-    return filtered;
+    return products.where((p) => p.isFeatured).toList();
   }
 
   Future<List<ProductModel>> getProductsByCategory(String categoryIdOrName) async {
-
     final products = await getProducts();
     if (products.isEmpty) return [];
 
     final target = categoryIdOrName.trim().toLowerCase();
 
-    final filtered = products.where((p) {
+    return products.where((p) {
       final pCatId = p.categoryId.trim().toLowerCase();
-      final pSub = p.subcategory.trim().toLowerCase();
-      final pTitle = p.title.trim().toLowerCase();
-      final pDesc = p.description.trim().toLowerCase();
+      final pParentCatId = (p.parentCategoryId ?? '').trim().toLowerCase();
+      final pSubCatId = (p.subCategoryId ?? '').trim().toLowerCase();
+      final pSubName = p.subcategory.trim().toLowerCase();
 
       return pCatId == target ||
-             pSub == target ||
-             pSub.contains(target) ||
-             target.contains(pSub) ||
-             pTitle.contains(target) ||
-             pDesc.contains(target);
+             pParentCatId == target ||
+             pSubCatId == target ||
+             pSubName == target;
     }).toList();
-
-    if (filtered.isNotEmpty) {
-      return filtered;
-    }
-
-    // Fallback: Return products list so category tabs (Accessories, Footwear, etc.) are never empty!
-    return products;
   }
 
   Future<ProductModel?> getProductById(String id) async {
