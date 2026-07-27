@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,6 +16,10 @@ import 'package:hopscotch/models/product_model.dart';
 import 'package:hopscotch/widgets/share_earn_bottom_sheet.dart';
 import 'package:hopscotch/widgets/fullscreen_image_viewer.dart';
 import 'package:hopscotch/utils/navigation_utils.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:dio/dio.dart';
 
 import 'package:hopscotch/constants/app_urls.dart';
 
@@ -228,6 +233,151 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     );
   }
 
+  Future<void> _shareOnWhatsApp(ProductModel product) async {
+    HapticFeedback.mediumImpact();
+    final currency = ref.read(currencyProvider);
+    final price = currency.formatPrice(product.price);
+    final mrp = product.originalPrice > product.price
+        ? currency.formatPrice(product.originalPrice)
+        : null;
+    final link = 'https://fciseller.com/p/${product.id}';
+    final shareText = _buildShareText(product, price, mrp, link);
+
+    // Show a loading indicator
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(const SnackBar(
+      content: Row(
+        children: [
+          SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+          SizedBox(width: 12),
+          Text('Preparing share...'),
+        ],
+      ),
+      duration: Duration(seconds: 10),
+      behavior: SnackBarBehavior.floating,
+    ));
+
+    try {
+      // Download product image using Dio
+      final dio = Dio();
+      final tempDir = await getTemporaryDirectory();
+      final ext = product.imageUrl.contains('.png') ? 'png' : 'jpg';
+      final filePath = '${tempDir.path}/product_share.$ext';
+      await dio.download(product.imageUrl, filePath);
+      final file = File(filePath);
+
+      messenger.hideCurrentSnackBar();
+      if (!mounted) return;
+
+      // Share image + text via native share sheet
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text: shareText,
+          subject: product.title,
+        ),
+      );
+    } catch (_) {
+      // Fallback: text-only WhatsApp share
+      messenger.hideCurrentSnackBar();
+      final encoded = Uri.encodeComponent(shareText);
+      final nativeUrl = Uri.parse('whatsapp://send?text=$encoded');
+      final webUrl = Uri.parse('https://wa.me/?text=$encoded');
+      try {
+        if (await canLaunchUrl(nativeUrl)) {
+          await launchUrl(nativeUrl, mode: LaunchMode.externalApplication);
+        } else {
+          await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+        }
+      } catch (__) {
+        await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+      }
+    }
+  }
+
+  String _buildShareText(
+    ProductModel product,
+    String price,
+    String? mrp,
+    String link,
+  ) {
+    final buf = StringBuffer();
+
+    // Header
+    buf.writeln('🛍️ *${product.title}*');
+    buf.writeln();
+
+    // Category
+    if (product.subcategory.isNotEmpty) {
+      buf.writeln('📂 *Category:* ${product.subcategory}');
+    }
+
+    // Badges
+    final badges = <String>[];
+    if (product.isNewArrival) badges.add('🆕 New Arrival');
+    if (product.isTrending) badges.add('🔥 Trending');
+    if (product.isFeatured) badges.add('⭐ Featured');
+    if (badges.isNotEmpty) buf.writeln(badges.join('  '));
+    buf.writeln();
+
+    // Pricing
+    buf.writeln('💰 *Price:* $price');
+    if (mrp != null) {
+      buf.writeln('🏷️ *MRP:* ~$mrp~');
+    }
+    if (product.discountPercentage > 0) {
+      buf.writeln('🎉 *Discount:* ${product.discountPercentage.round()}% OFF');
+    }
+    buf.writeln();
+
+    // Sizes
+    if (product.sizes.isNotEmpty) {
+      buf.writeln('📏 *Sizes:* ${product.sizes.join(', ')}');
+    }
+
+    // Colors
+    if (product.colors.isNotEmpty) {
+      buf.writeln('🎨 *Colors:* ${product.colors.join(', ')}');
+    }
+
+    // Rating & Reviews
+    if (product.rating > 0) {
+      final stars = '⭐' * product.rating.round().clamp(1, 5);
+      buf.writeln('$stars *${product.rating.toStringAsFixed(1)}* (${product.reviewCount} reviews)');
+    }
+    buf.writeln();
+
+    // Description
+    if (product.description.isNotEmpty) {
+      final desc = product.description.length > 200
+          ? '${product.description.substring(0, 197)}...'
+          : product.description;
+      buf.writeln('📝 *About:*');
+      buf.writeln(desc);
+      buf.writeln();
+    }
+
+    // Shipping
+    if (product.shippingCharge == 0) {
+      buf.writeln('🚚 *Free Shipping*');
+    } else {
+      buf.writeln('🚚 *Shipping:* ₹${product.shippingCharge.toStringAsFixed(0)}');
+    }
+
+    // Gift wrap
+    if (product.isGiftWrapAvailable) {
+      buf.writeln('🎁 *Gift Wrap Available*');
+    }
+    buf.writeln();
+
+    // CTA
+    buf.writeln('👇 *Shop now:*');
+    buf.write(link);
+
+    return buf.toString();
+  }
+
   Widget _buildFloatingCircleButton({
     required IconData icon,
     required VoidCallback onTap,
@@ -376,6 +526,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                             children: [
                               PageView.builder(
                                 controller: _pageController,
+                                scrollDirection: Axis.vertical,
+                                physics: const BouncingScrollPhysics(),
                                 onPageChanged: (index) {
                                   setState(() {
                                     _activeImageIndex = index;
@@ -441,39 +593,78 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                     ),
                                   );
                                 },
-                              ),
-                              // Gallery dots
-                              if (imageList.length > 1)
-                                Positioned(
-                                  bottom: responsive.spacing(AppTheme.spaceXL),
-                                  left: 0,
-                                  right: 0,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: List.generate(
-                                      imageList.length,
-                                      (index) => Container(
-                                        margin: EdgeInsets.symmetric(
-                                          horizontal: responsive.spacing(4),
-                                        ),
-                                        width: _activeImageIndex == index
-                                            ? responsive.spacing(18)
-                                            : responsive.spacing(8),
-                                        height: responsive.spacing(8),
-                                        decoration: BoxDecoration(
-                                          color: _activeImageIndex == index
-                                              ? AppTheme.primaryColor
-                                              : Colors.white.withValues(
-                                                  alpha: 0.5,
-                                                ),
-                                          borderRadius: BorderRadius.circular(
-                                            4,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                               ),
+
+                               // Hopscotch Top Badges (% OFF & BESTSELLER)
+                               Positioned(
+                                 top: responsive.spacing(76),
+                                 left: responsive.spacing(16),
+                                 child: Column(
+                                   crossAxisAlignment: CrossAxisAlignment.start,
+                                   children: [
+                                     if (product.originalPrice > product.price && product.discountPercentage > 0)
+                                       Container(
+                                         margin: const EdgeInsets.only(bottom: 6),
+                                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                         decoration: BoxDecoration(
+                                           gradient: const LinearGradient(
+                                             colors: [Color(0xFFE91E63), Color(0xFFFF5252)],
+                                           ),
+                                           borderRadius: BorderRadius.circular(6),
+                                           boxShadow: const [
+                                             BoxShadow(
+                                               color: Colors.black26,
+                                               blurRadius: 4,
+                                               offset: Offset(0, 2),
+                                             ),
+                                           ],
+                                         ),
+                                         child: Text(
+                                           '${product.discountPercentage.round()}% OFF',
+                                           style: const TextStyle(
+                                             color: Colors.white,
+                                             fontSize: 11,
+                                             fontWeight: FontWeight.w900,
+                                             letterSpacing: 0.5,
+                                           ),
+                                         ),
+                                       ),
+                                     if (product.isTrending || product.isFeatured)
+                                       Container(
+                                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                         decoration: BoxDecoration(
+                                           gradient: const LinearGradient(
+                                             colors: [Color(0xFFFF9800), Color(0xFFFFB74D)],
+                                           ),
+                                           borderRadius: BorderRadius.circular(6),
+                                           boxShadow: const [
+                                             BoxShadow(
+                                               color: Colors.black26,
+                                               blurRadius: 4,
+                                               offset: Offset(0, 2),
+                                             ),
+                                           ],
+                                         ),
+                                         child: Row(
+                                           mainAxisSize: MainAxisSize.min,
+                                           children: [
+                                             const Icon(Remix.fire_fill, color: Colors.white, size: 12),
+                                             const SizedBox(width: 4),
+                                             Text(
+                                               product.isTrending ? 'TRENDING' : 'BESTSELLER',
+                                               style: const TextStyle(
+                                                 color: Colors.white,
+                                                 fontSize: 10,
+                                                 fontWeight: FontWeight.w800,
+                                                 letterSpacing: 0.5,
+                                               ),
+                                             ),
+                                           ],
+                                         ),
+                                       ),
+                                   ],
+                                 ),
+                               ),
 
                               // Floating Actions (Heart, Share, WhatsApp) Column on the right
                               Positioned(
@@ -514,13 +705,49 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                     _buildFloatingCircleButton(
                                       icon: Remix.whatsapp_line,
                                       color: const Color(0xFF25D366),
-                                      onTap: () {
-                                        _openShareEarnBottomSheet(product);
-                                      },
+                                      onTap: () => _shareOnWhatsApp(product),
                                     ),
                                   ],
                                 ),
                               ),
+
+                              // Hopscotch-style vertical scroll indicator (right edge)
+                              if (imageList.length > 1)
+                                Positioned(
+                                  right: 10,
+                                  top: 0,
+                                  bottom: 0,
+                                  child: Center(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: List.generate(imageList.length, (i) {
+                                        final isActive = i == _activeImageIndex;
+                                        return AnimatedContainer(
+                                          duration: const Duration(milliseconds: 280),
+                                          curve: Curves.easeInOut,
+                                          width: 3,
+                                          height: isActive ? 22 : 5,
+                                          margin: const EdgeInsets.symmetric(vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: isActive
+                                                ? AppTheme.primaryColor
+                                                : AppTheme.primaryColor.withValues(alpha: 0.3),
+                                            borderRadius: BorderRadius.circular(4),
+                                            boxShadow: isActive
+                                                ? [
+                                                    BoxShadow(
+                                                      color: AppTheme.primaryColor.withValues(alpha: 0.5),
+                                                      blurRadius: 6,
+                                                      spreadRadius: 1,
+                                                    )
+                                                  ]
+                                                : null,
+                                          ),
+                                        );
+                                      }),
+                                    ),
+                                  ),
+                                ),
                             ],
                           ),
                         ),

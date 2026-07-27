@@ -8,6 +8,8 @@ import 'package:hopscotch/widgets/product_card.dart';
 import 'package:hopscotch/widgets/skeleton_loaders.dart';
 import 'package:hopscotch/models/product_model.dart';
 import 'package:hopscotch/utils/navigation_utils.dart';
+import 'package:hopscotch/widgets/vertical_product_feed.dart';
+import 'package:remixicon/remixicon.dart';
 
 class ProductListingScreen extends ConsumerStatefulWidget {
   final String? categoryId;
@@ -42,6 +44,9 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
   // Filter state
   String? _selectedSize;
   String? _selectedColor;
+
+  // View mode: grid (false) or vertical feed (true)
+  bool _isVerticalFeed = false;
 
   @override
   void initState() {
@@ -403,6 +408,15 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
         ),
         actions: [
           IconButton(
+            tooltip: _isVerticalFeed ? 'Grid View' : 'Vertical Feed',
+            icon: Icon(
+              _isVerticalFeed ? Remix.grid_fill : Remix.layout_column_line,
+              size: responsive.iconSize(22),
+              color: _isVerticalFeed ? AppTheme.primaryColor : null,
+            ),
+            onPressed: () => setState(() => _isVerticalFeed = !_isVerticalFeed),
+          ),
+          IconButton(
             icon: Icon(Icons.tune_rounded, size: responsive.iconSize(24)),
             onPressed: _showFilterSortSheet,
           ),
@@ -490,36 +504,47 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                   ],
                 ),
               ),
+              // Show correct view based on mode
               Expanded(
-                child: GridView.builder(
-                  controller: _scrollController,
-                  padding: EdgeInsets.all(
-                    responsive.spacing(AppTheme.spaceXL),
-                  ).copyWith(bottom: 40),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: MediaQuery.of(context).size.width < 600
-                        ? 2
-                        : (MediaQuery.of(context).size.width < 900 ? 3 : 5),
-                    mainAxisSpacing: AppTheme.spaceL,
-                    crossAxisSpacing: AppTheme.spaceL,
-                    childAspectRatio: 0.58,
-                  ),
-                  itemCount: paginatedList.length + (_isLoadingMore ? 2 : 0),
-                  itemBuilder: (context, index) {
-                    if (index >= paginatedList.length) {
-                      return const ProductCardSkeleton();
-                    }
-                    final product = paginatedList[index];
-                    return ProductCard(
-                      product: product,
-                      heroTagPrefix: 'listing',
-                      onTap: () => safeNavigate(
-                        context,
-                        '/product/${product.id}?heroTagPrefix=listing',
+                child: _isVerticalFeed
+                    ? VerticalProductFeed(
+                        products: paginatedList,
+                        scrollController: _scrollController,
+                        loadingExtra: _isLoadingMore ? 2 : 0,
+                        onTap: (product) => safeNavigate(
+                          context,
+                          '/product/${product.id}?heroTagPrefix=listing',
+                        ),
+                      )
+                    : GridView.builder(
+                        controller: _scrollController,
+                        padding: EdgeInsets.all(
+                          responsive.spacing(AppTheme.spaceXL),
+                        ).copyWith(bottom: 40),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: MediaQuery.of(context).size.width < 600
+                              ? 2
+                              : (MediaQuery.of(context).size.width < 900 ? 3 : 5),
+                          mainAxisSpacing: AppTheme.spaceL,
+                          crossAxisSpacing: AppTheme.spaceL,
+                          childAspectRatio: 0.58,
+                        ),
+                        itemCount: paginatedList.length + (_isLoadingMore ? 2 : 0),
+                        itemBuilder: (context, index) {
+                          if (index >= paginatedList.length) {
+                            return const ProductCardSkeleton();
+                          }
+                          final product = paginatedList[index];
+                          return ProductCard(
+                            product: product,
+                            heroTagPrefix: 'listing',
+                            onTap: () => safeNavigate(
+                              context,
+                              '/product/${product.id}?heroTagPrefix=listing',
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
               ),
             ],
           );
