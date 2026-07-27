@@ -1,3 +1,5 @@
+import 'package:hopscotch/constants/app_urls.dart';
+
 class SubCategoryModel {
   final String id;
   final String name;
@@ -9,11 +11,13 @@ class SubCategoryModel {
     required this.imageUrl,
   });
 
-  factory SubCategoryModel.fromJson(Map<String, dynamic> json) {
+  factory SubCategoryModel.fromJson(Map<dynamic, dynamic> json) {
+    final map = Map<String, dynamic>.from(json);
+    final rawImg = (map['imageUrl'] ?? map['iconUrl'] ?? map['bannerUrl'] ?? map['image'] ?? '').toString();
     return SubCategoryModel(
-      id: (json['id'] ?? json['_id'] ?? '').toString(),
-      name: (json['name'] ?? json['title'] ?? '').toString(),
-      imageUrl: (json['imageUrl'] ?? json['iconUrl'] ?? json['bannerUrl'] ?? json['image'] ?? '').toString(),
+      id: (map['id'] ?? map['_id'] ?? '').toString(),
+      name: (map['name'] ?? map['title'] ?? '').toString(),
+      imageUrl: AppUrls.resolveUrl(rawImg),
     );
   }
 
@@ -45,17 +49,18 @@ class CategoryModel {
     this.isFeatured = false,
   });
 
-  factory CategoryModel.fromJson(Map<String, dynamic> json) {
+  factory CategoryModel.fromJson(Map<dynamic, dynamic> json) {
+    final map = Map<String, dynamic>.from(json);
     List<SubCategoryModel> subObjs = [];
     List<String> subNames = [];
 
-    final rawSubs = json['children'] ?? json['subcategories'];
+    final rawSubs = map['children'] ?? map['subcategories'];
     if (rawSubs is List) {
       for (final item in rawSubs) {
-        if (item is Map<String, dynamic>) {
-          subObjs.add(SubCategoryModel.fromJson(item));
-          final nameStr = item['name']?.toString() ?? '';
-          if (nameStr.isNotEmpty) subNames.add(nameStr);
+        if (item is Map) {
+          final subModel = SubCategoryModel.fromJson(item);
+          subObjs.add(subModel);
+          if (subModel.name.isNotEmpty) subNames.add(subModel.name);
         } else if (item != null) {
           final str = item.toString();
           if (str.isNotEmpty) {
@@ -66,16 +71,19 @@ class CategoryModel {
       }
     }
 
+    final rawImg = (map['iconUrl'] ?? map['bannerUrl'] ?? map['imageUrl'] ?? map['image'] ?? '').toString();
+    final resolvedImg = AppUrls.resolveUrl(rawImg);
+
     return CategoryModel(
-      id: (json['id'] ?? json['_id'] ?? '').toString(),
-      name: (json['name'] ?? json['title'] ?? '').toString(),
-      imageUrl: (json['imageUrl'] ?? json['iconUrl'] ?? json['bannerUrl'] ?? json['image'] ?? '').toString(),
-      icon: json['icon'] as String?,
+      id: (map['id'] ?? map['_id'] ?? '').toString(),
+      name: (map['name'] ?? map['title'] ?? '').toString(),
+      imageUrl: resolvedImg,
+      icon: map['icon']?.toString() ?? map['iconUrl']?.toString(),
       subcategories: subNames,
       subCategoryObjects: subObjs,
-      isFeatured: json['isFeatured'] == true ||
-          json['is_featured'] == true ||
-          '${json['isFeatured']}' == 'true',
+      isFeatured: map['isFeatured'] == true ||
+          map['is_featured'] == true ||
+          '${map['isFeatured']}' == 'true',
     );
   }
 
@@ -94,8 +102,8 @@ class CategoryModel {
   static List<CategoryModel> listFromJson(dynamic json) {
     if (json is List) {
       return json
-          .whereType<Map<String, dynamic>>()
-          .map(CategoryModel.fromJson)
+          .whereType<Map>()
+          .map((e) => CategoryModel.fromJson(e))
           .toList();
     }
     return [];
@@ -129,3 +137,4 @@ class CategoryModel {
   @override
   int get hashCode => id.hashCode;
 }
+

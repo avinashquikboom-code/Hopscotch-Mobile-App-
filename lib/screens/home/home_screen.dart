@@ -698,7 +698,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       // Category Tab Selected
       final selectedCategory = categories[_selectedTab - 1];
       final categoryProductsAsync = ref.watch(
-        categoryProductsProvider(selectedCategory.name.isNotEmpty ? selectedCategory.name : selectedCategory.id.toString()),
+        categoryProductsProvider(selectedCategory.id),
       );
 
       slivers.addAll([
@@ -791,7 +791,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: RefreshIndicator(
         edgeOffset: topPadding,
         onRefresh: () async {
+          CategoryRepository.clearCache();
+          ProductRepository.clearCache();
           ref.invalidate(allCategoriesProvider);
+          ref.invalidate(allProductsProvider);
           ref.invalidate(trendingProductsProvider);
           ref.invalidate(newArrivalsProvider);
           ref.invalidate(bannersProvider);

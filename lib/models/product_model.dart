@@ -228,20 +228,22 @@ class ProductModel {
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
-    final categoryObj = json['category'] is Map<String, dynamic>
-        ? json['category'] as Map<String, dynamic>
+    final categoryObj = json['category'] is Map
+        ? Map<String, dynamic>.from(json['category'] as Map)
         : null;
-    final categoryParentObj = (categoryObj != null && categoryObj['parent'] is Map<String, dynamic>)
-        ? categoryObj['parent'] as Map<String, dynamic>
+    final categoryParentObj = (categoryObj != null && categoryObj['parent'] is Map)
+        ? Map<String, dynamic>.from(categoryObj['parent'] as Map)
         : null;
 
     final parentCategoryId = json['parentCategoryId'] != null
         ? _asString(json['parentCategoryId'])
         : (categoryParentObj != null
             ? _asString(categoryParentObj['id'])
-            : (categoryObj != null && categoryObj['parentId'] == null
-                ? _asString(categoryObj['id'])
-                : null));
+            : (categoryObj != null && categoryObj['parentId'] != null
+                ? _asString(categoryObj['parentId'])
+                : (categoryObj != null && categoryObj['parentId'] == null
+                    ? _asString(categoryObj['id'])
+                    : null)));
 
     final subCategoryId = json['subCategoryId'] != null
         ? _asString(json['subCategoryId'])
@@ -314,13 +316,37 @@ class ProductModel {
           (effectiveTax is Map ? effectiveTax['hsnCode'] : null) ??
           (categoryObj != null ? categoryObj['hsnCode'] : null),
     );
+    final parsedVariants = ProductVariantModel.listFromJson(json['variants']);
+    double variantPrice = 0.0;
+    for (final v in parsedVariants) {
+      if (v.price > 0) {
+        variantPrice = v.price;
+        break;
+      }
+    }
+
+    final parsedPrice = _asDouble(
+      json['price'] ??
+          json['basePrice'] ??
+          json['base_price'] ??
+          (variantPrice > 0 ? variantPrice : null),
+      0.0,
+    );
+
+    final rawOrigPrice = _asDouble(
+      json['originalPrice'] ??
+          json['original_price'] ??
+          json['mrp'],
+      0.0,
+    );
+    final parsedOriginalPrice = rawOrigPrice > 0 ? rawOrigPrice : parsedPrice;
 
     return ProductModel(
       id: _asString(json['id'] ?? json['_id']),
       title: _asString(json['title'] ?? json['name']),
       description: _asString(json['description']),
-      price: _asDouble(json['price']),
-      originalPrice: _asDouble(json['originalPrice'] ?? json['original_price'] ?? json['price']),
+      price: parsedPrice,
+      originalPrice: parsedOriginalPrice,
       discountPercentage: _asDouble(json['discountPercentage'] ?? json['discount_percentage']),
       imageUrl: () {
         final direct = json['imageUrl'] ?? json['image_url'] ?? json['image'] ?? json['coverImage'] ?? json['thumbnail'];
@@ -408,7 +434,7 @@ class ProductModel {
         }
         return <String>[];
       }(),
-      variants: ProductVariantModel.listFromJson(json['variants']),
+      variants: parsedVariants,
       isAvailable: _asBool(json['isAvailable'] ?? json['is_available'], true),
       isTrending: _asBool(json['isTrending'] ?? json['is_trending']),
       isNewArrival: _asBool(json['isNewArrival'] ?? json['is_new_arrival']),

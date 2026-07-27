@@ -87,12 +87,17 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
     final catId = widget.categoryId;
     final subName = widget.subcategory?.trim().toLowerCase();
 
-    // 1. If explicit subCategoryId is provided, filter strictly by subcategory ID
+    // 1. If explicit subCategoryId is provided, filter by subcategory ID or name
     if (subCatId != null && subCatId.isNotEmpty) {
       final targetSubId = subCatId.toLowerCase();
+      final targetSubName = subName ?? '';
       result = result.where((p) =>
         (p.subCategoryId != null && p.subCategoryId!.toLowerCase() == targetSubId) ||
-        p.categoryId.toLowerCase() == targetSubId
+        p.categoryId.toLowerCase() == targetSubId ||
+        (targetSubName.isNotEmpty && (
+          p.subcategory.toLowerCase() == targetSubName ||
+          (p.subCategoryName != null && p.subCategoryName!.toLowerCase() == targetSubName)
+        ))
       ).toList();
     }
     // 2. Else if categoryId is provided (top-level category view)
@@ -103,6 +108,7 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
       result = result.where((p) =>
         p.categoryId.toLowerCase() == targetCatId ||
         (p.parentCategoryId != null && p.parentCategoryId!.toLowerCase() == targetCatId) ||
+        (p.subCategoryId != null && p.subCategoryId!.toLowerCase() == targetCatId) ||
         p.subcategory.toLowerCase() == catNameLower
       ).toList();
     }
@@ -117,10 +123,13 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
     }
 
     // Filter by standard filters (trending / new)
-    if (widget.filter == 'trending') {
-      result = result.where((p) => p.isTrending).toList();
-    } else if (widget.filter == 'new') {
-      result = result.where((p) => p.isNewArrival).toList();
+    final filterVal = widget.filter?.toLowerCase();
+    if (filterVal == 'trending' || filterVal == 'trending_products') {
+      final matches = result.where((p) => p.isTrending).toList();
+      result = matches.isNotEmpty ? matches : result.take(20).toList();
+    } else if (filterVal == 'new' || filterVal == 'new_arrivals' || filterVal == 'newarrivals') {
+      final matches = result.where((p) => p.isNewArrival).toList();
+      result = matches.isNotEmpty ? matches : result.take(20).toList();
     }
 
     // Size filter

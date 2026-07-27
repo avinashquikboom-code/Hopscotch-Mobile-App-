@@ -41,8 +41,15 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
           ),
         ),
       ),
-      body: categoriesAsync.when(
-        data: (categories) {
+      body: RefreshIndicator(
+        onRefresh: () async {
+          CategoryRepository.clearCache();
+          ProductRepository.clearCache();
+          ref.invalidate(allCategoriesProvider);
+          ref.invalidate(allProductsProvider);
+        },
+        child: categoriesAsync.when(
+          data: (categories) {
           if (categories.isEmpty) {
             return const Center(child: Text('No categories found.'));
           }
@@ -51,9 +58,30 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
           
           // Get products from backend API for fallback / direct product binding
           final allProducts = productsAsync.asData?.value ?? [];
-          final categoryProducts = allProducts.where(
-            (p) => p.categoryId == selectedCategory.id || p.categoryId.toLowerCase() == selectedCategory.id.toLowerCase()
-          ).toList();
+          final categoryProducts = allProducts.where((p) {
+            final targetId = selectedCategory.id.trim().toLowerCase();
+            final targetName = selectedCategory.name.trim().toLowerCase();
+            final pCatId = p.categoryId.trim().toLowerCase();
+            final pParentCatId = (p.parentCategoryId ?? '').trim().toLowerCase();
+            final pSubCatId = (p.subCategoryId ?? '').trim().toLowerCase();
+            final pSubName = p.subcategory.trim().toLowerCase();
+            final pSubCatName = (p.subCategoryName ?? '').trim().toLowerCase();
+
+            return pCatId == targetId ||
+                   pParentCatId == targetId ||
+                   pSubCatId == targetId ||
+                   pSubName == targetName ||
+                   pSubCatName == targetName;
+          }).toList();
+
+          // Sort category products so storefront New Arrival products appear first!
+          categoryProducts.sort((a, b) {
+            if (a.isNewArrival && !b.isNewArrival) return -1;
+            if (!a.isNewArrival && b.isNewArrival) return 1;
+            if (a.isTrending && !b.isTrending) return -1;
+            if (!a.isTrending && b.isTrending) return 1;
+            return 0;
+          });
 
           // Extract API subcategories strictly from backend
           final List<SubCategoryModel> liveSubcategories = [];
@@ -73,11 +101,17 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
           if (liveSubcategories.isEmpty) {
             final Set<String> addedSubs = {};
             for (final p in categoryProducts) {
-              if (p.subcategory.isNotEmpty && !addedSubs.contains(p.subcategory.toLowerCase())) {
-                addedSubs.add(p.subcategory.toLowerCase());
+              final subName = (p.subCategoryName != null && p.subCategoryName!.isNotEmpty)
+                  ? p.subCategoryName!
+                  : p.subcategory;
+              final subId = (p.subCategoryId != null && p.subCategoryId!.isNotEmpty)
+                  ? p.subCategoryId!
+                  : subName;
+              if (subName.isNotEmpty && subName != selectedCategory.name && !addedSubs.contains(subName.toLowerCase())) {
+                addedSubs.add(subName.toLowerCase());
                 liveSubcategories.add(SubCategoryModel(
-                  id: p.subcategory,
-                  name: p.subcategory,
+                  id: subId,
+                  name: subName,
                   imageUrl: p.imageUrl.isNotEmpty ? p.imageUrl : selectedCategory.imageUrl,
                 ));
               }
@@ -694,6 +728,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text('Error: $err')),
       ),
-    );
+    ),
+  );
   }
 }

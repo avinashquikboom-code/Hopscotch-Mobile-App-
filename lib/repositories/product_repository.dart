@@ -188,7 +188,11 @@ ProductModel mapBackendToMobileProduct(Map<String, dynamic> raw) {
       ?.toString();
 
   final categoryParentObj = categoryObj != null && categoryObj['parent'] is Map ? categoryObj['parent'] as Map : null;
-  final parentCategoryId = raw['parentCategoryId']?.toString() ?? (categoryParentObj != null ? categoryParentObj['id']?.toString() : null) ?? (categoryObj != null && categoryObj['parentId'] == null ? categoryObj['id']?.toString() : null) ?? categoryId;
+  final parentCategoryId = raw['parentCategoryId']?.toString() ??
+      (categoryParentObj != null ? categoryParentObj['id']?.toString() : null) ??
+      (categoryObj != null && categoryObj['parentId'] != null ? categoryObj['parentId']?.toString() : null) ??
+      (categoryObj != null && categoryObj['parentId'] == null ? categoryObj['id']?.toString() : null) ??
+      categoryId;
   final subCategoryId = raw['subCategoryId']?.toString() ?? (categoryObj != null && categoryObj['parentId'] != null ? categoryObj['id']?.toString() : null);
   final subCategoryName = raw['subCategoryName']?.toString() ?? raw['subCategory']?.toString() ?? (categoryObj != null && categoryObj['parentId'] != null ? categoryObj['name']?.toString() : null);
   final mainCategoryName = raw['categoryName']?.toString() ?? (categoryParentObj != null ? categoryParentObj['name']?.toString() : null) ?? categoryName;
@@ -244,32 +248,39 @@ class ProductRepository {
   }
 
   Future<List<ProductModel>> getProducts({bool forceRefresh = false}) async {
-    if (!forceRefresh && _isCacheValid) {
+    if (forceRefresh) {
+      clearCache();
+    } else if (_isCacheValid) {
       DevLogger.log('📦 Using cached products (${_cachedProducts!.length} items)');
       return _cachedProducts!;
     }
 
     try {
-      final response = await _apiService.get(AppUrls.products);
+      final response = await _apiService.get('${AppUrls.products}?limit=100');
 
       if (response.statusCode == 200) {
         final data = response.data;
         List<dynamic> list = [];
 
-        if (data is Map<String, dynamic>) {
-          if (data['data'] != null && data['data']['products'] is List) {
-            list = data['data']['products'] as List;
+        if (data is Map) {
+          final innerData = data['data'];
+          if (innerData is Map) {
+            if (innerData['products'] is List) {
+              list = innerData['products'] as List;
+            } else if (innerData['data'] is List) {
+              list = innerData['data'] as List;
+            }
+          } else if (innerData is List) {
+            list = innerData;
           } else if (data['products'] is List) {
             list = data['products'] as List;
-          } else if (data['data'] is List) {
-            list = data['data'] as List;
           }
         } else if (data is List) {
           list = data;
         }
 
         final products = list
-            .map((item) => mapBackendToMobileProduct(item as Map<String, dynamic>))
+            .map((item) => ProductModel.fromJson(Map<String, dynamic>.from(item as Map)))
             .toList();
 
         if (products.isNotEmpty) {
@@ -292,17 +303,21 @@ class ProductRepository {
 
   Future<List<ProductModel>> getTrendingProducts() async {
     final products = await getProducts();
-    return products.where((p) => p.isTrending).toList();
+    final list = products.where((p) => p.isTrending).toList();
+    return list.isNotEmpty ? list : products.take(10).toList();
   }
 
   Future<List<ProductModel>> getNewArrivals() async {
     final products = await getProducts();
-    return products.where((p) => p.isNewArrival).toList();
+    final markedNew = products.where((p) => p.isNewArrival).toList();
+    final remaining = products.where((p) => !p.isNewArrival).toList();
+    return [...markedNew, ...remaining];
   }
 
   Future<List<ProductModel>> getFeaturedProducts() async {
     final products = await getProducts();
-    return products.where((p) => p.isFeatured).toList();
+    final list = products.where((p) => p.isFeatured).toList();
+    return list.isNotEmpty ? list : products.take(10).toList();
   }
 
   Future<List<ProductModel>> getProductsByCategory(String categoryIdOrName) async {
@@ -316,11 +331,13 @@ class ProductRepository {
       final pParentCatId = (p.parentCategoryId ?? '').trim().toLowerCase();
       final pSubCatId = (p.subCategoryId ?? '').trim().toLowerCase();
       final pSubName = p.subcategory.trim().toLowerCase();
+      final pSubCatName = (p.subCategoryName ?? '').trim().toLowerCase();
 
       return pCatId == target ||
              pParentCatId == target ||
              pSubCatId == target ||
-             pSubName == target;
+             pSubName == target ||
+             pSubCatName == target;
     }).toList();
   }
 

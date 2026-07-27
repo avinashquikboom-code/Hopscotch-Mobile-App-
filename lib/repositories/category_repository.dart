@@ -27,7 +27,9 @@ class CategoryRepository {
   CategoryRepository(this._apiService);
 
   Future<List<CategoryModel>> getCategories({bool forceRefresh = false}) async {
-    if (!forceRefresh && _isCacheValid) {
+    if (forceRefresh) {
+      clearCache();
+    } else if (_isCacheValid) {
       return _cachedCategories!;
     }
     if (_inflight != null) {
@@ -49,69 +51,9 @@ class CategoryRepository {
       final response = await _apiService.get(AppUrls.categories);
       if (response.statusCode == 200) {
         final data = response.data;
-        final List? rawList = data is Map ? data['data'] : data;
+        final rawList = data is Map ? data['data'] : data;
         if (rawList != null) {
-          return rawList.map((c) {
-            final id = c['id']?.toString() ?? '';
-            final name = c['name']?.toString() ?? '';
-            
-            String imageUrl = '';
-            final iconUrlVal = c['iconUrl']?.toString() ?? c['bannerUrl']?.toString() ?? c['imageUrl']?.toString();
-            if (iconUrlVal != null && iconUrlVal.isNotEmpty) {
-              imageUrl = AppUrls.resolveUrl(iconUrlVal);
-            }
-
-            List<SubCategoryModel> subObjs = [];
-            List<String> subs = [];
-
-            final rawChildren = c['children'] ?? c['subcategories'];
-            if (rawChildren is List) {
-              for (final sub in rawChildren) {
-                if (sub is Map<String, dynamic>) {
-                  final subId = sub['id']?.toString() ?? '';
-                  final subName = sub['name']?.toString() ?? '';
-                  String subImg = '';
-                  final subIconVal = sub['iconUrl']?.toString() ?? sub['bannerUrl']?.toString() ?? sub['imageUrl']?.toString();
-                  if (subIconVal != null && subIconVal.isNotEmpty) {
-                    subImg = AppUrls.resolveUrl(subIconVal);
-                  } else {
-                    subImg = imageUrl;
-                  }
-
-                  if (subName.isNotEmpty) {
-                    subs.add(subName);
-                    subObjs.add(SubCategoryModel(
-                      id: subId.isNotEmpty ? subId : subName,
-                      name: subName,
-                      imageUrl: subImg,
-                    ));
-                  }
-                } else if (sub != null) {
-                  final subStr = sub.toString();
-                  if (subStr.isNotEmpty) {
-                    subs.add(subStr);
-                    subObjs.add(SubCategoryModel(
-                      id: subStr,
-                      name: subStr,
-                      imageUrl: imageUrl,
-                    ));
-                  }
-                }
-              }
-            }
-
-            final isFeatured = c['isFeatured'] as bool? ?? false;
-
-            return CategoryModel(
-              id: id,
-              name: name,
-              imageUrl: imageUrl,
-              icon: c['iconUrl']?.toString(),
-              subcategories: subs,
-              subCategoryObjects: subObjs,
-              isFeatured: isFeatured,
-            );
-          }).toList();
+          return CategoryModel.listFromJson(rawList);
         }
       } else if (response.statusCode == 404) {
         DevLogger.logError('Categories endpoint not found', context: 'CategoryRepository');

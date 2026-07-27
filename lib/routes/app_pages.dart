@@ -272,7 +272,7 @@ class AppPages {
           final categoryId = state.uri.queryParameters['categoryId'];
           final subCategoryId = state.uri.queryParameters['subCategoryId'];
           final subcategory = state.uri.queryParameters['subcategory'];
-          final filter = state.uri.queryParameters['filter'];
+          final filter = state.uri.queryParameters['filter'] ?? state.uri.queryParameters['section'];
           final categoryName = state.uri.queryParameters['categoryName'] ?? 'Elite Clothing';
           
           return CustomTransitionPage(
