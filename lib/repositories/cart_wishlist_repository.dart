@@ -21,7 +21,7 @@ class WishlistNotifier extends StateNotifier<List<ProductModel>> {
       if (raw != null) {
         final List<dynamic> list = jsonDecode(raw);
         state = list
-            .map((item) => ProductModel.fromJson(item as Map<String, dynamic>))
+            .map((item) => ProductModel.fromJson(Map<String, dynamic>.from(item as Map)))
             .toList();
       }
     } catch (_) {}
@@ -77,7 +77,7 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
       if (raw != null) {
         final List<dynamic> list = jsonDecode(raw);
         state = list
-            .map((item) => CartItemModel.fromJson(item as Map<String, dynamic>))
+            .map((item) => CartItemModel.fromJson(Map<String, dynamic>.from(item as Map)))
             .toList();
       }
     } catch (_) {}
@@ -282,7 +282,10 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
 
     double productShipping = 0.0;
     for (final item in state) {
-      productShipping += item.product.shippingCharge * item.quantity;
+      final charge = item.product.shippingCharge;
+      if (charge > 0) {
+        productShipping += (charge * item.quantity);
+      }
     }
     return _round2(productShipping);
   }

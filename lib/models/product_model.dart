@@ -307,7 +307,7 @@ class ProductModel {
                   categoryObj['tax_type'] ??
                   categoryObj['type'])
               : null),
-      'EXCLUSIVE',
+      'INCLUSIVE',
     );
 
     final parsedHsn = _asString(
@@ -325,13 +325,15 @@ class ProductModel {
       }
     }
 
-    final parsedPrice = _asDouble(
-      json['price'] ??
-          json['basePrice'] ??
-          json['base_price'] ??
-          (variantPrice > 0 ? variantPrice : null),
-      0.0,
-    );
+    final rawPrice = _asDouble(json['price'], 0.0);
+    final parsedPrice = rawPrice > 0
+        ? rawPrice
+        : _asDouble(
+            json['basePrice'] ??
+                json['base_price'] ??
+                (variantPrice > 0 ? variantPrice : null),
+            0.0,
+          );
 
     final rawOrigPrice = _asDouble(
       json['originalPrice'] ??

@@ -1789,9 +1789,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                 _priceRow(
                                   responsive,
                                   colorScheme,
-                                  item['taxType'] == 'INCLUSIVE'
-                                      ? '${item['name']} (Incl.)'
-                                      : item['name'] as String,
+                                  item['name'] as String,
                                   currency.formatPrice(
                                     item['taxAmount'] as double,
                                   ),
@@ -1803,9 +1801,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               _priceRow(
                                 responsive,
                                 colorScheme,
-                                cartNotifier.taxBreakdown.first['taxType'] == 'INCLUSIVE'
-                                    ? '${cartNotifier.taxBreakdown.first['name']} (Incl.)'
-                                    : cartNotifier.taxBreakdown.first['name'] as String,
+                                cartNotifier.taxBreakdown.first['name'] as String,
                                 currency.formatPrice(
                                   cartNotifier.taxBreakdown.first['taxAmount']
                                       as double,
@@ -1815,7 +1811,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               _priceRow(
                                 responsive,
                                 colorScheme,
-                                cartNotifier.hasInclusiveTax ? 'Taxes (Incl.)' : 'Taxes',
+                                'Taxes',
                                 currency.formatPrice(cartNotifier.taxAmount),
                               ),
                             ] else ...[

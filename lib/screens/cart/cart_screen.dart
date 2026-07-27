@@ -1220,9 +1220,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             for (final item in ref.watch(cartProvider.notifier).taxBreakdown) ...[
               const SizedBox(height: 6),
               _buildSummaryRow(
-                item['taxType'] == 'INCLUSIVE'
-                    ? '${item['name']} (Incl.)'
-                    : item['name'] as String,
+                item['name'] as String,
                 currency.formatPrice(item['taxAmount'] as double),
                 responsive,
                 colorScheme,
@@ -1230,19 +1228,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             ],
           ] else if (ref.watch(cartProvider.notifier).taxBreakdown.isNotEmpty) ...[
             _buildSummaryRow(
-              ref.watch(cartProvider.notifier).taxBreakdown.first['taxType'] == 'INCLUSIVE'
-                  ? '${ref.watch(cartProvider.notifier).taxBreakdown.first['name']} (Incl.)'
-                  : ref.watch(cartProvider.notifier).taxBreakdown.first['name'] as String,
+              ref.watch(cartProvider.notifier).taxBreakdown.first['name'] as String,
               currency.formatPrice(
                 (ref.watch(cartProvider.notifier).taxBreakdown.first['taxAmount'] as double?) ?? tax,
               ),
-              responsive,
-              colorScheme,
-            ),
-          ] else if (tax > 0) ...[
-            _buildSummaryRow(
-              hasInclusive ? 'Taxes (Incl.)' : 'Taxes',
-              currency.formatPrice(tax),
               responsive,
               colorScheme,
             ),
