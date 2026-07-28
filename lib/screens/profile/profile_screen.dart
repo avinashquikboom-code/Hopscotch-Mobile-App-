@@ -10,6 +10,7 @@ import 'package:hopscotch/api/auth_api.dart';
 import 'package:hopscotch/widgets/toast_notification.dart';
 import 'package:hopscotch/widgets/user_avatar.dart';
 import 'package:hopscotch/l10n/app_localizations.dart';
+import 'package:hopscotch/providers/loyalty_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -188,7 +189,74 @@ class ProfileScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
+            SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+
+            // 1.5 Loyalty & Rewards Summary Grid Card
+            Consumer(
+              builder: (context, ref, child) {
+                final loyaltyState = ref.watch(loyaltyProvider);
+                return Padding(
+                  padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [AppTheme.primaryColor.withOpacity(0.08), AppTheme.accentColor.withOpacity(0.08)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                      border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2)),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Wallet Balance', style: TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w600)),
+                                  Text('₹${loyaltyState.walletBalance.toStringAsFixed(2)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green)),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Reward Points', style: TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w600)),
+                                  Text('${loyaltyState.rewardBalance} Pts', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.orange)),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Cashback', style: TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w600)),
+                                  Text('₹${loyaltyState.cashbackBalance.toStringAsFixed(2)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue)),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Divider(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Lifetime Earned: ${loyaltyState.lifetimeEarned} Pts', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                            Text('Redeemed: ${loyaltyState.lifetimeRedeemed} Pts', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                            Text('Gift Card: ₹${loyaltyState.giftCardBalance.toStringAsFixed(0)}', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+            SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
 
             // 2. Profile Options List
             Padding(
@@ -209,9 +277,57 @@ class ProfileScreen extends ConsumerWidget {
                     children: [
                       _buildOptionTile(
                         context: context,
+                        icon: Icons.account_balance_wallet_outlined,
+                        title: 'My Wallet',
+                        subtitle: 'Top up balance & view wallet transactions',
+                        onTap: () => context.push('/wallet'),
+                      ),
+                      const Divider(height: 1),
+                      _buildOptionTile(
+                        context: context,
                         icon: Icons.stars_rounded,
-                        title: 'Loyalty & Wallet Hub',
-                        subtitle: 'View points balance, wallet balance & referral rewards',
+                        title: 'Reward Points Hub',
+                        subtitle: 'View available points & conversion rate',
+                        onTap: () => context.push('/rewards'),
+                      ),
+                      const Divider(height: 1),
+                      _buildOptionTile(
+                        context: context,
+                        icon: Icons.history_toggle_off,
+                        title: 'Reward History',
+                        subtitle: 'Earned, redeemed & expired points log',
+                        onTap: () => context.push('/reward-history'),
+                      ),
+                      const Divider(height: 1),
+                      _buildOptionTile(
+                        context: context,
+                        icon: Icons.card_giftcard,
+                        title: 'Referral Program',
+                        subtitle: 'Invite friends & earn ₹100 bonus',
+                        onTap: () => context.push('/referrals'),
+                      ),
+                      const Divider(height: 1),
+                      _buildOptionTile(
+                        context: context,
+                        icon: Icons.monetization_on_outlined,
+                        title: 'Cashback Earnings',
+                        subtitle: 'View cashback history & pending credits',
+                        onTap: () => context.push('/cashback'),
+                      ),
+                      const Divider(height: 1),
+                      _buildOptionTile(
+                        context: context,
+                        icon: Icons.confirmation_number_outlined,
+                        title: 'Gift Cards',
+                        subtitle: 'Redeem gift vouchers & check balance',
+                        onTap: () => context.push('/gift-cards'),
+                      ),
+                      const Divider(height: 1),
+                      _buildOptionTile(
+                        context: context,
+                        icon: Icons.loyalty_outlined,
+                        title: 'Reward Settings',
+                        subtitle: 'Loyalty tier benefits & preference rules',
                         onTap: () => context.push('/loyalty-hub'),
                       ),
                       const Divider(height: 1),

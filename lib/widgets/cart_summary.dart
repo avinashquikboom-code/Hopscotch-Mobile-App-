@@ -14,8 +14,7 @@ class TaxBreakdownItem {
   });
 }
 
-/// Reusable order summary card widget displaying itemized charges and tax breakdown.
-/// Total ALWAYS equals Subtotal + Delivery Charge + GST.
+/// Reusable order summary card widget displaying itemized charges, discounts, wallet used, and tax breakdown.
 Widget buildOrderSummary({
   required BuildContext context,
   required double subtotal,
@@ -23,6 +22,10 @@ Widget buildOrderSummary({
   required double taxAmount,
   required String taxType,
   required double totalAmount,
+  double rewardDiscount = 0.0,
+  double walletUsed = 0.0,
+  double couponDiscount = 0.0,
+  int rewardPointsEarned = 0,
   List<TaxBreakdownItem>? taxBreakdown,
   String currencySymbol = '₹',
 }) {
@@ -36,6 +39,12 @@ Widget buildOrderSummary({
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       _summaryRow('Subtotal', formatPrice(subtotal), context),
+      if (couponDiscount > 0)
+        _summaryRow('Coupon Discount', '-${formatPrice(couponDiscount)}', context, valueColor: Colors.green),
+      if (rewardDiscount > 0)
+        _summaryRow('Reward Discount', '-${formatPrice(rewardDiscount)}', context, valueColor: Colors.orange),
+      if (walletUsed > 0)
+        _summaryRow('Wallet Payment', '-${formatPrice(walletUsed)}', context, valueColor: Colors.purple),
       _summaryRow(
         'Delivery Charge',
         deliveryCharge > 0 ? formatPrice(deliveryCharge) : 'FREE',
@@ -61,7 +70,31 @@ Widget buildOrderSummary({
       ],
 
       const Divider(height: 16),
-      _summaryRow('Total Amount', formatPrice(totalAmount), context, isBold: true),
+      _summaryRow('Grand Total', formatPrice(totalAmount), context, isBold: true),
+
+      if (rewardPointsEarned > 0) ...[
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.amber.shade50,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.amber.shade200),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.stars, color: Colors.orange, size: 16),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'You will earn $rewardPointsEarned Reward Points after successful delivery.',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.amber.shade900),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     ],
   );
 }

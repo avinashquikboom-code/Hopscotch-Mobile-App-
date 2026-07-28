@@ -50,6 +50,12 @@ import 'package:hopscotch/screens/visual_search/visual_search_preview_screen.dar
 import 'package:hopscotch/screens/visual_search/visual_search_results_screen.dart';
 import 'package:hopscotch/visual_search/domain/entities/visual_search_result.dart';
 import 'package:hopscotch/screens/profile/loyalty_hub_screen.dart';
+import 'package:hopscotch/screens/loyalty/my_wallet_screen.dart';
+import 'package:hopscotch/screens/loyalty/reward_points_screen.dart';
+import 'package:hopscotch/screens/loyalty/reward_history_screen.dart';
+import 'package:hopscotch/screens/loyalty/referral_screen.dart';
+import 'package:hopscotch/screens/loyalty/cashback_screen.dart';
+import 'package:hopscotch/screens/loyalty/gift_card_screen.dart';
 import 'package:hopscotch/core/session_manager.dart';
 
 class AppPages {
@@ -739,6 +745,78 @@ class AppPages {
               child: child,
             );
           },
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.wallet,
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: _pageKey(state),
+          child: const MyWalletScreen(),
+          transitionDuration: const Duration(milliseconds: 300),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
+            position: Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+            child: child,
+          ),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.rewards,
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: _pageKey(state),
+          child: const RewardPointsScreen(),
+          transitionDuration: const Duration(milliseconds: 300),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
+            position: Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+            child: child,
+          ),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.rewardHistory,
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: _pageKey(state),
+          child: const RewardHistoryScreen(),
+          transitionDuration: const Duration(milliseconds: 300),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
+            position: Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+            child: child,
+          ),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.referrals,
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: _pageKey(state),
+          child: const ReferralScreen(),
+          transitionDuration: const Duration(milliseconds: 300),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
+            position: Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+            child: child,
+          ),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.cashback,
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: _pageKey(state),
+          child: const CashbackScreen(),
+          transitionDuration: const Duration(milliseconds: 300),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
+            position: Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+            child: child,
+          ),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.giftCards,
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: _pageKey(state),
+          child: const GiftCardScreen(),
+          transitionDuration: const Duration(milliseconds: 300),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
+            position: Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+            child: child,
+          ),
         ),
       ),
   ];

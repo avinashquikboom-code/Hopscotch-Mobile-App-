@@ -905,6 +905,15 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                               ),
                               SizedBox(height: responsive.spacing(AppTheme.spaceL)),
 
+                              // Reward Points Earn/Redeem Badge Card
+                              const RewardBadgeCard(
+                                rewardEarned: 100,
+                                maxRedeemable: 500,
+                                allowEarning: true,
+                                allowRedemption: true,
+                              ),
+                              SizedBox(height: responsive.spacing(AppTheme.spaceL)),
+
                               // Description
                               Text(
                                 l10n.description,

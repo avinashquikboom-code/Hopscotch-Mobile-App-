@@ -228,10 +228,35 @@ class _OrderSuccessScreenState extends ConsumerState<OrderSuccessScreen>
                       Text(
                         'Thank you for your purchase! We have received your order and sent confirmation details to your registered email.',
                         textAlign: TextAlign.center,
-                        style: responsive.bodyMedium.copyWith(
-                          color: subtextColor,
+                        style: TextStyle(
                           fontSize: responsive.fontSize13,
-                          height: 1.5,
+                          color: subtextColor,
+                          height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Pending Reward Points Banner
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.shade50,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.amber.shade300),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.stars, color: Colors.orange, size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Reward Points Pending: Will be credited after successful delivery.',
+                              style: TextStyle(
+                                fontSize: responsive.fontSize12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.amber.shade900,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
 

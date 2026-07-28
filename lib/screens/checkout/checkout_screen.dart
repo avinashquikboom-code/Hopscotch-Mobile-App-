@@ -1887,6 +1887,26 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                 isDiscount: true,
                               ),
                             ],
+                            if (ref.watch(loyaltyProvider).useRewardPoints && ref.watch(loyaltyProvider).rewardDiscountAmount > 0) ...[
+                              const SizedBox(height: 10),
+                              _priceRow(
+                                responsive,
+                                colorScheme,
+                                'Reward Points Discount',
+                                '-${currency.formatPrice(ref.watch(loyaltyProvider).rewardDiscountAmount)}',
+                                isDiscount: true,
+                              ),
+                            ],
+                            if (ref.watch(loyaltyProvider).useWallet && ref.watch(loyaltyProvider).walletAmountUsed > 0) ...[
+                              const SizedBox(height: 10),
+                              _priceRow(
+                                responsive,
+                                colorScheme,
+                                'Wallet Payment Used',
+                                '-${currency.formatPrice(ref.watch(loyaltyProvider).walletAmountUsed)}',
+                                isDiscount: true,
+                              ),
+                            ],
                             const SizedBox(height: 10),
                             _priceRow(
                               responsive,
@@ -1950,6 +1970,27 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               'Total Amount',
                               currency.formatPrice(totalPayable),
                               isTotal: true,
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.amber.shade50,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.amber.shade300),
+                              ),
+                              child: const Row(
+                                children: [
+                                  Icon(Icons.stars, color: Colors.orange, size: 18),
+                                  SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'You will earn 100 Reward Points after successful delivery.',
+                                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.amber),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),

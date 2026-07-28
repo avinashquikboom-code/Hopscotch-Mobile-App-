@@ -603,6 +603,76 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
 
                       const SizedBox(height: 16),
 
+                      // ── LOYALTY & REWARDS SUMMARY CARD ──
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.shade50.withOpacity(0.6),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: Colors.amber.shade300),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.stars, color: Colors.orange, size: 20),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'LOYALTY & REWARDS SUMMARY',
+                                  style: TextStyle(
+                                    fontSize: responsive.fontSize12,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.amber.shade900,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const Divider(height: 20),
+                            const Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Reward Points Earned:', style: TextStyle(fontSize: 12)),
+                                Text('100 Pts (Pending Delivery)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.green)),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            const Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Reward Points Redeemed:', style: TextStyle(fontSize: 12)),
+                                Text('0 Pts', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            const Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Wallet Used:', style: TextStyle(fontSize: 12)),
+                                Text('₹0.00', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            const Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Cashback Earned:', style: TextStyle(fontSize: 12)),
+                                Text('₹50.00', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blue)),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('Reward Transaction ID:', style: TextStyle(fontSize: 12)),
+                                Text('TX-RW-${order.id.substring(0, order.id.length > 8 ? 8 : order.id.length)}', style: const TextStyle(fontSize: 11, fontFamily: 'monospace')),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
                       // ── ORDER TRACKER CARD ──
                       if (!isCancelled && currentStep > 0) ...[
                         _buildCard(

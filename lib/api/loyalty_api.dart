@@ -66,6 +66,45 @@ class LoyaltyApi {
     return null;
   }
 
+  Future<List<dynamic>?> getRewardHistory({String filter = 'All'}) async {
+    try {
+      final response = await _apiService.get(
+        '/loyalty/rewards/history',
+        queryParameters: {'filter': filter.toLowerCase()},
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data['data'] as List<dynamic>?;
+      }
+    } catch (e) {
+      print('Error getting reward history: $e');
+    }
+    return null;
+  }
+
+  Future<Map<String, dynamic>?> getCashbackData() async {
+    try {
+      final response = await _apiService.get('/loyalty/cashback');
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data['data'] as Map<String, dynamic>?;
+      }
+    } catch (e) {
+      print('Error getting cashback data: $e');
+    }
+    return null;
+  }
+
+  Future<Map<String, dynamic>?> getGiftCardsData() async {
+    try {
+      final response = await _apiService.get('/loyalty/gift-cards');
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data['data'] as Map<String, dynamic>?;
+      }
+    } catch (e) {
+      print('Error getting gift cards data: $e');
+    }
+    return null;
+  }
+
   Future<bool> redeemGiftCard(String code) async {
     try {
       final response = await _apiService.post(
@@ -88,6 +127,16 @@ class LoyaltyApi {
       return response.statusCode == 200 && response.data['success'] == true;
     } catch (e) {
       print('Error topping up wallet: $e');
+      return false;
+    }
+  }
+
+  Future<bool> claimDailyReward() async {
+    try {
+      final response = await _apiService.post('/loyalty/daily-reward/claim');
+      return response.statusCode == 200 && response.data['success'] == true;
+    } catch (e) {
+      print('Error claiming daily reward: $e');
       return false;
     }
   }

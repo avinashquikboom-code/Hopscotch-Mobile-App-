@@ -43,6 +43,14 @@ class AppRoutes {
   static const String orderDetail = '/order-detail';
   static const String loyaltyHub = '/loyalty-hub';
 
+  // Dedicated Loyalty Routes
+  static const String wallet = '/wallet';
+  static const String rewards = '/rewards';
+  static const String rewardHistory = '/reward-history';
+  static const String referrals = '/referrals';
+  static const String cashback = '/cashback';
+  static const String giftCards = '/gift-cards';
+
   // Direct dynamic path helpers
   static String getProductDetailRoute(String id) => '/product/$id';
   static String getTrackOrderRoute(String orderId) => '/track-order/$orderId';
