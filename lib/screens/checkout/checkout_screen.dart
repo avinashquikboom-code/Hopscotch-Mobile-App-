@@ -17,6 +17,7 @@ import 'package:hopscotch/repositories/address_repository.dart';
 import 'package:hopscotch/repositories/profile_repository.dart';
 import 'package:hopscotch/providers/coupon_provider.dart';
 import 'package:hopscotch/providers/gift_wrap_provider.dart';
+import 'package:hopscotch/providers/loyalty_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 const List<String> _kDefaultCountries = [
@@ -1565,11 +1566,122 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
                         const SizedBox(height: 20),
 
+                        // ── LOYALTY & WALLET REDEMPTION ──
+                        Consumer(
+                          builder: (context, ref, _) {
+                            final loyaltyState = ref.watch(loyaltyProvider);
+                            final loyaltyNotifier = ref.read(loyaltyProvider.notifier);
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _sectionHeader(
+                                  context,
+                                  responsive,
+                                  Icons.stars_rounded,
+                                  'LOYALTY & WALLET DISCOUNTS',
+                                ),
+                                _sectionCard(
+                                  context,
+                                  isDark,
+                                  colorScheme,
+                                  children: [
+                                    // Reward Points Toggle
+                                    if (loyaltyState.rewardBalance > 0) ...[
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.stars_rounded, color: Colors.amber, size: 20),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  'Use Reward Points (${loyaltyState.rewardBalance} Pts Available)',
+                                                  style: TextStyle(
+                                                    fontSize: responsive.fontSize11,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: colorScheme.onSurface,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  'Save up to ₹${(loyaltyState.rewardBalance * loyaltyState.conversionRate).toStringAsFixed(2)}',
+                                                  style: TextStyle(
+                                                    fontSize: responsive.fontSize10,
+                                                    color: Colors.purple.shade700,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Switch(
+                                            value: loyaltyState.useRewardPoints,
+                                            activeColor: Colors.amber.shade700,
+                                            onChanged: (val) {
+                                              loyaltyNotifier.toggleUseRewardPoints(val, 1000);
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                      const Divider(height: 16),
+                                    ],
+
+                                    // Wallet Balance Toggle
+                                    if (loyaltyState.walletBalance > 0) ...[
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF059669), size: 20),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  'Use Wallet Balance (₹${loyaltyState.walletBalance.toStringAsFixed(2)} Available)',
+                                                  style: TextStyle(
+                                                    fontSize: responsive.fontSize11,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: colorScheme.onSurface,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  'Deduct directly from wallet balance',
+                                                  style: TextStyle(
+                                                    fontSize: responsive.fontSize10,
+                                                    color: Color(0xFF059669).withValues(alpha: 0.7),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Switch(
+                                            value: loyaltyState.useWallet,
+                                            activeThumbColor: const Color(0xFF059669),
+                                            onChanged: (val) {
+                                              loyaltyNotifier.toggleUseWallet(val, 99999);
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ] else if (loyaltyState.rewardBalance == 0) ...[
+                                      Text(
+                                        'No reward points or wallet balance currently available.',
+                                        style: TextStyle(fontSize: responsive.fontSize11, color: Colors.grey),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+                              ],
+                            );
+                          },
+                        ),
+
                         // ── PAYMENT METHOD ──
                         _sectionHeader(
                           context,
                           responsive,
-                          Icons.account_balance_wallet_rounded,
+                          Icons.payment_rounded,
                           'SELECT PAYMENT METHOD',
                         ),
                         _sectionCard(

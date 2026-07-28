@@ -21,6 +21,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:dio/dio.dart';
 
+import 'package:hopscotch/widgets/reward_badge_card.dart';
 import 'package:hopscotch/constants/app_urls.dart';
 
 
@@ -664,6 +665,17 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                        ),
                                    ],
                                  ),
+                               ),
+
+                               SizedBox(height: responsive.spacing(12)),
+
+                               // Loyalty & Reward Badge Card
+                               RewardBadgeCard(
+                                 rewardEarned: product.rewardEarned,
+                                 maxRedeemable: product.maxRedeemable,
+                                 allowRedemption: product.allowRedemption,
+                                 allowEarning: product.allowEarning,
+                                 appliedRuleType: product.appliedRuleType,
                                ),
 
                               // Floating Actions (Heart, Share, WhatsApp) Column on the right

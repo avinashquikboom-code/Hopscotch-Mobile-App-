@@ -131,26 +131,6 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
     return upper;
   }
 
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase().trim()) {
-      case 'delivered':
-        return const Color(0xFF059669);
-      case 'processing':
-      case 'confirmed':
-        return const Color(0xFF0D9488);
-      case 'shipped':
-      case 'out_for_delivery':
-        return const Color(0xFF2563EB);
-      case 'cancelled':
-        return const Color(0xFFDC2626);
-      case 'pending':
-      case 'pending_payment':
-        return const Color(0xFFD97706);
-      default:
-        return AppTheme.primaryColor;
-    }
-  }
-
   IconData _getStatusIcon(String status) {
     switch (status.toLowerCase().trim()) {
       case 'delivered':

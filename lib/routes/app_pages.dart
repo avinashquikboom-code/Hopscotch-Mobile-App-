@@ -49,6 +49,7 @@ import 'dart:io';
 import 'package:hopscotch/screens/visual_search/visual_search_preview_screen.dart';
 import 'package:hopscotch/screens/visual_search/visual_search_results_screen.dart';
 import 'package:hopscotch/visual_search/domain/entities/visual_search_result.dart';
+import 'package:hopscotch/screens/profile/loyalty_hub_screen.dart';
 import 'package:hopscotch/core/session_manager.dart';
 
 class AppPages {
@@ -706,6 +707,26 @@ class AppPages {
           key: _pageKey(state),
           child: const ContactUsScreen(),
           transitionDuration: const Duration(milliseconds: 400),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(1.0, 0.0),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+              )),
+              child: child,
+            );
+          },
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.loyaltyHub,
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: _pageKey(state),
+          child: const LoyaltyHubScreen(),
+          transitionDuration: const Duration(milliseconds: 300),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return SlideTransition(
               position: Tween<Offset>(

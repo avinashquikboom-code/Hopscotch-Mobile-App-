@@ -41,6 +41,7 @@ class AppRoutes {
   static const String contactUs = '/contact-us';
 
   static const String orderDetail = '/order-detail';
+  static const String loyaltyHub = '/loyalty-hub';
 
   // Direct dynamic path helpers
   static String getProductDetailRoute(String id) => '/product/$id';

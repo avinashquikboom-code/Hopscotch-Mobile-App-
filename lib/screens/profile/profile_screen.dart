@@ -209,6 +209,14 @@ class ProfileScreen extends ConsumerWidget {
                     children: [
                       _buildOptionTile(
                         context: context,
+                        icon: Icons.stars_rounded,
+                        title: 'Loyalty & Wallet Hub',
+                        subtitle: 'View points balance, wallet balance & referral rewards',
+                        onTap: () => context.push('/loyalty-hub'),
+                      ),
+                      const Divider(height: 1),
+                      _buildOptionTile(
+                        context: context,
                         icon: Icons.receipt_long_rounded,
                         title: l10n.orderHistory,
                         subtitle: l10n.orderHistoryDesc,

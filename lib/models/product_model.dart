@@ -191,6 +191,11 @@ class ProductModel {
   final double shippingCharge;
   final bool isGiftWrapAvailable;
   final double giftWrapCharge;
+  final int rewardEarned;
+  final int maxRedeemable;
+  final bool allowRedemption;
+  final bool allowEarning;
+  final String appliedRuleType;
 
   String get name => title;
 
@@ -225,6 +230,11 @@ class ProductModel {
     this.shippingCharge = 0.0,
     this.isGiftWrapAvailable = true,
     this.giftWrapCharge = 0.0,
+    this.rewardEarned = 0,
+    this.maxRedeemable = 0,
+    this.allowRedemption = true,
+    this.allowEarning = true,
+    this.appliedRuleType = 'GLOBAL',
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -448,6 +458,11 @@ class ProductModel {
       shippingCharge: _asDouble(json['shippingCharge'] ?? json['shipping_charge'] ?? json['shippingFee'] ?? json['shipping_fee']),
       isGiftWrapAvailable: _asBool(json['isGiftWrapAvailable'] ?? json['is_gift_wrap_available'], true),
       giftWrapCharge: _asDouble(json['giftWrapCharge'] ?? json['gift_wrap_charge']),
+      rewardEarned: _asInt(json['rewardEarned'] ?? json['reward_earned'] ?? json['rewardPoints'] ?? json['reward_points']),
+      maxRedeemable: _asInt(json['maxRedeemable'] ?? json['max_redeemable'] ?? json['maxRedeemablePoints'] ?? json['max_redeemable_points']),
+      allowRedemption: _asBool(json['allowRedemption'] ?? json['allow_redemption'] ?? json['allowRewardRedemption'], true),
+      allowEarning: _asBool(json['allowEarning'] ?? json['allow_earning'] ?? json['allowRewardEarning'], true),
+      appliedRuleType: _asString(json['appliedRuleType'] ?? json['applied_rule_type'], 'GLOBAL'),
     );
   }
 

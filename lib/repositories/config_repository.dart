@@ -35,14 +35,30 @@ class ConfigRepository {
   }
 
   Future<List<Map<String, dynamic>>> fetchCountries() async {
-    try {
-      final response = await _apiService.get('/api/settings/countries');
-      if (response.statusCode == 200) {
-        final list = response.data['data'] as List<dynamic>;
-        return list.map((item) => Map<String, dynamic>.from(item)).toList();
+    final endpoints = [
+      '/api/settings/countries',
+      '/settings/countries',
+      '/api/v1/settings/countries',
+    ];
+
+    for (final endpoint in endpoints) {
+      try {
+        final response = await _apiService.get(endpoint);
+        if (response.statusCode == 200 && response.data != null) {
+          final rawData = response.data['data'] ?? response.data['countries'] ?? response.data;
+          if (rawData is List) {
+            final parsed = rawData
+                .whereType<Map>()
+                .map((item) => Map<String, dynamic>.from(item))
+                .toList();
+            if (parsed.isNotEmpty) {
+              return parsed;
+            }
+          }
+        }
+      } catch (e) {
+        DevLogger.logError('Error fetching countries from $endpoint: $e', context: 'ConfigRepository');
       }
-    } catch (e) {
-      DevLogger.logError('Error fetching countries: $e', context: 'ConfigRepository');
     }
     return [];
   }
