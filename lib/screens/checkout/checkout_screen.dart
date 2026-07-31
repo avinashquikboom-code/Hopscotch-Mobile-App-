@@ -553,9 +553,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             'handleback': true,
             'backdropclose': true,
           },
-          'external': {
-            'wallets': ['paytm', 'mobikwik'],
-          },
+          // 'external' block intentionally removed — wallets (Paytm, Mobikwik,
+          // etc.) are now handled natively inside the Razorpay checkout sheet.
+          // EVENT_EXTERNAL_WALLET listener is kept registered but will not fire
+          // unless a future external handoff is re-enabled on the dashboard.
         };
         try {
           dev.log(
