@@ -62,7 +62,12 @@ class BannerRepository {
               title: b['title']?.toString() ?? '',
               subtitle: (b['subtitle'] ?? b['description'])?.toString(),
               link: b['link']?.toString(),
-              order: b['order'] as int? ?? 0,
+              type: b['type']?.toString() ?? 'home',
+              position: b['position']?.toString() ?? 'HOME',
+              endDate: b['endDate'] != null || b['end_date'] != null
+                  ? DateTime.tryParse(b['endDate']?.toString() ?? b['end_date']?.toString() ?? '')
+                  : null,
+              order: b['sortOrder'] as int? ?? b['order'] as int? ?? 0,
               isActive: b['isActive'] as bool? ?? b['active'] as bool? ?? true,
             );
           }).toList();
