@@ -14,6 +14,8 @@ class OrderModel {
   final double shippingFee;
   final bool giftWrapped;
   final double giftWrapCharge;
+  final String sellerName;
+  final String sellerContact;
 
   const OrderModel({
     required this.id,
@@ -29,6 +31,8 @@ class OrderModel {
     this.shippingFee = 0.0,
     this.giftWrapped = false,
     this.giftWrapCharge = 0.0,
+    this.sellerName = 'FCI Seller Retail Pvt. Ltd.',
+    this.sellerContact = '+91 9876543210',
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -45,6 +49,9 @@ class OrderModel {
     final rawShipping = _asDouble(json['shippingFee'] ?? json['shipping_fee'] ?? json['shippingAmount'] ?? json['shipping_amount'] ?? json['shipping']);
     final isGiftWrapped = json['giftWrapped'] == true || json['gift_wrapped'] == true;
     final giftWrapCharge = _asDouble(json['giftWrapCharge'] ?? json['gift_wrap_charge']);
+
+    final sellerName = (json['sellerNameSnapshot'] ?? json['sellerName'] ?? json['seller_name'] ?? 'FCI Seller Retail Pvt. Ltd.').toString();
+    final sellerContact = (json['sellerContactSnapshot'] ?? json['sellerContact'] ?? json['seller_contact'] ?? json['sellerContactNumber'] ?? '+91 9876543210').toString();
 
     final parsedTotal = json['totalAmount'] is num
         ? (json['totalAmount'] as num).toDouble()
@@ -69,6 +76,8 @@ class OrderModel {
       shippingFee: shippingFee,
       giftWrapped: isGiftWrapped,
       giftWrapCharge: giftWrapCharge,
+      sellerName: sellerName,
+      sellerContact: sellerContact,
     );
   }
 
@@ -117,7 +126,10 @@ class OrderModel {
 
       final lines = <String>[];
       if (name.toString().trim().isNotEmpty) lines.add(name.toString().trim());
-      if (phone.toString().trim().isNotEmpty) lines.add('Phone: ${phone.toString().trim()}');
+      final cleanPhone = phone.toString().trim();
+      if (cleanPhone.isNotEmpty && cleanPhone != '0000000000' && cleanPhone != '00000') {
+        lines.add('Phone: $cleanPhone');
+      }
       final streetParts = [line1, line2].where((e) => e != null && e.toString().trim().isNotEmpty).join(', ');
       if (streetParts.isNotEmpty) lines.add(streetParts);
       final cityParts = [city, state, pincode, country].where((e) => e != null && e.toString().trim().isNotEmpty).join(', ');

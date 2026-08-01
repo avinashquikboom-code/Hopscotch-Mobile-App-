@@ -818,6 +818,46 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                           ],
                         ),
                       ),
+                      const SizedBox(height: 16),
+
+                      // ── SELLER / BUSINESS DETAILS ──
+                      _buildCard(
+                        isDark: isDark,
+                        colorScheme: colorScheme,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildSectionHeader(icon: Icons.storefront_rounded, label: 'SELLER DETAILS', colorScheme: colorScheme, responsive: responsive),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(color: AppTheme.primaryColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+                                  child: const Icon(Icons.verified_user_rounded, size: 20, color: AppTheme.primaryColor),
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        order.sellerName.trim().isNotEmpty ? order.sellerName : 'FCI Seller Retail Pvt. Ltd.',
+                                        style: TextStyle(fontSize: responsive.fontSize14, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Contact: ${order.sellerContact.trim().isNotEmpty ? order.sellerContact : "+91 9876543210"}',
+                                        style: TextStyle(fontSize: responsive.fontSize12, fontWeight: FontWeight.w500, color: colorScheme.onSurface.withValues(alpha: 0.7)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
 
                       const SizedBox(height: 16),
 
