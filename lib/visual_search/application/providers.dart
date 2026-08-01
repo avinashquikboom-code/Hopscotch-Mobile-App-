@@ -6,9 +6,9 @@ import 'package:hopscotch/visual_search/data/datasources/asset_seed_loader.dart'
 import 'package:hopscotch/visual_search/data/datasources/visual_search_remote_datasource.dart';
 import 'package:hopscotch/visual_search/data/matchers/image_matcher.dart';
 import 'package:hopscotch/visual_search/data/matchers/perceptual_hash_matcher.dart';
-import 'package:hopscotch/repositories/local_image_matching_repository.dart';
 import 'package:hopscotch/visual_search/data/services/local_image_matching_service.dart';
 import 'package:hopscotch/repositories/image_matching_repository.dart';
+import 'package:hopscotch/repositories/remote_image_matching_repository.dart';
 import 'package:hopscotch/visual_search/application/visual_search_controller.dart';
 import 'package:hopscotch/visual_search/application/visual_search_state.dart';
 
@@ -34,8 +34,6 @@ final imageMatcherProvider = Provider<ImageMatcher>((ref) {
   return PerceptualHashMatcher();
 });
 
-// API service provider (imported from core/providers/api_provider.dart)
-
 // Visual search remote data source provider
 final visualSearchRemoteDataSourceProvider = Provider<VisualSearchRemoteDataSource>((ref) {
   final apiService = ref.watch(apiServiceProvider);
@@ -47,11 +45,10 @@ final localImageMatchingServiceProvider = Provider<LocalImageMatchingService>((r
   return LocalImageMatchingService();
 });
 
-// Image matching repository - THE SWAP POINT
-// To swap for remote API implementation, change this provider
+// Image matching repository - SWAPPED TO REMOTE API (Gemini Vision backend)
 final imageMatchingRepositoryProvider = Provider<ImageMatchingRepository>((ref) {
-  final localService = ref.watch(localImageMatchingServiceProvider);
-  return LocalImageMatchingRepository(matchingService: localService);
+  final remoteDataSource = ref.watch(visualSearchRemoteDataSourceProvider);
+  return RemoteImageMatchingRepository(remoteDataSource);
 });
 
 // Visual search controller

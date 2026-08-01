@@ -1,6 +1,6 @@
 import 'dart:io';
+import 'package:hopscotch/constants/app_urls.dart';
 import 'package:hopscotch/visual_search/domain/entities/product.dart';
-import 'package:hopscotch/visual_search/domain/entities/scored_product.dart';
 import 'package:hopscotch/visual_search/domain/entities/visual_search_result.dart';
 import 'package:hopscotch/visual_search/domain/failures/visual_search_failure.dart';
 import 'package:hopscotch/repositories/image_matching_repository.dart';
@@ -18,108 +18,142 @@ class RemoteImageMatchingRepository implements ImageMatchingRepository {
     try {
       final response = await _remoteDataSource.searchWithImage(image);
       
-      final matches = response['matches'] as List<dynamic>? ?? [];
-      final similarSuggestions = response['similarSuggestions'] as List<dynamic>? ?? [];
-      
-      final List<ScoredProduct> scoredProducts = [];
-      
-      // Convert API response to ScoredProduct entities
-      for (final match in matches) {
-        scoredProducts.add(ScoredProduct(
-          product: _convertToProduct(match),
-          similarityScore: 1.0, // API provides confidence score
-        ));
+      final rawExact = response['exactMatches'] as List<dynamic>? ?? [];
+      final rawSimilar = response['similarMatches'] as List<dynamic>? ?? [];
+      final extractedAttributes = response['extractedAttributes'] as Map<String, dynamic>?;
+
+      final List<Product> exactMatches = rawExact.map((item) => _convertToProduct(item)).toList();
+      final List<Product> similarMatches = rawSimilar.map((item) => _convertToProduct(item)).toList();
+
+      if (exactMatches.isEmpty && similarMatches.isEmpty) {
+        final noMatch = NoMatchFound();
+        noMatch.queryImage = image;
+        noMatch.extractedAttributes = extractedAttributes;
+        return noMatch;
       }
-      
-      // Add similar suggestions with lower scores
-      for (final suggestion in similarSuggestions) {
-        scoredProducts.add(ScoredProduct(
-          product: _convertToProduct(suggestion),
-          similarityScore: 0.5, // Similar suggestions have lower score
-        ));
-      }
-      
-      // Sort by similarity score descending
-      scoredProducts.sort((a, b) => b.similarityScore.compareTo(a.similarityScore));
-      
-      // Classify result based on confidence
-      final confidence = response['confidence'] as double? ?? 0.0;
-      
-      if (scoredProducts.isNotEmpty && confidence >= 0.9) {
-        return ExactMatch(scoredProducts.first.product);
-      } else if (scoredProducts.isNotEmpty) {
-        return SimilarMatches(scoredProducts.take(10).toList());
-      } else {
-        return NoMatchFound();
-      }
+
+      return VisualSearchSuccessResult(
+        exactMatches: exactMatches,
+        similarMatches: similarMatches,
+        extractedAttributes: extractedAttributes,
+        queryImage: image,
+      );
     } on Exception catch (e) {
-      throw NetworkFailure('Failed to connect to visual search service: ${e.toString()}');
+      final msg = e.toString().replaceAll('Exception: ', '');
+      throw NetworkFailure('Unable to search image: $msg');
     } catch (e) {
-      throw UnknownFailure('An error occurred during visual search: $e');
+      throw UnknownFailure('An unexpected error occurred during visual search: $e');
     }
   }
-  
-  /// Convert API response to Product entity
+
+  /// Convert API response product map to Flutter Product entity
   Product _convertToProduct(dynamic data) {
-    // Extract brand name
-    String brandName = '';
-    if (data['brand'] is Map) {
-      brandName = data['brand']['name'] as String? ?? '';
-    } else if (data['brand'] is String) {
-      brandName = data['brand'] as String;
+    if (data is! Map) {
+      return Product(
+        id: '0',
+        name: 'Unknown Item',
+        brand: 'Luxury',
+        category: 'Fashion',
+        subcategory: 'Apparel',
+        price: 0.0,
+        rating: 4.5,
+        ratingCount: 10,
+        stock: 5,
+        discount: 0.0,
+        colors: const [],
+        sizes: const [],
+        keywords: const [],
+        tags: const [],
+        multipleImages: const [],
+        relatedProducts: const [],
+        similarProducts: const [],
+        recommendedProducts: const [],
+        createdAt: DateTime.now().toIso8601String(),
+      );
     }
 
-    // Extract category name
-    String categoryName = '';
-    if (data['category'] is Map) {
-      categoryName = data['category']['name'] as String? ?? '';
-    } else if (data['category'] is String) {
-      categoryName = data['category'] as String;
+    final map = data.cast<String, dynamic>();
+
+    // Brand extraction
+    String brandName = 'FCISeller';
+    if (map['brand'] is Map) {
+      brandName = (map['brand'] as Map)['name']?.toString() ?? 'FCISeller';
+    } else if (map['brand'] != null) {
+      brandName = map['brand'].toString();
     }
 
-    // Extract primary image path if any
-    String? primaryImagePath;
-    if (data['images'] is List && (data['images'] as List).isNotEmpty) {
-      final firstImage = (data['images'] as List).first;
-      if (firstImage is Map) {
-        primaryImagePath = firstImage['url'] as String?;
-      } else if (firstImage is String) {
-        primaryImagePath = firstImage;
+    // Category extraction
+    String categoryName = 'Clothing';
+    if (map['category'] is Map) {
+      categoryName = (map['category'] as Map)['name']?.toString() ?? 'Clothing';
+    } else if (map['category'] != null) {
+      categoryName = map['category'].toString();
+    }
+
+    // Image URL resolution
+    String? primaryImagePath = map['thumbnailUrl']?.toString();
+    if ((primaryImagePath == null || primaryImagePath.isEmpty) && map['images'] is List && (map['images'] as List).isNotEmpty) {
+      final firstImg = (map['images'] as List).first;
+      if (firstImg is Map && firstImg['url'] != null) {
+        primaryImagePath = firstImg['url'].toString();
+      } else if (firstImg is String) {
+        primaryImagePath = firstImg;
       }
     }
 
-    // Parse price
+    if (primaryImagePath != null && primaryImagePath.isNotEmpty) {
+      primaryImagePath = AppUrls.resolveUrl(primaryImagePath);
+    }
+
+    // Price resolution
     double price = 0.0;
-    if (data['price'] is num) {
-      price = (data['price'] as num).toDouble();
-    } else if (data['basePrice'] is num) {
-      price = (data['basePrice'] as num).toDouble();
+    if (map['basePrice'] != null) {
+      price = double.tryParse(map['basePrice'].toString()) ?? 0.0;
+    } else if (map['price'] != null) {
+      price = double.tryParse(map['price'].toString()) ?? 0.0;
+    }
+
+    // Extract variants colors & sizes
+    final List<String> colors = [];
+    final List<String> sizes = [];
+
+    if (map['variants'] is List) {
+      for (final v in (map['variants'] as List)) {
+        if (v is Map) {
+          if (v['color'] != null && !colors.contains(v['color'].toString())) {
+            colors.add(v['color'].toString());
+          }
+          if (v['size'] != null && !sizes.contains(v['size'].toString())) {
+            sizes.add(v['size'].toString());
+          }
+        }
+      }
     }
 
     return Product(
-      id: data['id'] as String,
-      name: data['name'] as String? ?? '',
+      id: map['id']?.toString() ?? '0',
+      name: map['name']?.toString() ?? 'Product',
       brand: brandName,
       category: categoryName,
-      subcategory: data['subcategory'] as String? ?? 'Casual',
-      familyId: data['familyId'] as String?,
-      variantId: data['variantId'] as String?,
+      subcategory: map['subcategory']?.toString() ?? 'Apparel',
+      familyId: map['familyId']?.toString(),
+      variantId: map['variantId']?.toString(),
       price: price,
-      description: data['description'] as String?,
-      rating: data['rating'] is num ? (data['rating'] as num).toDouble() : (data['avgRating'] is num ? (data['avgRating'] as num).toDouble() : 0.0),
-      ratingCount: data['ratingCount'] is int ? data['ratingCount'] as int : (data['reviewCount'] is int ? data['reviewCount'] as int : 0),
-      stock: data['stock'] is int ? data['stock'] as int : 10,
-      discount: (data['discount'] as num?)?.toDouble() ?? 0.0,
-      sizes: data['sizes'] is List ? List<String>.from(data['sizes'] as List) : const [],
-      colors: data['colors'] is List ? List<String>.from(data['colors'] as List) : const [],
-      keywords: data['keywords'] is List ? List<String>.from(data['keywords'] as List) : const [],
-      tags: data['tags'] is List ? List<String>.from(data['tags'] as List) : const [],
-      thumbnail: data['thumbnail'] as String?,
-      multipleImages: data['multipleImages'] is List ? List<String>.from(data['multipleImages'] as List) : const [],
-      relatedProducts: data['relatedProducts'] is List ? List<String>.from(data['relatedProducts'] as List) : const [],
-      similarProducts: data['similarProducts'] is List ? List<String>.from(data['similarProducts'] as List) : const [],
-      recommendedProducts: data['recommendedProducts'] is List ? List<String>.from(data['recommendedProducts'] as List) : const [],
-      createdAt: data['createdAt'] as String? ?? DateTime.now().toIso8601String(),
+      description: map['description']?.toString(),
+      rating: double.tryParse(map['avgRating']?.toString() ?? map['rating']?.toString() ?? '4.2') ?? 4.2,
+      ratingCount: int.tryParse(map['reviewCount']?.toString() ?? map['ratingCount']?.toString() ?? '25') ?? 25,
+      stock: int.tryParse(map['stock']?.toString() ?? '10') ?? 10,
+      discount: double.tryParse(map['discount']?.toString() ?? '0.0') ?? 0.0,
+      colors: colors,
+      sizes: sizes,
+      keywords: map['keywords'] is List ? List<String>.from(map['keywords'] as List) : const [],
+      tags: map['tags'] is List ? List<String>.from(map['tags'] as List) : const [],
+      thumbnail: primaryImagePath,
+      multipleImages: const [],
+      relatedProducts: const [],
+      similarProducts: const [],
+      recommendedProducts: const [],
+      createdAt: map['createdAt']?.toString() ?? DateTime.now().toIso8601String(),
       primaryImagePath: primaryImagePath,
     );
   }

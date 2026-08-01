@@ -103,6 +103,22 @@ class _VisualSearchPreviewScreenState
     ref.listen<VisualSearchState>(visualSearchControllerProvider, (previous, next) {
       if (next is VSSuccess) {
         context.pushReplacement('/visual-search/results', extra: next.result);
+      } else if (next is VSFailure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Unable to process visual search. Please check connection and try again.',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: const Color(0xFFDC2626),
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: 'RETRY',
+              textColor: Colors.white,
+              onPressed: _triggerSearch,
+            ),
+          ),
+        );
       }
     });
 

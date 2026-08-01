@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,7 +6,7 @@ import 'package:hopscotch/visual_search/domain/entities/product.dart';
 import 'package:hopscotch/providers/currency_provider.dart';
 
 /// Interactive Visual Search Results Screen
-/// Shows Exact Match, Variants, Similar, More from Brand, Recommended, Frequently Bought, Recently Viewed.
+/// Shows Exact Matches and Similar Matches returned from Gemini Vision + PostgreSQL search
 class VisualSearchResultsScreen extends ConsumerStatefulWidget {
   final VisualSearchResult result;
 
@@ -21,118 +20,31 @@ class VisualSearchResultsScreen extends ConsumerStatefulWidget {
 }
 
 class _VisualSearchResultsScreenState extends ConsumerState<VisualSearchResultsScreen> {
-  List<Product> _allProducts = [];
-  bool _isLoading = true;
-  String? _selectedSize;
-  String? _selectedColor;
-  bool _isWishlisted = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadAllProducts();
-  }
-
-  Future<void> _loadAllProducts() async {
-    try {
-      final jsonString = await DefaultAssetBundle.of(context).loadString('assets/data/products.json');
-      final List<dynamic> jsonData = jsonDecode(jsonString);
-      final products = jsonData.map((item) {
-        final map = item as Map<String, dynamic>;
-        return Product(
-          id: map['id'] as String,
-          name: map['name'] as String,
-          brand: map['brand'] as String,
-          category: map['category'] as String,
-          subcategory: map['subcategory'] as String? ?? 'Casual',
-          familyId: map['familyId'] as String?,
-          variantId: map['variantId'] as String?,
-          price: (map['price'] as num).toDouble(),
-          description: map['description'] as String?,
-          rating: (map['rating'] as num?)?.toDouble() ?? 4.0,
-          ratingCount: map['rating_count'] as int? ?? 100,
-          stock: map['stock'] as int? ?? 10,
-          discount: (map['discount'] as num?)?.toDouble() ?? 0.0,
-          colors: List<String>.from(map['colors'] as List? ?? []),
-          sizes: List<String>.from(map['sizes'] as List? ?? []),
-          keywords: List<String>.from(map['keywords'] as List? ?? []),
-          tags: List<String>.from(map['tags'] as List? ?? []),
-          thumbnail: map['thumbnail'] as String?,
-          multipleImages: List<String>.from(map['multipleImages'] as List? ?? []),
-          relatedProducts: List<String>.from(map['relatedProducts'] as List? ?? []),
-          similarProducts: List<String>.from(map['similarProducts'] as List? ?? []),
-          recommendedProducts: List<String>.from(map['recommendedProducts'] as List? ?? []),
-          createdAt: map['created_at'] as String? ?? DateTime.now().toIso8601String(),
-          primaryImagePath: map['images'] != null && (map['images'] as List).isNotEmpty
-              ? (map['images'] as List)[0]['asset_path'] as String?
-              : null,
-        );
-      }).toList();
-
-      setState(() {
-        _allProducts = products;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  Product? get _exactProduct {
-    final res = widget.result;
-    if (res is ExactMatch) {
-      return res.product;
-    } else if (res is SimilarMatches && res.matches.isNotEmpty) {
-      return res.matches.first.product;
-    }
-    return null;
-  }
-
   @override
   Widget build(BuildContext context) {
     final currency = ref.watch(currencyProvider);
-    
-    if (_isLoading) {
-      return Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
-        appBar: AppBar(
-          title: const Text('Searching Catalog...', style: TextStyle(fontWeight: FontWeight.bold)),
-          backgroundColor: Colors.white,
-          elevation: 0,
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(color: Color(0xFF0D9488)),
-        ),
-      );
+    final res = widget.result;
+
+    final exactMatches = res.exactMatches;
+    final similarMatches = res.similarMatches;
+    final attrs = res.extractedAttributes;
+
+    final bool isEmpty = exactMatches.isEmpty && similarMatches.isEmpty;
+
+    if (isEmpty) {
+      return _buildEmptyState(context);
     }
-
-    final product = _exactProduct;
-    if (product == null) {
-      return _buildEmptyState();
-    }
-
-    // Set defaults
-    _selectedColor ??= product.colors.isNotEmpty ? product.colors.first : null;
-    _selectedSize ??= product.sizes.isNotEmpty ? product.sizes.first : null;
-
-    final similarList = _allProducts.where((p) => p.category == product.category && p.id != product.id).toList();
-    similarList.sort((a, b) {
-      if (a.brand == product.brand && b.brand != product.brand) return -1;
-      if (a.brand != product.brand && b.brand == product.brand) return 1;
-      return 0;
-    });
-    final sameBrandList = _allProducts.where((p) => p.brand == product.brand && p.id != product.id).toList();
-    final recommendedList = _allProducts.where((p) => p.id != product.id).toList()..shuffle();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Search Results', style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 18)),
+        title: const Text(
+          'Visual Search Results',
+          style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 18),
+        ),
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xFF0F172A),
-        elevation: 0,
+        elevation: 0.5,
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -140,33 +52,28 @@ class _VisualSearchResultsScreenState extends ConsumerState<VisualSearchResultsS
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Uploaded Image Summary Banner
-            _buildUploadedImageHeader(),
+            // 1. Uploaded Image Summary & Extracted Attributes Header
+            _buildExtractedAttributesBanner(attrs),
 
-            // 2. Exact Match Card
-            _buildExactMatchSection(product, currency),
+            // 2. Exact Matches Section
+            if (exactMatches.isNotEmpty)
+              _buildProductSection(
+                title: 'EXACT MATCHES',
+                subtitle: 'Products that match your image details closely',
+                products: exactMatches,
+                currency: currency,
+                badgeColor: const Color(0xFF0D9488),
+              ),
 
-            // 3. More Variants
-            if (product.colors.length > 1 || product.sizes.length > 1)
-              _buildVariantsSection(product),
-
-            // 4. Frequently Bought Together
-            _buildFrequentlyBoughtSection(product, currency),
-
-            // 5. Similar Products (Grid Layout)
-            if (similarList.isNotEmpty)
-              _buildSimilarProductsGrid(similarList, currency),
-
-            // 6. More From Same Brand
-            if (sameBrandList.isNotEmpty)
-              _buildHorizontalProductsSection('More from ${product.brand}', sameBrandList, currency),
-
-            // 7. Recommended Products
-            if (recommendedList.isNotEmpty)
-              _buildHorizontalProductsSection('Recommended Products', recommendedList.take(6).toList(), currency),
-
-            // 8. Recently Viewed
-            _buildHorizontalProductsSection('Recently Viewed', _allProducts.take(4).toList(), currency),
+            // 3. Similar Matches Section ("You Might Also Like")
+            if (similarMatches.isNotEmpty)
+              _buildProductSection(
+                title: 'YOU MIGHT ALSO LIKE',
+                subtitle: 'Similar styles, colors, or categories from our catalog',
+                products: similarMatches,
+                currency: currency,
+                badgeColor: const Color(0xFF4F46E5),
+              ),
 
             const SizedBox(height: 40),
           ],
@@ -175,282 +82,67 @@ class _VisualSearchResultsScreenState extends ConsumerState<VisualSearchResultsS
     );
   }
 
-  Widget _buildUploadedImageHeader() {
+  Widget _buildExtractedAttributesBanner(Map<String, dynamic>? attrs) {
     final queryImage = widget.result.queryImage;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      color: Colors.white,
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: SizedBox(
-              width: 50,
-              height: 50,
-              child: queryImage != null
-                  ? Image.file(queryImage, fit: BoxFit.cover)
-                  : Container(
-                      color: const Color(0xFF0D9488).withOpacity(0.1),
-                      child: const Icon(Icons.image, color: Color(0xFF0D9488)),
-                    ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Visual Search Query',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0F172A)),
-                ),
-                Text(
-                  'Showing matches for your uploaded photo',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Color(0xFF0D9488)),
-            onPressed: () => context.pop(),
-            tooltip: 'Try another photo',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildExactMatchSection(Product product, AppCurrency currency) {
-    final hasDiscount = product.discount > 0;
-    final discountedPrice = product.price * (1 - (product.discount / 100));
-
-    return Container(
-      margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(16),
       color: Colors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'EXACT MATCH',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF0D9488), letterSpacing: 1.2),
-          ),
-          const SizedBox(height: 12),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(8),
                 child: SizedBox(
-                  width: 120,
-                  height: 150,
-                  child: widget.result.queryImage != null
-                      ? Image.file(widget.result.queryImage!, fit: BoxFit.cover)
-                      : _buildProductImage(product.primaryImagePath),
+                  width: 56,
+                  height: 56,
+                  child: queryImage != null
+                      ? Image.file(queryImage, fit: BoxFit.cover)
+                      : Container(
+                          color: const Color(0xFF0D9488).withValues(alpha: 0.1),
+                          child: const Icon(Icons.image, color: Color(0xFF0D9488)),
+                        ),
                 ),
               ),
-              const SizedBox(width: 16),
-              // Product Details
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          product.brand,
-                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF64748B)),
-                        ),
-                        IconButton(
-                          constraints: const BoxConstraints(),
-                          padding: EdgeInsets.zero,
-                          icon: Icon(
-                            _isWishlisted ? Icons.favorite : Icons.favorite_border,
-                            color: _isWishlisted ? Colors.red : const Color(0xFF64748B),
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _isWishlisted = !_isWishlisted;
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(_isWishlisted ? 'Added to Wishlist!' : 'Removed from Wishlist'),
-                                duration: const Duration(seconds: 1),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
+                    const Text(
+                      'AI Visual Search Analysis',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF0F172A)),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
-                      product.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF0F172A)),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    // Rating
-                    Row(
-                      children: [
-                        const Icon(Icons.star, color: Color(0xFFF59E0B), size: 16),
-                        const SizedBox(width: 4),
-                        Text(
-                          product.rating.toString(),
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0F172A)),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '(${product.ratingCount})',
-                          style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    // Price
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            currency.formatPrice(hasDiscount ? discountedPrice : product.price),
-                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20, color: Color(0xFF0D9488)),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (hasDiscount) ...[
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
-                              currency.formatPrice(product.price),
-                              style: const TextStyle(decoration: TextDecoration.lineThrough, color: Color(0xFF94A3B8), fontSize: 14),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
-                              '${product.discount.toStringAsFixed(0)}% OFF',
-                              style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 12),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ]
-                      ],
+                      attrs != null && attrs['confidence'] != null
+                          ? 'Attributes extracted with ${(attrs['confidence'] * 100).toStringAsFixed(0)}% confidence'
+                          : 'Showing matched products for your image',
+                      style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // Action Buttons
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Product added to Cart!'), duration: Duration(seconds: 1)),
-                    );
-                  },
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    side: const BorderSide(color: Color(0xFF0D9488)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                  child: const Text('Add To Cart', style: TextStyle(color: Color(0xFF0D9488), fontWeight: FontWeight.bold)),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    context.push('/checkout');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0D9488),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                  child: const Text('Buy Now', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
+              IconButton(
+                icon: const Icon(Icons.refresh, color: Color(0xFF0D9488)),
+                onPressed: () => context.pop(),
+                tooltip: 'Retake photo',
               ),
             ],
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildVariantsSection(Product product) {
-    return Container(
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(16),
-      color: Colors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'MORE VARIANTS',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF0D9488), letterSpacing: 1.2),
-          ),
-          if (product.colors.isNotEmpty) ...[
+          if (attrs != null && attrs.isNotEmpty) ...[
             const SizedBox(height: 12),
-            const Text('Available Colors', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-            const SizedBox(height: 8),
             Wrap(
-              spacing: 8,
-              children: product.colors.map((color) {
-                final isSelected = _selectedColor == color;
-                return ChoiceChip(
-                  label: Text(color),
-                  selected: isSelected,
-                  selectedColor: const Color(0xFF0D9488).withOpacity(0.15),
-                  checkmarkColor: const Color(0xFF0D9488),
-                  labelStyle: TextStyle(
-                    color: isSelected ? const Color(0xFF0D9488) : const Color(0xFF0F172A),
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                  onSelected: (selected) {
-                    if (selected) {
-                      setState(() {
-                        _selectedColor = color;
-                      });
-                    }
-                  },
-                );
-              }).toList(),
-            ),
-          ],
-          if (product.sizes.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            const Text('Available Sizes', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              children: product.sizes.map((size) {
-                final isSelected = _selectedSize == size;
-                return ChoiceChip(
-                  label: Text(size),
-                  selected: isSelected,
-                  selectedColor: const Color(0xFF0D9488).withOpacity(0.15),
-                  checkmarkColor: const Color(0xFF0D9488),
-                  labelStyle: TextStyle(
-                    color: isSelected ? const Color(0xFF0D9488) : const Color(0xFF0F172A),
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                  onSelected: (selected) {
-                    if (selected) {
-                      setState(() {
-                        _selectedSize = size;
-                      });
-                    }
-                  },
-                );
-              }).toList(),
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                if (attrs['category'] != null) _buildAttributeChip('Category', attrs['category'].toString()),
+                if (attrs['color'] != null) _buildAttributeChip('Color', attrs['color'].toString()),
+                if (attrs['material'] != null) _buildAttributeChip('Material', attrs['material'].toString()),
+                if (attrs['pattern'] != null) _buildAttributeChip('Pattern', attrs['pattern'].toString()),
+                if (attrs['style'] != null) _buildAttributeChip('Style', attrs['style'].toString()),
+              ],
             ),
           ],
         ],
@@ -458,81 +150,28 @@ class _VisualSearchResultsScreenState extends ConsumerState<VisualSearchResultsS
     );
   }
 
-  Widget _buildFrequentlyBoughtSection(Product product, AppCurrency currency) {
-    final bundleProduct = _allProducts.firstWhere((p) => p.id != product.id, orElse: () => product);
-    final totalPrice = product.price + bundleProduct.price;
-
+  Widget _buildAttributeChip(String label, String value) {
     return Container(
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(16),
-      color: Colors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'FREQUENTLY BOUGHT TOGETHER',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF0D9488), letterSpacing: 1.2),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              // Product 1
-              _buildBundleItemThumb(product),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8),
-                child: Text('+', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF64748B))),
-              ),
-              // Product 2
-              _buildBundleItemThumb(bundleProduct),
-              const SizedBox(width: 16),
-              // Price and add button
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Combo Offer Price', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
-                    Text(currency.formatPrice(totalPrice), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Added combo to Cart!'), duration: Duration(seconds: 1)),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0D9488),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                      ),
-                      child: const Text('Add Combo', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                    )
-                  ],
-                ),
-              )
-            ],
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBundleItemThumb(Product product) {
-    return Container(
-      width: 70,
-      height: 90,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
+        color: const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(7),
-        child: _buildProductImage(product.primaryImagePath),
+      child: Text(
+        '$label: $value',
+        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF334155)),
       ),
     );
   }
 
-  Widget _buildSimilarProductsGrid(List<Product> products, AppCurrency currency) {
+  Widget _buildProductSection({
+    required String title,
+    required String subtitle,
+    required List<Product> products,
+    required dynamic currency,
+    required Color badgeColor,
+  }) {
     return Container(
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(16),
@@ -540,9 +179,32 @@ class _VisualSearchResultsScreenState extends ConsumerState<VisualSearchResultsS
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'SIMILAR PRODUCTS',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF0D9488), letterSpacing: 1.2),
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: badgeColor,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: badgeColor,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
           ),
           const SizedBox(height: 16),
           GridView.builder(
@@ -552,152 +214,181 @@ class _VisualSearchResultsScreenState extends ConsumerState<VisualSearchResultsS
               crossAxisCount: 2,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
-              childAspectRatio: 0.65,
+              childAspectRatio: 0.62,
             ),
-            itemCount: products.length.clamp(0, 4),
+            itemCount: products.length,
             itemBuilder: (context, index) {
-              final p = products[index];
-              return _buildProductCard(p, currency);
+              final product = products[index];
+              return _buildProductCard(product, currency);
             },
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHorizontalProductsSection(String title, List<Product> products, AppCurrency currency) {
-    return Container(
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(16),
-      color: Colors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title.toUpperCase(),
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF0D9488), letterSpacing: 1.2),
           ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 220,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              itemCount: products.length,
-              itemBuilder: (context, index) {
-                final p = products[index];
-                return Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: SizedBox(
-                    width: 140,
-                    child: _buildProductCard(p, currency),
-                  ),
-                );
-              },
-            ),
-          )
         ],
       ),
     );
   }
 
-  Widget _buildProductCard(Product p, AppCurrency currency) {
+  Widget _buildProductCard(Product p, dynamic currency) {
     return GestureDetector(
       onTap: () {
-        context.push('/product/${p.id}?heroTagPrefix=visual_search_results');
+        context.push('/product/${p.id}');
       },
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(color: const Color(0xFFE2E8F0)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AspectRatio(
-              aspectRatio: 1.0,
+            Expanded(
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(7)),
-                child: _buildProductImage(p.primaryImagePath),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(9)),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: _buildProductImage(p.primaryImagePath ?? p.thumbnail),
+                ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(p.brand, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF64748B))),
+                  Text(
+                    p.brand.toUpperCase(),
+                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF64748B)),
+                  ),
                   const SizedBox(height: 2),
-                  Text(p.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)), maxLines: 1, overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 4),
-                  Text(currency.formatPrice(p.price), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0D9488))),
+                  Text(
+                    p.name,
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF0F172A)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        currency.formatPrice(p.price),
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF0D9488)),
+                      ),
+                      Row(
+                        children: [
+                          const Icon(Icons.star, size: 13, color: Color(0xFFF59E0B)),
+                          const SizedBox(width: 2),
+                          Text(
+                            p.rating.toStringAsFixed(1),
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('No matches found'),
+        title: const Text('Visual Search Results'),
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF0F172A),
+        elevation: 0,
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.search_off, size: 64, color: Colors.grey),
-            const SizedBox(height: 16),
-            const Text('Could not find matches in the offline catalog.', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => context.pop(),
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0D9488)),
-              child: const Text('Try Again', style: TextStyle(color: Colors.white)),
-            )
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F5F9),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.search_off_rounded, size: 56, color: Color(0xFF64748B)),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'No matching products found',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'We could not find exact or similar items in our catalog matching your uploaded image. Try taking another photo or explore our categories.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: Color(0xFF64748B), height: 1.4),
+              ),
+              const SizedBox(height: 32),
+              ElevatedButton.icon(
+                onPressed: () {
+                  context.go('/categories');
+                },
+                icon: const Icon(Icons.grid_view_rounded, size: 18),
+                label: const Text('Browse Categories', style: TextStyle(fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0D9488),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => context.pop(),
+                child: const Text('Try Another Image', style: TextStyle(color: Color(0xFF0D9488), fontWeight: FontWeight.w600)),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildProductImage(String? path, {double? width, double? height, BoxFit fit = BoxFit.cover}) {
+  Widget _buildProductImage(String? path) {
     if (path == null || path.isEmpty) {
       return Container(
-        color: Colors.grey[100],
+        color: const Color(0xFFF1F5F9),
         child: const Center(
-          child: Icon(Icons.shopping_bag, size: 40, color: Colors.grey),
+          child: Icon(Icons.checkroom_outlined, size: 36, color: Color(0xFF94A3B8)),
         ),
       );
     }
-    if (path.startsWith('http') || path.startsWith('https')) {
+
+    if (path.startsWith('http://') || path.startsWith('https://')) {
       return Image.network(
         path,
-        width: width,
-        height: height,
-        fit: fit,
-        errorBuilder: (context, error, stackTrace) => Container(
-          color: Colors.grey[100],
-          child: const Center(
-            child: Icon(Icons.broken_image, size: 40, color: Colors.grey),
-          ),
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Container(
+          color: const Color(0xFFF1F5F9),
+          child: const Center(child: Icon(Icons.broken_image, size: 36, color: Color(0xFF94A3B8))),
         ),
       );
     }
+
     return Image.asset(
       path,
-      width: width,
-      height: height,
-      fit: fit,
-      errorBuilder: (context, error, stackTrace) => Container(
-        color: Colors.grey[100],
-        child: const Center(
-          child: Icon(Icons.broken_image, size: 40, color: Colors.grey),
-        ),
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Container(
+        color: const Color(0xFFF1F5F9),
+        child: const Center(child: Icon(Icons.broken_image, size: 36, color: Color(0xFF94A3B8))),
       ),
     );
   }
