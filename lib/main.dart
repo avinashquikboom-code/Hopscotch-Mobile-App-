@@ -8,6 +8,7 @@ import 'package:hopscotch/theme/theme_provider.dart';
 import 'package:hopscotch/providers/language_provider.dart';
 import 'package:hopscotch/l10n/app_localizations.dart';
 import 'package:hopscotch/core/session_manager.dart';
+import 'package:hopscotch/services/fcm_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,6 +84,9 @@ class MyApp extends ConsumerWidget {
       supportedLocales: AppLocalizations.supportedLocales,
       locale: language.locale,
       builder: (context, child) {
+        // Initialize FCM Push Notifications
+        FcmService().initialize(context);
+
         final mediaQuery = MediaQuery.of(context);
         // Calculate screen-based responsive font scale (clamped between 0.85 and 1.18)
         final responsiveScale = (mediaQuery.size.width / 390.0).clamp(0.85, 1.18);
