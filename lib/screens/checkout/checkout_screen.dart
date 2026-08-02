@@ -1998,6 +1998,136 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             ),
                           ],
                         ),
+
+                        const SizedBox(height: 20),
+
+                        // ── SELLER & FULFILLMENT CARD ──
+                        _sectionHeader(
+                          context,
+                          responsive,
+                          Icons.store_rounded,
+                          'SELLER & FULFILLMENT',
+                        ),
+                        _sectionCard(
+                          context,
+                          isDark,
+                          colorScheme,
+                          children: [
+                            ref.watch(apiSellerInfoProvider).when(
+                                  data: (sellerInfo) {
+                                    final name = sellerInfo['sellerName'] ?? 'FCI Seller Retail Pvt. Ltd.';
+                                    final contact = sellerInfo['sellerContactNumber'] ?? '+91 9876543210';
+                                    return Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: BoxDecoration(
+                                                color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                              child: const Icon(
+                                                Icons.verified_user_rounded,
+                                                color: AppTheme.primaryColor,
+                                                size: 20,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    'Sold & Fulfilled By',
+                                                    style: TextStyle(
+                                                      fontSize: responsive.fontSize10,
+                                                      fontWeight: FontWeight.w700,
+                                                      color: colorScheme.onSurface.withValues(alpha: 0.6),
+                                                      letterSpacing: 0.8,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 2),
+                                                  Text(
+                                                    name,
+                                                    style: TextStyle(
+                                                      fontSize: responsive.fontSize13,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: colorScheme.onSurface,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        if (contact.isNotEmpty) ...[
+                                          const SizedBox(height: 10),
+                                          const Divider(height: 1),
+                                          const SizedBox(height: 10),
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.phone_rounded,
+                                                size: responsive.iconSize(14),
+                                                color: colorScheme.onSurface.withValues(alpha: 0.6),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                'Seller Contact: ',
+                                                style: TextStyle(
+                                                  fontSize: responsive.fontSize11,
+                                                  color: colorScheme.onSurface.withValues(alpha: 0.6),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Text(
+                                                  contact,
+                                                  style: TextStyle(
+                                                    fontSize: responsive.fontSize11,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: colorScheme.onSurface,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ],
+                                    );
+                                  },
+                                  loading: () => const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: CircularProgressIndicator.adaptive(strokeWidth: 2),
+                                    ),
+                                  ),
+                                  error: (_, __) => Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Sold & Fulfilled By',
+                                        style: TextStyle(
+                                          fontSize: responsive.fontSize10,
+                                          fontWeight: FontWeight.w700,
+                                          color: colorScheme.onSurface.withValues(alpha: 0.6),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'FCI Seller Retail Pvt. Ltd.',
+                                        style: TextStyle(
+                                          fontSize: responsive.fontSize13,
+                                          fontWeight: FontWeight.bold,
+                                          color: colorScheme.onSurface,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                          ],
+                        ),
                       ],
                     ),
                   ),

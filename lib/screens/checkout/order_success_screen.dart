@@ -244,16 +244,17 @@ class _OrderSuccessScreenState extends ConsumerState<OrderSuccessScreen>
                           border: Border.all(color: Colors.amber.shade300),
                         ),
                         child: Row(
-                          mainAxisSize: MainAxisSize.min,
                           children: [
                             const Icon(Icons.stars, color: Colors.orange, size: 20),
                             const SizedBox(width: 8),
-                            Text(
-                              'Reward Points Pending: Will be credited after successful delivery.',
-                              style: TextStyle(
-                                fontSize: responsive.fontSize12,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.amber.shade900,
+                            Expanded(
+                              child: Text(
+                                'Reward Points Pending: Will be credited after successful delivery.',
+                                style: TextStyle(
+                                  fontSize: responsive.fontSize12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.amber.shade900,
+                                ),
                               ),
                             ),
                           ],

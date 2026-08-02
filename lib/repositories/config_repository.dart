@@ -62,6 +62,39 @@ class ConfigRepository {
     }
     return [];
   }
+
+  Future<Map<String, String>> fetchSellerDetails() async {
+    final endpoints = [
+      '/api/v1/settings/app',
+      '/api/settings/app',
+      '/settings/app',
+    ];
+
+    for (final endpoint in endpoints) {
+      try {
+        final response = await _apiService.get(endpoint);
+        if (response.statusCode == 200 && response.data != null) {
+          final data = response.data['data'] ?? response.data;
+          if (data is Map) {
+            final name = (data['sellerName'] ?? data['siteName'] ?? '').toString();
+            final phone = (data['sellerContactNumber'] ?? data['contactPhone'] ?? '').toString();
+            if (name.isNotEmpty || phone.isNotEmpty) {
+              return {
+                'sellerName': name.isNotEmpty ? name : 'FCI Seller Retail Pvt. Ltd.',
+                'sellerContactNumber': phone.isNotEmpty ? phone : '+91 9876543210',
+              };
+            }
+          }
+        }
+      } catch (e) {
+        DevLogger.logError('Error fetching seller details from $endpoint: $e', context: 'ConfigRepository');
+      }
+    }
+    return {
+      'sellerName': 'FCI Seller Retail Pvt. Ltd.',
+      'sellerContactNumber': '+91 9876543210',
+    };
+  }
 }
 
 final configRepositoryProvider = Provider<ConfigRepository>((ref) {
@@ -79,4 +112,8 @@ final apiCurrenciesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) {
 
 final apiCountriesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) {
   return ref.watch(configRepositoryProvider).fetchCountries();
+});
+
+final apiSellerInfoProvider = FutureProvider<Map<String, String>>((ref) {
+  return ref.watch(configRepositoryProvider).fetchSellerDetails();
 });
