@@ -83,14 +83,22 @@ class NotificationsScreen extends ConsumerWidget {
             ),
         ],
       ),
-      body: notifications.isEmpty
-          ? const EmptyState(
-              icon: Icons.notifications_none_rounded,
-              title: 'All Caught Up!',
-              description:
-                  'You have no new notifications. We will alert you here when new collections drop or orders dispatch.',
-            )
-          : ListView.separated(
+      body: RefreshIndicator(
+        onRefresh: () => notifier.loadNotifications(),
+        child: notifications.isEmpty
+            ? SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.7,
+                  child: const EmptyState(
+                    icon: Icons.notifications_none_rounded,
+                    title: 'All Caught Up!',
+                    description:
+                        'You have no new notifications. We will alert you here when new collections drop or orders dispatch.',
+                  ),
+                ),
+              )
+            : ListView.separated(
               padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
               itemCount: notifications.length,
               separatorBuilder: (context, index) =>
@@ -195,6 +203,7 @@ class NotificationsScreen extends ConsumerWidget {
                 );
               },
             ),
+      ),
     );
   }
 }

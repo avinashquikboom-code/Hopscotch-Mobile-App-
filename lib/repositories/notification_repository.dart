@@ -9,10 +9,10 @@ class NotificationNotifier extends StateNotifier<List<NotificationModel>> {
   final ApiService _apiService;
 
   NotificationNotifier(this._apiService) : super([]) {
-    _loadNotifications();
+    loadNotifications();
   }
 
-  Future<void> _loadNotifications() async {
+  Future<void> loadNotifications() async {
     try {
       final response = await _apiService.get(AppUrls.notifications);
       if (response.statusCode == 200) {

@@ -1640,19 +1640,36 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                             child: Column(
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
-                                                Text(
-                                                  'Use Wallet Balance (₹${loyaltyState.walletBalance.toStringAsFixed(2)} Available)',
-                                                  style: TextStyle(
-                                                    fontSize: responsive.fontSize11,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: colorScheme.onSurface,
-                                                  ),
+                                                Row(
+                                                  children: [
+                                                    Text(
+                                                      'Use Wallet Balance (₹${loyaltyState.walletBalance.toStringAsFixed(2)} Available)',
+                                                      style: TextStyle(
+                                                        fontSize: responsive.fontSize11,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: colorScheme.onSurface,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 6),
+                                                    GestureDetector(
+                                                      onTap: () => context.push('/wallet'),
+                                                      child: Text(
+                                                        '+ Top Up',
+                                                        style: TextStyle(
+                                                          fontSize: responsive.fontSize10,
+                                                          fontWeight: FontWeight.bold,
+                                                          color: const Color(0xFF059669),
+                                                          decoration: TextDecoration.underline,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                                 Text(
                                                   'Deduct directly from wallet balance',
                                                   style: TextStyle(
                                                     fontSize: responsive.fontSize10,
-                                                    color: Color(0xFF059669).withValues(alpha: 0.7),
+                                                    color: const Color(0xFF059669).withValues(alpha: 0.7),
                                                   ),
                                                 ),
                                               ],
