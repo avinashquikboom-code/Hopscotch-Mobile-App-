@@ -116,11 +116,17 @@ ProductModel mapBackendToMobileProduct(Map<String, dynamic> raw) {
     }
   }
 
+  double margin = 0.0;
+  final rawMargin = raw['margin'] ?? raw['maxMargin'] ?? raw['max_margin'] ?? raw['margin_ceiling'];
+  if (rawMargin != null) {
+    if (rawMargin is num) {
+      margin = rawMargin.toDouble();
+    } else {
+      margin = double.tryParse(rawMargin.toString()) ?? 0.0;
+    }
+  }
+
   // ── Tax parsing ──────────────────────────────────────────────────────────
-  // Mirrors ProductModel.fromJson so that products loaded from list endpoints
-  // (home / category / trending cards) carry GST into the cart & checkout.
-  // Without this the fields fall back to the constructor defaults (0% /
-  // EXCLUSIVE) and the order summary shows "Tax ₹0.00".
   final categoryObj = raw['category'] is Map ? raw['category'] as Map : null;
   final effectiveTax = raw['effectiveTaxRule'] ??
       raw['taxRule'] ??
@@ -225,6 +231,7 @@ ProductModel mapBackendToMobileProduct(Map<String, dynamic> raw) {
     taxType: taxType,
     hsnCode: hsnCode,
     shippingCharge: shippingCharge,
+    margin: margin,
   );
 }
 

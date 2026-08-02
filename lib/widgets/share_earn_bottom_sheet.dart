@@ -445,6 +445,9 @@ $shareUrl
   Widget _buildShareCatalogStep(ResponsiveText responsive, AppCurrency currency) {
     final hasAdditional = widget.product.additionalImages.isNotEmpty;
     final additionalCount = widget.product.additionalImages.length;
+    final double maxMargin = widget.product.margin > 0
+        ? widget.product.margin
+        : (widget.product.price * 0.45).roundToDouble();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -477,9 +480,10 @@ $shareUrl
             ],
           ),
         ),
-
-        // Margin configuration bar
-        GestureDetector(
+        const Divider(color: AppTheme.borderColor),
+        
+        // Margin Info Banner
+        InkWell(
           onTap: () {
             HapticFeedback.lightImpact();
             setState(() {
@@ -505,7 +509,7 @@ $shareUrl
                   child: Text(
                     _margin > 0
                         ? 'Margin of ${currency.formatPrice(_margin)} applied'
-                        : 'Margin can be set while sharing',
+                        : 'Maximum Margin Allowed: ${currency.formatPrice(maxMargin)}',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: responsive.fontSize12,
                       fontWeight: FontWeight.w600,
@@ -848,23 +852,14 @@ $shareUrl
                             ),
                           ],
                         ),
-                        if (_marginController.text.isNotEmpty && _marginController.text != '0')
-                          GestureDetector(
-                            onTap: () {
-                              _marginController.text = '0';
-                              setState(() {
-                                _margin = 0.0;
-                              });
-                            },
-                            child: Text(
-                              'CLEAR',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: responsive.fontSize11,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.redAccent,
-                              ),
-                            ),
+                        Text(
+                          'Max: ${currency.formatPrice(maxMargin)}',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: responsive.fontSize12,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF1E88E5),
                           ),
+                        ),
                       ],
                     ),
                     SizedBox(height: responsive.spacing(12)),
