@@ -51,6 +51,9 @@ class OrderNotifier extends StateNotifier<AsyncValue<List<OrderModel>>> {
     String? address,
     String? paymentMethod,
     String? addressId,
+    String? razorpayOrderId,
+    String? razorpayPaymentId,
+    String? razorpaySignature,
     bool? giftWrap,
   }) async {
     try {
@@ -70,6 +73,9 @@ class OrderNotifier extends StateNotifier<AsyncValue<List<OrderModel>>> {
         shippingFee: shippingFee,
         taxAmount: taxAmount,
         totalAmount: totalAmount,
+        razorpayOrderId: razorpayOrderId,
+        razorpayPaymentId: razorpayPaymentId,
+        razorpaySignature: razorpaySignature,
         giftWrap: giftWrap,
       );
       final rawOrder = response.data['data'] ?? response.data;

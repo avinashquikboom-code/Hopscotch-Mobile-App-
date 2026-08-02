@@ -128,9 +128,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   void _startRazorpayTimeout() {
     _cancelRazorpayTimeout();
-    dev.log('Starting 15s Razorpay timeout timer', name: 'Razorpay');
-    _razorpayTimeoutTimer = Timer(const Duration(seconds: 15), () {
-      dev.log('Razorpay timeout triggered after 15 seconds', name: 'Razorpay');
+    dev.log('Starting 120s Razorpay timeout timer', name: 'Razorpay');
+    _razorpayTimeoutTimer = Timer(const Duration(seconds: 120), () {
+      dev.log('Razorpay timeout triggered after 120 seconds', name: 'Razorpay');
       if (mounted && _isPlacingOrder) {
         setState(() {
           _isPlacingOrder = false;
@@ -366,6 +366,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 ? _selectedAddressId
                 : null,
             paymentMethod: 'Razorpay',
+            razorpayOrderId: response.orderId,
+            razorpayPaymentId: response.paymentId,
+            razorpaySignature: response.signature,
             giftWrap: isGiftWrapped,
           );
       dev.log(
