@@ -722,9 +722,10 @@ $shareUrl
     );
   }
 
-  // Screen 2: Set Margin Widget
   Widget _buildSetMarginStep(ResponsiveText responsive, AppCurrency currency) {
-    final double maxMargin = (widget.product.price * 0.45).roundToDouble(); // Around 45% of price
+    final double maxMargin = widget.product.margin > 0 
+        ? widget.product.margin 
+        : (widget.product.price * 0.45).roundToDouble(); // Fallback if admin margin is 0
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
