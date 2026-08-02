@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -19,10 +20,9 @@ import 'package:hopscotch/widgets/skeleton_loaders.dart';
 import 'package:hopscotch/l10n/app_localizations.dart';
 import 'dart:io';
 import 'package:hopscotch/widgets/visual_search_bottom_sheet.dart';
-import 'package:hopscotch/repositories/profile_repository.dart';
-import 'package:hopscotch/constants/app_urls.dart';
+import 'package:flutter/services.dart';
+import 'package:hopscotch/repositories/notification_repository.dart';
 import 'package:hopscotch/widgets/flipkart_category_strip.dart';
-import 'package:hopscotch/widgets/user_avatar.dart';
 import 'package:hopscotch/utils/navigation_utils.dart';
 
 // ─────────────────────────────────────────────────────────────
@@ -324,7 +324,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
         ),
-        const _ProfileAvatarButton(),
+        const _AnimatedNotificationButton(isHeroTheme: true),
       ],
     );
 
@@ -407,7 +407,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                         ),
                       ),
-                      const _ProfileAvatarButton(),
+                      const _AnimatedNotificationButton(isHeroTheme: false),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -505,10 +505,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       child: TrendingProductCard(
                         product: product,
                         heroTagPrefix: 'home_trending',
-                        onTap: () => safeNavigate(
-                          context,
-                          '/product/${product.id}',
-                        ),
+                        onTap: () =>
+                            safeNavigate(context, '/product/${product.id}'),
                       ),
                     );
                   },
@@ -527,9 +525,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: const ProductCardSkeleton(),
                 ),
               ),
-              error: (err, stack) => Center(
-                child: Text('Failed to load trending items: $err'),
-              ),
+              error: (err, stack) =>
+                  Center(child: Text('Failed to load trending items: $err')),
             ),
           ),
         ),
@@ -928,97 +925,192 @@ class _LocationText extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────
-// REDESIGNED PREMIUM USER PROFILE AVATAR BUTTON
+// ANIMATED NOTIFICATION BUTTON WITH UNREAD COUNT BADGE
 // ─────────────────────────────────────────────────────────────
 
-class _ProfileAvatarButton extends ConsumerStatefulWidget {
-  const _ProfileAvatarButton();
+class _AnimatedNotificationButton extends ConsumerStatefulWidget {
+  final bool isHeroTheme;
+  const _AnimatedNotificationButton({this.isHeroTheme = false});
 
   @override
-  ConsumerState<_ProfileAvatarButton> createState() =>
-      _ProfileAvatarButtonState();
+  ConsumerState<_AnimatedNotificationButton> createState() =>
+      _AnimatedNotificationButtonState();
 }
 
-class _ProfileAvatarButtonState extends ConsumerState<_ProfileAvatarButton> {
-  double _scale = 1.0;
+class _AnimatedNotificationButtonState
+    extends ConsumerState<_AnimatedNotificationButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _bellController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _rotationAnimation;
+  Timer? _periodicRingTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _bellController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 650),
+    );
+
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.82), weight: 20),
+      TweenSequenceItem(tween: Tween(begin: 0.82, end: 1.22), weight: 35),
+      TweenSequenceItem(tween: Tween(begin: 1.22, end: 0.95), weight: 25),
+      TweenSequenceItem(tween: Tween(begin: 0.95, end: 1.0), weight: 20),
+    ]).animate(CurvedAnimation(parent: _bellController, curve: Curves.easeInOut));
+
+    _rotationAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -0.35), weight: 15),
+      TweenSequenceItem(tween: Tween(begin: -0.35, end: 0.35), weight: 25),
+      TweenSequenceItem(tween: Tween(begin: 0.35, end: -0.2), weight: 25),
+      TweenSequenceItem(tween: Tween(begin: -0.2, end: 0.1), weight: 20),
+      TweenSequenceItem(tween: Tween(begin: 0.1, end: 0.0), weight: 15),
+    ]).animate(CurvedAnimation(parent: _bellController, curve: Curves.easeOut));
+
+    // Play a initial ring after screen builds
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _bellController.forward(from: 0.0);
+      }
+    });
+
+    // Setup periodic ringing if there are unread notifications
+    _startPeriodicRing();
+  }
+
+  void _startPeriodicRing() {
+    _periodicRingTimer?.cancel();
+    _periodicRingTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (mounted) {
+        final notifications = ref.read(notificationProvider);
+        final hasUnread = notifications.any((n) => !n.isRead);
+        if (hasUnread && !_bellController.isAnimating) {
+          _bellController.forward(from: 0.0);
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _periodicRingTimer?.cancel();
+    _bellController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onTap() async {
+    HapticFeedback.mediumImpact();
+    _bellController.forward(from: 0.0);
+    // Allow the bell animation to play briefly so user sees the ring effect
+    await Future.delayed(const Duration(milliseconds: 220));
+    if (mounted) {
+      context.push('/notifications');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final userProfile = ref.watch(profileNotifierProvider);
+    final notifications = ref.watch(notificationProvider);
+    final unreadCount = notifications.where((n) => !n.isRead).length;
     final colorScheme = Theme.of(context).colorScheme;
 
-    String? initials;
-    if (userProfile != null) {
-      final name = userProfile['firstName'] ?? userProfile['name'];
-      if (name != null && name.toString().isNotEmpty) {
-        initials = name.toString().trim().substring(0, 1).toUpperCase();
-      }
-    }
-
-    final rawAvatarUrl = userProfile?['avatarUrl']?.toString() ??
-        userProfile?['avatar']?.toString() ??
-        userProfile?['avatar_url']?.toString() ??
-        userProfile?['profileImage']?.toString();
-    final avatarUrl = (rawAvatarUrl != null && rawAvatarUrl.isNotEmpty)
-        ? AppUrls.resolveUrl(rawAvatarUrl)
-        : null;
+    final iconColor = widget.isHeroTheme ? Colors.white : colorScheme.onSurface;
+    final containerBg = widget.isHeroTheme
+        ? Colors.black.withValues(alpha: 0.25)
+        : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5);
 
     return GestureDetector(
-      onTapDown: (_) => setState(() => _scale = 0.92),
-      onTapUp: (_) => setState(() => _scale = 1.0),
-      onTapCancel: () => setState(() => _scale = 1.0),
-      onTap: () => context.push('/profile'),
-      child: AnimatedScale(
-        scale: _scale,
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeOutBack,
+      onTap: _onTap,
+      child: AnimatedBuilder(
+        animation: _bellController,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Transform.rotate(
+              angle: _rotationAnimation.value,
+              child: child,
+            ),
+          );
+        },
         child: Container(
-          width: 36,
-          height: 36,
+          width: 40,
+          height: 40,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            gradient: LinearGradient(
-              colors: [
-                colorScheme.primary.withValues(alpha: 0.8),
-                colorScheme.secondary.withValues(alpha: 0.9),
-              ],
-            ),
+            color: containerBg,
             boxShadow: [
-              BoxShadow(
-                color: colorScheme.primary.withValues(alpha: 0.15),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
+              if (!widget.isHeroTheme)
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
             ],
             border: Border.all(
-              color: colorScheme.primary.withValues(alpha: 0.25),
-              width: 1.5,
+              color: widget.isHeroTheme
+                  ? Colors.white.withValues(alpha: 0.3)
+                  : colorScheme.outline.withValues(alpha: 0.15),
+              width: 1,
             ),
           ),
-          padding: const EdgeInsets.all(2.0),
-          child: Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: colorScheme.surface,
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: UserAvatar(
-              avatarUrl: avatarUrl,
-              initials: initials,
-              radius: 17,
-              backgroundColor: colorScheme.surface,
-              textColor: colorScheme.primary,
-            ),
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              Icon(
+                unreadCount > 0
+                    ? Icons.notifications_active_rounded
+                    : Icons.notifications_outlined,
+                color: iconColor,
+                size: 22,
+              ),
+              if (unreadCount > 0)
+                Positioned(
+                  top: -2,
+                  right: -2,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    padding: EdgeInsets.all(unreadCount > 9 ? 2 : 4),
+                    constraints: const BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEF4444),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: widget.isHeroTheme ? Colors.black : Colors.white,
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFEF4444).withValues(alpha: 0.4),
+                          blurRadius: 4,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        unreadCount > 9 ? '9+' : '$unreadCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          height: 1,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
       ),
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────
-// WHITE LOCATION TEXT — overlaid on banner image
-// ─────────────────────────────────────────────────────────────
 
 class _HeroLocationText extends StatelessWidget {
   final String area;
@@ -1125,12 +1217,17 @@ class _TrendingHighlightsSectionHeader extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF0d9488).withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: const Color(0xFF0d9488).withValues(alpha: 0.30),
+                          color: const Color(
+                            0xFF0d9488,
+                          ).withValues(alpha: 0.30),
                           width: 1,
                         ),
                       ),
@@ -1163,7 +1260,10 @@ class _TrendingHighlightsSectionHeader extends StatelessWidget {
             GestureDetector(
               onTap: onSeeAll,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFF0d9488), Color(0xFF14b8a6)],
@@ -1257,12 +1357,17 @@ class _NewGuardSectionHeader extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF0d9488).withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: const Color(0xFF0d9488).withValues(alpha: 0.30),
+                          color: const Color(
+                            0xFF0d9488,
+                          ).withValues(alpha: 0.30),
                           width: 1,
                         ),
                       ),
@@ -1295,7 +1400,10 @@ class _NewGuardSectionHeader extends StatelessWidget {
             GestureDetector(
               onTap: onSeeAll,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFF0d9488), Color(0xFF14b8a6)],
@@ -1395,7 +1503,10 @@ class _ExploreCollectionHeader extends StatelessWidget {
               GestureDetector(
                 onTap: onSeeAll,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF0d9488), Color(0xFF14b8a6)],
