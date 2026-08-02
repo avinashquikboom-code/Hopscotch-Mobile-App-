@@ -1,6 +1,6 @@
 class AppUrls {
-  static const String mobileBaseUrl = 'http://192.168.1.103:5001';
-  // static const String mobileBaseUrl = 'https://api.fciseller.com';
+  // static const String mobileBaseUrl = 'http://192.168.1.103:5001';
+  static const String mobileBaseUrl = 'https://api.fciseller.com';
 
   static String resolveUrl(String? url) {
     if (url == null || url.trim().isEmpty) {
