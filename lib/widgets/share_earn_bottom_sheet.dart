@@ -33,6 +33,7 @@ class _ShareEarnBottomSheetState extends ConsumerState<ShareEarnBottomSheet> {
   ShareEarnStep _currentStep = ShareEarnStep.setMargin;
   double _margin = 0.0; // Default margin is ₹0 as per image
   String _selectedShareType = 'all'; // 'all' or 'this'
+  String? _marginError;
   final TextEditingController _marginController = TextEditingController(text: '0');
 
   @override
@@ -899,10 +900,13 @@ $shareUrl
                             onChanged: (val) {
                               final parsed = double.tryParse(val) ?? 0.0;
                               setState(() {
+                                _margin = parsed;
                                 if (parsed > maxMargin) {
-                                  _margin = maxMargin;
+                                  _marginError = 'Margin cannot exceed ${currency.formatPrice(maxMargin)}';
+                                } else if (parsed < 0) {
+                                  _marginError = 'Margin cannot be negative';
                                 } else {
-                                  _margin = parsed;
+                                  _marginError = null;
                                 }
                               });
                             },
@@ -910,6 +914,17 @@ $shareUrl
                         ),
                       ],
                     ),
+                    if (_marginError != null) ...[
+                      SizedBox(height: responsive.spacing(6)),
+                      Text(
+                        _marginError!,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: responsive.fontSize12,
+                          color: Colors.red,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -1022,6 +1037,24 @@ $shareUrl
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
+                if (_margin > maxMargin) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Margin cannot exceed ${currency.formatPrice(maxMargin)}'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
+                if (_margin < 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Margin cannot be negative'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
                 HapticFeedback.lightImpact();
                 setState(() {
                   _currentStep = ShareEarnStep.shareCatalog;
