@@ -575,18 +575,27 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                             ),
                                           );
                                         },
-                                        errorBuilder: (context, error, stackTrace) => Image.network(
-                                          'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800',
-                                          fit: BoxFit.cover,
-                                          width: double.infinity,
-                                          errorBuilder: (_, __, ___) => Container(
-                                            color: AppTheme.primaryColor.withValues(alpha: 0.04),
-                                            child: Center(
-                                              child: Icon(
-                                                Icons.checkroom_rounded,
-                                                color: AppTheme.primaryColor.withValues(alpha: 0.15),
-                                                size: responsive.iconSize(80),
-                                              ),
+                                        errorBuilder: (context, error, stackTrace) => Container(
+                                          color: AppTheme.primaryColor.withValues(alpha: 0.04),
+                                          child: Center(
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.image_not_supported_outlined,
+                                                  color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                                                  size: responsive.iconSize(64),
+                                                ),
+                                                SizedBox(height: responsive.spacing(8)),
+                                                Text(
+                                                  'Image Unavailable',
+                                                  style: TextStyle(
+                                                    color: AppTheme.textSecondaryColor,
+                                                    fontSize: responsive.fontSize12,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
                                         ),

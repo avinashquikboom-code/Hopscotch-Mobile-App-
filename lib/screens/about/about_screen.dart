@@ -101,7 +101,7 @@ class AboutScreen extends StatelessWidget {
             _buildSectionCard(
               context,
               'Our Story',
-              'AURA Couture was born from a passion for fashion and a commitment to quality. We believe that everyone deserves access to premium fashion that makes them feel confident and beautiful. Our curated collection features the finest designs from around the world, carefully selected to meet the highest standards of style and quality.',
+              'FCI Seller was born from a passion for fashion and a commitment to quality. We believe that everyone deserves access to premium fashion that makes them feel confident and beautiful. Our curated collection features the finest designs from around the world, carefully selected to meet the highest standards of style and quality.',
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceL)),
             _buildSectionCard(
@@ -169,7 +169,7 @@ class AboutScreen extends StatelessWidget {
             // Copyright
             Center(
               child: Text(
-                '© 2024 AURA Couture. All rights reserved.',
+                '© 2026 FCI Seller. All rights reserved.',
                 style: responsive.bodySmall.copyWith(
                   color: AppTheme.textLightColor,
                 ),

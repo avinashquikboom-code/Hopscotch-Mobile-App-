@@ -37,7 +37,7 @@ class TermsScreen extends StatelessWidget {
             SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
             _buildTermsSection(context,
               'Acceptance of Terms',
-              'By accessing and using AURA Couture, you accept and agree to be bound by the terms and provisions of this agreement. If you do not agree to abide by these terms, please do not use our service.',
+              'By accessing and using FCI Seller, you accept and agree to be bound by the terms and provisions of this agreement. If you do not agree to abide by these terms, please do not use our service.',
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceL)),
             _buildTermsSection(context,

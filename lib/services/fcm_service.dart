@@ -66,6 +66,23 @@ class FcmService {
         },
       );
 
+      // Create Android Notification Channel for lock-screen & system-bar banners with sound
+      if (Platform.isAndroid) {
+        const AndroidNotificationChannel channel = AndroidNotificationChannel(
+          'high_importance_channel',
+          'High Importance Notifications',
+          description: 'Used for order updates and urgent store alerts.',
+          importance: Importance.max,
+          playSound: true,
+          enableVibration: true,
+          enableLights: true,
+        );
+
+        await _localNotifications
+            .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+            ?.createNotificationChannel(channel);
+      }
+
       // 4. Retrieve FCM Token & Register with Backend
       String? token = await _messaging.getToken();
       if (token != null) {
@@ -130,18 +147,25 @@ class FcmService {
     final notification = message.notification;
     if (notification == null) return;
 
-    // Show Android/iOS Local Notification
+    // Show Android/iOS Local Notification with sound & vibration
     const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
       'high_importance_channel',
       'High Importance Notifications',
       channelDescription: 'Used for order updates and urgent store alerts.',
       importance: Importance.max,
       priority: Priority.high,
+      playSound: true,
+      enableVibration: true,
+      enableLights: true,
     );
 
     const NotificationDetails platformDetails = NotificationDetails(
       android: androidDetails,
-      iOS: DarwinNotificationDetails(),
+      iOS: DarwinNotificationDetails(
+        presentSound: true,
+        presentAlert: true,
+        presentBadge: true,
+      ),
     );
 
     _localNotifications.show(
