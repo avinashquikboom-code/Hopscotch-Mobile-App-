@@ -403,6 +403,55 @@ class _OrderSuccessScreenState extends ConsumerState<OrderSuccessScreen>
                                 ),
                               ],
                             ),
+
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              child: Divider(height: 1, thickness: 1),
+                            ),
+
+                            // Payment Method Banner
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF0D9488).withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Icon(
+                                    Icons.payments_rounded,
+                                    color: const Color(0xFF0D9488),
+                                    size: responsive.iconSize(20),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'PAYMENT METHOD',
+                                        style: TextStyle(
+                                          color: subtextColor,
+                                          fontSize: responsive.fontSize10,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: 0.8,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'Online Payment / Cash on Delivery',
+                                        style: TextStyle(
+                                          color: textColor,
+                                          fontSize: responsive.fontSize13,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),

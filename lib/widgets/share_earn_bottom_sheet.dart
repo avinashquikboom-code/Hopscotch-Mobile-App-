@@ -33,6 +33,13 @@ class _ShareEarnBottomSheetState extends ConsumerState<ShareEarnBottomSheet> {
   ShareEarnStep _currentStep = ShareEarnStep.setMargin;
   double _margin = 0.0; // Default margin is ₹0 as per image
   String _selectedShareType = 'all'; // 'all' or 'this'
+  final TextEditingController _marginController = TextEditingController(text: '0');
+
+  @override
+  void dispose() {
+    _marginController.dispose();
+    super.dispose();
+  }
 
   // Generate Reseller Share message
   String _generateShareText(AppCurrency currency, [String? customUrl]) {
@@ -393,31 +400,34 @@ $shareUrl
           ),
         ),
         child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Pull Handle
-              Container(
-                margin: const EdgeInsets.symmetric(vertical: 12),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Pull Handle
+                Container(
+                  margin: const EdgeInsets.symmetric(vertical: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-              ),
 
-              AnimatedSize(
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeInOut,
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  child: _currentStep == ShareEarnStep.shareCatalog
-                      ? _buildShareCatalogStep(responsive, currency)
-                      : _buildSetMarginStep(responsive, currency),
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeInOut,
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    child: _currentStep == ShareEarnStep.shareCatalog
+                        ? _buildShareCatalogStep(responsive, currency)
+                        : _buildSetMarginStep(responsive, currency),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -785,44 +795,129 @@ $shareUrl
               ),
               SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
-              // Highlighted Selected Margin Display - Reseller Blue color
-              Center(
-                child: Text(
-                  'Margin ${currency.formatPrice(_margin)}',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: responsive.fontSize20,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1E88E5),
+              // Redesigned Reseller Margin Input Card
+              Container(
+                padding: EdgeInsets.all(responsive.spacing(16)),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFF1E293B)
+                      : const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: const Color(0xFF1E88E5).withValues(alpha: 0.5),
+                    width: 1.5,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF1E88E5).withValues(alpha: 0.06),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.add_circle_outline_rounded,
+                              size: responsive.iconSize(18),
+                              color: const Color(0xFF1E88E5),
+                            ),
+                            SizedBox(width: responsive.spacing(6)),
+                            Text(
+                              'YOUR EXTRA MARGIN',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: responsive.fontSize12,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF1E88E5),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (_marginController.text.isNotEmpty && _marginController.text != '0')
+                          GestureDetector(
+                            onTap: () {
+                              _marginController.text = '0';
+                              setState(() {
+                                _margin = 0.0;
+                              });
+                            },
+                            child: Text(
+                              'CLEAR',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: responsive.fontSize11,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.redAccent,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    SizedBox(height: responsive.spacing(12)),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          currency.symbol,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: responsive.fontSize24,
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFF1E88E5),
+                          ),
+                        ),
+                        SizedBox(width: responsive.spacing(8)),
+                        Expanded(
+                          child: TextField(
+                            controller: _marginController,
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                            ],
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: responsive.fontSize24,
+                              fontWeight: FontWeight.w800,
+                              color: const Color(0xFF1E88E5),
+                            ),
+                            decoration: InputDecoration(
+                              hintText: '0',
+                              hintStyle: GoogleFonts.plusJakartaSans(
+                                fontSize: responsive.fontSize24,
+                                fontWeight: FontWeight.w800,
+                                color: AppTheme.textLightColor,
+                              ),
+                              border: InputBorder.none,
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                            onChanged: (val) {
+                              final parsed = double.tryParse(val) ?? 0.0;
+                              setState(() {
+                                if (parsed > maxMargin) {
+                                  _margin = maxMargin;
+                                } else {
+                                  _margin = parsed;
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: responsive.spacing(AppTheme.spaceL)),
 
-              // Slider component
-              SliderTheme(
-                data: SliderThemeData(
-                  activeTrackColor: AppTheme.primaryColor,
-                  inactiveTrackColor: AppTheme.primaryColor.withValues(alpha: 0.2),
-                  thumbColor: AppTheme.primaryColor,
-                  overlayColor: AppTheme.primaryColor.withValues(alpha: 0.12),
-                  trackHeight: 4,
-                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
-                ),
-                child: Slider(
-                  value: _margin,
-                  min: 0.0,
-                  max: maxMargin,
-                  onChanged: (val) {
-                    setState(() {
-                      _margin = val.roundToDouble();
-                    });
-                  },
-                ),
-              ),
+              SizedBox(height: responsive.spacing(10)),
 
-              // Slider labels (Min/Max)
+              // Guidance Labels (Min / Max limit)
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: responsive.spacing(12)),
+                padding: EdgeInsets.symmetric(horizontal: responsive.spacing(4)),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -845,6 +940,43 @@ $shareUrl
                   ],
                 ),
               ),
+
+              SizedBox(height: responsive.spacing(16)),
+
+              // Final Customer Price Preview Banner
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(responsive.spacing(14)),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryColor.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Final Customer Price:',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: responsive.fontSize13,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textPrimaryColor,
+                      ),
+                    ),
+                    Text(
+                      currency.formatPrice(widget.product.price + _margin),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: responsive.fontSize16,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
               SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
             ],
           ),

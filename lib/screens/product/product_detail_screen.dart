@@ -676,17 +676,6 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                  ),
                                ),
 
-                               SizedBox(height: responsive.spacing(12)),
-
-                               // Loyalty & Reward Badge Card
-                               RewardBadgeCard(
-                                 rewardEarned: product.rewardEarned,
-                                 maxRedeemable: product.maxRedeemable,
-                                 allowRedemption: product.allowRedemption,
-                                 allowEarning: product.allowEarning,
-                                 appliedRuleType: product.appliedRuleType,
-                               ),
-
                               // Floating Actions (Heart, Share, WhatsApp) Column on the right
                               Positioned(
                                 right: responsive.spacing(16),
