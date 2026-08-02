@@ -196,6 +196,7 @@ class ProductModel {
   final bool allowRedemption;
   final bool allowEarning;
   final String appliedRuleType;
+  final double margin;
 
   String get name => title;
 
@@ -218,6 +219,7 @@ class ProductModel {
     this.reviews = const [],
     this.sizes = const [],
     this.colors = const [],
+    this.margin = 0.0,
     this.variants = const [],
     this.isAvailable = true,
     this.isTrending = false,
@@ -463,6 +465,7 @@ class ProductModel {
       allowRedemption: _asBool(json['allowRedemption'] ?? json['allow_redemption'] ?? json['allowRewardRedemption'], true),
       allowEarning: _asBool(json['allowEarning'] ?? json['allow_earning'] ?? json['allowRewardEarning'], true),
       appliedRuleType: _asString(json['appliedRuleType'] ?? json['applied_rule_type'], 'GLOBAL'),
+      margin: _asDouble(json['margin']),
     );
   }
 

@@ -53,4 +53,8 @@ class AppUrls {
   static const String notifications = '/api/notifications';
   static const String banners = '/api/banners';
   static const String commission = '/api/commission';
+
+  // Reseller
+  static const String resellerShare = '/api/mobile/reseller/share';
+  static const String resellerMyLinks = '/api/mobile/reseller/my-links';
 }

@@ -12,6 +12,8 @@ import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/providers/currency_provider.dart';
 import 'package:hopscotch/models/product_model.dart';
+import 'package:hopscotch/api/api_service.dart';
+import 'package:hopscotch/constants/app_urls.dart';
 
 enum ShareEarnStep { shareCatalog, setMargin }
 
@@ -33,8 +35,9 @@ class _ShareEarnBottomSheetState extends ConsumerState<ShareEarnBottomSheet> {
   String _selectedShareType = 'all'; // 'all' or 'this'
 
   // Generate Reseller Share message
-  String _generateShareText(AppCurrency currency) {
+  String _generateShareText(AppCurrency currency, [String? customUrl]) {
     final sellingPriceStr = currency.formatPrice(widget.product.price + _margin);
+    final shareUrl = customUrl ?? 'https://fciseller.com/p/${widget.product.id}';
     return '''
 ✨ *FCISeller Special Offer!* ✨
 *${widget.product.title}*
@@ -45,7 +48,7 @@ ${widget.product.description.length > 150 ? '${widget.product.description.substr
 🚚 *Free Delivery & Cash on Delivery Available*
 
 👇 *Order Now / View Details:*
-https://fciseller.com/p/${widget.product.id}
+$shareUrl
 ''';
   }
 
@@ -53,8 +56,28 @@ https://fciseller.com/p/${widget.product.id}
   Future<void> _handleShareAction(String platform, AppCurrency currency) async {
     HapticFeedback.mediumImpact();
 
+    String? generatedShareUrl;
+    try {
+      final pId = int.tryParse(widget.product.id);
+      if (pId != null) {
+        final res = await ApiService().post(
+          AppUrls.resellerShare,
+          data: {
+            'productId': pId,
+            'addedMargin': _margin,
+          },
+        );
+        if (res.data != null && res.data['data'] != null && res.data['data']['shareUrl'] != null) {
+          generatedShareUrl = res.data['data']['shareUrl'];
+        }
+      }
+    } catch (e) {
+      debugPrint('Error generating reseller share link: $e');
+    }
+
     if (platform == 'Copy Link') {
-      await Clipboard.setData(ClipboardData(text: 'https://fciseller.com/p/${widget.product.id}'));
+      final copyUrl = generatedShareUrl ?? 'https://fciseller.com/p/${widget.product.id}';
+      await Clipboard.setData(ClipboardData(text: copyUrl));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -62,7 +85,7 @@ https://fciseller.com/p/${widget.product.id}
               children: [
                 Icon(Icons.check_circle_outline_rounded, color: Colors.white),
                 SizedBox(width: 8),
-                Text('Product link copied to clipboard!'),
+                Text('Reseller share link copied to clipboard!'),
               ],
             ),
             backgroundColor: AppTheme.primaryColor,
@@ -112,7 +135,7 @@ https://fciseller.com/p/${widget.product.id}
     }
 
     try {
-      final shareText = _generateShareText(currency);
+      final shareText = _generateShareText(currency, generatedShareUrl);
       final List<String> imageUrlsToShare = [];
 
       // Determine which image(s) to share based on user selection
