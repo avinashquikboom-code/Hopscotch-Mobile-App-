@@ -247,6 +247,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     // Show a loading indicator
     if (!mounted) return;
     final messenger = ScaffoldMessenger.of(context);
+    messenger.clearSnackBars();
     messenger.showSnackBar(const SnackBar(
       content: Row(
         children: [
@@ -255,7 +256,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           Text('Preparing share...'),
         ],
       ),
-      duration: Duration(seconds: 10),
+      duration: Duration(milliseconds: 1500),
       behavior: SnackBarBehavior.floating,
     ));
 
@@ -902,6 +903,75 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                   ),
                                 ],
                               ),
+
+                              // Reseller Margin Earning Potential Card
+                              if (product.margin > 0) ...[
+                                SizedBox(height: responsive.spacing(AppTheme.spaceM)),
+                                GestureDetector(
+                                  onTap: () => _openShareEarnBottomSheet(product),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          const Color(0xFF14B8A6).withValues(alpha: 0.12),
+                                          const Color(0xFF0D9488).withValues(alpha: 0.05),
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                                      border: Border.all(
+                                        color: const Color(0xFF14B8A6).withValues(alpha: 0.3),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(6),
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFF14B8A6),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(Remix.share_forward_fill, color: Colors.white, size: 14),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'RESELLER EARNING POTENTIAL',
+                                                style: TextStyle(
+                                                  fontSize: responsive.fontSize10,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: const Color(0xFF0D9488),
+                                                  letterSpacing: 0.8,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                'Earn up to ${currency.formatPrice(product.margin)} per sale',
+                                                style: TextStyle(
+                                                  fontSize: responsive.fontSize13,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: AppTheme.textPrimaryColor,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Text(
+                                          'SHARE & EARN >',
+                                          style: TextStyle(
+                                            fontSize: responsive.fontSize11,
+                                            fontWeight: FontWeight.bold,
+                                            color: const Color(0xFF14B8A6),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
                               SizedBox(height: responsive.spacing(AppTheme.spaceL)),
 
                               // Reward Points Earn/Redeem Badge Card

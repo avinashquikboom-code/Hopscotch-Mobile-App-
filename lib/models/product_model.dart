@@ -465,7 +465,7 @@ class ProductModel {
       allowRedemption: _asBool(json['allowRedemption'] ?? json['allow_redemption'] ?? json['allowRewardRedemption'], true),
       allowEarning: _asBool(json['allowEarning'] ?? json['allow_earning'] ?? json['allowRewardEarning'], true),
       appliedRuleType: _asString(json['appliedRuleType'] ?? json['applied_rule_type'], 'GLOBAL'),
-      margin: _asDouble(json['margin']),
+      margin: _asDouble(json['margin'] ?? json['maxMargin'] ?? json['max_margin'] ?? json['margin_ceiling']),
     );
   }
 

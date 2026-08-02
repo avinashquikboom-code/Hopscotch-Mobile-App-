@@ -87,6 +87,7 @@ $shareUrl
       final copyUrl = generatedShareUrl ?? 'https://fciseller.com/p/${widget.product.id}';
       await Clipboard.setData(ClipboardData(text: copyUrl));
       if (mounted) {
+        ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Row(
@@ -96,6 +97,7 @@ $shareUrl
                 Text('Reseller share link copied to clipboard!'),
               ],
             ),
+            duration: const Duration(milliseconds: 1500),
             backgroundColor: AppTheme.primaryColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -311,6 +313,7 @@ $shareUrl
       if (mounted) {
         Navigator.of(context).pop();
         if (savedCount > 0) {
+          ScaffoldMessenger.of(context).clearSnackBars();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Row(
@@ -320,6 +323,7 @@ $shareUrl
                   Text('$savedCount image(s) saved to gallery'),
                 ],
               ),
+              duration: const Duration(milliseconds: 1500),
               backgroundColor: Colors.green[700],
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -368,6 +372,7 @@ $shareUrl
     HapticFeedback.mediumImpact();
     await Clipboard.setData(ClipboardData(text: widget.product.description));
     if (mounted) {
+      ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Row(
@@ -377,6 +382,7 @@ $shareUrl
               Text('Product description copied!'),
             ],
           ),
+          duration: const Duration(milliseconds: 1500),
           backgroundColor: AppTheme.primaryColor,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -1016,11 +1022,11 @@ $shareUrl
                 ),
                 SizedBox(width: responsive.spacing(8)),
                 Text(
-                  'Maximum margin is set by the brand',
+                  'Maximum margin allowed: ${currency.formatPrice(maxMargin)}',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: responsive.fontSize12,
-                    color: AppTheme.textLightColor,
-                    fontWeight: FontWeight.w500,
+                    color: AppTheme.primaryColor,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -1038,18 +1044,22 @@ $shareUrl
             child: ElevatedButton(
               onPressed: () {
                 if (_margin > maxMargin) {
+                  ScaffoldMessenger.of(context).clearSnackBars();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Margin cannot exceed ${currency.formatPrice(maxMargin)}'),
+                      duration: const Duration(milliseconds: 1500),
                       backgroundColor: Colors.red,
                     ),
                   );
                   return;
                 }
                 if (_margin < 0) {
+                  ScaffoldMessenger.of(context).clearSnackBars();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Margin cannot be negative'),
+                      duration: Duration(milliseconds: 1500),
                       backgroundColor: Colors.red,
                     ),
                   );
