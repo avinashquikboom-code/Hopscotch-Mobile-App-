@@ -66,8 +66,10 @@ class _MyWalletScreenState extends ConsumerState<MyWalletScreen> with SingleTick
                 ),
               ),
               const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                alignment: WrapAlignment.spaceBetween,
                 children: [500, 1000, 2000, 5000].map((amt) {
                   return ChoiceChip(
                     label: Text('₹$amt'),

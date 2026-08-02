@@ -57,7 +57,6 @@ class _GiftCardScreenState extends ConsumerState<GiftCardScreen> {
   @override
   Widget build(BuildContext context) {
     final loyaltyState = ref.watch(loyaltyProvider);
-    final primaryColor = Theme.of(context).primaryColor;
 
     return Scaffold(
       appBar: AppBar(
@@ -126,7 +125,7 @@ class _GiftCardScreenState extends ConsumerState<GiftCardScreen> {
                       textCapitalization: TextCapitalization.characters,
                       decoration: InputDecoration(
                         labelText: 'Gift Card Code',
-                        hintText: 'e.g. GIFT-2026-HOPSCH',
+                        hintText: 'e.g. GIFT-2026-FCIS',
                         prefixIcon: const Icon(Icons.confirmation_number_outlined),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),

@@ -1,8 +1,20 @@
-import 'package:flutter/foundation.dart';
-
 enum WalletTransactionType { credit, debit }
 
 enum WalletTransactionCategory { topup, purchase, refund, cashback, admin }
+
+double _parseDouble(dynamic val) {
+  if (val == null) return 0.0;
+  if (val is num) return val.toDouble();
+  if (val is String) return double.tryParse(val) ?? 0.0;
+  return 0.0;
+}
+
+int _parseInt(dynamic val) {
+  if (val == null) return 0;
+  if (val is num) return val.toInt();
+  if (val is String) return int.tryParse(val) ?? (double.tryParse(val)?.toInt() ?? 0);
+  return 0;
+}
 
 class WalletTransaction {
   final String id;
@@ -26,7 +38,7 @@ class WalletTransaction {
   factory WalletTransaction.fromJson(Map<String, dynamic> json) {
     return WalletTransaction(
       id: json['id']?.toString() ?? '',
-      amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
+      amount: _parseDouble(json['amount']),
       type: json['type'] == 'debit' ? WalletTransactionType.debit : WalletTransactionType.credit,
       category: _parseCategory(json['category']),
       description: json['description']?.toString() ?? '',
@@ -97,7 +109,7 @@ class RewardHistoryItem {
   factory RewardHistoryItem.fromJson(Map<String, dynamic> json) {
     return RewardHistoryItem(
       id: json['id']?.toString() ?? '',
-      points: (json['points'] as num?)?.toInt() ?? 0,
+      points: _parseInt(json['points']),
       type: _parseRewardType(json['type']),
       description: json['description']?.toString() ?? '',
       createdAt: json['createdAt'] != null
@@ -158,10 +170,10 @@ class ReferralData {
   factory ReferralData.fromJson(Map<String, dynamic> json) {
     return ReferralData(
       referralCode: json['referralCode']?.toString() ?? '',
-      referralEarnings: (json['referralEarnings'] as num?)?.toDouble() ?? 0.0,
-      friendsJoined: (json['friendsJoined'] as num?)?.toInt() ?? 0,
-      successfulReferrals: (json['successfulReferrals'] as num?)?.toInt() ?? 0,
-      pendingRewards: (json['pendingRewards'] as num?)?.toInt() ?? 0,
+      referralEarnings: _parseDouble(json['referralEarnings']),
+      friendsJoined: _parseInt(json['friendsJoined']),
+      successfulReferrals: _parseInt(json['successfulReferrals']),
+      pendingRewards: _parseInt(json['pendingRewards']),
     );
   }
 
@@ -196,7 +208,7 @@ class CashbackItem {
   factory CashbackItem.fromJson(Map<String, dynamic> json) {
     return CashbackItem(
       id: json['id']?.toString() ?? '',
-      amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
+      amount: _parseDouble(json['amount']),
       status: json['status']?.toString() ?? 'credited',
       description: json['description']?.toString() ?? '',
       createdAt: json['createdAt'] != null
@@ -241,8 +253,8 @@ class GiftCardItem {
     return GiftCardItem(
       id: json['id']?.toString() ?? '',
       code: json['code']?.toString() ?? '',
-      amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
-      balance: (json['balance'] as num?)?.toDouble() ?? 0.0,
+      amount: _parseDouble(json['amount']),
+      balance: _parseDouble(json['balance']),
       status: json['status']?.toString() ?? 'active',
       createdAt: json['createdAt'] != null
           ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()

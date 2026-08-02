@@ -325,7 +325,10 @@ class _LoyaltyHubScreenState extends ConsumerState<LoyaltyHubScreen> with Single
       itemCount: list.length,
       itemBuilder: (ctx, idx) {
         final item = list[idx];
-        final amount = (item['amount'] as num?)?.toDouble() ?? 0.0;
+        final rawAmount = item['amount'];
+        final double amount = rawAmount is num
+            ? rawAmount.toDouble()
+            : (double.tryParse(rawAmount?.toString() ?? '') ?? 0.0);
         final isCredit = amount >= 0;
         return ListTile(
           dense: true,
@@ -356,7 +359,10 @@ class _LoyaltyHubScreenState extends ConsumerState<LoyaltyHubScreen> with Single
       itemCount: list.length,
       itemBuilder: (ctx, idx) {
         final item = list[idx];
-        final points = item['points'] ?? 0;
+        final rawPoints = item['points'];
+        final int points = rawPoints is num
+            ? rawPoints.toInt()
+            : (int.tryParse(rawPoints?.toString() ?? '') ?? (double.tryParse(rawPoints?.toString() ?? '')?.toInt() ?? 0));
         final isEarned = points >= 0;
         return ListTile(
           dense: true,

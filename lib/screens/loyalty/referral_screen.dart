@@ -29,7 +29,7 @@ class _ReferralScreenState extends ConsumerState<ReferralScreen> {
 
   void _shareReferral(String code) {
     Share.share(
-      'Join Hopscotch using my referral code "$code" and get ₹100 instant bonus on your first order! Download now: https://hopscotch.in/invite/$code',
+      'Join FCI Seller using my referral code "$code" and get ₹100 instant bonus on your first order! Download now: https://fciseller.com/invite/$code',
     );
   }
 
@@ -37,8 +37,7 @@ class _ReferralScreenState extends ConsumerState<ReferralScreen> {
   Widget build(BuildContext context) {
     final loyaltyState = ref.watch(loyaltyProvider);
     final refData = loyaltyState.referralData;
-    final code = loyaltyState.referralCode.isNotEmpty ? loyaltyState.referralCode : 'HOPSCH100';
-    final primaryColor = Theme.of(context).primaryColor;
+    final code = loyaltyState.referralCode.isNotEmpty ? loyaltyState.referralCode : 'FCIS100';
 
     return Scaffold(
       appBar: AppBar(
