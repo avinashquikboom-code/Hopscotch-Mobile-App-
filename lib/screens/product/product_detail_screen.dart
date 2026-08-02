@@ -556,6 +556,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                       imageUrls: imageList,
                                       initialIndex: index,
                                       heroTags: heroTags,
+                                      scrollDirection: Axis.vertical,
                                     ),
                                     child: Hero(
                                       tag: currentHeroTag,
