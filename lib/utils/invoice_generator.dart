@@ -11,7 +11,7 @@ class InvoiceGenerator {
   /// Generates and previews/prints/downloads a PDF invoice for a given order.
   static Future<void> generateAndDownloadInvoice({
     required OrderModel order,
-    String storeName = 'HOPSCOTCH / FCI SELLER',
+    String storeName = 'FCI SELLER',
     String storeAddress = 'Plot No. 42, Sector 18, Commercial Hub, Navi Mumbai, MH - 400705',
     String storeGst = '27AAACH1234F1Z9',
     String contactEmail = 'support@fciseller.com',

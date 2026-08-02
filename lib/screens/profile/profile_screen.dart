@@ -213,12 +213,22 @@ class ProfileScreen extends ConsumerWidget {
                         Row(
                           children: [
                             Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text('Wallet Balance', style: TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w600)),
-                                  Text('₹${loyaltyState.walletBalance.toStringAsFixed(2)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green)),
-                                ],
+                              child: GestureDetector(
+                                onTap: () => context.push('/wallet'),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Row(
+                                      children: [
+                                        Text('Wallet Balance', style: TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w600)),
+                                        SizedBox(width: 3),
+                                        Icon(Icons.add_circle_outline, size: 11, color: Colors.green),
+                                      ],
+                                    ),
+                                    Text('₹${loyaltyState.walletBalance.toStringAsFixed(2)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green)),
+                                    const Text('Tap to Top Up >', style: TextStyle(fontSize: 9, color: Colors.green, fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
                               ),
                             ),
                             Expanded(

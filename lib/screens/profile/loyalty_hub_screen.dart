@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hopscotch/providers/loyalty_provider.dart';
 import 'package:hopscotch/api/loyalty_api.dart';
 
@@ -150,12 +151,38 @@ class _LoyaltyHubScreenState extends ConsumerState<LoyaltyHubScreen> with Single
                             style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
-                          GestureDetector(
-                            onTap: _showRedeemGiftCardDialog,
-                            child: const Text(
-                              '+ Redeem Gift Card',
-                              style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600, decoration: TextDecoration.underline),
-                            ),
+                          Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () => context.push('/wallet'),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.add_circle_outline, color: Colors.teal.shade800, size: 12),
+                                      const SizedBox(width: 3),
+                                      Text(
+                                        'Top Up',
+                                        style: TextStyle(color: Colors.teal.shade800, fontSize: 10, fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              GestureDetector(
+                                onTap: _showRedeemGiftCardDialog,
+                                child: const Text(
+                                  'Gift Card',
+                                  style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w600, decoration: TextDecoration.underline),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
