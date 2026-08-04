@@ -259,6 +259,20 @@ class AppPages {
             ),
           ),
           GoRoute(
+            path: AppRoutes.posts,
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: _pageKey(state),
+              child: const PostsFeedScreen(),
+              transitionDuration: const Duration(milliseconds: 350),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: child,
+                );
+              },
+            ),
+          ),
+          GoRoute(
             path: AppRoutes.profile,
             pageBuilder: (context, state) => CustomTransitionPage(
               key: _pageKey(state),
@@ -830,18 +844,6 @@ class AppPages {
           transitionDuration: const Duration(milliseconds: 300),
           transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
             position: Tween<Offset>(begin: const Offset(0.0, 1.0), end: Offset.zero).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
-            child: child,
-          ),
-        ),
-      ),
-      GoRoute(
-        path: AppRoutes.posts,
-        pageBuilder: (context, state) => CustomTransitionPage(
-          key: _pageKey(state),
-          child: const PostsFeedScreen(),
-          transitionDuration: const Duration(milliseconds: 300),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
-            position: Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
             child: child,
           ),
         ),

@@ -11,7 +11,8 @@ import 'package:remixicon/remixicon.dart';
 /// - Position 1: HOME (/home)
 /// - Position 2: TRENDS (/posts)
 /// - Position 3: SHOP (/categories)
-/// - Position 4: YOU (/profile)
+/// - Position 4: FAVOURITES (/wishlist)
+/// - Position 5: YOU (/profile)
 class MainShell extends ConsumerWidget {
   final Widget child;
 
@@ -21,17 +22,19 @@ class MainShell extends ConsumerWidget {
     '/home',
     '/posts',
     '/categories',
+    '/wishlist',
     '/profile',
   ];
 
-  static const _labels = ['HOME', 'TRENDS', 'SHOP', 'YOU'];
+  static const _labels = ['HOME', 'TRENDS', 'SHOP', 'FAVOURITES', 'YOU'];
 
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.toString();
     if (location == '/' || location.startsWith('/home')) return 0;
     if (location.startsWith('/posts') || location.startsWith('/play')) return 1;
     if (location.startsWith('/categories')) return 2;
-    if (location.startsWith('/profile')) return 3;
+    if (location.startsWith('/wishlist')) return 3;
+    if (location.startsWith('/profile')) return 4;
     return 0;
   }
 
@@ -60,6 +63,10 @@ class MainShell extends ConsumerWidget {
         isAndroid ? Remix.apps_fill : Icons.grid_view_rounded,
       ],
       [
+        isAndroid ? Remix.heart_line : Icons.favorite_outline_rounded,
+        isAndroid ? Remix.heart_fill : Icons.favorite_rounded,
+      ],
+      [
         isAndroid ? Remix.user_line : Icons.person_outline_rounded,
         isAndroid ? Remix.user_fill : Icons.person_rounded,
       ],
@@ -80,6 +87,7 @@ class MainShell extends ConsumerWidget {
               Expanded(child: _buildNavItem(context, 1, selectedIndex, icons, _labels[1], colorScheme)),
               Expanded(child: _buildNavItem(context, 2, selectedIndex, icons, _labels[2], colorScheme)),
               Expanded(child: _buildNavItem(context, 3, selectedIndex, icons, _labels[3], colorScheme)),
+              Expanded(child: _buildNavItem(context, 4, selectedIndex, icons, _labels[4], colorScheme)),
             ],
           ),
         ),
