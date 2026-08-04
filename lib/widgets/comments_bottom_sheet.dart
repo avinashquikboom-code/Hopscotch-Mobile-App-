@@ -49,6 +49,8 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
   bool _isLoading = true;
   bool _isSubmitting = false;
 
+  ContentPostCommentModel? _replyingToComment;
+
   @override
   void initState() {
     super.initState();
@@ -67,9 +69,27 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
     }
   }
 
+  void _startReply(ContentPostCommentModel comment) {
+    HapticFeedback.lightImpact();
+    setState(() {
+      _replyingToComment = comment;
+    });
+    _focusNode.requestFocus();
+  }
+
+  void _cancelReply() {
+    setState(() {
+      _replyingToComment = null;
+    });
+  }
+
   Future<void> _submitComment() async {
-    final text = _commentController.text.trim();
+    String text = _commentController.text.trim();
     if (text.isEmpty || _isSubmitting) return;
+
+    if (_replyingToComment != null && !text.startsWith('@${_replyingToComment!.userName}')) {
+      text = '@${_replyingToComment!.userName} $text';
+    }
 
     HapticFeedback.lightImpact();
     setState(() {
@@ -85,6 +105,7 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
         _focusNode.unfocus();
         setState(() {
           _comments.insert(0, newComment);
+          _replyingToComment = null;
         });
         if (widget.onCommentAdded != null) {
           widget.onCommentAdded!(_comments.length);
@@ -253,7 +274,7 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
                                         Text(
                                           _formatTimeAgo(c.createdAt),
                                           style: TextStyle(
-                                            fontSize: 10,
+                                            fontSize: 11,
                                             color: Colors.grey.shade500,
                                           ),
                                         ),
@@ -268,6 +289,18 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
                                         height: 1.3,
                                       ),
                                     ),
+                                    const SizedBox(height: 4),
+                                    GestureDetector(
+                                      onTap: () => _startReply(c),
+                                      child: const Text(
+                                        'Reply',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppTheme.accentColor,
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -276,6 +309,35 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
                         },
                       ),
           ),
+
+          // Replying To Banner Indicator
+          if (_replyingToComment != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              color: AppTheme.accentColor.withValues(alpha: 0.1),
+              child: Row(
+                children: [
+                  const Icon(Icons.reply_rounded, size: 16, color: AppTheme.accentColor),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Replying to @${_replyingToComment!.userName}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.accentColor,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: _cancelReply,
+                    child: const Icon(Icons.close_rounded, size: 16, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
 
           // Input Bar at Bottom
           Container(
@@ -294,7 +356,9 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
                       textCapitalization: TextCapitalization.sentences,
                       maxLines: null,
                       decoration: InputDecoration(
-                        hintText: 'Add a comment...',
+                        hintText: _replyingToComment != null
+                            ? 'Reply to @${_replyingToComment!.userName}...'
+                            : 'Add a comment...',
                         hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                         filled: true,

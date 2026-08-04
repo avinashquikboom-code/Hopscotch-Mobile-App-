@@ -7,10 +7,15 @@ class AppUrls {
       return '';
     }
     final trimmed = url.trim();
-    if (trimmed == 'null' ||
-        trimmed == 'undefined' ||
-        trimmed == 'N/A' ||
-        trimmed == 'none') {
+    final lower = trimmed.toLowerCase();
+    if (lower == 'null' ||
+        lower == 'undefined' ||
+        lower == 'n/a' ||
+        lower == 'none' ||
+        lower == 'admin' ||
+        lower == 'user' ||
+        lower == 'seller' ||
+        lower == 'system') {
       return '';
     }
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
@@ -31,6 +36,10 @@ class AppUrls {
         }
       }
       return trimmed;
+    }
+    // Relative paths must contain a slash or dot extension to be considered image/media URLs
+    if (!trimmed.contains('/') && !trimmed.contains('.')) {
+      return '';
     }
     // Prefix relative paths with mobileBaseUrl, taking care of double slashes
     final path = trimmed.startsWith('/') ? trimmed : '/$trimmed';

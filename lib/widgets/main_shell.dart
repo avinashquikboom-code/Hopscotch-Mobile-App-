@@ -3,6 +3,7 @@ import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:remixicon/remixicon.dart';
+import 'package:hopscotch/repositories/cart_wishlist_repository.dart';
 
 
 /// FCI SELLER — Modernized Bottom Navigation Shell.
@@ -11,7 +12,7 @@ import 'package:remixicon/remixicon.dart';
 /// - Position 1: HOME (/home)
 /// - Position 2: TRENDS (/posts)
 /// - Position 3: SHOP (/categories)
-/// - Position 4: FAVOURITES (/wishlist)
+/// - Position 4: CART (/cart)
 /// - Position 5: YOU (/profile)
 class MainShell extends ConsumerWidget {
   final Widget child;
@@ -22,18 +23,18 @@ class MainShell extends ConsumerWidget {
     '/home',
     '/posts',
     '/categories',
-    '/wishlist',
+    '/cart',
     '/profile',
   ];
 
-  static const _labels = ['HOME', 'TRENDS', 'SHOP', 'FAVOURITES', 'YOU'];
+  static const _labels = ['HOME', 'TRENDS', 'SHOP', 'CART', 'YOU'];
 
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.toString();
     if (location == '/' || location.startsWith('/home')) return 0;
     if (location.startsWith('/posts') || location.startsWith('/play')) return 1;
     if (location.startsWith('/categories')) return 2;
-    if (location.startsWith('/wishlist')) return 3;
+    if (location.startsWith('/cart') || location.startsWith('/checkout')) return 3;
     if (location.startsWith('/profile')) return 4;
     return 0;
   }
@@ -49,6 +50,9 @@ class MainShell extends ConsumerWidget {
     final isAndroid = Theme.of(context).platform == TargetPlatform.android;
     final colorScheme = Theme.of(context).colorScheme;
 
+    final cartItems = ref.watch(cartProvider);
+    final cartCount = cartItems.fold<int>(0, (sum, item) => sum + item.quantity);
+
     final icons = <List<IconData>>[
       [
         isAndroid ? Remix.home_line : Icons.home_outlined,
@@ -63,8 +67,8 @@ class MainShell extends ConsumerWidget {
         isAndroid ? Remix.apps_fill : Icons.grid_view_rounded,
       ],
       [
-        isAndroid ? Remix.heart_line : Icons.favorite_outline_rounded,
-        isAndroid ? Remix.heart_fill : Icons.favorite_rounded,
+        isAndroid ? Remix.shopping_bag_3_line : Icons.shopping_bag_outlined,
+        isAndroid ? Remix.shopping_bag_3_fill : Icons.shopping_bag_rounded,
       ],
       [
         isAndroid ? Remix.user_line : Icons.person_outline_rounded,
@@ -83,11 +87,11 @@ class MainShell extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              Expanded(child: _buildNavItem(context, 0, selectedIndex, icons, _labels[0], colorScheme)),
-              Expanded(child: _buildNavItem(context, 1, selectedIndex, icons, _labels[1], colorScheme)),
-              Expanded(child: _buildNavItem(context, 2, selectedIndex, icons, _labels[2], colorScheme)),
-              Expanded(child: _buildNavItem(context, 3, selectedIndex, icons, _labels[3], colorScheme)),
-              Expanded(child: _buildNavItem(context, 4, selectedIndex, icons, _labels[4], colorScheme)),
+              Expanded(child: _buildNavItem(context, 0, selectedIndex, icons, _labels[0], colorScheme, 0)),
+              Expanded(child: _buildNavItem(context, 1, selectedIndex, icons, _labels[1], colorScheme, 0)),
+              Expanded(child: _buildNavItem(context, 2, selectedIndex, icons, _labels[2], colorScheme, 0)),
+              Expanded(child: _buildNavItem(context, 3, selectedIndex, icons, _labels[3], colorScheme, cartCount)),
+              Expanded(child: _buildNavItem(context, 4, selectedIndex, icons, _labels[4], colorScheme, 0)),
             ],
           ),
         ),
@@ -102,6 +106,7 @@ class MainShell extends ConsumerWidget {
     List<List<IconData>> icons,
     String label,
     ColorScheme colorScheme,
+    int badgeCount,
   ) {
     final isSelected = selectedIndex == index;
     final iconData = isSelected ? icons[index][1] : icons[index][0];
@@ -114,10 +119,40 @@ class MainShell extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            iconData,
-            size: 22,
-            color: isSelected ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.5),
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Icon(
+                iconData,
+                size: 22,
+                color: isSelected ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.5),
+              ),
+              if (badgeCount > 0)
+                Positioned(
+                  top: -4,
+                  right: -8,
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFF9F00),
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 14,
+                      minHeight: 14,
+                    ),
+                    child: Text(
+                      '$badgeCount',
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 8.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 3),
           Text(
