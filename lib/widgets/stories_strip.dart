@@ -46,8 +46,12 @@ class _StoriesStripState extends ConsumerState<StoriesStrip> {
           stories: _stories,
           initialIndex: initialIndex,
           onStoryViewed: (id) {
-            setState(() {
-              _viewedStoryIds.add(id);
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() {
+                  _viewedStoryIds.add(id);
+                });
+              }
             });
           },
         ),

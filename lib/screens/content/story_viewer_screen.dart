@@ -62,13 +62,21 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen> with Sing
     }
 
     final story = widget.stories[_currentIndex];
-    widget.onStoryViewed?.call(story.id);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        widget.onStoryViewed?.call(story.id);
+      }
+    });
     ref.read(contentRepositoryProvider).incrementView(story.id);
 
     if (story.mediaType == 'VIDEO' && story.mediaUrls.isNotEmpty) {
-      setState(() {
+      if (mounted) {
+        setState(() {
+          _isVideoLoading = true;
+        });
+      } else {
         _isVideoLoading = true;
-      });
+      }
 
       final url = AppUrls.resolveUrl(story.mediaUrls.first);
       final controller = VideoPlayerController.networkUrl(Uri.parse(url));
