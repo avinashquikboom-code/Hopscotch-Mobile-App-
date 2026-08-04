@@ -10,7 +10,6 @@ import 'package:remixicon/remixicon.dart';
 /// Layout:
 /// - Position 1: HOME (/home)
 /// - Position 2: TRENDS (/posts)
-/// - Floating Center Dock: WALLET (/wallet)
 /// - Position 3: SHOP (/categories)
 /// - Position 4: YOU (/profile)
 class MainShell extends ConsumerWidget {
@@ -41,11 +40,6 @@ class MainShell extends ConsumerWidget {
     context.go(_routes[index]);
   }
 
-  void _onWalletTapped(BuildContext context) {
-    HapticFeedback.mediumImpact();
-    context.push('/wallet');
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedIndex = _calculateSelectedIndex(context);
@@ -73,64 +67,7 @@ class MainShell extends ConsumerWidget {
 
     return Scaffold(
       body: child,
-      // Floating Wallet Button in Center of Bottom Navigation
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _onWalletTapped(context),
-        elevation: 8,
-        highlightElevation: 12,
-        shape: const CircleBorder(),
-        backgroundColor: Colors.transparent,
-        child: Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: const LinearGradient(
-              colors: [
-                Color(0xFF0d9488),
-                Color(0xFF2563eb),
-                Color(0xFF7c3aed),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            border: Border.all(color: Colors.white, width: 2.5),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF2563eb).withValues(alpha: 0.5),
-                blurRadius: 14,
-                spreadRadius: 1,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: const Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Remix.wallet_3_fill,
-                color: Color(0xFFFFD700),
-                size: 24,
-              ),
-              SizedBox(height: 1),
-              Text(
-                'WALLET',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 8,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0.8,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 6.0,
         color: colorScheme.surface,
         elevation: 8,
         padding: EdgeInsets.zero,
@@ -139,14 +76,8 @@ class MainShell extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              // Left Pair: HOME (0) & TRENDS (1)
               Expanded(child: _buildNavItem(context, 0, selectedIndex, icons, _labels[0], colorScheme)),
               Expanded(child: _buildNavItem(context, 1, selectedIndex, icons, _labels[1], colorScheme)),
-
-              // Gap for Floating Wallet Button
-              const SizedBox(width: 48),
-
-              // Right Pair: SHOP (2) & YOU (3)
               Expanded(child: _buildNavItem(context, 2, selectedIndex, icons, _labels[2], colorScheme)),
               Expanded(child: _buildNavItem(context, 3, selectedIndex, icons, _labels[3], colorScheme)),
             ],
