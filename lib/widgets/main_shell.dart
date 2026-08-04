@@ -21,19 +21,19 @@ class MainShell extends ConsumerWidget {
 
   static const _routes = [
     '/home',
-    '/posts',
     '/categories',
+    '/posts',
     '/cart',
     '/profile',
   ];
 
-  static const _labels = ['HOME', 'TRENDS', 'SHOP', 'CART', 'YOU'];
+  static const _labels = ['HOME', 'SHOP', 'TRENDS', 'CART', 'PROFILE'];
 
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.toString();
     if (location == '/' || location.startsWith('/home')) return 0;
-    if (location.startsWith('/posts') || location.startsWith('/play')) return 1;
-    if (location.startsWith('/categories')) return 2;
+    if (location.startsWith('/categories')) return 1;
+    if (location.startsWith('/posts') || location.startsWith('/play')) return 2;
     if (location.startsWith('/cart') || location.startsWith('/checkout')) return 3;
     if (location.startsWith('/profile')) return 4;
     return 0;
@@ -54,22 +54,27 @@ class MainShell extends ConsumerWidget {
     final cartCount = cartItems.fold<int>(0, (sum, item) => sum + item.quantity);
 
     final icons = <List<IconData>>[
+      // 0 HOME
       [
         isAndroid ? Remix.home_line : Icons.home_outlined,
         isAndroid ? Remix.home_fill : Icons.home_rounded,
       ],
-      [
-        isAndroid ? Remix.compass_3_line : Icons.explore_outlined,
-        isAndroid ? Remix.compass_3_fill : Icons.explore_rounded,
-      ],
+      // 1 SHOP
       [
         isAndroid ? Remix.apps_line : Icons.grid_view_outlined,
         isAndroid ? Remix.apps_fill : Icons.grid_view_rounded,
       ],
+      // 2 TRENDS
+      [
+        isAndroid ? Remix.compass_3_line : Icons.explore_outlined,
+        isAndroid ? Remix.compass_3_fill : Icons.explore_rounded,
+      ],
+      // 3 CART
       [
         isAndroid ? Remix.shopping_bag_3_line : Icons.shopping_bag_outlined,
         isAndroid ? Remix.shopping_bag_3_fill : Icons.shopping_bag_rounded,
       ],
+      // 4 PROFILE
       [
         isAndroid ? Remix.user_line : Icons.person_outline_rounded,
         isAndroid ? Remix.user_fill : Icons.person_rounded,

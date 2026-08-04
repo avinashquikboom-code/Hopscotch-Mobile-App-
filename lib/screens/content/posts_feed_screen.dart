@@ -140,12 +140,7 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
               ),
             ],
           ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.search, color: Colors.white),
-              onPressed: () => context.push('/search'),
-            ),
-          ],
+
         ),
       body: _isLoading
           ? const Center(
