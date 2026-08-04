@@ -14,7 +14,6 @@ import 'package:hopscotch/widgets/stories_strip.dart';
 import 'package:hopscotch/widgets/comments_bottom_sheet.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 
-
 class PostsFeedScreen extends ConsumerStatefulWidget {
   const PostsFeedScreen({super.key});
 
@@ -63,7 +62,8 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 300) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 300) {
       if (!_isLoadingMore && _hasMore) {
         setState(() {
           _isLoadingMore = true;
@@ -80,16 +80,24 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
     final repo = ref.read(contentRepositoryProvider);
 
     final newIsLiked = !post.isLiked;
-    final newLikeCount = newIsLiked ? post.likeCount + 1 : (post.likeCount - 1).clamp(0, 999999);
+    final newLikeCount = newIsLiked
+        ? post.likeCount + 1
+        : (post.likeCount - 1).clamp(0, 999999);
 
     setState(() {
-      _posts[index] = post.copyWith(isLiked: newIsLiked, likeCount: newLikeCount);
+      _posts[index] = post.copyWith(
+        isLiked: newIsLiked,
+        likeCount: newLikeCount,
+      );
     });
 
     final res = await repo.toggleLike(post.id);
     if (res != null && mounted) {
       setState(() {
-        _posts[index] = post.copyWith(isLiked: res.isLiked, likeCount: res.likeCount);
+        _posts[index] = post.copyWith(
+          isLiked: res.isLiked,
+          likeCount: res.likeCount,
+        );
       });
     }
   }
@@ -109,102 +117,135 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade100,
-      appBar: AppBar(
-        title: const Text(
-          'COMMUNITY FEED',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.0,
-            fontSize: 16,
+    final canPop = context.canPop();
+
+    return PopScope(
+      canPop: canPop,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          context.go('/home');
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.grey.shade100,
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded, color: Colors.black87),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/home');
+              }
+            },
           ),
-        ),
-        centerTitle: Platform.isIOS ? true : false,
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-      ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.accentColor),
-            )
-          : RefreshIndicator(
-              onRefresh: () => _fetchPosts(refresh: true),
-              color: AppTheme.accentColor,
-              child: ListView.builder(
-                controller: _scrollController,
-                padding: const EdgeInsets.only(bottom: 16),
-                itemCount: 1 + (_posts.isEmpty ? 1 : _posts.length + (_isLoadingMore ? 1 : 0)),
-                itemBuilder: (context, index) {
-                  // Item 0: Stories & Play Avatar Strip at top of Community Feed
-                  if (index == 0) {
-                    return Container(
-                      color: Colors.white,
-                      margin: const EdgeInsets.only(bottom: 8),
-                      child: const StoriesStrip(),
-                    );
-                  }
-
-                  if (_posts.isEmpty) {
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 80),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.photo_library_outlined,
-                              size: 64,
-                              color: Colors.grey.shade400,
-                            ),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'No posts found',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black54,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Check back later for inspiration & style posts',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey.shade500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-
-                  final postIndex = index - 1;
-                  if (postIndex == _posts.length) {
-                    return const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Center(
-                        child: CircularProgressIndicator(color: AppTheme.accentColor),
-                      ),
-                    );
-                  }
-                  return _buildPostCard(context, postIndex, _posts[postIndex]);
-                },
-              ),
+          title: const Text(
+            'COMMUNITY FEED',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.0,
+              fontSize: 16,
             ),
+          ),
+          centerTitle: Platform.isIOS ? true : false,
+          elevation: 0,
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black87,
+        ),
+
+        body: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(color: AppTheme.accentColor),
+              )
+            : RefreshIndicator(
+                onRefresh: () => _fetchPosts(refresh: true),
+                color: AppTheme.accentColor,
+                child: ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.only(bottom: 16),
+                  itemCount:
+                      1 +
+                      (_posts.isEmpty
+                          ? 1
+                          : _posts.length + (_isLoadingMore ? 1 : 0)),
+                  itemBuilder: (context, index) {
+                    // Item 0: Stories & Play Avatar Strip at top of Community Feed
+                    if (index == 0) {
+                      return Container(
+                        color: Colors.white,
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: const StoriesStrip(),
+                      );
+                    }
+
+                    if (_posts.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 80),
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.photo_library_outlined,
+                                size: 64,
+                                color: Colors.grey.shade400,
+                              ),
+                              const SizedBox(height: 16),
+                              const Text(
+                                'No posts found',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Check back later for inspiration & style posts',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey.shade500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+
+                    final postIndex = index - 1;
+                    if (postIndex == _posts.length) {
+                      return const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppTheme.accentColor,
+                          ),
+                        ),
+                      );
+                    }
+                    return _buildPostCard(
+                      context,
+                      postIndex,
+                      _posts[postIndex],
+                    );
+                  },
+                ),
+              ),
+      ),
     );
   }
 
-  Widget _buildPostCard(BuildContext context, int index, ContentPostModel post) {
+  Widget _buildPostCard(
+    BuildContext context,
+    int index,
+    ContentPostModel post,
+  ) {
     final isPlayType = post.type == 'PLAY';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-      ),
+      decoration: const BoxDecoration(color: Colors.white),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -215,9 +256,13 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
               children: [
                 CircleAvatar(
                   radius: 18,
-                  backgroundColor: isPlayType ? Colors.purple.shade600 : AppTheme.accentColor,
+                  backgroundColor: isPlayType
+                      ? Colors.purple.shade600
+                      : AppTheme.accentColor,
                   child: Icon(
-                    isPlayType ? Icons.play_arrow_rounded : Icons.verified_rounded,
+                    isPlayType
+                        ? Icons.play_arrow_rounded
+                        : Icons.verified_rounded,
                     color: Colors.white,
                     size: 20,
                   ),
@@ -228,7 +273,8 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        post.title ?? (isPlayType ? 'PLAY Video Edit' : 'FCI Style Edit'),
+                        post.title ??
+                            (isPlayType ? 'PLAY Video Edit' : 'FCI Style Edit'),
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
@@ -236,8 +282,13 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
                         ),
                       ),
                       Text(
-                        isPlayType ? 'Vertical Video Feed' : 'Official Admin Upload',
-                        style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                        isPlayType
+                            ? 'Vertical Video Feed'
+                            : 'Official Admin Upload',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade500,
+                        ),
                       ),
                     ],
                   ),
@@ -247,25 +298,33 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => PlayScreen(
-                            initialFeed: [post],
-                            initialIndex: 0,
-                          ),
+                          builder: (context) =>
+                              PlayScreen(initialFeed: [post], initialIndex: 0),
                         ),
                       );
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Colors.purple.shade600, AppTheme.accentColor],
+                          colors: [
+                            Colors.purple.shade600,
+                            AppTheme.accentColor,
+                          ],
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.fullscreen_rounded, color: Colors.white, size: 14),
+                          Icon(
+                            Icons.fullscreen_rounded,
+                            color: Colors.white,
+                            size: 14,
+                          ),
                           SizedBox(width: 2),
                           Text(
                             'FULLSCREEN',
@@ -282,7 +341,10 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
                   )
                 else
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: AppTheme.accentColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
@@ -316,7 +378,9 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
               children: [
                 IconButton(
                   icon: Icon(
-                    post.isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                    post.isLiked
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_border_rounded,
                     color: post.isLiked ? Colors.redAccent : Colors.black87,
                     size: 26,
                   ),
@@ -324,12 +388,19 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
                 ),
                 Text(
                   '${post.likeCount}',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
                 const SizedBox(width: 14),
 
                 IconButton(
-                  icon: const Icon(Icons.chat_bubble_outline_rounded, color: Colors.black87, size: 23),
+                  icon: const Icon(
+                    Icons.chat_bubble_outline_rounded,
+                    color: Colors.black87,
+                    size: 23,
+                  ),
                   onPressed: () {
                     CommentsBottomSheet.show(
                       context,
@@ -344,15 +415,21 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
                 ),
                 Text(
                   '${post.commentCount}',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
                 const SizedBox(width: 14),
 
                 IconButton(
-                  icon: const Icon(Icons.share_outlined, color: Colors.black87, size: 24),
+                  icon: const Icon(
+                    Icons.share_outlined,
+                    color: Colors.black87,
+                    size: 24,
+                  ),
                   onPressed: () => _sharePost(post),
                 ),
-
               ],
             ),
           ),
@@ -363,7 +440,11 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 14),
               child: Text(
                 post.caption!,
-                style: const TextStyle(fontSize: 13, color: Colors.black87, height: 1.4),
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Colors.black87,
+                  height: 1.4,
+                ),
               ),
             ),
 
@@ -416,7 +497,11 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
                               fit: BoxFit.cover,
                               errorWidget: (context, url, err) => Container(
                                 color: Colors.grey.shade300,
-                                child: const Icon(Icons.shopping_bag, size: 20, color: Colors.grey),
+                                child: const Icon(
+                                  Icons.shopping_bag,
+                                  size: 20,
+                                  color: Colors.grey,
+                                ),
                               ),
                             ),
                           ),
@@ -430,7 +515,10 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
                                   p.name,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
@@ -444,7 +532,11 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
                               ],
                             ),
                           ),
-                          const Icon(Icons.chevron_right_rounded, color: Colors.grey, size: 18),
+                          const Icon(
+                            Icons.chevron_right_rounded,
+                            color: Colors.grey,
+                            size: 18,
+                          ),
                         ],
                       ),
                     ),
@@ -560,7 +652,9 @@ class _PostCarouselState extends State<_PostCarousel> {
                 margin: const EdgeInsets.symmetric(horizontal: 3),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _current == idx ? AppTheme.accentColor : Colors.grey.shade300,
+                  color: _current == idx
+                      ? AppTheme.accentColor
+                      : Colors.grey.shade300,
                 ),
               );
             }),
@@ -575,10 +669,7 @@ class _FeedVideoPlayer extends StatefulWidget {
   final String url;
   final VoidCallback? onOpenFullscreen;
 
-  const _FeedVideoPlayer({
-    required this.url,
-    this.onOpenFullscreen,
-  });
+  const _FeedVideoPlayer({required this.url, this.onOpenFullscreen});
 
   @override
   State<_FeedVideoPlayer> createState() => _FeedVideoPlayerState();
@@ -600,20 +691,23 @@ class _FeedVideoPlayerState extends State<_FeedVideoPlayer> {
     _controller = VideoPlayerController.networkUrl(Uri.parse(resolvedUrl));
 
     _controller.setLooping(true);
-    _controller.initialize().then((_) {
-      if (mounted) {
-        setState(() {
-          _isInitialized = true;
+    _controller
+        .initialize()
+        .then((_) {
+          if (mounted) {
+            setState(() {
+              _isInitialized = true;
+            });
+          }
+        })
+        .catchError((err) {
+          debugPrint('Error initializing feed video: $err');
+          if (mounted) {
+            setState(() {
+              _hasError = true;
+            });
+          }
         });
-      }
-    }).catchError((err) {
-      debugPrint('Error initializing feed video: $err');
-      if (mounted) {
-        setState(() {
-          _hasError = true;
-        });
-      }
-    });
   }
 
   @override
@@ -632,7 +726,11 @@ class _FeedVideoPlayerState extends State<_FeedVideoPlayer> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.video_camera_back_outlined, size: 48, color: Colors.white54),
+              Icon(
+                Icons.video_camera_back_outlined,
+                size: 48,
+                color: Colors.white54,
+              ),
               SizedBox(height: 8),
               Text(
                 'Video Preview Unavailable',
@@ -686,7 +784,11 @@ class _FeedVideoPlayerState extends State<_FeedVideoPlayer> {
                   color: Colors.black54,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 40),
+                child: const Icon(
+                  Icons.play_arrow_rounded,
+                  color: Colors.white,
+                  size: 40,
+                ),
               ),
 
             if (widget.onOpenFullscreen != null)
@@ -700,7 +802,11 @@ class _FeedVideoPlayerState extends State<_FeedVideoPlayer> {
                       color: Colors.black54,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.fullscreen_rounded, color: Colors.white, size: 20),
+                    child: const Icon(
+                      Icons.fullscreen_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                   onPressed: widget.onOpenFullscreen,
                 ),

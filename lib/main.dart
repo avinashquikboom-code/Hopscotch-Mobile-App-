@@ -84,12 +84,15 @@ class MyApp extends ConsumerWidget {
       supportedLocales: AppLocalizations.supportedLocales,
       locale: language.locale,
       builder: (context, child) {
-        // Initialize FCM Push Notifications
-        FcmService().initialize(context);
+        // Initialize FCM Push Notifications safely after frame build
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          FcmService().initialize(context);
+        });
 
         final mediaQuery = MediaQuery.of(context);
         // Calculate screen-based responsive font scale (clamped between 0.85 and 1.18)
         final responsiveScale = (mediaQuery.size.width / 390.0).clamp(0.85, 1.18);
+
         return MediaQuery(
           data: mediaQuery.copyWith(
             textScaler: TextScaler.linear(responsiveScale),
