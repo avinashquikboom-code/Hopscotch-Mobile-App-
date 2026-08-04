@@ -101,4 +101,54 @@ class ContentRepository {
       DevLogger.logError('Error incrementing view count: $e', context: 'ContentRepository');
     }
   }
+
+  /// Get comments for a content post
+  Future<List<ContentPostCommentModel>> getComments(int contentPostId, {int page = 1}) async {
+    try {
+      final response = await _apiService.get(
+        '${AppUrls.contentComments(contentPostId)}?page=$page&limit=20',
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'];
+        final List rawList = data is Map ? (data['comments'] ?? []) : [];
+        return rawList.map((e) => ContentPostCommentModel.fromJson(e as Map<String, dynamic>)).toList();
+      }
+      return [];
+    } catch (e) {
+      DevLogger.logError('Error fetching comments: $e', context: 'ContentRepository');
+      return [];
+    }
+  }
+
+  /// Add a comment to a content post
+  Future<ContentPostCommentModel?> addComment(int contentPostId, String comment) async {
+    try {
+      final response = await _apiService.post(
+        AppUrls.addContentComment(contentPostId),
+        data: {'comment': comment},
+      );
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final data = response.data['data'];
+        return ContentPostCommentModel.fromJson(data as Map<String, dynamic>);
+      }
+      return null;
+    } catch (e) {
+      DevLogger.logError('Error adding comment: $e', context: 'ContentRepository');
+      return null;
+    }
+  }
+
+  /// Delete a comment
+  Future<bool> deleteComment(int commentId) async {
+    try {
+      final response = await _apiService.delete(AppUrls.deleteContentComment(commentId));
+      return response.statusCode == 200;
+    } catch (e) {
+      DevLogger.logError('Error deleting comment: $e', context: 'ContentRepository');
+      return false;
+    }
+  }
 }
+

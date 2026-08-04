@@ -28,6 +28,38 @@ class TaggedProductModel {
   }
 }
 
+class ContentPostCommentModel {
+  final int id;
+  final int contentPostId;
+  final int userId;
+  final String userName;
+  final String? userAvatar;
+  final String comment;
+  final DateTime createdAt;
+
+  const ContentPostCommentModel({
+    required this.id,
+    required this.contentPostId,
+    required this.userId,
+    required this.userName,
+    this.userAvatar,
+    required this.comment,
+    required this.createdAt,
+  });
+
+  factory ContentPostCommentModel.fromJson(Map<String, dynamic> json) {
+    return ContentPostCommentModel(
+      id: json['id'] is num ? (json['id'] as num).toInt() : int.parse(json['id'].toString()),
+      contentPostId: json['contentPostId'] is num ? (json['contentPostId'] as num).toInt() : int.parse(json['contentPostId'].toString()),
+      userId: json['userId'] is num ? (json['userId'] as num).toInt() : int.parse(json['userId'].toString()),
+      userName: json['userName']?.toString() ?? 'User',
+      userAvatar: json['userAvatar']?.toString(),
+      comment: json['comment']?.toString() ?? '',
+      createdAt: json['createdAt'] != null ? (DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()) : DateTime.now(),
+    );
+  }
+}
+
 class ContentPostModel {
   final int id;
   final String type; // PLAY | POST | STORY
@@ -40,6 +72,7 @@ class ContentPostModel {
   final bool isActive;
   final int viewCount;
   final int likeCount;
+  final int commentCount;
   final int sortOrder;
   final DateTime? expiresAt;
   final DateTime createdAt;
@@ -58,6 +91,7 @@ class ContentPostModel {
     required this.isActive,
     required this.viewCount,
     required this.likeCount,
+    required this.commentCount,
     required this.sortOrder,
     this.expiresAt,
     required this.createdAt,
@@ -90,6 +124,7 @@ class ContentPostModel {
       isActive: json['isActive'] == true || json['isActive'] == 'true',
       viewCount: json['viewCount'] is num ? (json['viewCount'] as num).toInt() : 0,
       likeCount: json['likeCount'] is num ? (json['likeCount'] as num).toInt() : 0,
+      commentCount: json['commentCount'] is num ? (json['commentCount'] as num).toInt() : 0,
       sortOrder: json['sortOrder'] is num ? (json['sortOrder'] as num).toInt() : 0,
       expiresAt: json['expiresAt'] != null ? DateTime.tryParse(json['expiresAt'].toString()) : null,
       createdAt: json['createdAt'] != null ? (DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()) : DateTime.now(),
@@ -102,6 +137,7 @@ class ContentPostModel {
     bool? isLiked,
     int? likeCount,
     int? viewCount,
+    int? commentCount,
   }) {
     return ContentPostModel(
       id: id,
@@ -115,6 +151,7 @@ class ContentPostModel {
       isActive: isActive,
       viewCount: viewCount ?? this.viewCount,
       likeCount: likeCount ?? this.likeCount,
+      commentCount: commentCount ?? this.commentCount,
       sortOrder: sortOrder,
       expiresAt: expiresAt,
       createdAt: createdAt,

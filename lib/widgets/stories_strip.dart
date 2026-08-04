@@ -68,7 +68,7 @@ class _StoriesStripState extends ConsumerState<StoriesStrip> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Container(
-        height: 100,
+        height: 108,
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
@@ -81,12 +81,12 @@ class _StoriesStripState extends ConsumerState<StoriesStrip> {
               child: Column(
                 children: [
                   CircleAvatar(
-                    radius: 26,
+                    radius: 28,
                     backgroundColor: Colors.grey.shade200,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Container(
-                    width: 40,
+                    width: 44,
                     height: 10,
                     decoration: BoxDecoration(
                       color: Colors.grey.shade200,
@@ -102,17 +102,16 @@ class _StoriesStripState extends ConsumerState<StoriesStrip> {
     }
 
     return Container(
-      height: 100,
+      height: 108,
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        itemCount: 1 + _stories.length, // 1 for PLAY badge + stories
+        itemCount: 1 + _stories.length,
         itemBuilder: (context, index) {
           if (index == 0) {
             return _buildPlayAvatarButton();
           }
-
 
           final storyIndex = index - 1;
           final story = _stories[storyIndex];
@@ -128,15 +127,16 @@ class _StoriesStripState extends ConsumerState<StoriesStrip> {
     return GestureDetector(
       onTap: _openPlayScreen,
       child: Container(
-        margin: const EdgeInsets.only(right: 12),
+        margin: const EdgeInsets.only(right: 14),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               padding: const EdgeInsets.all(2.5),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
-                  colors: [AppTheme.accentColor, Colors.purple.shade400, Colors.pinkAccent],
+                  colors: [AppTheme.accentColor, Colors.purple.shade500, Colors.pinkAccent],
                 ),
               ),
               child: Container(
@@ -145,25 +145,21 @@ class _StoriesStripState extends ConsumerState<StoriesStrip> {
                   color: Colors.white,
                   shape: BoxShape.circle,
                 ),
-                child: CircleAvatar(
+                child: const CircleAvatar(
                   radius: 26,
                   backgroundColor: Colors.black87,
-                  child: const Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.play_arrow_rounded, color: Colors.white, size: 22),
-                    ],
-                  ),
+                  child: Icon(Icons.play_arrow_rounded, color: Colors.white, size: 28),
                 ),
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 5),
             const Text(
-              'Play',
+              'PLAY',
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
+                letterSpacing: 0.5,
               ),
             ),
           ],
@@ -173,13 +169,15 @@ class _StoriesStripState extends ConsumerState<StoriesStrip> {
   }
 
   Widget _buildStoryAvatar(ContentPostModel story, int index, bool isViewed) {
-    final avatarUrl = story.thumbnailUrl ?? (story.mediaUrls.isNotEmpty ? story.mediaUrls.first : '');
+    final rawUrl = story.thumbnailUrl ?? (story.mediaUrls.isNotEmpty ? story.mediaUrls.first : '');
+    final resolvedUrl = AppUrls.resolveUrl(rawUrl);
 
     return GestureDetector(
       onTap: () => _openStoryViewer(index),
       child: Container(
-        margin: const EdgeInsets.only(right: 12),
+        margin: const EdgeInsets.only(right: 14),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               padding: const EdgeInsets.all(2.5),
@@ -197,21 +195,43 @@ class _StoriesStripState extends ConsumerState<StoriesStrip> {
                   color: Colors.white,
                   shape: BoxShape.circle,
                 ),
-                child: CircleAvatar(
-                  radius: 26,
-                  backgroundColor: Colors.grey.shade200,
-                  backgroundImage: avatarUrl.isNotEmpty
-                      ? CachedNetworkImageProvider(AppUrls.resolveUrl(avatarUrl))
-                      : null,
-                  child: avatarUrl.isEmpty
-                      ? const Icon(Icons.style_rounded, color: AppTheme.accentColor, size: 20)
-                      : null,
+                child: SizedBox(
+                  width: 52,
+                  height: 52,
+                  child: ClipOval(
+                    child: resolvedUrl.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: resolvedUrl,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              color: Colors.grey.shade200,
+                              child: const Center(
+                                child: SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppTheme.accentColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            errorWidget: (context, url, err) => Container(
+                              color: Colors.teal.shade50,
+                              child: const Icon(Icons.style_rounded, color: AppTheme.accentColor, size: 22),
+                            ),
+                          )
+                        : Container(
+                            color: Colors.teal.shade50,
+                            child: const Icon(Icons.style_rounded, color: AppTheme.accentColor, size: 22),
+                          ),
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 5),
             SizedBox(
-              width: 60,
+              width: 62,
               child: Text(
                 story.title ?? 'Story',
                 maxLines: 1,

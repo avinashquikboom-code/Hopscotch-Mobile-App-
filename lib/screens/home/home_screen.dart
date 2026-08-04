@@ -439,13 +439,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           topPadding: _selectedTab == 0 ? topPadding : 0,
         ),
       ),
-
-      // ── STORIES & PLAY STRIP (24H EXPIRING + PLAY FEED ENTRY) ──
-      if (_selectedTab == 0)
-        const SliverToBoxAdapter(
-          child: StoriesStrip(),
-        ),
     ];
+
 
 
     // 4. MAIN CONTENT

@@ -3,7 +3,7 @@ import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:remixicon/remixicon.dart';
-import 'package:hopscotch/theme/app_theme.dart';
+
 
 /// FCI SELLER — Modernized Bottom Navigation Shell.
 ///
@@ -76,25 +76,31 @@ class MainShell extends ConsumerWidget {
       // Floating Wallet Button in Center of Bottom Navigation
       floatingActionButton: FloatingActionButton(
         onPressed: () => _onWalletTapped(context),
-        elevation: 6,
-        highlightElevation: 10,
+        elevation: 8,
+        highlightElevation: 12,
         shape: const CircleBorder(),
         backgroundColor: Colors.transparent,
         child: Container(
-          width: 58,
-          height: 58,
+          width: 60,
+          height: 60,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: const LinearGradient(
-              colors: [AppTheme.accentColor, Color(0xFF0284c7), Color(0xFF7c3aed)],
+              colors: [
+                Color(0xFF0d9488),
+                Color(0xFF2563eb),
+                Color(0xFF7c3aed),
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
+            border: Border.all(color: Colors.white, width: 2.5),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.accentColor.withValues(alpha: 0.45),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
+                color: const Color(0xFF2563eb).withValues(alpha: 0.5),
+                blurRadius: 14,
+                spreadRadius: 1,
+                offset: const Offset(0, 5),
               ),
             ],
           ),
@@ -102,24 +108,25 @@ class MainShell extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                Remix.wallet_3_line,
-                color: Colors.white,
-                size: 20,
+                Remix.wallet_3_fill,
+                color: Color(0xFFFFD700),
+                size: 24,
               ),
               SizedBox(height: 1),
               Text(
                 'WALLET',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 7.5,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
+                  fontSize: 8,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.8,
                 ),
               ),
             ],
           ),
         ),
       ),
+
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),

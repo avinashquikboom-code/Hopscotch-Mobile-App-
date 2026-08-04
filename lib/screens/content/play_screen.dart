@@ -8,7 +8,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:hopscotch/constants/app_urls.dart';
 import 'package:hopscotch/models/content_post_model.dart';
 import 'package:hopscotch/repositories/content_repository.dart';
+import 'package:hopscotch/widgets/comments_bottom_sheet.dart';
 import 'package:hopscotch/theme/app_theme.dart';
+
 
 class PlayScreen extends ConsumerStatefulWidget {
   final List<ContentPostModel>? initialFeed;
@@ -441,11 +443,54 @@ class _PlayScreenState extends ConsumerState<PlayScreen> {
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
+
+              // Comment Button
+              GestureDetector(
+                onTap: () {
+                  CommentsBottomSheet.show(
+                    context,
+                    contentPostId: post.id,
+                    onCommentAdded: (newCount) {
+                      setState(() {
+                        _posts[index] = post.copyWith(commentCount: newCount);
+                      });
+                    },
+                  );
+                },
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: const BoxDecoration(
+                        color: Colors.black38,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.chat_bubble_outline_rounded,
+                        color: Colors.white,
+                        size: 26,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${post.commentCount}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 18),
 
               // Share Button
               GestureDetector(
                 onTap: () => _sharePost(post),
+
                 child: Column(
                   children: [
                     Container(

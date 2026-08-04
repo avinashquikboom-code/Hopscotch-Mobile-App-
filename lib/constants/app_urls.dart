@@ -64,5 +64,9 @@ class AppUrls {
   static const String contentStories = '/api/v1/mobile/content/stories';
   static String contentLike(int id) => '/api/v1/mobile/content/$id/like';
   static String contentView(int id) => '/api/v1/mobile/content/$id/view';
+  static String contentComments(int id) => '/api/v1/mobile/content/$id/comments';
+  static String addContentComment(int id) => '/api/v1/mobile/content/$id/comment';
+  static String deleteContentComment(int commentId) => '/api/v1/mobile/content/comments/$commentId';
 }
+
 
