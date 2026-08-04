@@ -122,10 +122,18 @@ class ContentPostModel {
       thumbnailUrl: json['thumbnailUrl']?.toString(),
       uploadedBy: json['uploadedBy']?.toString() ?? 'ADMIN',
       isActive: json['isActive'] == true || json['isActive'] == 'true',
-      viewCount: json['viewCount'] is num ? (json['viewCount'] as num).toInt() : 0,
-      likeCount: json['likeCount'] is num ? (json['likeCount'] as num).toInt() : 0,
-      commentCount: json['commentCount'] is num ? (json['commentCount'] as num).toInt() : 0,
-      sortOrder: json['sortOrder'] is num ? (json['sortOrder'] as num).toInt() : 0,
+      viewCount: json['viewCount'] is num
+          ? (json['viewCount'] as num).toInt()
+          : int.tryParse(json['viewCount']?.toString() ?? '0') ?? 0,
+      likeCount: json['likeCount'] is num
+          ? (json['likeCount'] as num).toInt()
+          : int.tryParse(json['likeCount']?.toString() ?? '0') ?? 0,
+      commentCount: json['commentCount'] is num
+          ? (json['commentCount'] as num).toInt()
+          : int.tryParse(json['commentCount']?.toString() ?? '0') ?? 0,
+      sortOrder: json['sortOrder'] is num
+          ? (json['sortOrder'] as num).toInt()
+          : int.tryParse(json['sortOrder']?.toString() ?? '0') ?? 0,
       expiresAt: json['expiresAt'] != null ? DateTime.tryParse(json['expiresAt'].toString()) : null,
       createdAt: json['createdAt'] != null ? (DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()) : DateTime.now(),
       isLiked: json['isLiked'] == true || json['isLiked'] == 'true',
