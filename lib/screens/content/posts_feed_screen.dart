@@ -129,16 +129,6 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
       child: Scaffold(
         backgroundColor: Colors.grey.shade100,
         appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_rounded, color: Colors.black87),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go('/home');
-              }
-            },
-          ),
           title: const Text(
             'COMMUNITY FEED',
             style: TextStyle(
