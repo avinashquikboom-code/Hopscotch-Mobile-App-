@@ -51,8 +51,13 @@ class AppRoutes {
   static const String cashback = '/cashback';
   static const String giftCards = '/gift-cards';
 
+  // Social Content Routes (Play, Posts)
+  static const String play = '/play';
+  static const String posts = '/posts';
+
   // Direct dynamic path helpers
   static String getProductDetailRoute(String id) => '/product/$id';
   static String getTrackOrderRoute(String orderId) => '/track-order/$orderId';
   static String getOrderDetailRoute(String id) => '/order-detail/$id';
 }
+

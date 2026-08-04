@@ -24,6 +24,10 @@ import 'package:flutter/services.dart';
 import 'package:hopscotch/repositories/notification_repository.dart';
 import 'package:hopscotch/widgets/flipkart_category_strip.dart';
 import 'package:hopscotch/utils/navigation_utils.dart';
+import 'package:hopscotch/widgets/stories_strip.dart';
+import 'package:hopscotch/screens/content/posts_feed_screen.dart';
+import 'package:hopscotch/screens/content/play_screen.dart';
+
 
 // ─────────────────────────────────────────────────────────────
 // LOCATION PROVIDER — Geolocates user address details
@@ -435,7 +439,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           topPadding: _selectedTab == 0 ? topPadding : 0,
         ),
       ),
+
+      // ── STORIES & PLAY STRIP (24H EXPIRING + PLAY FEED ENTRY) ──
+      if (_selectedTab == 0)
+        const SliverToBoxAdapter(
+          child: StoriesStrip(),
+        ),
     ];
+
 
     // 4. MAIN CONTENT
     if (_selectedTab == 0) {

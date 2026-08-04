@@ -3,19 +3,16 @@ import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:remixicon/remixicon.dart';
-import 'package:hopscotch/repositories/cart_wishlist_repository.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 
-/// FCI SELLER — floating "atelier dock" navigation.
+/// FCI SELLER — Modernized Bottom Navigation Shell.
 ///
-/// Design intent:
-/// - Detached pill dock floating above the bottom edge (content scrolls
-///   behind it via extendBody) — lighter, more premium than an edge-to-edge bar.
-/// - The active tab expands into a solid teal capsule with an uppercase,
-///   letterspaced label — like a woven garment tag. Only one label is ever
-///   visible, so the dock stays quiet and editorial.
-/// - Inactive tabs are pure line icons in secondary ink. No tints, no noise.
-/// - Selection haptic on every tab change.
+/// Layout:
+/// - Position 1: HOME (/home)
+/// - Position 2: TRENDS (/posts)
+/// - Floating Center Dock: WALLET (/wallet)
+/// - Position 3: SHOP (/categories)
+/// - Position 4: YOU (/profile)
 class MainShell extends ConsumerWidget {
   final Widget child;
 
@@ -23,20 +20,19 @@ class MainShell extends ConsumerWidget {
 
   static const _routes = [
     '/home',
+    '/posts',
     '/categories',
-    '/wishlist',
-    '/cart',
     '/profile',
   ];
-  static const _labels = ['HOME', 'SHOP', 'SAVED', 'BAG', 'YOU'];
+
+  static const _labels = ['HOME', 'TRENDS', 'SHOP', 'YOU'];
 
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.toString();
     if (location == '/' || location.startsWith('/home')) return 0;
-    if (location.startsWith('/categories')) return 1;
-    if (location.startsWith('/wishlist')) return 2;
-    if (location.startsWith('/cart')) return 3;
-    if (location.startsWith('/profile')) return 4;
+    if (location.startsWith('/posts') || location.startsWith('/play')) return 1;
+    if (location.startsWith('/categories')) return 2;
+    if (location.startsWith('/profile')) return 3;
     return 0;
   }
 
@@ -45,16 +41,16 @@ class MainShell extends ConsumerWidget {
     context.go(_routes[index]);
   }
 
+  void _onWalletTapped(BuildContext context) {
+    HapticFeedback.mediumImpact();
+    context.push('/wallet');
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedIndex = _calculateSelectedIndex(context);
-    final cart = ref.watch(cartProvider);
-    final wishlist = ref.watch(wishlistProvider);
-
-    final cartCount = cart.fold(0, (sum, item) => sum + item.quantity);
-    final wishlistCount = wishlist.length;
-
     final isAndroid = Theme.of(context).platform == TargetPlatform.android;
+    final colorScheme = Theme.of(context).colorScheme;
 
     final icons = <List<IconData>>[
       [
@@ -62,16 +58,12 @@ class MainShell extends ConsumerWidget {
         isAndroid ? Remix.home_fill : Icons.home_rounded,
       ],
       [
+        isAndroid ? Remix.compass_3_line : Icons.explore_outlined,
+        isAndroid ? Remix.compass_3_fill : Icons.explore_rounded,
+      ],
+      [
         isAndroid ? Remix.apps_line : Icons.grid_view_outlined,
         isAndroid ? Remix.apps_fill : Icons.grid_view_rounded,
-      ],
-      [
-        isAndroid ? Remix.heart_line : Icons.favorite_border_rounded,
-        isAndroid ? Remix.heart_fill : Icons.favorite_rounded,
-      ],
-      [
-        isAndroid ? Remix.shopping_bag_line : Icons.shopping_bag_outlined,
-        isAndroid ? Remix.shopping_bag_fill : Icons.shopping_bag_rounded,
       ],
       [
         isAndroid ? Remix.user_line : Icons.person_outline_rounded,
@@ -79,66 +71,119 @@ class MainShell extends ConsumerWidget {
       ],
     ];
 
-    final badges = <int>[0, 0, wishlistCount, cartCount, 0];
-
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
       body: child,
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(
-              color: colorScheme.outline.withValues(alpha: 0.5),
-              width: 0.5,
+      // Floating Wallet Button in Center of Bottom Navigation
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _onWalletTapped(context),
+        elevation: 6,
+        highlightElevation: 10,
+        shape: const CircleBorder(),
+        backgroundColor: Colors.transparent,
+        child: Container(
+          width: 58,
+          height: 58,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: const LinearGradient(
+              colors: [AppTheme.accentColor, Color(0xFF0284c7), Color(0xFF7c3aed)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.accentColor.withValues(alpha: 0.45),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Remix.wallet_3_line,
+                color: Colors.white,
+                size: 20,
+              ),
+              SizedBox(height: 1),
+              Text(
+                'WALLET',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 7.5,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 6.0,
+        color: colorScheme.surface,
+        elevation: 8,
+        padding: EdgeInsets.zero,
+        child: SizedBox(
+          height: 56,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              // Left Pair: HOME (0) & TRENDS (1)
+              Expanded(child: _buildNavItem(context, 0, selectedIndex, icons, _labels[0], colorScheme)),
+              Expanded(child: _buildNavItem(context, 1, selectedIndex, icons, _labels[1], colorScheme)),
+
+              // Gap for Floating Wallet Button
+              const SizedBox(width: 48),
+
+              // Right Pair: SHOP (2) & YOU (3)
+              Expanded(child: _buildNavItem(context, 2, selectedIndex, icons, _labels[2], colorScheme)),
+              Expanded(child: _buildNavItem(context, 3, selectedIndex, icons, _labels[3], colorScheme)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(
+    BuildContext context,
+    int index,
+    int selectedIndex,
+    List<List<IconData>> icons,
+    String label,
+    ColorScheme colorScheme,
+  ) {
+    final isSelected = selectedIndex == index;
+    final iconData = isSelected ? icons[index][1] : icons[index][0];
+
+    return InkWell(
+      onTap: () => _onItemTapped(index, context),
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            iconData,
+            size: 22,
+            color: isSelected ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.5),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 9.5,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              color: isSelected ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.5),
+              letterSpacing: 0.5,
             ),
           ),
-        ),
-        child: BottomNavigationBar(
-          currentIndex: selectedIndex,
-          onTap: (index) => _onItemTapped(index, context),
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: colorScheme.surface,
-          selectedItemColor: colorScheme.primary,
-          unselectedItemColor: colorScheme.onSurface.withValues(alpha: 0.5),
-          selectedLabelStyle: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 10,
-            letterSpacing: 0.5,
-          ),
-          unselectedLabelStyle: const TextStyle(
-            fontWeight: FontWeight.normal,
-            fontSize: 10,
-            letterSpacing: 0.5,
-          ),
-          items: List.generate(5, (i) {
-            final count = badges[i];
-            Widget iconWidget = Icon(
-              selectedIndex == i ? icons[i][1] : icons[i][0],
-              size: 22,
-            );
-
-            if (count > 0) {
-              iconWidget = Badge(
-                label: Text(
-                  count > 9 ? '9+' : count.toString(),
-                  style: const TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                backgroundColor: AppTheme.accentColor,
-                textColor: Colors.white,
-                child: iconWidget,
-              );
-            }
-
-            return BottomNavigationBarItem(
-              icon: iconWidget,
-              label: _labels[i],
-            );
-          }),
-        ),
+        ],
       ),
     );
   }

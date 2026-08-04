@@ -56,7 +56,10 @@ import 'package:hopscotch/screens/loyalty/reward_history_screen.dart';
 import 'package:hopscotch/screens/loyalty/referral_screen.dart';
 import 'package:hopscotch/screens/loyalty/cashback_screen.dart';
 import 'package:hopscotch/screens/loyalty/gift_card_screen.dart';
+import 'package:hopscotch/screens/content/play_screen.dart';
+import 'package:hopscotch/screens/content/posts_feed_screen.dart';
 import 'package:hopscotch/core/session_manager.dart';
+
 
 class AppPages {
   static LocalKey? _pageKey(GoRouterState state) {
@@ -819,7 +822,32 @@ class AppPages {
           ),
         ),
       ),
+      GoRoute(
+        path: AppRoutes.play,
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: _pageKey(state),
+          child: const PlayScreen(),
+          transitionDuration: const Duration(milliseconds: 300),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
+            position: Tween<Offset>(begin: const Offset(0.0, 1.0), end: Offset.zero).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+            child: child,
+          ),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.posts,
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: _pageKey(state),
+          child: const PostsFeedScreen(),
+          transitionDuration: const Duration(milliseconds: 300),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
+            position: Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+            child: child,
+          ),
+        ),
+      ),
   ];
+
 
   static late final GoRouter router;
 

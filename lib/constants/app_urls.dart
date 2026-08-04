@@ -57,4 +57,12 @@ class AppUrls {
   // Reseller
   static const String resellerShare = '/api/mobile/reseller/share';
   static const String resellerMyLinks = '/api/mobile/reseller/my-links';
+
+  // Content (Play, Posts, Stories)
+  static const String contentPlay = '/api/v1/mobile/content/play';
+  static const String contentPosts = '/api/v1/mobile/content/posts';
+  static const String contentStories = '/api/v1/mobile/content/stories';
+  static String contentLike(int id) => '/api/v1/mobile/content/$id/like';
+  static String contentView(int id) => '/api/v1/mobile/content/$id/view';
 }
+
