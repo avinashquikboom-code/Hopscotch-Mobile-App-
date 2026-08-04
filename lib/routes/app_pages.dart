@@ -59,6 +59,7 @@ import 'package:hopscotch/screens/loyalty/gift_card_screen.dart';
 import 'package:hopscotch/screens/content/play_screen.dart';
 import 'package:hopscotch/screens/content/posts_feed_screen.dart';
 import 'package:hopscotch/core/session_manager.dart';
+import 'package:hopscotch/screens/product/review_submission_screen.dart';
 
 
 class AppPages {
@@ -847,6 +848,26 @@ class AppPages {
             child: child,
           ),
         ),
+      ),
+      GoRoute(
+        path: AppRoutes.reviewSubmission,
+        pageBuilder: (context, state) {
+          final args = state.extra as Map<String, dynamic>? ?? {};
+          return CustomTransitionPage(
+            key: _pageKey(state),
+            child: ReviewSubmissionScreen(
+              productId: args['productId']?.toString() ?? '',
+              orderId: args['orderId']?.toString() ?? '',
+              productName: args['productName']?.toString() ?? 'Product',
+              productImageUrl: args['productImageUrl'] as String?,
+            ),
+            transitionDuration: const Duration(milliseconds: 350),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
+              position: Tween<Offset>(begin: const Offset(0.0, 1.0), end: Offset.zero).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+              child: child,
+            ),
+          );
+        },
       ),
   ];
 

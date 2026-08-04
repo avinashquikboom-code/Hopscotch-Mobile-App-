@@ -1251,14 +1251,34 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                                       AppTheme.spaceM,
                                                     ),
                                                   ),
-                                                  Text(
-                                                    rev.userName,
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize:
-                                                          responsive.fontSize14,
-                                                    ),
+                                                  Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        rev.userName,
+                                                        style: TextStyle(
+                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: responsive.fontSize14,
+                                                        ),
+                                                      ),
+                                                      if (rev.isVerifiedPurchase) ...[
+                                                        const SizedBox(height: 2),
+                                                        Row(
+                                                          children: [
+                                                            const Icon(Icons.verified_rounded, size: 12, color: Color(0xFF059669)),
+                                                            const SizedBox(width: 3),
+                                                            Text(
+                                                              'Verified Purchase',
+                                                              style: TextStyle(
+                                                                color: const Color(0xFF059669),
+                                                                fontSize: responsive.fontSize10,
+                                                                fontWeight: FontWeight.w600,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ],
                                                   ),
                                                 ],
                                               ),

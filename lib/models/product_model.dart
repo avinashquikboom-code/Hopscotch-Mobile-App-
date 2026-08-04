@@ -40,6 +40,7 @@ class ProductReviewModel {
   final String comment;
   final String date;
   final String? userAvatarUrl;
+  final bool isVerifiedPurchase;
 
   const ProductReviewModel({
     required this.id,
@@ -48,16 +49,30 @@ class ProductReviewModel {
     required this.comment,
     required this.date,
     this.userAvatarUrl,
+    this.isVerifiedPurchase = false,
   });
 
   factory ProductReviewModel.fromJson(Map<String, dynamic> json) {
+    // Support flat shape (legacy) and nested user object (new backend)
+    String userName;
+    if (json['user'] is Map<String, dynamic>) {
+      final u = json['user'] as Map<String, dynamic>;
+      final first = _asString(u['firstName'] ?? u['first_name']);
+      final last = _asString(u['lastName'] ?? u['last_name']);
+      userName = '${first.trim()} ${last.trim()}'.trim();
+      if (userName.isEmpty) userName = 'Customer';
+    } else {
+      userName = _asString(json['userName'] ?? json['user_name'] ?? json['name']);
+    }
+
     return ProductReviewModel(
       id: _asString(json['id'] ?? json['_id']),
-      userName: _asString(json['userName'] ?? json['user_name'] ?? json['name']),
+      userName: userName.isEmpty ? 'Customer' : userName,
       rating: _asDouble(json['rating']),
       comment: _asString(json['comment'] ?? json['review'] ?? json['text']),
       date: _asString(json['date'] ?? json['createdAt'] ?? json['created_at']),
       userAvatarUrl: json['userAvatarUrl'] as String? ?? json['avatar'] as String?,
+      isVerifiedPurchase: json['isVerifiedPurchase'] == true || json['is_verified_purchase'] == true,
     );
   }
 
@@ -69,6 +84,7 @@ class ProductReviewModel {
       'comment': comment,
       'date': date,
       'userAvatarUrl': userAvatarUrl,
+      'isVerifiedPurchase': isVerifiedPurchase,
     };
   }
 
@@ -89,6 +105,7 @@ class ProductReviewModel {
     String? comment,
     String? date,
     String? userAvatarUrl,
+    bool? isVerifiedPurchase,
   }) {
     return ProductReviewModel(
       id: id ?? this.id,
@@ -97,6 +114,7 @@ class ProductReviewModel {
       comment: comment ?? this.comment,
       date: date ?? this.date,
       userAvatarUrl: userAvatarUrl ?? this.userAvatarUrl,
+      isVerifiedPurchase: isVerifiedPurchase ?? this.isVerifiedPurchase,
     );
   }
 

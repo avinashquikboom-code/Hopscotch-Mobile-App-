@@ -59,5 +59,8 @@ class AppRoutes {
   static String getProductDetailRoute(String id) => '/product/$id';
   static String getTrackOrderRoute(String orderId) => '/track-order/$orderId';
   static String getOrderDetailRoute(String id) => '/order-detail/$id';
+
+  // Review
+  static const String reviewSubmission = '/review-submission';
 }
 

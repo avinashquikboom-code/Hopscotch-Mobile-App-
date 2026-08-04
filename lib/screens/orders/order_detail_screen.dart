@@ -777,6 +777,39 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                                             currency.formatPrice(itemTotal),
                                             style: TextStyle(fontSize: responsive.fontSize14, fontWeight: FontWeight.w900, color: AppTheme.primaryColor),
                                           ),
+                                          // "Rate this Product" — only for DELIVERED orders
+                                          if (order.status.toLowerCase() == 'delivered') ...[
+                                            const SizedBox(height: 8),
+                                            GestureDetector(
+                                              onTap: () => context.push(
+                                                '/review-submission',
+                                                extra: {
+                                                  'productId': item.product.id,
+                                                  'orderId': order.id,
+                                                  'productName': item.product.title,
+                                                  'productImageUrl': item.product.imageUrl,
+                                                },
+                                              ),
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                                decoration: BoxDecoration(
+                                                  border: Border.all(color: AppTheme.accentColor, width: 1.2),
+                                                  borderRadius: BorderRadius.circular(8),
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Icon(Icons.star_outline_rounded, color: AppTheme.accentColor, size: 14),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      'Rate this Product',
+                                                      style: TextStyle(fontSize: responsive.fontSize11, fontWeight: FontWeight.w600, color: AppTheme.accentColor),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ],
                                       ),
                                     ),

@@ -380,11 +380,28 @@ class ProductRepository {
     ).toList();
   }
 
-  Future<List<ProductModel>> searchProductsByImage(String imagePath) async {
-    final products = await getProducts();
-    await Future.delayed(const Duration(seconds: 2));
-    products.shuffle();
-    return products.take(4).toList();
+  Future<List<ProductReviewModel>> fetchProductReviews(String productId) async {
+    try {
+      final response = await _apiService.get('/api/mobile/products/$productId/reviews');
+      if (response.statusCode == 200) {
+        final data = response.data;
+        dynamic rawList;
+        if (data is Map) {
+          final inner = data['data'];
+          if (inner is Map && inner['reviews'] != null) {
+            rawList = inner['reviews'];
+          } else if (data['reviews'] != null) {
+            rawList = data['reviews'];
+          } else {
+            rawList = inner;
+          }
+        }
+        return ProductReviewModel.listFromJson(rawList);
+      }
+    } catch (e) {
+      DevLogger.logError('Error fetching product reviews: $e', context: 'ProductRepository');
+    }
+    return [];
   }
 }
 
@@ -415,6 +432,10 @@ final categoryProductsProvider = FutureProvider.family<List<ProductModel>, Strin
 
 final productDetailProvider = FutureProvider.family<ProductModel?, String>((ref, id) {
   return ref.watch(productRepositoryProvider).getProductById(id);
+});
+
+final productReviewsProvider = FutureProvider.family<List<ProductReviewModel>, String>((ref, productId) {
+  return ref.watch(productRepositoryProvider).fetchProductReviews(productId);
 });
 
 final topRatedProductsProvider = FutureProvider<List<ProductModel>>((ref) async {
