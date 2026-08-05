@@ -430,6 +430,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           }
 
           final isFav = wishlist.any((p) => p.id == product.id);
+          final reviewsAsync = ref.watch(productReviewsProvider(widget.productId));
+          final fetchedReviews = reviewsAsync.valueOrNull ?? product.reviews;
           final similarProductsAsync = ref.watch(
             categoryProductsProvider(product.categoryId),
           );
@@ -1173,166 +1175,69 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                               ],
 
                               // Reviews list
-                              if (product.reviews.isNotEmpty) ...[
-                                const Divider(),
-                                SizedBox(
-                                  height: responsive.spacing(AppTheme.spaceXL),
-                                ),
-                                Text(
-                                  '${l10n.customerReviews} (${product.reviews.length})',
-                                  style: TextStyle(
-                                    fontSize: responsive.fontSize16,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppTheme.textPrimaryColor,
+                              const Divider(),
+                              SizedBox(
+                                height: responsive.spacing(AppTheme.spaceXL),
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    '${l10n.customerReviews} (${fetchedReviews.length})',
+                                    style: TextStyle(
+                                      fontSize: responsive.fontSize16,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.textPrimaryColor,
+                                    ),
+                                  ),
+                                  if (product.rating > 0)
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.star_rounded,
+                                          color: AppTheme.accentColor,
+                                          size: responsive.iconSize(18),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          product.rating.toStringAsFixed(1),
+                                          style: TextStyle(
+                                            fontSize: responsive.fontSize14,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppTheme.textPrimaryColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: responsive.spacing(AppTheme.spaceL),
+                              ),
+                              reviewsAsync.when(
+                                loading: () => const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 24),
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      color: AppTheme.primaryColor,
+                                      strokeWidth: 2,
+                                    ),
                                   ),
                                 ),
-                                SizedBox(
-                                  height: responsive.spacing(AppTheme.spaceL),
-                                ),
-                                ListView.separated(
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: product.reviews.length,
-                                  separatorBuilder: (context, index) =>
-                                      SizedBox(
-                                        height: responsive.spacing(
-                                          AppTheme.spaceL,
-                                        ),
-                                      ),
-                                  itemBuilder: (context, index) {
-                                    final rev = product.reviews[index];
-                                    return Container(
-                                      padding: EdgeInsets.all(
-                                        responsive.spacing(AppTheme.spaceL),
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(
-                                          AppTheme.radiusM,
-                                        ),
-                                        border: Border.all(
-                                          color: AppTheme.borderColor,
-                                        ),
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  CircleAvatar(
-                                                    radius: responsive.iconSize(
-                                                      18,
-                                                    ),
-                                                    backgroundImage:
-                                                        rev.userAvatarUrl !=
-                                                            null
-                                                        ? NetworkImage(
-                                                            rev.userAvatarUrl!,
-                                                          )
-                                                        : null,
-                                                    onBackgroundImageError:
-                                                        rev.userAvatarUrl != null
-                                                            ? (exception,
-                                                                    stackTrace) {}
-                                                            : null,
-                                                    child: Icon(
-                                                      Icons.person,
-                                                      size: responsive
-                                                          .iconSize(18),
-                                                    ),
-                                                  ),
-                                                  SizedBox(
-                                                    width: responsive.spacing(
-                                                      AppTheme.spaceM,
-                                                    ),
-                                                  ),
-                                                  Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text(
-                                                        rev.userName,
-                                                        style: TextStyle(
-                                                          fontWeight: FontWeight.bold,
-                                                          fontSize: responsive.fontSize14,
-                                                        ),
-                                                      ),
-                                                      if (rev.isVerifiedPurchase) ...[
-                                                        const SizedBox(height: 2),
-                                                        Row(
-                                                          children: [
-                                                            const Icon(Icons.verified_rounded, size: 12, color: Color(0xFF059669)),
-                                                            const SizedBox(width: 3),
-                                                            Text(
-                                                              'Verified Purchase',
-                                                              style: TextStyle(
-                                                                color: const Color(0xFF059669),
-                                                                fontSize: responsive.fontSize10,
-                                                                fontWeight: FontWeight.w600,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ],
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                              Text(
-                                                rev.date,
-                                                style: TextStyle(
-                                                  color:
-                                                      AppTheme.textLightColor,
-                                                  fontSize:
-                                                      responsive.fontSize11,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          SizedBox(
-                                            height: responsive.spacing(
-                                              AppTheme.spaceS,
-                                            ),
-                                          ),
-                                          Row(
-                                            children: List.generate(
-                                              5,
-                                              (i) => Icon(
-                                                Icons.star_rounded,
-                                                color: i < rev.rating.toInt()
-                                                    ? AppTheme.accentColor
-                                                    : AppTheme.borderColor,
-                                                size: responsive.iconSize(16),
-                                              ),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            height: responsive.spacing(
-                                              AppTheme.spaceS,
-                                            ),
-                                          ),
-                                          Text(
-                                            rev.comment,
-                                            style: TextStyle(
-                                              color:
-                                                  AppTheme.textSecondaryColor,
-                                              height: 1.4,
-                                              fontSize: responsive.fontSize14,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
-                                SizedBox(
-                                  height: responsive.spacing(AppTheme.spaceXL),
-                                ),
-                              ],
+                                error: (_, __) => fetchedReviews.isEmpty
+                                    ? _buildEmptyReviewsBox(responsive)
+                                    : _buildReviewsList(fetchedReviews, responsive),
+                                data: (reviews) {
+                                  final list = reviews.isNotEmpty ? reviews : fetchedReviews;
+                                  if (list.isEmpty) {
+                                    return _buildEmptyReviewsBox(responsive);
+                                  }
+                                  return _buildReviewsList(list, responsive);
+                                },
+                              ),
+                              SizedBox(
+                                height: responsive.spacing(AppTheme.spaceXL),
+                              ),
 
                               // Similar Products
                               const Divider(),
@@ -1645,6 +1550,145 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       }
     }
     return 'Inclusive of all taxes';
+  }
+
+  Widget _buildEmptyReviewsBox(dynamic responsive) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
+        border: Border.all(color: AppTheme.borderColor),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.rate_review_outlined, color: AppTheme.textLightColor, size: responsive.iconSize(36)),
+          SizedBox(height: responsive.spacing(AppTheme.spaceM)),
+          Text(
+            'No reviews yet',
+            style: TextStyle(
+              fontSize: responsive.fontSize14,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textPrimaryColor,
+            ),
+          ),
+          SizedBox(height: responsive.spacing(AppTheme.spaceXS)),
+          Text(
+            'Be the first to review this product!',
+            style: TextStyle(
+              fontSize: responsive.fontSize12,
+              color: AppTheme.textLightColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReviewsList(List<ProductReviewModel> reviews, dynamic responsive) {
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: reviews.length,
+      separatorBuilder: (context, index) => SizedBox(
+        height: responsive.spacing(AppTheme.spaceL),
+      ),
+      itemBuilder: (context, index) {
+        final rev = reviews[index];
+        return Container(
+          padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(AppTheme.radiusM),
+            border: Border.all(color: AppTheme.borderColor),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: responsive.iconSize(18),
+                        backgroundImage: rev.userAvatarUrl != null && rev.userAvatarUrl!.isNotEmpty
+                            ? NetworkImage(rev.userAvatarUrl!)
+                            : null,
+                        onBackgroundImageError: rev.userAvatarUrl != null ? (_, __) {} : null,
+                        child: rev.userAvatarUrl == null || rev.userAvatarUrl!.isEmpty
+                            ? Icon(Icons.person, size: responsive.iconSize(18))
+                            : null,
+                      ),
+                      SizedBox(width: responsive.spacing(AppTheme.spaceM)),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            rev.userName.isNotEmpty ? rev.userName : 'Customer',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: responsive.fontSize14,
+                            ),
+                          ),
+                          if (rev.isVerifiedPurchase) ...[
+                            const SizedBox(height: 2),
+                            Row(
+                              children: [
+                                const Icon(Icons.verified_rounded, size: 12, color: Color(0xFF059669)),
+                                const SizedBox(width: 3),
+                                Text(
+                                  'Verified Purchase',
+                                  style: TextStyle(
+                                    color: const Color(0xFF059669),
+                                    fontSize: responsive.fontSize10,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
+                  ),
+                  Text(
+                    rev.date,
+                    style: TextStyle(
+                      color: AppTheme.textLightColor,
+                      fontSize: responsive.fontSize11,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: responsive.spacing(AppTheme.spaceS)),
+              Row(
+                children: List.generate(
+                  5,
+                  (i) => Icon(
+                    Icons.star_rounded,
+                    color: i < rev.rating.toInt() ? AppTheme.accentColor : AppTheme.borderColor,
+                    size: responsive.iconSize(16),
+                  ),
+                ),
+              ),
+              if (rev.comment.isNotEmpty) ...[
+                SizedBox(height: responsive.spacing(AppTheme.spaceS)),
+                Text(
+                  rev.comment,
+                  style: TextStyle(
+                    color: AppTheme.textSecondaryColor,
+                    height: 1.4,
+                    fontSize: responsive.fontSize14,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 

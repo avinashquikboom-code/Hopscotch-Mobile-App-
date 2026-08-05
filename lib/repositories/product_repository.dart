@@ -382,7 +382,7 @@ class ProductRepository {
 
   Future<List<ProductReviewModel>> fetchProductReviews(String productId) async {
     try {
-      final response = await _apiService.get('/api/mobile/products/$productId/reviews');
+      final response = await _apiService.get('/api/v1/mobile/products/$productId/reviews');
       if (response.statusCode == 200) {
         final data = response.data;
         dynamic rawList;

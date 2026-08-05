@@ -65,12 +65,22 @@ class ProductReviewModel {
       userName = _asString(json['userName'] ?? json['user_name'] ?? json['name']);
     }
 
+    String rawDate = _asString(json['date'] ?? json['createdAt'] ?? json['created_at']);
+    String formattedDate = rawDate;
+    if (rawDate.contains('T')) {
+      try {
+        final dt = DateTime.parse(rawDate).toLocal();
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        formattedDate = '${dt.day.toString().padLeft(2, '0')} ${months[dt.month - 1]} ${dt.year}';
+      } catch (_) {}
+    }
+
     return ProductReviewModel(
       id: _asString(json['id'] ?? json['_id']),
       userName: userName.isEmpty ? 'Customer' : userName,
       rating: _asDouble(json['rating']),
       comment: _asString(json['comment'] ?? json['review'] ?? json['text']),
-      date: _asString(json['date'] ?? json['createdAt'] ?? json['created_at']),
+      date: formattedDate.isEmpty ? 'Recently' : formattedDate,
       userAvatarUrl: json['userAvatarUrl'] as String? ?? json['avatar'] as String?,
       isVerifiedPurchase: json['isVerifiedPurchase'] == true || json['is_verified_purchase'] == true,
     );

@@ -6,7 +6,6 @@ class OfflineLoyaltyService {
   static const String _keyRewardSummary = 'offline_reward_summary';
   static const String _keyWalletData = 'offline_wallet_data';
   static const String _keyRewardHistory = 'offline_reward_history';
-  static const String _keyWalletHistory = 'offline_wallet_history';
 
   /// Save summary data locally
   Future<void> cacheRewardSummary(Map<String, dynamic> data) async {

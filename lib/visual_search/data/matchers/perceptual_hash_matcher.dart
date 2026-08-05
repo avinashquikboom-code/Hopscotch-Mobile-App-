@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:hopscotch/visual_search/data/matchers/image_matcher.dart';
@@ -162,6 +163,6 @@ class PerceptualHashMatcher implements ImageMatcher {
 
     if (normA == 0 || normB == 0) return 0.0;
 
-    return dotProduct / (normA * normB).abs();
+    return dotProduct / (math.sqrt(normA) * math.sqrt(normB));
   }
 }

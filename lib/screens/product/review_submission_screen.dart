@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/providers/api_provider.dart';
+import 'package:hopscotch/repositories/product_repository.dart';
 
 /// Shown when user taps "Rate this product" from a delivered order.
 ///
@@ -98,7 +99,7 @@ class _ReviewSubmissionScreenState
     try {
       final api = ref.read(apiServiceProvider);
       await api.post(
-        '/api/mobile/products/${widget.productId}/reviews',
+        '/api/v1/mobile/products/${widget.productId}/reviews',
         data: {
           'rating': _selectedRating,
           if (_titleController.text.trim().isNotEmpty)
@@ -108,6 +109,9 @@ class _ReviewSubmissionScreenState
           'orderId': int.tryParse(widget.orderId),
         },
       );
+
+      ref.invalidate(productReviewsProvider(widget.productId));
+      ref.invalidate(productDetailProvider(widget.productId));
 
       if (mounted) {
         setState(() {

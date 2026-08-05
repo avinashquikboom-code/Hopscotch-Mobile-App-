@@ -24,9 +24,6 @@ import 'package:flutter/services.dart';
 import 'package:hopscotch/repositories/notification_repository.dart';
 import 'package:hopscotch/widgets/flipkart_category_strip.dart';
 import 'package:hopscotch/utils/navigation_utils.dart';
-import 'package:hopscotch/widgets/stories_strip.dart';
-import 'package:hopscotch/screens/content/posts_feed_screen.dart';
-import 'package:hopscotch/screens/content/play_screen.dart';
 
 
 // ─────────────────────────────────────────────────────────────
