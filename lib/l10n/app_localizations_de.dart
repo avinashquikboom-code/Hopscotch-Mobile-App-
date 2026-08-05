@@ -270,7 +270,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get viewFootwear => 'View Footwear';
 
   @override
-  String get myPortfolio => 'MY PORTFOLIO';
+  String get myPortfolio => 'MY PROFILE';
 
   @override
   String get fcisellerMember => 'FCISeller Member';

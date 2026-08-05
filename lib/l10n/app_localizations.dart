@@ -639,7 +639,7 @@ abstract class AppLocalizations {
   /// Profile screen title
   ///
   /// In en, this message translates to:
-  /// **'MY PORTFOLIO'**
+  /// **'MY PROFILE'**
   String get myPortfolio;
 
   /// Default member name

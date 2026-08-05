@@ -20,7 +20,10 @@ class ProfileScreen extends ConsumerWidget {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Log Out', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Log Out',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         content: const Text('Are you sure you want to log out?'),
         actions: [
           TextButton(
@@ -29,20 +32,19 @@ class ProfileScreen extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(
-              foregroundColor: AppTheme.errorColor,
-            ),
+            style: TextButton.styleFrom(foregroundColor: AppTheme.errorColor),
             child: const Text('Log Out'),
           ),
         ],
       ),
     );
-    
+
     if (confirm != true) return;
 
     try {
       final userProfile = ref.read(profileNotifierProvider);
-      final userName = userProfile?['firstName'] ?? userProfile?['name'] ?? 'User';
+      final userName =
+          userProfile?['firstName'] ?? userProfile?['name'] ?? 'User';
 
       final apiService = ApiService();
       final authApi = AuthApi(apiService);
@@ -112,13 +114,19 @@ class ProfileScreen extends ConsumerWidget {
                             ),
                           ),
                           child: () {
-                            final rawUrl = userProfile?['avatarUrl']?.toString() ??
+                            final rawUrl =
+                                userProfile?['avatarUrl']?.toString() ??
                                 userProfile?['avatar']?.toString() ??
                                 userProfile?['avatar_url']?.toString() ??
                                 userProfile?['profileImage']?.toString();
-                            final firstName = userProfile?['firstName']?.toString() ?? '';
+                            final firstName =
+                                userProfile?['firstName']?.toString() ?? '';
                             final name = userProfile?['name']?.toString() ?? '';
-                            final initial = (firstName.isNotEmpty ? firstName : (name.isNotEmpty ? name : 'U')).substring(0, 1);
+                            final initial =
+                                (firstName.isNotEmpty
+                                        ? firstName
+                                        : (name.isNotEmpty ? name : 'U'))
+                                    .substring(0, 1);
                             return UserAvatar(
                               avatarUrl: rawUrl,
                               initials: initial,
@@ -150,12 +158,17 @@ class ProfileScreen extends ConsumerWidget {
                   SizedBox(height: responsive.spacing(AppTheme.spaceL)),
                   Text(
                     (() {
-                      final firstName = userProfile?['firstName']?.toString() ?? '';
-                      final lastName = userProfile?['lastName']?.toString() ?? '';
+                      final firstName =
+                          userProfile?['firstName']?.toString() ?? '';
+                      final lastName =
+                          userProfile?['lastName']?.toString() ?? '';
                       if (firstName.isNotEmpty && lastName.isNotEmpty) {
                         return '$firstName $lastName';
                       }
-                      return firstName.isNotEmpty ? firstName : (userProfile?['name']?.toString() ?? l10n.fcisellerMember);
+                      return firstName.isNotEmpty
+                          ? firstName
+                          : (userProfile?['name']?.toString() ??
+                                l10n.fcisellerMember);
                     })(),
                     style: responsive.headline4,
                   ),
@@ -199,7 +212,9 @@ class ProfileScreen extends ConsumerWidget {
                 final colorScheme = Theme.of(context).colorScheme;
 
                 return Padding(
-                  padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: responsive.spacing(AppTheme.spaceXL),
+                  ),
                   child: Container(
                     decoration: BoxDecoration(
                       color: colorScheme.surface,
@@ -213,7 +228,9 @@ class ProfileScreen extends ConsumerWidget {
                           ? null
                           : [
                               BoxShadow(
-                                color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                                color: AppTheme.primaryColor.withValues(
+                                  alpha: 0.08,
+                                ),
                                 blurRadius: 18,
                                 offset: const Offset(0, 8),
                               ),
@@ -252,7 +269,9 @@ class ProfileScreen extends ConsumerWidget {
                                     width: 42,
                                     height: 42,
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.18),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.18,
+                                      ),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: const Icon(
@@ -264,7 +283,8 @@ class ProfileScreen extends ConsumerWidget {
                                   SizedBox(width: responsive.spacing(12)),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           'WALLET BALANCE',
@@ -272,7 +292,9 @@ class ProfileScreen extends ConsumerWidget {
                                             fontSize: responsive.fontSize10,
                                             fontWeight: FontWeight.w700,
                                             letterSpacing: 1.0,
-                                            color: Colors.white.withValues(alpha: 0.75),
+                                            color: Colors.white.withValues(
+                                              alpha: 0.75,
+                                            ),
                                           ),
                                         ),
                                         const SizedBox(height: 4),
@@ -295,12 +317,18 @@ class ProfileScreen extends ConsumerWidget {
                                     ),
                                     decoration: BoxDecoration(
                                       color: Colors.white,
-                                      borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                                      borderRadius: BorderRadius.circular(
+                                        AppTheme.radiusFull,
+                                      ),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(Icons.add_rounded, size: 15, color: AppTheme.primaryColor),
+                                        Icon(
+                                          Icons.add_rounded,
+                                          size: 15,
+                                          color: AppTheme.primaryColor,
+                                        ),
                                         const SizedBox(width: 2),
                                         Text(
                                           'Top Up',
@@ -341,7 +369,8 @@ class ProfileScreen extends ConsumerWidget {
                                   context: context,
                                   icon: Icons.savings_rounded,
                                   label: 'Cashback',
-                                  value: '₹${loyaltyState.cashbackBalance.toStringAsFixed(2)}',
+                                  value:
+                                      '₹${loyaltyState.cashbackBalance.toStringAsFixed(2)}',
                                   suffix: '',
                                   accent: const Color(0xFF2563EB),
                                   onTap: () => context.push('/cashback'),
@@ -360,13 +389,16 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                           decoration: BoxDecoration(
                             color: isDark
-                                ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.35)
+                                ? colorScheme.surfaceContainerHighest
+                                      .withValues(alpha: 0.35)
                                 : const Color(0xFFF0FDFA),
                             border: Border(
                               top: BorderSide(
                                 color: isDark
                                     ? colorScheme.outline
-                                    : AppTheme.primaryColor.withValues(alpha: 0.1),
+                                    : AppTheme.primaryColor.withValues(
+                                        alpha: 0.1,
+                                      ),
                               ),
                             ),
                           ),
@@ -411,7 +443,9 @@ class ProfileScreen extends ConsumerWidget {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-                  border: Border.all(color: Theme.of(context).colorScheme.outline),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
                   boxShadow: AppTheme.softShadow,
                 ),
                 child: Material(
@@ -522,7 +556,9 @@ class ProfileScreen extends ConsumerWidget {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-                  border: Border.all(color: Theme.of(context).colorScheme.outline),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
                   boxShadow: AppTheme.softShadow,
                 ),
                 child: Material(
