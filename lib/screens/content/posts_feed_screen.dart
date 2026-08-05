@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:hopscotch/constants/app_urls.dart';
 import 'package:hopscotch/models/content_post_model.dart';
@@ -217,13 +216,13 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
                   ),
 
                   // 2. Section Header: "Videos for you"
-                  SliverToBoxAdapter(
+                  const SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
+                      padding: EdgeInsets.symmetric(
                           horizontal: 16, vertical: 8),
                       child: Text(
                         'Videos for you',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
@@ -347,19 +346,92 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
     );
   }
 
+  bool _isVideoUrl(String url) {
+    final lower = url.toLowerCase();
+    return lower.endsWith('.mp4') ||
+        lower.endsWith('.mov') ||
+        lower.endsWith('.webm') ||
+        lower.endsWith('.m3u8');
+  }
+
+  Widget _buildThumbnailFallback(String displayTitle) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF1E293B),
+            Color(0xFF0F172A),
+          ],
+        ),
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Icon(
+            Icons.movie_filter_rounded,
+            size: 64,
+            color: Colors.white.withValues(alpha: 0.08),
+          ),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFFF9F00).withValues(alpha: 0.2),
+                  border: Border.all(
+                    color: const Color(0xFFFF9F00).withValues(alpha: 0.6),
+                    width: 1.5,
+                  ),
+                ),
+                child: const Icon(
+                  Icons.play_arrow_rounded,
+                  color: Color(0xFFFF9F00),
+                  size: 26,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Text(
+                  displayTitle,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   /// 2-Column Discovery Video Card
   Widget _buildGridVideoCard(
       BuildContext context, int index, ContentPostModel post) {
-    final mediaUrl = post.thumbnailUrl?.isNotEmpty == true
-        ? post.thumbnailUrl!
-        : (post.mediaUrls.isNotEmpty ? post.mediaUrls.first : '');
-    final resolvedMediaUrl = AppUrls.resolveUrl(mediaUrl);
-
     final String displayTitle = post.title?.isNotEmpty == true
         ? post.title!
         : (post.caption?.isNotEmpty == true
             ? post.caption!
             : 'Trending FCI Style');
+
+    final rawThumbnail = post.thumbnailUrl;
+    final bool hasValidThumbnail = rawThumbnail != null &&
+        rawThumbnail.trim().isNotEmpty &&
+        !_isVideoUrl(rawThumbnail);
+
+    final resolvedMediaUrl = hasValidThumbnail
+        ? AppUrls.resolveUrl(rawThumbnail)
+        : '';
 
     return GestureDetector(
       onTap: () => _openFullScreenViewer(index),
@@ -385,8 +457,8 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    // Thumbnail Image
-                    resolvedMediaUrl.isNotEmpty
+                    // Thumbnail Image or Fallback Gradient Widget
+                    hasValidThumbnail && resolvedMediaUrl.isNotEmpty
                         ? CachedNetworkImage(
                             imageUrl: resolvedMediaUrl,
                             fit: BoxFit.cover,
@@ -397,21 +469,10 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
                                     color: Color(0xFFFF9F00)),
                               ),
                             ),
-                            errorWidget: (context, url, err) => Container(
-                              color: Colors.grey.shade900,
-                              child: const Center(
-                                child: Icon(Icons.movie_rounded,
-                                    color: Colors.white38, size: 40),
-                              ),
-                            ),
+                            errorWidget: (context, url, err) =>
+                                _buildThumbnailFallback(displayTitle),
                           )
-                        : Container(
-                            color: Colors.grey.shade900,
-                            child: const Center(
-                              child: Icon(Icons.movie_rounded,
-                                  color: Colors.white38, size: 40),
-                            ),
-                          ),
+                        : _buildThumbnailFallback(displayTitle),
 
                     // Top-Left View Count Overlay (e.g. ▷ 43.3K / 3.5L)
                     Positioned(
