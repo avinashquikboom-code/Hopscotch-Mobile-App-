@@ -191,74 +191,209 @@ class ProfileScreen extends ConsumerWidget {
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
 
-            // 1.5 Loyalty & Rewards Summary Grid Card
+            // 1.5 Loyalty & Wallet Summary (redesigned)
             Consumer(
               builder: (context, ref, child) {
                 final loyaltyState = ref.watch(loyaltyProvider);
+                final isDark = Theme.of(context).brightness == Brightness.dark;
+                final colorScheme = Theme.of(context).colorScheme;
+
                 return Padding(
                   padding: EdgeInsets.symmetric(horizontal: responsive.spacing(AppTheme.spaceXL)),
                   child: Container(
-                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [AppTheme.primaryColor.withOpacity(0.08), AppTheme.accentColor.withOpacity(0.08)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                      color: colorScheme.surface,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isDark
+                            ? colorScheme.outline
+                            : AppTheme.primaryColor.withValues(alpha: 0.12),
                       ),
-                      borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-                      border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2)),
+                      boxShadow: isDark
+                          ? null
+                          : [
+                              BoxShadow(
+                                color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                                blurRadius: 18,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
                     ),
+                    clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () => context.push('/wallet'),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Row(
-                                      children: [
-                                        Text('Wallet Balance', style: TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w600)),
-                                        SizedBox(width: 3),
-                                        Icon(Icons.add_circle_outline, size: 11, color: Colors.green),
-                                      ],
-                                    ),
-                                    Text('₹${loyaltyState.walletBalance.toStringAsFixed(2)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green)),
-                                    const Text('Tap to Top Up >', style: TextStyle(fontSize: 9, color: Colors.green, fontWeight: FontWeight.bold)),
+                        // Wallet hero strip
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () => context.push('/wallet'),
+                            child: Ink(
+                              width: double.infinity,
+                              padding: EdgeInsets.fromLTRB(
+                                responsive.spacing(16),
+                                responsive.spacing(16),
+                                responsive.spacing(16),
+                                responsive.spacing(14),
+                              ),
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Color(0xFF0F766E),
+                                    Color(0xFF0D9488),
+                                    Color(0xFF14B8A6),
                                   ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
                                 ),
                               ),
-                            ),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              child: Row(
                                 children: [
-                                  const Text('Reward Points', style: TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w600)),
-                                  Text('${loyaltyState.rewardBalance} Pts', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.orange)),
+                                  Container(
+                                    width: 42,
+                                    height: 42,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: 0.18),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(
+                                      Icons.account_balance_wallet_rounded,
+                                      color: Colors.white,
+                                      size: 22,
+                                    ),
+                                  ),
+                                  SizedBox(width: responsive.spacing(12)),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'WALLET BALANCE',
+                                          style: TextStyle(
+                                            fontSize: responsive.fontSize10,
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: 1.0,
+                                            color: Colors.white.withValues(alpha: 0.75),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          '₹${loyaltyState.walletBalance.toStringAsFixed(2)}',
+                                          style: TextStyle(
+                                            fontSize: responsive.fontSize(22),
+                                            fontWeight: FontWeight.w900,
+                                            color: Colors.white,
+                                            height: 1.1,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: responsive.spacing(12),
+                                      vertical: responsive.spacing(8),
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.add_rounded, size: 15, color: AppTheme.primaryColor),
+                                        const SizedBox(width: 2),
+                                        Text(
+                                          'Top Up',
+                                          style: TextStyle(
+                                            fontSize: responsive.fontSize11,
+                                            fontWeight: FontWeight.w800,
+                                            color: AppTheme.primaryColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text('Cashback', style: TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w600)),
-                                  Text('₹${loyaltyState.cashbackBalance.toStringAsFixed(2)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue)),
-                                ],
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                        const Divider(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Lifetime Earned: ${loyaltyState.lifetimeEarned} Pts', style: const TextStyle(fontSize: 11, color: Colors.grey)),
-                            Text('Redeemed: ${loyaltyState.lifetimeRedeemed} Pts', style: const TextStyle(fontSize: 11, color: Colors.grey)),
-                            Text('Gift Card: ₹${loyaltyState.giftCardBalance.toStringAsFixed(0)}', style: const TextStyle(fontSize: 11, color: Colors.grey)),
-                          ],
+
+                        // Rewards + Cashback
+                        Padding(
+                          padding: EdgeInsets.all(responsive.spacing(12)),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: _buildPortfolioStatCard(
+                                  context: context,
+                                  icon: Icons.stars_rounded,
+                                  label: 'Reward Points',
+                                  value: '${loyaltyState.rewardBalance}',
+                                  suffix: 'Pts',
+                                  accent: const Color(0xFFEA580C),
+                                  onTap: () => context.push('/rewards'),
+                                ),
+                              ),
+                              SizedBox(width: responsive.spacing(10)),
+                              Expanded(
+                                child: _buildPortfolioStatCard(
+                                  context: context,
+                                  icon: Icons.savings_rounded,
+                                  label: 'Cashback',
+                                  value: '₹${loyaltyState.cashbackBalance.toStringAsFixed(2)}',
+                                  suffix: '',
+                                  accent: const Color(0xFF2563EB),
+                                  onTap: () => context.push('/cashback'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Lifetime strip
+                        Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: responsive.spacing(8),
+                            vertical: responsive.spacing(12),
+                          ),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.35)
+                                : const Color(0xFFF0FDFA),
+                            border: Border(
+                              top: BorderSide(
+                                color: isDark
+                                    ? colorScheme.outline
+                                    : AppTheme.primaryColor.withValues(alpha: 0.1),
+                              ),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              _buildPortfolioLifetimeCell(
+                                context,
+                                'Earned',
+                                '${loyaltyState.lifetimeEarned} Pts',
+                                AppTheme.successColor,
+                              ),
+                              _buildPortfolioLifetimeDivider(context),
+                              _buildPortfolioLifetimeCell(
+                                context,
+                                'Redeemed',
+                                '${loyaltyState.lifetimeRedeemed} Pts',
+                                AppTheme.warningColor,
+                              ),
+                              _buildPortfolioLifetimeDivider(context),
+                              _buildPortfolioLifetimeCell(
+                                context,
+                                'Gift Card',
+                                '₹${loyaltyState.giftCardBalance.toStringAsFixed(0)}',
+                                AppTheme.primaryColor,
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -453,6 +588,133 @@ class ProfileScreen extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildPortfolioStatCard({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required String value,
+    required String suffix,
+    required Color accent,
+    required VoidCallback onTap,
+  }) {
+    final responsive = context.responsive;
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Ink(
+          padding: EdgeInsets.all(responsive.spacing(12)),
+          decoration: BoxDecoration(
+            color: accent.withValues(alpha: isDark ? 0.12 : 0.07),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: accent.withValues(alpha: 0.16)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(icon, size: 16, color: accent),
+                  const Spacer(),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 11,
+                    color: accent.withValues(alpha: 0.55),
+                  ),
+                ],
+              ),
+              SizedBox(height: responsive.spacing(10)),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: responsive.fontSize10,
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface.withValues(alpha: 0.55),
+                ),
+              ),
+              const SizedBox(height: 3),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: value,
+                        style: TextStyle(
+                          fontSize: responsive.fontSize(17),
+                          fontWeight: FontWeight.w900,
+                          color: accent,
+                          height: 1.1,
+                        ),
+                      ),
+                      if (suffix.isNotEmpty)
+                        TextSpan(
+                          text: ' $suffix',
+                          style: TextStyle(
+                            fontSize: responsive.fontSize11,
+                            fontWeight: FontWeight.w700,
+                            color: accent.withValues(alpha: 0.75),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPortfolioLifetimeCell(
+    BuildContext context,
+    String label,
+    String value,
+    Color accent,
+  ) {
+    final responsive = context.responsive;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: responsive.fontSize10,
+              fontWeight: FontWeight.w600,
+              color: colorScheme.onSurface.withValues(alpha: 0.5),
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: responsive.fontSize12,
+              fontWeight: FontWeight.w800,
+              color: accent,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPortfolioLifetimeDivider(BuildContext context) {
+    return Container(
+      width: 1,
+      height: 28,
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
     );
   }
 

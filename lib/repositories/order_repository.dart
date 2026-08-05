@@ -55,6 +55,9 @@ class OrderNotifier extends StateNotifier<AsyncValue<List<OrderModel>>> {
     String? razorpayPaymentId,
     String? razorpaySignature,
     bool? giftWrap,
+    String? sellerName,
+    String? sellerContact,
+    String? sellerAddress,
   }) async {
     try {
       final formattedItems = items?.map((item) {
@@ -77,6 +80,9 @@ class OrderNotifier extends StateNotifier<AsyncValue<List<OrderModel>>> {
         razorpayPaymentId: razorpayPaymentId,
         razorpaySignature: razorpaySignature,
         giftWrap: giftWrap,
+        sellerName: sellerName,
+        sellerContact: sellerContact,
+        sellerAddress: sellerAddress,
       );
       final rawOrder = response.data['data'] ?? response.data;
       final newOrder = OrderModel.fromJson(
@@ -90,6 +96,9 @@ class OrderNotifier extends StateNotifier<AsyncValue<List<OrderModel>>> {
                 'shippingFee': shippingFee ?? 0,
                 'taxAmount': taxAmount ?? 0,
                 'totalAmount': totalAmount ?? 0,
+                if (sellerName != null) 'sellerName': sellerName,
+                if (sellerContact != null) 'sellerContact': sellerContact,
+                if (sellerAddress != null) 'sellerAddress': sellerAddress,
               },
       );
       await fetchOrders();
@@ -118,6 +127,9 @@ class OrderNotifier extends StateNotifier<AsyncValue<List<OrderModel>>> {
         paymentMethod: paymentMethod ?? 'COD',
         trackingNumber:
             'TRK-${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}',
+        sellerName: sellerName ?? 'FCI Seller Retail Pvt. Ltd.',
+        sellerContact: sellerContact ?? '+91 9876543210',
+        sellerAddress: sellerAddress ?? '',
       );
       final current = state.valueOrNull ?? [];
       state = AsyncValue.data([fallback, ...current]);

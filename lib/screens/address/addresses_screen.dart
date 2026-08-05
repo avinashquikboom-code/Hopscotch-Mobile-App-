@@ -154,21 +154,20 @@ class _AddressesScreenState extends ConsumerState<AddressesScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colorScheme = Theme.of(context).colorScheme;
 
-    // Platform independent AppBar title alignment (Adaptive for iOS & Android)
-    final isIOS = Theme.of(context).platform == TargetPlatform.iOS;
-
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: isDark
+          ? Theme.of(context).colorScheme.surface
+          : const Color(0xFFF7FAF9),
       appBar: AppBar(
         title: Text(
-          'My Addresses',
+          'Saved Addresses',
           style: TextStyle(
             fontSize: responsive.fontSize18,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.3,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.2,
           ),
         ),
-        centerTitle: isIOS, // Adaptive platform independent title presentation
+        centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
         actions: [

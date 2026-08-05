@@ -11,12 +11,25 @@ class InvoiceGenerator {
   /// Generates and previews/prints/downloads a PDF invoice for a given order.
   static Future<void> generateAndDownloadInvoice({
     required OrderModel order,
-    String storeName = 'FCI SELLER',
-    String storeAddress = 'Plot No. 42, Sector 18, Commercial Hub, Navi Mumbai, MH - 400705',
+    String? storeName,
+    String? storeAddress,
+    String? storeContact,
     String storeGst = '27AAACH1234F1Z9',
     String contactEmail = 'support@fciseller.com',
   }) async {
     final pdf = pw.Document();
+
+    final resolvedStoreName = (storeName != null && storeName.trim().isNotEmpty)
+        ? storeName.trim()
+        : (order.sellerName.trim().isNotEmpty ? order.sellerName.trim() : 'FCI SELLER');
+    final resolvedStoreAddress = (storeAddress != null && storeAddress.trim().isNotEmpty)
+        ? storeAddress.trim()
+        : (order.sellerAddress.trim().isNotEmpty
+            ? order.sellerAddress.trim()
+            : 'Plot No. 42, Sector 18, Commercial Hub, Navi Mumbai, MH - 400705');
+    final resolvedStoreContact = (storeContact != null && storeContact.trim().isNotEmpty)
+        ? storeContact.trim()
+        : (order.sellerContact.trim().isNotEmpty ? order.sellerContact.trim() : '+91 9876543210');
 
     final formattedDate = () {
       try {
@@ -44,7 +57,7 @@ class InvoiceGenerator {
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
                     pw.Text(
-                      storeName,
+                      resolvedStoreName,
                       style: pw.TextStyle(
                         fontSize: 20,
                         fontWeight: pw.FontWeight.bold,
@@ -52,7 +65,8 @@ class InvoiceGenerator {
                       ),
                     ),
                     pw.SizedBox(height: 4),
-                    pw.Text(storeAddress, style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
+                    pw.Text(resolvedStoreAddress, style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
+                    pw.Text('Contact: $resolvedStoreContact', style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
                     pw.Text('GSTIN: $storeGst | Support: $contactEmail', style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
                   ],
                 ),

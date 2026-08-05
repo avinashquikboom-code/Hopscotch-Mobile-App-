@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hopscotch/providers/loyalty_provider.dart';
 import 'package:hopscotch/api/loyalty_api.dart';
+import 'package:hopscotch/providers/loyalty_provider.dart';
+import 'package:hopscotch/theme/app_theme.dart';
 
 class LoyaltyHubScreen extends ConsumerStatefulWidget {
   const LoyaltyHubScreen({super.key});
@@ -12,7 +13,8 @@ class LoyaltyHubScreen extends ConsumerStatefulWidget {
   ConsumerState<LoyaltyHubScreen> createState() => _LoyaltyHubScreenState();
 }
 
-class _LoyaltyHubScreenState extends ConsumerState<LoyaltyHubScreen> with SingleTickerProviderStateMixin {
+class _LoyaltyHubScreenState extends ConsumerState<LoyaltyHubScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final LoyaltyApi _api = LoyaltyApi();
   final TextEditingController _gcController = TextEditingController();
@@ -46,290 +48,261 @@ class _LoyaltyHubScreenState extends ConsumerState<LoyaltyHubScreen> with Single
   }
 
   void _showRedeemGiftCardDialog() {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Redeem Gift Card', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _gcController,
-              decoration: const InputDecoration(
-                labelText: 'Gift Card Code',
-                hintText: 'e.g. GC-ABC1234',
-                border: OutlineInputBorder(),
-              ),
-              textCapitalization: TextCapitalization.characters,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final colorScheme = Theme.of(ctx).colorScheme;
+        return Padding(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          child: Container(
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final code = _gcController.text.trim();
-              if (code.isEmpty) return;
-              Navigator.pop(ctx);
-              final success = await _api.redeemGiftCard(code);
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(success ? 'Gift card redeemed to wallet successfully!' : 'Invalid or expired gift card code.'),
-                    backgroundColor: success ? Colors.green : Colors.red,
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: colorScheme.outline.withValues(alpha: 0.35),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
-                );
-                if (success) {
-                  ref.read(loyaltyProvider.notifier).fetchSummary();
-                  _loadTransactions();
-                }
-              }
-            },
-            child: const Text('Redeem'),
+                ),
+                Text(
+                  'Redeem Gift Card',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: colorScheme.onSurface),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _gcController,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: InputDecoration(
+                    labelText: 'Gift Card Code',
+                    hintText: 'e.g. GC-ABC1234',
+                    filled: true,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryColor,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: () async {
+                      final code = _gcController.text.trim();
+                      if (code.isEmpty) return;
+                      Navigator.pop(ctx);
+                      final success = await _api.redeemGiftCard(code);
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(success ? 'Gift card redeemed to wallet!' : 'Invalid or expired gift card.'),
+                          backgroundColor: success ? AppTheme.primaryColor : Colors.red.shade700,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                      if (success) {
+                        ref.read(loyaltyProvider.notifier).fetchSummary();
+                        _loadTransactions();
+                      }
+                    },
+                    child: const Text('Redeem', style: TextStyle(fontWeight: FontWeight.w800)),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(loyaltyProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
+      backgroundColor: isDark ? colorScheme.surface : const Color(0xFFF7FAF9),
       appBar: AppBar(
-        title: const Text('Loyalty & Wallet Hub', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Reward Settings', style: TextStyle(fontWeight: FontWeight.w800)),
+        centerTitle: true,
         elevation: 0,
+        backgroundColor: Colors.transparent,
       ),
       body: RefreshIndicator(
+        color: AppTheme.primaryColor,
         onRefresh: () async {
           await ref.read(loyaltyProvider.notifier).fetchSummary();
           await _loadTransactions();
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Balance Cards Overview
               Row(
                 children: [
-                  // Wallet Card
                   Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [const Color(0xFF059669), Colors.teal.shade800],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF059669).withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Row(
-                            children: [
-                              Icon(Icons.account_balance_wallet_rounded, color: Colors.white, size: 20),
-                              SizedBox(width: 6),
-                              Text('Wallet', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            '₹${state.walletBalance.toStringAsFixed(2)}',
-                            style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              GestureDetector(
-                                onTap: () => context.push('/wallet'),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.add_circle_outline, color: Colors.teal.shade800, size: 12),
-                                      const SizedBox(width: 3),
-                                      Text(
-                                        'Top Up',
-                                        style: TextStyle(color: Colors.teal.shade800, fontSize: 10, fontWeight: FontWeight.bold),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              GestureDetector(
-                                onTap: _showRedeemGiftCardDialog,
-                                child: const Text(
-                                  'Gift Card',
-                                  style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w600, decoration: TextDecoration.underline),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                    child: _BalanceMiniCard(
+                      title: 'Wallet',
+                      value: '₹${state.walletBalance.toStringAsFixed(2)}',
+                      colors: const [Color(0xFF0F766E), Color(0xFF14B8A6)],
+                      icon: Icons.account_balance_wallet_rounded,
+                      actionLabel: 'Top Up',
+                      onAction: () => context.push('/wallet'),
                     ),
                   ),
-
-                  const SizedBox(width: 12),
-
-                  // Reward Points Card
+                  const SizedBox(width: 10),
                   Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.purple.shade600, Colors.deepPurple.shade800],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.purple.withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Row(
-                            children: [
-                              Icon(Icons.stars_rounded, color: Colors.amber, size: 20),
-                              SizedBox(width: 6),
-                              Text('Reward Points', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            '${state.rewardBalance} Pts',
-                            style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Value: ₹${(state.rewardBalance * state.conversionRate).toStringAsFixed(2)}',
-                            style: const TextStyle(color: Colors.white70, fontSize: 11),
-                          ),
-                        ],
-                      ),
+                    child: _BalanceMiniCard(
+                      title: 'Rewards',
+                      value: '${state.rewardBalance} Pts',
+                      colors: const [Color(0xFFEA580C), Color(0xFFF97316)],
+                      icon: Icons.stars_rounded,
+                      actionLabel: 'View',
+                      onAction: () => context.push('/rewards'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark ? colorScheme.outline : AppTheme.primaryColor.withValues(alpha: 0.12),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    _LifeCell('Earned', '${state.lifetimeEarned} Pts', AppTheme.successColor),
+                    Container(width: 1, height: 28, color: colorScheme.outline.withValues(alpha: 0.5)),
+                    _LifeCell('Redeemed', '${state.lifetimeRedeemed} Pts', const Color(0xFFEA580C)),
+                    Container(width: 1, height: 28, color: colorScheme.outline.withValues(alpha: 0.5)),
+                    _LifeCell(
+                      'Value',
+                      '₹${(state.rewardBalance * state.conversionRate).toStringAsFixed(0)}',
+                      AppTheme.primaryColor,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: _QuickLink(
+                      icon: Icons.card_giftcard_rounded,
+                      label: 'Gift Card',
+                      color: AppTheme.primaryColor,
+                      onTap: _showRedeemGiftCardDialog,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _QuickLink(
+                      icon: Icons.group_add_rounded,
+                      label: 'Referrals',
+                      color: const Color(0xFF7C3AED),
+                      onTap: () => context.push('/referrals'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _QuickLink(
+                      icon: Icons.savings_rounded,
+                      label: 'Cashback',
+                      color: const Color(0xFF2563EB),
+                      onTap: () => context.push('/cashback'),
                     ),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 16),
-
-              // Lifetime Metrics
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Column(
-                      children: [
-                        const Text('Lifetime Earned', style: TextStyle(fontSize: 11, color: Colors.grey)),
-                        const SizedBox(height: 2),
-                        Text('${state.lifetimeEarned} Pts', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.amber)),
-                      ],
-                    ),
-                    Container(height: 24, width: 1, color: Colors.grey.shade300),
-                    Column(
-                      children: [
-                        const Text('Lifetime Redeemed', style: TextStyle(fontSize: 11, color: Colors.grey)),
-                        const SizedBox(height: 2),
-                        Text('${state.lifetimeRedeemed} Pts', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.purple)),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Referral Box
               if (state.referralCode.isNotEmpty) ...[
+                const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.amber.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.amber.shade200),
+                    color: const Color(0xFF7C3AED).withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFF7C3AED).withValues(alpha: 0.2)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.share_rounded, color: Colors.amber, size: 22),
+                      const Icon(Icons.share_rounded, color: Color(0xFF7C3AED)),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Your Referral Code', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                            Text(
+                              'Referral Code',
+                              style: TextStyle(fontSize: 11, color: colorScheme.onSurface.withValues(alpha: 0.55)),
+                            ),
                             Text(
                               state.referralCode,
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1),
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: 1),
                             ),
                           ],
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.copy_rounded, color: Colors.amber),
+                        icon: const Icon(Icons.copy_rounded, color: Color(0xFF7C3AED)),
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: state.referralCode));
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Referral code copied to clipboard!')),
+                            const SnackBar(content: Text('Code copied'), behavior: SnackBarBehavior.floating),
                           );
                         },
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
               ],
 
-              // Transactions Tab View
+              const SizedBox(height: 16),
               TabBar(
                 controller: _tabController,
-                labelColor: Theme.of(context).primaryColor,
-                unselectedLabelColor: Colors.grey,
-                indicatorColor: Theme.of(context).primaryColor,
+                labelColor: AppTheme.primaryColor,
+                unselectedLabelColor: colorScheme.onSurface.withValues(alpha: 0.45),
+                indicatorColor: AppTheme.primaryColor,
+                labelStyle: const TextStyle(fontWeight: FontWeight.w800),
                 tabs: const [
                   Tab(text: 'Wallet Ledger'),
                   Tab(text: 'Points Ledger'),
                 ],
               ),
-
               SizedBox(
-                height: 350,
+                height: 360,
                 child: TabBarView(
                   controller: _tabController,
                   children: [
-                    // Wallet Ledger
-                    _buildWalletLedger(),
-
-                    // Points Ledger
-                    _buildPointsLedger(),
+                    _buildWalletLedger(isDark, colorScheme),
+                    _buildPointsLedger(isDark, colorScheme),
                   ],
                 ),
               ),
@@ -340,71 +313,234 @@ class _LoyaltyHubScreenState extends ConsumerState<LoyaltyHubScreen> with Single
     );
   }
 
-  Widget _buildWalletLedger() {
+  Widget _buildWalletLedger(bool isDark, ColorScheme colorScheme) {
     final list = (_transactions?['wallet']?['transactions'] as List?) ?? [];
-    if (_loadingTransactions) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    if (_loadingTransactions) return const Center(child: CircularProgressIndicator());
     if (list.isEmpty) {
-      return const Center(child: Text('No wallet transactions found.', style: TextStyle(color: Colors.grey)));
+      return Center(
+        child: Text('No wallet transactions', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5))),
+      );
     }
-    return ListView.builder(
+    return ListView.separated(
+      padding: const EdgeInsets.only(top: 12),
       itemCount: list.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (ctx, idx) {
         final item = list[idx];
         final rawAmount = item['amount'];
-        final double amount = rawAmount is num
-            ? rawAmount.toDouble()
-            : (double.tryParse(rawAmount?.toString() ?? '') ?? 0.0);
+        final amount = rawAmount is num ? rawAmount.toDouble() : (double.tryParse(rawAmount?.toString() ?? '') ?? 0.0);
         final isCredit = amount >= 0;
-        return ListTile(
-          dense: true,
-          leading: Icon(
-            isCredit ? Icons.add_circle_outline_rounded : Icons.remove_circle_outline_rounded,
-            color: isCredit ? Colors.green : Colors.red,
-          ),
-          title: Text(item['type'] ?? 'TRANSACTION', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-          subtitle: Text(item['description'] ?? item['referenceId'] ?? '', style: const TextStyle(fontSize: 11)),
-          trailing: Text(
-            isCredit ? '+₹${amount.toStringAsFixed(2)}' : '-₹${amount.abs().toStringAsFixed(2)}',
-            style: TextStyle(fontWeight: FontWeight.bold, color: isCredit ? Colors.green : Colors.red, fontSize: 14),
-          ),
+        final accent = isCredit ? AppTheme.successColor : const Color(0xFFDC2626);
+        return _LedgerTile(
+          icon: isCredit ? Icons.add_circle_outline_rounded : Icons.remove_circle_outline_rounded,
+          title: item['type']?.toString() ?? 'TRANSACTION',
+          subtitle: item['description']?.toString() ?? item['referenceId']?.toString() ?? '',
+          trailing: isCredit ? '+₹${amount.toStringAsFixed(2)}' : '-₹${amount.abs().toStringAsFixed(2)}',
+          accent: accent,
+          isDark: isDark,
         );
       },
     );
   }
 
-  Widget _buildPointsLedger() {
+  Widget _buildPointsLedger(bool isDark, ColorScheme colorScheme) {
     final list = (_transactions?['rewardPoints']?['transactions'] as List?) ?? [];
-    if (_loadingTransactions) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    if (_loadingTransactions) return const Center(child: CircularProgressIndicator());
     if (list.isEmpty) {
-      return const Center(child: Text('No reward point transactions found.', style: TextStyle(color: Colors.grey)));
+      return Center(
+        child: Text('No points transactions', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5))),
+      );
     }
-    return ListView.builder(
+    return ListView.separated(
+      padding: const EdgeInsets.only(top: 12),
       itemCount: list.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (ctx, idx) {
         final item = list[idx];
         final rawPoints = item['points'];
-        final int points = rawPoints is num
+        final points = rawPoints is num
             ? rawPoints.toInt()
             : (int.tryParse(rawPoints?.toString() ?? '') ?? (double.tryParse(rawPoints?.toString() ?? '')?.toInt() ?? 0));
         final isEarned = points >= 0;
-        return ListTile(
-          dense: true,
-          leading: Icon(
-            isEarned ? Icons.stars_rounded : Icons.history_rounded,
-            color: isEarned ? Colors.amber : Colors.purple,
-          ),
-          title: Text(item['type'] ?? 'REWARD', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-          subtitle: Text(item['reason'] ?? item['orderId'] ?? '', style: const TextStyle(fontSize: 11)),
-          trailing: Text(
-            isEarned ? '+$points Pts' : '$points Pts',
-            style: TextStyle(fontWeight: FontWeight.bold, color: isEarned ? Colors.amber.shade800 : Colors.purple, fontSize: 14),
-          ),
+        final accent = isEarned ? const Color(0xFFEA580C) : const Color(0xFF7C3AED);
+        return _LedgerTile(
+          icon: isEarned ? Icons.stars_rounded : Icons.history_rounded,
+          title: item['type']?.toString() ?? 'REWARD',
+          subtitle: item['reason']?.toString() ?? item['orderId']?.toString() ?? '',
+          trailing: isEarned ? '+$points Pts' : '$points Pts',
+          accent: accent,
+          isDark: isDark,
         );
       },
+    );
+  }
+}
+
+class _BalanceMiniCard extends StatelessWidget {
+  const _BalanceMiniCard({
+    required this.title,
+    required this.value,
+    required this.colors,
+    required this.icon,
+    required this.actionLabel,
+    required this.onAction,
+  });
+
+  final String title;
+  final String value;
+  final List<Color> colors;
+  final IconData icon;
+  final String actionLabel;
+  final VoidCallback onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(colors: colors),
+        boxShadow: [
+          BoxShadow(color: colors.first.withValues(alpha: 0.28), blurRadius: 12, offset: const Offset(0, 6)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: Colors.white, size: 18),
+              const SizedBox(width: 6),
+              Text(title, style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12, fontWeight: FontWeight.w600)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(value, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
+          const SizedBox(height: 10),
+          GestureDetector(
+            onTap: onAction,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+              child: Text(actionLabel, style: TextStyle(color: colors.first, fontSize: 11, fontWeight: FontWeight.w800)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LifeCell extends StatelessWidget {
+  const _LifeCell(this.label, this.value, this.color);
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(label, style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5))),
+          const SizedBox(height: 3),
+          Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: color)),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuickLink extends StatelessWidget {
+  const _QuickLink({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Ink(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: color.withValues(alpha: 0.16)),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: color, size: 22),
+              const SizedBox(height: 6),
+              Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LedgerTile extends StatelessWidget {
+  const _LedgerTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.trailing,
+    required this.accent,
+    required this.isDark,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String trailing;
+  final Color accent;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: isDark ? colorScheme.outline : colorScheme.outline.withValues(alpha: 0.45)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(color: accent.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+            child: Icon(icon, color: accent, size: 20),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: colorScheme.onSurface)),
+                if (subtitle.isNotEmpty)
+                  Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: colorScheme.onSurface.withValues(alpha: 0.5))),
+              ],
+            ),
+          ),
+          Text(trailing, style: TextStyle(fontWeight: FontWeight.w800, color: accent, fontSize: 13)),
+        ],
+      ),
     );
   }
 }

@@ -118,6 +118,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   String? _selectedAddressId;
   bool _showItemSummary = false;
 
+  // ── Custom Seller Info (Manual Entry) ──────────────────────────────────
+  String? _customSellerName;
+  String? _customSellerContact;
+  String? _customSellerAddress;
+
   void _cancelRazorpayTimeout() {
     if (_razorpayTimeoutTimer != null) {
       dev.log('Cancelling active Razorpay timeout timer', name: 'Razorpay');
@@ -167,6 +172,194 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _autoFillDefaultAddress();
     });
+  }
+
+  /// Manual seller details only — no API/settings defaults on checkout.
+  Map<String, String> _effectiveSellerDetails() => {
+        'name': _customSellerName?.trim() ?? '',
+        'contact': _customSellerContact?.trim() ?? '',
+        'address': _customSellerAddress?.trim() ?? '',
+      };
+
+  bool _isSellerDetailsComplete() {
+    final seller = _effectiveSellerDetails();
+    return seller['name']!.isNotEmpty &&
+        seller['contact']!.isNotEmpty &&
+        seller['address']!.isNotEmpty;
+  }
+
+  bool _validateSellerDetails() {
+    if (_isSellerDetailsComplete()) return true;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text(
+          'Please add Seller & Fulfillment details (name, contact, and address) before placing your order.',
+        ),
+        backgroundColor: Colors.orange.shade800,
+        behavior: SnackBarBehavior.floating,
+        action: SnackBarAction(
+          label: 'ADD',
+          textColor: Colors.white,
+          onPressed: () => _showEditSellerDialog(),
+        ),
+      ),
+    );
+    return false;
+  }
+
+  void _showEditSellerDialog() {
+    final nameCtrl = TextEditingController(text: _customSellerName ?? '');
+    final contactCtrl = TextEditingController(text: _customSellerContact ?? '');
+    final addressCtrl = TextEditingController(text: _customSellerAddress ?? '');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) {
+        final colorScheme = Theme.of(context).colorScheme;
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final responsive = ResponsiveText(context);
+
+        return Container(
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: EdgeInsets.only(
+            left: 20, right: 20, top: 16,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40, height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: colorScheme.outline.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    _isSellerDetailsComplete() ? 'Edit Seller & Fulfillment Details' : 'Add Seller & Fulfillment Details',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: responsive.fontSize(15), color: colorScheme.onSurface),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.pop(sheetCtx),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text('Seller / Store Name *', style: TextStyle(fontSize: responsive.fontSize12, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+              const SizedBox(height: 6),
+              TextField(
+                controller: nameCtrl,
+                decoration: InputDecoration(
+                  hintText: 'Enter seller / store name',
+                  filled: true,
+                  fillColor: isDark ? colorScheme.surfaceContainerHighest : colorScheme.surfaceContainer,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text('Seller Contact Phone *', style: TextStyle(fontSize: responsive.fontSize12, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+              const SizedBox(height: 6),
+              TextField(
+                controller: contactCtrl,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  hintText: 'Enter contact number',
+                  filled: true,
+                  fillColor: isDark ? colorScheme.surfaceContainerHighest : colorScheme.surfaceContainer,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text('Seller Address *', style: TextStyle(fontSize: responsive.fontSize12, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+              const SizedBox(height: 6),
+              TextField(
+                controller: addressCtrl,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  hintText: 'Enter store / seller address',
+                  filled: true,
+                  fillColor: isDark ? colorScheme.surfaceContainerHighest : colorScheme.surfaceContainer,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        setState(() {
+                          _customSellerName = null;
+                          _customSellerContact = null;
+                          _customSellerAddress = null;
+                        });
+                        Navigator.pop(sheetCtx);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text('Reset'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final name = nameCtrl.text.trim();
+                        final contact = contactCtrl.text.trim();
+                        final address = addressCtrl.text.trim();
+                        if (name.isEmpty || contact.isEmpty || address.isEmpty) {
+                          ScaffoldMessenger.of(sheetCtx).showSnackBar(
+                            const SnackBar(
+                              content: Text('Please fill name, contact, and address.'),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                          return;
+                        }
+                        setState(() {
+                          _customSellerName = name;
+                          _customSellerContact = contact;
+                          _customSellerAddress = address;
+                        });
+                        Navigator.pop(sheetCtx);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text(
+                        _isSellerDetailsComplete() ? 'Save Details' : 'Add Details',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   void _autoFillDefaultAddress() {
@@ -353,6 +546,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       );
       final isGiftWrapped = ref.read(isGiftWrappedProvider);
       final finalTotal = _calculateFinalTotalPayable();
+      final seller = _effectiveSellerDetails();
       final order = await ref
           .read(orderProvider.notifier)
           .placeOrder(
@@ -370,6 +564,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             razorpayPaymentId: response.paymentId,
             razorpaySignature: response.signature,
             giftWrap: isGiftWrapped,
+            sellerName: seller['name'],
+            sellerContact: seller['contact'],
+            sellerAddress: seller['address'],
           );
       dev.log(
         'Order placed successfully via Razorpay: #${order.id}',
@@ -446,6 +643,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   Future<void> _openRazorpay() async {
+    if (!_validateSellerDetails()) return;
     final cart = ref.read(cartProvider);
     if (cart.isEmpty) {
       dev.log('Cart is empty, aborting Razorpay checkout', name: 'Razorpay');
@@ -625,6 +823,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   // ── Place order ─────────────────────────────────────────────────────────
   Future<void> _handlePlaceOrder() async {
     if (!_formKey.currentState!.validate()) return;
+    if (!_validateSellerDetails()) return;
     final cart = ref.read(cartProvider);
     if (cart.isEmpty) return;
 
@@ -651,6 +850,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           '$_selectedCountry - ${_zipController.text}';
 
       final isGiftWrapped = ref.read(isGiftWrappedProvider);
+      final seller = _effectiveSellerDetails();
       final order = await ref
           .read(orderProvider.notifier)
           .placeOrder(
@@ -665,6 +865,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 : null,
             paymentMethod: _selectedPayment,
             giftWrap: isGiftWrapped,
+            sellerName: seller['name'],
+            sellerContact: seller['contact'],
+            sellerAddress: seller['address'],
           );
 
       cartNotifier.clearCart();
@@ -701,6 +904,231 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   // ── Helpers ─────────────────────────────────────────────────────────────
   String? _required(String? v) =>
       v == null || v.trim().isEmpty ? 'Required' : null;
+
+  Widget _buildSellerFulfillmentSection(
+    BuildContext context,
+    ResponsiveText responsive,
+    bool isDark,
+    ColorScheme colorScheme,
+  ) {
+    final seller = _effectiveSellerDetails();
+    final name = seller['name']!;
+    final contact = seller['contact']!;
+    final address = seller['address']!;
+    final hasDetails = _isSellerDetailsComplete();
+    final actionLabel = hasDetails ? 'EDIT' : 'ADD';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionHeader(
+          context,
+          responsive,
+          Icons.store_rounded,
+          'SELLER & FULFILLMENT',
+          trailing: GestureDetector(
+            onTap: _showEditSellerDialog,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    hasDetails ? Icons.edit_outlined : Icons.add_rounded,
+                    size: 12,
+                    color: AppTheme.primaryColor,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    actionLabel,
+                    style: TextStyle(
+                      fontSize: responsive.fontSize10,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        _sectionCard(
+          context,
+          isDark,
+          colorScheme,
+          children: [
+            if (!hasDetails)
+              InkWell(
+                onTap: _showEditSellerDialog,
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.storefront_outlined,
+                          color: AppTheme.primaryColor,
+                          size: 22,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Add seller & fulfillment details',
+                              style: TextStyle(
+                                fontSize: responsive.fontSize13,
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.onSurface,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Enter seller name, contact number, and address manually.',
+                              style: TextStyle(
+                                fontSize: responsive.fontSize11,
+                                color: colorScheme.onSurface.withValues(alpha: 0.6),
+                                height: 1.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        color: colorScheme.onSurface.withValues(alpha: 0.4),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.verified_user_rounded,
+                          color: AppTheme.primaryColor,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Sold & Fulfilled By',
+                              style: TextStyle(
+                                fontSize: responsive.fontSize10,
+                                fontWeight: FontWeight.w700,
+                                color: colorScheme.onSurface.withValues(alpha: 0.6),
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              name,
+                              style: TextStyle(
+                                fontSize: responsive.fontSize13,
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.onSurface,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  const Divider(height: 1),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.phone_rounded,
+                        size: responsive.iconSize(14),
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Seller Contact: ',
+                        style: TextStyle(
+                          fontSize: responsive.fontSize11,
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          contact,
+                          style: TextStyle(
+                            fontSize: responsive.fontSize11,
+                            fontWeight: FontWeight.w600,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Icon(
+                          Icons.location_on_rounded,
+                          size: responsive.iconSize(14),
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Address: ',
+                        style: TextStyle(
+                          fontSize: responsive.fontSize11,
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          address,
+                          style: TextStyle(
+                            fontSize: responsive.fontSize11,
+                            fontWeight: FontWeight.w500,
+                            color: colorScheme.onSurface.withValues(alpha: 0.9),
+                            height: 1.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ],
+    );
+  }
 
   Widget _sectionHeader(
     BuildContext context,
@@ -1699,176 +2127,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         ),
 
                         // ── SELLER & FULFILLMENT CARD ──
-                        _sectionHeader(
-                          context,
-                          responsive,
-                          Icons.store_rounded,
-                          'SELLER & FULFILLMENT',
-                        ),
-                        _sectionCard(
-                          context,
-                          isDark,
-                          colorScheme,
-                          children: [
-                            ref.watch(apiSellerInfoProvider).when(
-                                  data: (sellerInfo) {
-                                    final name = sellerInfo['sellerName'] ?? 'FCI Seller Retail Pvt. Ltd.';
-                                    final contact = sellerInfo['sellerContactNumber'] ?? '+91 9876543210';
-                                    final address = sellerInfo['sellerAddress'] ?? 'Building A, Industrial Focal Point, Phase 8B, Sector 74, Mohali, Punjab 160055';
-                                    return Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.all(8),
-                                              decoration: BoxDecoration(
-                                                color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                                                borderRadius: BorderRadius.circular(10),
-                                              ),
-                                              child: const Icon(
-                                                Icons.verified_user_rounded,
-                                                color: AppTheme.primaryColor,
-                                                size: 20,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    'Sold & Fulfilled By',
-                                                    style: TextStyle(
-                                                      fontSize: responsive.fontSize10,
-                                                      fontWeight: FontWeight.w700,
-                                                      color: colorScheme.onSurface.withValues(alpha: 0.6),
-                                                      letterSpacing: 0.8,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 2),
-                                                  Text(
-                                                    name,
-                                                    style: TextStyle(
-                                                      fontSize: responsive.fontSize13,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: colorScheme.onSurface,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        if (contact.isNotEmpty) ...[
-                                          const SizedBox(height: 10),
-                                          const Divider(height: 1),
-                                          const SizedBox(height: 10),
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                Icons.phone_rounded,
-                                                size: responsive.iconSize(14),
-                                                color: colorScheme.onSurface.withValues(alpha: 0.6),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                'Seller Contact: ',
-                                                style: TextStyle(
-                                                  fontSize: responsive.fontSize11,
-                                                  color: colorScheme.onSurface.withValues(alpha: 0.6),
-                                                ),
-                                              ),
-                                              Expanded(
-                                                child: Text(
-                                                  contact,
-                                                  style: TextStyle(
-                                                    fontSize: responsive.fontSize11,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: colorScheme.onSurface,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                        if (address.isNotEmpty) ...[
-                                          const SizedBox(height: 8),
-                                          Row(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Padding(
-                                                padding: const EdgeInsets.only(top: 2),
-                                                child: Icon(
-                                                  Icons.location_on_rounded,
-                                                  size: responsive.iconSize(14),
-                                                  color: colorScheme.onSurface.withValues(alpha: 0.6),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                'Address: ',
-                                                style: TextStyle(
-                                                  fontSize: responsive.fontSize11,
-                                                  color: colorScheme.onSurface.withValues(alpha: 0.6),
-                                                ),
-                                              ),
-                                              Expanded(
-                                                child: Text(
-                                                  address,
-                                                  style: TextStyle(
-                                                    fontSize: responsive.fontSize11,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: colorScheme.onSurface.withValues(alpha: 0.9),
-                                                    height: 1.3,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ],
-                                    );
-                                  },
-                                  loading: () => const Center(
-                                    child: Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: CircularProgressIndicator.adaptive(strokeWidth: 2),
-                                    ),
-                                  ),
-                                  error: (_, __) => Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Sold & Fulfilled By',
-                                        style: TextStyle(
-                                          fontSize: responsive.fontSize10,
-                                          fontWeight: FontWeight.w700,
-                                          color: colorScheme.onSurface.withValues(alpha: 0.6),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        'FCI Seller Retail Pvt. Ltd.',
-                                        style: TextStyle(
-                                          fontSize: responsive.fontSize13,
-                                          fontWeight: FontWeight.bold,
-                                          color: colorScheme.onSurface,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Text(
-                                        'Building A, Industrial Focal Point, Phase 8B, Sector 74, Mohali, Punjab 160055',
-                                        style: TextStyle(
-                                          fontSize: responsive.fontSize11,
-                                          color: colorScheme.onSurface.withValues(alpha: 0.7),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                          ],
-                        ),
+                        _buildSellerFulfillmentSection(context, responsive, isDark, colorScheme),
 
                         const SizedBox(height: 20),
 

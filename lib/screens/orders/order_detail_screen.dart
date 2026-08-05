@@ -883,6 +883,13 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                                         'Contact: ${order.sellerContact.trim().isNotEmpty ? order.sellerContact : "+91 9876543210"}',
                                         style: TextStyle(fontSize: responsive.fontSize12, fontWeight: FontWeight.w500, color: colorScheme.onSurface.withValues(alpha: 0.7)),
                                       ),
+                                      if (order.sellerAddress.trim().isNotEmpty) ...[
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Address: ${order.sellerAddress}',
+                                          style: TextStyle(fontSize: responsive.fontSize12, fontWeight: FontWeight.w500, color: colorScheme.onSurface.withValues(alpha: 0.7)),
+                                        ),
+                                      ],
                                     ],
                                   ),
                                 ),

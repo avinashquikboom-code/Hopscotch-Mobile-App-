@@ -16,6 +16,7 @@ class OrderModel {
   final double giftWrapCharge;
   final String sellerName;
   final String sellerContact;
+  final String sellerAddress;
 
   const OrderModel({
     required this.id,
@@ -33,6 +34,7 @@ class OrderModel {
     this.giftWrapCharge = 0.0,
     this.sellerName = 'FCI Seller Retail Pvt. Ltd.',
     this.sellerContact = '+91 9876543210',
+    this.sellerAddress = '',
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -52,6 +54,7 @@ class OrderModel {
 
     final sellerName = (json['sellerNameSnapshot'] ?? json['sellerName'] ?? json['seller_name'] ?? 'FCI Seller Retail Pvt. Ltd.').toString();
     final sellerContact = (json['sellerContactSnapshot'] ?? json['sellerContact'] ?? json['seller_contact'] ?? json['sellerContactNumber'] ?? '+91 9876543210').toString();
+    final sellerAddress = (json['sellerAddressSnapshot'] ?? json['sellerAddress'] ?? json['seller_address'] ?? '').toString();
 
     final parsedTotal = json['totalAmount'] is num
         ? (json['totalAmount'] as num).toDouble()
@@ -78,6 +81,7 @@ class OrderModel {
       giftWrapCharge: giftWrapCharge,
       sellerName: sellerName,
       sellerContact: sellerContact,
+      sellerAddress: sellerAddress,
     );
   }
 

@@ -81,9 +81,9 @@ class ConfigRepository {
             final address = (data['sellerAddress'] ?? data['warehouseAddress'] ?? '').toString();
             if (name.isNotEmpty || phone.isNotEmpty || address.isNotEmpty) {
               return {
-                'sellerName': name.isNotEmpty ? name : 'FCI Seller Retail Pvt. Ltd.',
-                'sellerContactNumber': phone.isNotEmpty ? phone : '+91 9876543210',
-                'sellerAddress': address.isNotEmpty ? address : 'Building A, Industrial Focal Point, Phase 8B, Sector 74, Mohali, Punjab 160055',
+                'sellerName': name,
+                'sellerContactNumber': phone,
+                'sellerAddress': address,
               };
             }
           }
@@ -93,9 +93,9 @@ class ConfigRepository {
       }
     }
     return {
-      'sellerName': 'FCI Seller Retail Pvt. Ltd.',
-      'sellerContactNumber': '+91 9876543210',
-      'sellerAddress': 'Building A, Industrial Focal Point, Phase 8B, Sector 74, Mohali, Punjab 160055',
+      'sellerName': '',
+      'sellerContactNumber': '',
+      'sellerAddress': '',
     };
   }
 }

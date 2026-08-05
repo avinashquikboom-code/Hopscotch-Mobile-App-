@@ -82,16 +82,17 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: isDark ? colorScheme.surface : const Color(0xFFF8FAFC),
+      backgroundColor: isDark ? colorScheme.surface : const Color(0xFFF7FAF9),
       appBar: AppBar(
-        backgroundColor: colorScheme.surface,
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        centerTitle: true,
         title: Text(
-          'MY ORDERS',
+          'My Orders',
           style: TextStyle(
             fontSize: responsive.fontSize18,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.0,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.2,
           ),
         ),
         leading: IconButton(
@@ -443,24 +444,24 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: ChoiceChip(
-        label: Text(label),
+        label: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : AppTheme.primaryColor,
+            fontWeight: FontWeight.w700,
+            fontSize: 12,
+          ),
+        ),
         selected: isSelected,
         onSelected: (selected) {
-          if (selected) {
-            setState(() {
-              _selectedFilter = value;
-            });
-          }
+          if (selected) setState(() => _selectedFilter = value);
         },
         selectedColor: AppTheme.primaryColor,
-        backgroundColor: colorScheme.surface,
+        backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.08),
         side: BorderSide(
-          color: isSelected ? AppTheme.primaryColor : colorScheme.outline.withValues(alpha: 0.2),
-        ),
-        labelStyle: TextStyle(
-          color: isSelected ? Colors.white : colorScheme.onSurface.withValues(alpha: 0.7),
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-          fontSize: 12,
+          color: isSelected
+              ? AppTheme.primaryColor
+              : AppTheme.primaryColor.withValues(alpha: 0.25),
         ),
       ),
     );

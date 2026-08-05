@@ -281,8 +281,48 @@ class LoyaltyNotifier extends StateNotifier<LoyaltyState> {
       state = state.copyWith(walletBalance: newBalance);
       _notifService.showNotification('Wallet Credited', '₹${amount.toStringAsFixed(2)} has been added to your Wallet.');
       await fetchSummary();
+      await fetchWalletTransactions();
     }
     return success;
+  }
+
+  Future<void> fetchWalletTransactions() async {
+    try {
+      final walletData = await _api.getWallet();
+      final master = await _api.getMasterTransactions();
+
+      double? wBalance;
+      List<WalletTransaction> txs = [];
+
+      if (walletData != null) {
+        wBalance = (walletData['balance'] as num?)?.toDouble();
+        final raw = (walletData['transactions'] as List<dynamic>?) ??
+            (walletData['history'] as List<dynamic>?) ??
+            [];
+        txs = raw
+            .whereType<Map>()
+            .map((e) => WalletTransaction.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+      }
+
+      if (txs.isEmpty && master != null) {
+        final raw = (master['transactions'] as List<dynamic>?) ??
+            (master['wallet'] as List<dynamic>?) ??
+            (master['history'] as List<dynamic>?) ??
+            [];
+        txs = raw
+            .whereType<Map>()
+            .map((e) => WalletTransaction.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+      }
+
+      state = state.copyWith(
+        walletBalance: wBalance ?? state.walletBalance,
+        walletTransactions: txs,
+      );
+    } catch (e) {
+      debugPrint('Error fetching wallet transactions: $e');
+    }
   }
 
   Future<bool> redeemGiftCard(String code) async {

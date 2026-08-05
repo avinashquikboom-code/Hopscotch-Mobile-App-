@@ -151,15 +151,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final responsive = context.responsive;
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
+      backgroundColor: isDark
+          ? Theme.of(context).colorScheme.surface
+          : const Color(0xFFF7FAF9),
       appBar: AppBar(
         title: Text(
           l10n.settingsFitProfile,
           style: TextStyle(
             fontSize: responsive.fontSize16,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w800,
           ),
         ),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: Icon(Icons.adaptive.arrow_back, size: responsive.iconSize(24)),
           onPressed: () {
