@@ -5,6 +5,7 @@ import 'package:hopscotch/models/loyalty_models.dart';
 import 'package:hopscotch/providers/loyalty_provider.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/api/loyalty_api.dart';
+import 'package:hopscotch/screens/loyalty/wallet_withdraw_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
@@ -180,6 +181,21 @@ class _MyWalletScreenState extends ConsumerState<MyWalletScreen>
           ),
         );
       }
+    }
+  }
+
+  // ── Withdraw Screen ──────────────────────────────────────────────────────
+
+  Future<void> _openWithdrawScreen(double balance) async {
+    final refreshed = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => WalletWithdrawScreen(availableBalance: balance),
+      ),
+    );
+    if (refreshed == true && mounted) {
+      ref.read(loyaltyProvider.notifier).fetchSummary();
+      ref.read(loyaltyProvider.notifier).fetchWalletTransactions();
     }
   }
 
@@ -443,7 +459,16 @@ class _MyWalletScreenState extends ConsumerState<MyWalletScreen>
                     onTap: _showTopupSheet,
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _QuickAction(
+                    icon: Icons.north_west_rounded,
+                    label: 'Withdraw',
+                    color: const Color(0xFF0F766E),
+                    onTap: () => _openWithdrawScreen(loyaltyState.walletBalance),
+                  ),
+                ),
+                const SizedBox(width: 8),
                 Expanded(
                   child: _QuickAction(
                     icon: Icons.savings_outlined,
@@ -452,7 +477,7 @@ class _MyWalletScreenState extends ConsumerState<MyWalletScreen>
                     onTap: () => _tabController.animateTo(2),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 Expanded(
                   child: _QuickAction(
                     icon: Icons.history_rounded,

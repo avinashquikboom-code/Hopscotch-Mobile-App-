@@ -180,4 +180,43 @@ class LoyaltyApi {
     }
     return null;
   }
+
+  /// Submits a withdrawal request. Returns { withdrawal, newBalance, processingTime }.
+  Future<Map<String, dynamic>?> requestWithdrawal({
+    required double amount,
+    required String bankAccountName,
+    required String bankAccountNumber,
+    required String bankIFSC,
+  }) async {
+    try {
+      final response = await _apiService.post(
+        '/mobile/wallet/withdraw',
+        data: {
+          'amount': amount,
+          'bankAccountName': bankAccountName,
+          'bankAccountNumber': bankAccountNumber,
+          'bankIFSC': bankIFSC,
+        },
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data['data'] as Map<String, dynamic>?;
+      }
+    } catch (e) {
+      print('Error requesting withdrawal: $e');
+    }
+    return null;
+  }
+
+  /// Fetches customer's own withdrawal history.
+  Future<List<dynamic>?> getWithdrawals() async {
+    try {
+      final response = await _apiService.get('/mobile/wallet/withdrawals');
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data['data'] as List<dynamic>?;
+      }
+    } catch (e) {
+      print('Error fetching withdrawals: $e');
+    }
+    return null;
+  }
 }
