@@ -23,9 +23,10 @@ class _MyWalletScreenState extends ConsumerState<MyWalletScreen>
   bool _isToppingUp = false;
   late Razorpay _razorpay;
   final LoyaltyApi _loyaltyApi = LoyaltyApi();
+  final TextEditingController _customAmountController = TextEditingController();
   String? _pendingRazorpayOrderId;
 
-  /// Only these fixed amounts are allowed for wallet top-up
+  /// Quick amounts for wallet top-up
   static const _quickAmounts = [100, 500, 1000];
 
   @override
@@ -46,6 +47,7 @@ class _MyWalletScreenState extends ConsumerState<MyWalletScreen>
 
   @override
   void dispose() {
+    _customAmountController.dispose();
     _tabController.dispose();
     _razorpay.clear();
     super.dispose();
@@ -203,6 +205,7 @@ class _MyWalletScreenState extends ConsumerState<MyWalletScreen>
 
   void _showTopupSheet() {
     _selectedQuickAmount = null;
+    _customAmountController.clear();
 
     showModalBottomSheet(
       context: context,
@@ -282,7 +285,7 @@ class _MyWalletScreenState extends ConsumerState<MyWalletScreen>
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'Select top-up amount',
+                    'Select or Enter top-up amount',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
@@ -290,7 +293,7 @@ class _MyWalletScreenState extends ConsumerState<MyWalletScreen>
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // Fixed amount buttons — server only accepts ₹100 / ₹500 / ₹1000
+                  // Quick amount buttons
                   Row(
                     children: _quickAmounts.map((amt) {
                       final selected = _selectedQuickAmount == amt;
@@ -299,7 +302,10 @@ class _MyWalletScreenState extends ConsumerState<MyWalletScreen>
                           padding: const EdgeInsets.symmetric(horizontal: 4),
                           child: GestureDetector(
                             onTap: () {
-                              setSheetState(() => _selectedQuickAmount = amt);
+                              setSheetState(() {
+                                _selectedQuickAmount = amt;
+                                _customAmountController.text = amt.toString();
+                              });
                             },
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 180),
@@ -334,7 +340,54 @@ class _MyWalletScreenState extends ConsumerState<MyWalletScreen>
                       );
                     }).toList(),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 16),
+                  // Custom amount text field
+                  TextField(
+                    controller: _customAmountController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+                    onChanged: (val) {
+                      setSheetState(() {
+                        final parsed = int.tryParse(val);
+                        _selectedQuickAmount = _quickAmounts.contains(parsed) ? parsed : null;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Enter custom amount (Min ₹10)',
+                      prefixText: '₹ ',
+                      prefixStyle: const TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 18,
+                        color: AppTheme.primaryColor,
+                      ),
+                      filled: true,
+                      fillColor: isDark
+                          ? colorScheme.surfaceContainerHighest
+                          : AppTheme.primaryColor.withValues(alpha: 0.04),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(
+                          color: AppTheme.primaryColor,
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
                   Center(
                     child: Text(
                       'Secure payment via Razorpay',
@@ -360,17 +413,18 @@ class _MyWalletScreenState extends ConsumerState<MyWalletScreen>
                       onPressed: _isToppingUp
                           ? null
                           : () {
-                              if (_selectedQuickAmount == null) {
+                              final amountToPay = int.tryParse(_customAmountController.text.trim()) ?? _selectedQuickAmount;
+                              if (amountToPay == null || amountToPay < 10) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Please select an amount'),
+                                    content: Text('Please enter a valid amount (Minimum ₹10)'),
                                     behavior: SnackBarBehavior.floating,
                                   ),
                                 );
                                 return;
                               }
                               Navigator.pop(ctx);
-                              _startRazorpayWalletLoad(_selectedQuickAmount!);
+                              _startRazorpayWalletLoad(amountToPay);
                             },
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -387,11 +441,16 @@ class _MyWalletScreenState extends ConsumerState<MyWalletScreen>
                           else
                             const Icon(Icons.lock_rounded, size: 18),
                           const SizedBox(width: 8),
-                          Text(
-                            _selectedQuickAmount != null
-                                ? 'Pay ₹$_selectedQuickAmount via Razorpay'
-                                : 'Proceed to Pay',
-                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+                          Builder(
+                            builder: (_) {
+                              final currentAmt = int.tryParse(_customAmountController.text.trim()) ?? _selectedQuickAmount;
+                              return Text(
+                                currentAmt != null && currentAmt >= 10
+                                    ? 'Pay ₹$currentAmt via Razorpay'
+                                    : 'Proceed to Pay',
+                                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+                              );
+                            },
                           ),
                         ],
                       ),

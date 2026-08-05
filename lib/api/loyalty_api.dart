@@ -145,7 +145,7 @@ class LoyaltyApi {
   Future<Map<String, dynamic>?> createWalletLoadOrder(int amount) async {
     try {
       final response = await _apiService.post(
-        '/mobile/wallet/load-order',
+        '/api/v1/loyalty/wallet/load-order',
         data: {'amount': amount},
       );
       if (response.statusCode == 200 && response.data != null) {
@@ -165,7 +165,7 @@ class LoyaltyApi {
   }) async {
     try {
       final response = await _apiService.post(
-        '/mobile/wallet/verify',
+        '/api/v1/loyalty/wallet/verify',
         data: {
           'razorpayOrderId': razorpayOrderId,
           'razorpayPaymentId': razorpayPaymentId,
@@ -190,7 +190,7 @@ class LoyaltyApi {
   }) async {
     try {
       final response = await _apiService.post(
-        '/mobile/wallet/withdraw',
+        '/api/v1/loyalty/wallet/withdraw',
         data: {
           'amount': amount,
           'bankAccountName': bankAccountName,
@@ -210,7 +210,7 @@ class LoyaltyApi {
   /// Fetches customer's own withdrawal history.
   Future<List<dynamic>?> getWithdrawals() async {
     try {
-      final response = await _apiService.get('/mobile/wallet/withdrawals');
+      final response = await _apiService.get('/api/v1/loyalty/wallet/withdrawals');
       if (response.statusCode == 200 && response.data != null) {
         return response.data['data'] as List<dynamic>?;
       }
