@@ -167,4 +167,36 @@ class ContentPostModel {
       taggedProducts: taggedProducts,
     );
   }
+
+  /// Returns a valid image URL for thumbnail preview, excluding video files (.mp4 etc)
+  String? get effectiveThumbnailUrl {
+    if (thumbnailUrl != null &&
+        thumbnailUrl!.trim().isNotEmpty &&
+        !_isVideoUrl(thumbnailUrl!)) {
+      return thumbnailUrl;
+    }
+    for (final product in taggedProducts) {
+      if (product.thumbnailUrl != null &&
+          product.thumbnailUrl!.trim().isNotEmpty &&
+          !_isVideoUrl(product.thumbnailUrl!)) {
+        return product.thumbnailUrl;
+      }
+    }
+    for (final url in mediaUrls) {
+      if (url.trim().isNotEmpty && !_isVideoUrl(url)) {
+        return url;
+      }
+    }
+    return null;
+  }
+
+  static bool _isVideoUrl(String url) {
+    final lower = url.toLowerCase();
+    return lower.endsWith('.mp4') ||
+        lower.endsWith('.mov') ||
+        lower.endsWith('.avi') ||
+        lower.endsWith('.mkv') ||
+        lower.endsWith('.webm') ||
+        lower.endsWith('.m3u8');
+  }
 }

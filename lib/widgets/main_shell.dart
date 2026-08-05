@@ -81,9 +81,14 @@ class MainShell extends ConsumerWidget {
       ],
     ];
 
+    final String location = GoRouterState.of(context).uri.toString();
+    final bool hideBottomNav = location.startsWith('/play');
+
     return Scaffold(
       body: child,
-      bottomNavigationBar: BottomAppBar(
+      bottomNavigationBar: hideBottomNav
+          ? null
+          : BottomAppBar(
         color: colorScheme.surface,
         elevation: 8,
         padding: EdgeInsets.zero,

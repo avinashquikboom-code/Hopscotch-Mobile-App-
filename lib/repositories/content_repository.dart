@@ -6,6 +6,8 @@ import 'package:hopscotch/constants/app_urls.dart';
 import 'package:hopscotch/models/content_post_model.dart';
 import 'package:hopscotch/utils/dev_logger.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 final contentRepositoryProvider = Provider<ContentRepository>((ref) {
   final apiService = ref.watch(apiServiceProvider);
   return ContentRepository(apiService);
@@ -13,8 +15,23 @@ final contentRepositoryProvider = Provider<ContentRepository>((ref) {
 
 class ContentRepository {
   final ApiService _apiService;
+  final Set<int> _viewedPostIds = {};
+  bool _isViewedLoaded = false;
+  static const String _kViewedPostsKey = 'fci_viewed_content_ids';
 
   ContentRepository(this._apiService);
+
+  Future<void> _loadViewedPostIds() async {
+    if (_isViewedLoaded) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final List<String>? stored = prefs.getStringList(_kViewedPostsKey);
+      if (stored != null) {
+        _viewedPostIds.addAll(stored.map((e) => int.tryParse(e) ?? 0).where((id) => id > 0));
+      }
+      _isViewedLoaded = true;
+    } catch (_) {}
+  }
 
   /// Fetch PLAY vertical video feed
   Future<List<ContentPostModel>> getPlayFeed({int page = 1, int limit = 10}) async {
@@ -93,13 +110,29 @@ class ContentRepository {
     }
   }
 
-  /// Track content item view (throttled)
-  Future<void> incrementView(int contentPostId) async {
+  /// Track content item view (Deduplicated: 1 view per user per item)
+  /// Returns true if this is a NEW view for this user, false if already counted.
+  Future<bool> incrementView(int contentPostId) async {
+    if (contentPostId <= 0) return false;
+    await _loadViewedPostIds();
+
+    if (_viewedPostIds.contains(contentPostId)) {
+      return false;
+    }
+
+    _viewedPostIds.add(contentPostId);
+
+    // Save viewed status asynchronously
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setStringList(_kViewedPostsKey, _viewedPostIds.map((id) => id.toString()).toList());
+    }).catchError((_) {});
+
     try {
       await _apiService.post(AppUrls.contentView(contentPostId));
     } catch (e) {
       DevLogger.logError('Error incrementing view count: $e', context: 'ContentRepository');
     }
+    return true;
   }
 
   /// Get comments for a content post

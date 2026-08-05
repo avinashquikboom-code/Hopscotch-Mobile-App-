@@ -61,7 +61,7 @@ class _StoriesStripState extends ConsumerState<StoriesStrip> {
 
   void _openPlayScreen() {
     HapticFeedback.lightImpact();
-    Navigator.of(context).push(
+    Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
         builder: (context) => const PlayScreen(),
       ),
@@ -173,7 +173,7 @@ class _StoriesStripState extends ConsumerState<StoriesStrip> {
   }
 
   Widget _buildStoryAvatar(ContentPostModel story, int index, bool isViewed) {
-    final rawUrl = story.thumbnailUrl ?? (story.mediaUrls.isNotEmpty ? story.mediaUrls.first : '');
+    final rawUrl = story.effectiveThumbnailUrl ?? (story.mediaUrls.isNotEmpty ? story.mediaUrls.first : '');
     final resolvedUrl = AppUrls.resolveUrl(rawUrl);
 
     return GestureDetector(

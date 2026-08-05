@@ -65,19 +65,21 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
     return count.toString();
   }
 
-  void _openFullScreenViewer(int index) {
+  void _openFullScreenViewer(int index) async {
     HapticFeedback.lightImpact();
     if (index >= 0 && index < _posts.length) {
       final post = _posts[index];
-      // Increment real-time view counter via API & state update
-      ref.read(contentRepositoryProvider).incrementView(post.id);
-      setState(() {
-        _posts[index] = post.copyWith(viewCount: post.viewCount + 1);
-      });
+      // Increment real-time view counter via API & state update (1 view per user)
+      final isNewView = await ref.read(contentRepositoryProvider).incrementView(post.id);
+      if (isNewView && mounted) {
+        setState(() {
+          _posts[index] = post.copyWith(viewCount: post.viewCount + 1);
+        });
+      }
     }
 
-    Navigator.push(
-      context,
+    if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
         builder: (context) => PlayScreen(
           initialFeed: _posts,
@@ -358,14 +360,6 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
     );
   }
 
-  bool _isVideoUrl(String url) {
-    final lower = url.toLowerCase();
-    return lower.endsWith('.mp4') ||
-        lower.endsWith('.mov') ||
-        lower.endsWith('.webm') ||
-        lower.endsWith('.m3u8');
-  }
-
   Widget _buildThumbnailFallback(String displayTitle, Color primaryColor, bool isDark) {
     return Container(
       decoration: BoxDecoration(
@@ -442,10 +436,9 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
             ? post.caption!
             : 'Trending FCI Style');
 
-    final rawThumbnail = post.thumbnailUrl;
+    final rawThumbnail = post.effectiveThumbnailUrl;
     final bool hasValidThumbnail = rawThumbnail != null &&
-        rawThumbnail.trim().isNotEmpty &&
-        !_isVideoUrl(rawThumbnail);
+        rawThumbnail.trim().isNotEmpty;
 
     final resolvedMediaUrl = hasValidThumbnail
         ? AppUrls.resolveUrl(rawThumbnail)

@@ -66,12 +66,17 @@ class _PlayScreenState extends ConsumerState<PlayScreen> {
     }
   }
 
-  void _markViewed(int index) {
+  void _markViewed(int index) async {
     if (index >= 0 && index < _posts.length) {
       final post = _posts[index];
       if (!_viewedIds.contains(post.id)) {
         _viewedIds.add(post.id);
-        ref.read(contentRepositoryProvider).incrementView(post.id);
+        final isNewView = await ref.read(contentRepositoryProvider).incrementView(post.id);
+        if (isNewView && mounted) {
+          setState(() {
+            _posts[index] = post.copyWith(viewCount: post.viewCount + 1);
+          });
+        }
       }
     }
   }
@@ -350,8 +355,30 @@ class _PlayScreenState extends ConsumerState<PlayScreen> {
               setState(() {});
             }
           },
-          child: isInitialized
-              ? FittedBox(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Thumbnail Image Preview (Layered behind video player)
+              if (post.effectiveThumbnailUrl != null &&
+                  post.effectiveThumbnailUrl!.isNotEmpty)
+                CachedNetworkImage(
+                  imageUrl: AppUrls.resolveUrl(post.effectiveThumbnailUrl),
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => const Center(
+                    child: CircularProgressIndicator(color: AppTheme.accentColor),
+                  ),
+                  errorWidget: (context, url, err) => const Center(
+                    child: Icon(Icons.movie_rounded, color: Colors.white38, size: 64),
+                  ),
+                )
+              else
+                const Center(
+                  child: Icon(Icons.movie_rounded, color: Colors.white38, size: 64),
+                ),
+
+              // Video Player (Layered on top once initialized)
+              if (isInitialized)
+                FittedBox(
                   fit: BoxFit.cover,
                   child: SizedBox(
                     width: controller.value.size.width,
@@ -359,20 +386,13 @@ class _PlayScreenState extends ConsumerState<PlayScreen> {
                     child: VideoPlayer(controller),
                   ),
                 )
-              : (post.thumbnailUrl != null && post.thumbnailUrl!.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: AppUrls.resolveUrl(post.thumbnailUrl),
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => const Center(
-                        child: CircularProgressIndicator(color: AppTheme.accentColor),
-                      ),
-                      errorWidget: (context, url, err) => const Center(
-                        child: Icon(Icons.movie_rounded, color: Colors.white38, size: 64),
-                      ),
-                    )
-                  : const Center(
-                      child: CircularProgressIndicator(color: AppTheme.accentColor),
-                    )),
+              else if (post.effectiveThumbnailUrl == null ||
+                  post.effectiveThumbnailUrl!.isEmpty)
+                const Center(
+                  child: CircularProgressIndicator(color: AppTheme.accentColor),
+                ),
+            ],
+          ),
         ),
 
         // Pause Overlay Icon
