@@ -53,6 +53,8 @@ class OrdersApi {
     String? sellerName,
     String? sellerContact,
     String? sellerAddress,
+    bool? useWallet,
+    double? walletAmountUsed,
   }) async {
     return await _apiService.post(
       '/api/v1/mobile/orders',
@@ -72,6 +74,8 @@ class OrdersApi {
         if (sellerName != null && sellerName.trim().isNotEmpty) 'sellerName': sellerName.trim(),
         if (sellerContact != null && sellerContact.trim().isNotEmpty) 'sellerContact': sellerContact.trim(),
         if (sellerAddress != null && sellerAddress.trim().isNotEmpty) 'sellerAddress': sellerAddress.trim(),
+        if (useWallet == true) 'useWallet': true,
+        if (walletAmountUsed != null && walletAmountUsed > 0) 'walletAmountUsed': walletAmountUsed,
       },
     );
   }

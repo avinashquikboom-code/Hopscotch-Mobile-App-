@@ -547,6 +547,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final isGiftWrapped = ref.read(isGiftWrappedProvider);
       final finalTotal = _calculateFinalTotalPayable();
       final seller = _effectiveSellerDetails();
+      final loyaltyState = ref.read(loyaltyProvider);
       final order = await ref
           .read(orderProvider.notifier)
           .placeOrder(
@@ -567,6 +568,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             sellerName: seller['name'],
             sellerContact: seller['contact'],
             sellerAddress: seller['address'],
+            useWallet: loyaltyState.useWallet,
+            walletAmountUsed: loyaltyState.useWallet ? loyaltyState.walletAmountUsed : null,
           );
       dev.log(
         'Order placed successfully via Razorpay: #${order.id}',
@@ -851,6 +854,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
       final isGiftWrapped = ref.read(isGiftWrappedProvider);
       final seller = _effectiveSellerDetails();
+      final loyaltyState = ref.read(loyaltyProvider);
       final order = await ref
           .read(orderProvider.notifier)
           .placeOrder(
@@ -868,6 +872,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             sellerName: seller['name'],
             sellerContact: seller['contact'],
             sellerAddress: seller['address'],
+            useWallet: loyaltyState.useWallet,
+            walletAmountUsed: loyaltyState.useWallet ? loyaltyState.walletAmountUsed : null,
           );
 
       cartNotifier.clearCart();

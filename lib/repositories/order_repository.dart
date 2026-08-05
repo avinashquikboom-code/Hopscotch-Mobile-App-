@@ -58,6 +58,8 @@ class OrderNotifier extends StateNotifier<AsyncValue<List<OrderModel>>> {
     String? sellerName,
     String? sellerContact,
     String? sellerAddress,
+    bool? useWallet,
+    double? walletAmountUsed,
   }) async {
     try {
       final formattedItems = items?.map((item) {
@@ -83,6 +85,8 @@ class OrderNotifier extends StateNotifier<AsyncValue<List<OrderModel>>> {
         sellerName: sellerName,
         sellerContact: sellerContact,
         sellerAddress: sellerAddress,
+        useWallet: useWallet,
+        walletAmountUsed: walletAmountUsed,
       );
       final rawOrder = response.data['data'] ?? response.data;
       final newOrder = OrderModel.fromJson(
