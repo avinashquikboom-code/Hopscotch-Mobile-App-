@@ -2,17 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:hopscotch/constants/app_colors.dart';
 import 'package:hopscotch/constants/app_urls.dart';
 import 'package:hopscotch/models/content_post_model.dart';
 import 'package:hopscotch/repositories/content_repository.dart';
 import 'package:hopscotch/screens/content/play_screen.dart';
+import 'package:hopscotch/theme/app_theme.dart';
 
 /// FLIPKART PLAY — 2-Column Discovery Grid Screen.
 ///
-/// Immersive dark-themed video discovery hub featuring:
+/// Theme-aware video discovery hub featuring:
 /// - Top LIVE stream horizontal carousel
 /// - "Videos for you" section header
 /// - 2-Column video card discovery grid with Indian number formatting (3.5L, 43.3K)
+/// - Dynamic light & dark mode theme support matching the rest of the application
 /// - Tap video card -> opens full-screen vertical swipe viewer (PlayScreen) starting at tapped video index
 class PostsFeedScreen extends ConsumerStatefulWidget {
   const PostsFeedScreen({super.key});
@@ -109,29 +112,39 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
+    final backgroundColor = isDark ? AppColors.darkBackground : AppColors.background;
+    final surfaceColor = isDark ? AppColors.darkSurface : AppColors.surface;
+    final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSecondary = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final primaryColor = colorScheme.primary;
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
+      value: SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-        statusBarBrightness: Brightness.dark,
-        systemNavigationBarColor: Color(0xFF0F172A),
-        systemNavigationBarIconBrightness: Brightness.light,
+        statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+        systemNavigationBarColor: surfaceColor,
+        systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
       ),
       child: Scaffold(
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: backgroundColor,
         appBar: AppBar(
-          backgroundColor: const Color(0xFF0F172A),
-          elevation: 0,
-          centerTitle: false,
-          systemOverlayStyle: SystemUiOverlayStyle.light,
-          title: const Row(
+          backgroundColor: surfaceColor,
+          elevation: 0.5,
+          scrolledUnderElevation: 0,
+          automaticallyImplyLeading: false,
+          title: Row(
             children: [
-              Icon(Icons.explore_rounded, color: Color(0xFFFF9F00), size: 24),
-              SizedBox(width: 8),
+              Icon(Icons.explore_rounded, color: primaryColor, size: 24),
+              const SizedBox(width: 8),
               Text(
                 'Trends',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: textPrimary,
                   fontWeight: FontWeight.bold,
                   fontSize: 20,
                   letterSpacing: 0.5,
@@ -139,132 +152,131 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
               ),
             ],
           ),
-
         ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFFFF9F00)),
-            )
-          : RefreshIndicator(
-              onRefresh: _fetchFeed,
-              color: const Color(0xFFFF9F00),
-              child: CustomScrollView(
-                slivers: [
-                  // 1. LIVE Stream Horizontal Section
-                  SliverToBoxAdapter(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFF4757),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.circle,
-                                        color: Colors.white, size: 6),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      'LIVE NOW',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 0.8,
+        body: _isLoading
+            ? Center(
+                child: CircularProgressIndicator(color: primaryColor),
+              )
+            : RefreshIndicator(
+                onRefresh: _fetchFeed,
+                color: primaryColor,
+                child: CustomScrollView(
+                  slivers: [
+                    // 1. LIVE Stream Horizontal Section
+                    SliverToBoxAdapter(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 10),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFF4757),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.circle,
+                                          color: Colors.white, size: 6),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'LIVE NOW',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 0.8,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Watch live shopping & deals',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                  fontSize: 12,
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Watch live shopping & deals',
+                                  style: TextStyle(
+                                    color: textSecondary,
+                                    fontSize: 12,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            height: 155,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              itemCount: _getLiveStreams().length,
+                              separatorBuilder: (context, index) =>
+                                  const SizedBox(width: 12),
+                              itemBuilder: (context, index) {
+                                final live = _getLiveStreams()[index];
+                                return _buildLiveCard(context, live, index, textPrimary);
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
+
+                    // 2. Section Header: "Videos for you"
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        child: Text(
+                          'Videos for you',
+                          style: TextStyle(
+                            color: textPrimary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
                           ),
                         ),
-                        SizedBox(
-                          height: 155,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            itemCount: _getLiveStreams().length,
-                            separatorBuilder: (context, index) =>
-                                const SizedBox(width: 12),
-                            itemBuilder: (context, index) {
-                              final live = _getLiveStreams()[index];
-                              return _buildLiveCard(context, live, index);
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
+                      ),
                     ),
-                  ),
 
-                  // 2. Section Header: "Videos for you"
-                  const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      child: Text(
-                        'Videos for you',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                    // 3. 2-Column Discovery Video Grid
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 8),
+                      sliver: SliverGrid(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.62,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 14,
+                        ),
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            return _buildGridVideoCard(
+                                context, index, _posts[index], isDark, textPrimary, textSecondary, primaryColor, surfaceColor);
+                          },
+                          childCount: _posts.length,
                         ),
                       ),
                     ),
-                  ),
-
-                  // 3. 2-Column Discovery Video Grid
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 8),
-                    sliver: SliverGrid(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.62,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 14,
-                      ),
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          return _buildGridVideoCard(
-                              context, index, _posts[index]);
-                        },
-                        childCount: _posts.length,
-                      ),
+                    const SliverToBoxAdapter(
+                      child: SizedBox(height: 24),
                     ),
-                  ),
-                  const SliverToBoxAdapter(
-                    child: SizedBox(height: 24),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
       ),
     );
   }
 
   /// Live Stream Horizontal Card
   Widget _buildLiveCard(
-      BuildContext context, Map<String, String> live, int index) {
+      BuildContext context, Map<String, String> live, int index, Color textPrimary) {
     return GestureDetector(
       onTap: () => _openFullScreenViewer(index % _posts.length),
       child: SizedBox(
@@ -333,8 +345,8 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
               live['title']!,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: textPrimary,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
                 height: 1.2,
@@ -354,16 +366,15 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
         lower.endsWith('.m3u8');
   }
 
-  Widget _buildThumbnailFallback(String displayTitle) {
+  Widget _buildThumbnailFallback(String displayTitle, Color primaryColor, bool isDark) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF1E293B),
-            Color(0xFF0F172A),
-          ],
+          colors: isDark
+              ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
+              : [const Color(0xFF334155), const Color(0xFF1E293B)],
         ),
       ),
       child: Stack(
@@ -381,15 +392,15 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFFFF9F00).withValues(alpha: 0.2),
+                  color: primaryColor.withValues(alpha: 0.2),
                   border: Border.all(
-                    color: const Color(0xFFFF9F00).withValues(alpha: 0.6),
+                    color: primaryColor.withValues(alpha: 0.6),
                     width: 1.5,
                   ),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.play_arrow_rounded,
-                  color: Color(0xFFFF9F00),
+                  color: primaryColor,
                   size: 26,
                 ),
               ),
@@ -402,7 +413,7 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
+                    color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                   ),
@@ -417,7 +428,14 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
 
   /// 2-Column Discovery Video Card
   Widget _buildGridVideoCard(
-      BuildContext context, int index, ContentPostModel post) {
+      BuildContext context,
+      int index,
+      ContentPostModel post,
+      bool isDark,
+      Color textPrimary,
+      Color textSecondary,
+      Color primaryColor,
+      Color surfaceColor) {
     final String displayTitle = post.title?.isNotEmpty == true
         ? post.title!
         : (post.caption?.isNotEmpty == true
@@ -443,14 +461,16 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                color: Colors.grey.shade900,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 6,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
+                color: surfaceColor,
+                boxShadow: isDark
+                    ? [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ]
+                    : AppTheme.softShadow,
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
@@ -463,16 +483,16 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
                             imageUrl: resolvedMediaUrl,
                             fit: BoxFit.cover,
                             placeholder: (context, url) => Container(
-                              color: Colors.grey.shade900,
-                              child: const Center(
+                              color: isDark ? const Color(0xFF1E293B) : Colors.grey.shade200,
+                              child: Center(
                                 child: CircularProgressIndicator(
-                                    color: Color(0xFFFF9F00)),
+                                    color: primaryColor),
                               ),
                             ),
                             errorWidget: (context, url, err) =>
-                                _buildThumbnailFallback(displayTitle),
+                                _buildThumbnailFallback(displayTitle, primaryColor, isDark),
                           )
-                        : _buildThumbnailFallback(displayTitle),
+                        : _buildThumbnailFallback(displayTitle, primaryColor, isDark),
 
                     // Top-Left View Count Overlay (e.g. ▷ 43.3K / 3.5L)
                     Positioned(
@@ -553,7 +573,7 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
               // Store / Creator Avatar
               CircleAvatar(
                 radius: 9,
-                backgroundColor: const Color(0xFF2874F0),
+                backgroundColor: primaryColor,
                 child: Text(
                   post.uploadedBy.isNotEmpty
                       ? post.uploadedBy[0].toUpperCase()
@@ -573,8 +593,8 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
                   post.uploadedBy.isNotEmpty ? post.uploadedBy : 'FCI Official',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white70,
+                  style: TextStyle(
+                    color: textSecondary,
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                   ),
@@ -593,7 +613,7 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
                           : Icons.favorite_border_rounded,
                       color: post.isLiked
                           ? const Color(0xFFFF4757)
-                          : Colors.white54,
+                          : textSecondary,
                       size: 14,
                     ),
                     const SizedBox(width: 3),
@@ -602,7 +622,7 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
                       style: TextStyle(
                         color: post.isLiked
                             ? const Color(0xFFFF4757)
-                            : Colors.white54,
+                            : textSecondary,
                         fontSize: 10.5,
                         fontWeight: FontWeight.bold,
                       ),

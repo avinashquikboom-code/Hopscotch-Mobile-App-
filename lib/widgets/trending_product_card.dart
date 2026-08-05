@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:hopscotch/constants/app_colors.dart';
 import 'package:hopscotch/constants/app_urls.dart';
 import 'package:hopscotch/models/product_model.dart';
 import 'package:hopscotch/providers/currency_provider.dart';
+import 'package:hopscotch/theme/app_theme.dart';
 
 class TrendingProductCard extends ConsumerWidget {
   final ProductModel product;
@@ -19,7 +21,11 @@ class TrendingProductCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
     final currency = ref.watch(currencyProvider);
+
     final heroTag = heroTagPrefix != null
         ? '${heroTagPrefix}_product_image_${product.id}'
         : 'product_image_${product.id}';
@@ -40,29 +46,35 @@ class TrendingProductCard extends ConsumerWidget {
             ? product.subcategory
             : 'Crested In Luxury');
 
-    // Brand Name for the bottom white footer bar
+    // Brand Name for the bottom footer bar
     final brandName = product.title.isNotEmpty
         ? product.title.toUpperCase()
         : 'POWERLOOK';
+
+    final cardBgColor = isDark ? colorScheme.surface : Colors.white;
+    final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
+    final footerTextColor = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
 
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cardBgColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: const Color(0xFFE2E8F0),
+            color: borderColor,
             width: 1.2,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          boxShadow: isDark
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : AppTheme.softShadow,
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -162,7 +174,7 @@ class TrendingProductCard extends ConsumerWidget {
             Container(
               height: 42,
               width: double.infinity,
-              color: Colors.white,
+              color: cardBgColor,
               padding: const EdgeInsets.symmetric(horizontal: 8),
               alignment: Alignment.center,
               child: Row(
@@ -173,16 +185,16 @@ class TrendingProductCard extends ConsumerWidget {
                     width: 18,
                     height: 18,
                     decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xFF0F172A), width: 1.8),
+                      border: Border.all(color: footerTextColor, width: 1.8),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     alignment: Alignment.center,
-                    child: const Text(
+                    child: Text(
                       'P',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF0F172A),
+                        color: footerTextColor,
                       ),
                     ),
                   ),
@@ -193,8 +205,8 @@ class TrendingProductCard extends ConsumerWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Color(0xFF0F172A),
+                      style: TextStyle(
+                        color: footerTextColor,
                         fontWeight: FontWeight.w900,
                         fontSize: 12.0,
                         letterSpacing: 1.0,
@@ -211,12 +223,13 @@ class TrendingProductCard extends ConsumerWidget {
   }
 
   Widget _buildPlaceholder(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
     return Container(
-      color: const Color(0xFF0F766E).withValues(alpha: 0.08),
-      child: const Center(
+      color: primary.withValues(alpha: 0.08),
+      child: Center(
         child: Icon(
           Icons.checkroom_rounded,
-          color: Color(0xFF0F766E),
+          color: primary,
           size: 44,
         ),
       ),
