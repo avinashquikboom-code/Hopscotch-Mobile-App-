@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hopscotch/models/loyalty_models.dart';
 import 'package:hopscotch/providers/loyalty_provider.dart';
 import 'package:hopscotch/theme/app_theme.dart';
+import 'package:hopscotch/api/loyalty_api.dart';
 import 'package:intl/intl.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 class MyWalletScreen extends ConsumerStatefulWidget {
   const MyWalletScreen({super.key});
@@ -16,16 +18,23 @@ class MyWalletScreen extends ConsumerStatefulWidget {
 class _MyWalletScreenState extends ConsumerState<MyWalletScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final TextEditingController _topupController = TextEditingController();
   int? _selectedQuickAmount;
   bool _isToppingUp = false;
+  late Razorpay _razorpay;
+  final LoyaltyApi _loyaltyApi = LoyaltyApi();
+  String? _pendingRazorpayOrderId;
 
-  static const _quickAmounts = [200, 500, 1000, 2000, 5000];
+  /// Only these fixed amounts are allowed for wallet top-up
+  static const _quickAmounts = [100, 500, 1000];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
+    _razorpay = Razorpay();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handleRazorpaySuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handleRazorpayError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleRazorpayExternalWallet);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(loyaltyProvider.notifier).fetchSummary();
       ref.read(loyaltyProvider.notifier).fetchWalletTransactions();
@@ -37,7 +46,7 @@ class _MyWalletScreenState extends ConsumerState<MyWalletScreen>
   @override
   void dispose() {
     _tabController.dispose();
-    _topupController.dispose();
+    _razorpay.clear();
     super.dispose();
   }
 
@@ -57,9 +66,127 @@ class _MyWalletScreenState extends ConsumerState<MyWalletScreen>
     }
   }
 
+  // ── Razorpay Wallet Load Handlers ───────────────────────────────────────
+
+  void _handleRazorpaySuccess(PaymentSuccessResponse response) async {
+    setState(() => _isToppingUp = true);
+    try {
+      final result = await _loyaltyApi.verifyWalletLoad(
+        razorpayOrderId: response.orderId ?? _pendingRazorpayOrderId ?? '',
+        razorpayPaymentId: response.paymentId ?? '',
+        razorpaySignature: response.signature ?? '',
+      );
+      if (!mounted) return;
+      if (result != null) {
+        // Refresh wallet balance
+        await ref.read(loyaltyProvider.notifier).fetchSummary();
+        await ref.read(loyaltyProvider.notifier).fetchWalletTransactions();
+        if (!mounted) return;
+        final balance = result['balance'];
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✅ Wallet credited! New balance: ₹${balance ?? ''}'),
+            backgroundColor: AppTheme.primaryColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Payment received but verification failed. Contact support.'),
+            backgroundColor: Colors.orange,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Wallet credit error: $e'),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      _pendingRazorpayOrderId = null;
+      if (mounted) setState(() => _isToppingUp = false);
+    }
+  }
+
+  void _handleRazorpayError(PaymentFailureResponse response) {
+    _pendingRazorpayOrderId = null;
+    setState(() => _isToppingUp = false);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Payment failed: ${response.message ?? 'Unknown error'}'),
+        backgroundColor: Colors.red.shade700,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _handleRazorpayExternalWallet(ExternalWalletResponse response) {
+    _pendingRazorpayOrderId = null;
+    setState(() => _isToppingUp = false);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('External wallet selected: ${response.walletName ?? ''}'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  Future<void> _startRazorpayWalletLoad(int amount) async {
+    setState(() => _isToppingUp = true);
+    try {
+      final orderData = await _loyaltyApi.createWalletLoadOrder(amount);
+      if (!mounted) return;
+      if (orderData == null) {
+        setState(() => _isToppingUp = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not create payment order. Try again.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+      _pendingRazorpayOrderId = orderData['orderId'] as String?;
+      final keyId = orderData['keyId'] as String? ?? '';
+      final options = {
+        'key': keyId,
+        'amount': (amount * 100),
+        'currency': 'INR',
+        'name': 'Wallet Top-up',
+        'description': 'Add ₹$amount to your wallet',
+        'order_id': _pendingRazorpayOrderId,
+        'prefill': {'contact': '', 'email': ''},
+        'theme': {'color': '#6C63FF'},
+      };
+      _razorpay.open(options);
+    } catch (e) {
+      _pendingRazorpayOrderId = null;
+      if (mounted) {
+        setState(() => _isToppingUp = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error starting payment: $e'),
+            backgroundColor: Colors.red.shade700,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  // ── Top-up Bottom Sheet ──────────────────────────────────────────────────
+
   void _showTopupSheet() {
     _selectedQuickAmount = null;
-    _topupController.clear();
 
     showModalBottomSheet(
       context: context,
@@ -139,83 +266,69 @@ class _MyWalletScreenState extends ConsumerState<MyWalletScreen>
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'Enter amount',
+                    'Select top-up amount',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _topupController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
-                    ],
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: colorScheme.onSurface,
-                    ),
-                    decoration: InputDecoration(
-                      prefixText: '₹ ',
-                      prefixStyle: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: AppTheme.primaryColor,
-                      ),
-                      hintText: '0',
-                      filled: true,
-                      fillColor: isDark
-                          ? colorScheme.surfaceContainerHighest
-                          : AppTheme.primaryColor.withValues(alpha: 0.05),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                    ),
-                    onChanged: (_) {
-                      setSheetState(() => _selectedQuickAmount = null);
-                    },
-                  ),
-                  const SizedBox(height: 14),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+                  const SizedBox(height: 12),
+                  // Fixed amount buttons — server only accepts ₹100 / ₹500 / ₹1000
+                  Row(
                     children: _quickAmounts.map((amt) {
                       final selected = _selectedQuickAmount == amt;
-                      return ChoiceChip(
-                        label: Text(
-                          '₹$amt',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            color: selected ? Colors.white : AppTheme.primaryColor,
+                      return Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: GestureDetector(
+                            onTap: () {
+                              setSheetState(() => _selectedQuickAmount = amt);
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              decoration: BoxDecoration(
+                                color: selected
+                                    ? AppTheme.primaryColor
+                                    : AppTheme.primaryColor.withValues(alpha: 0.07),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: selected
+                                      ? AppTheme.primaryColor
+                                      : AppTheme.primaryColor.withValues(alpha: 0.2),
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    '₹$amt',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w900,
+                                      color: selected ? Colors.white : AppTheme.primaryColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
-                        selected: selected,
-                        selectedColor: AppTheme.primaryColor,
-                        backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.08),
-                        side: BorderSide(
-                          color: selected
-                              ? AppTheme.primaryColor
-                              : AppTheme.primaryColor.withValues(alpha: 0.25),
-                        ),
-                        onSelected: (v) {
-                          if (!v) return;
-                          setSheetState(() {
-                            _selectedQuickAmount = amt;
-                            _topupController.text = amt.toString();
-                          });
-                        },
                       );
                     }).toList(),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 8),
+                  Center(
+                    child: Text(
+                      'Secure payment via Razorpay',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: colorScheme.onSurface.withValues(alpha: 0.45),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
                     height: 52,
@@ -230,39 +343,41 @@ class _MyWalletScreenState extends ConsumerState<MyWalletScreen>
                       ),
                       onPressed: _isToppingUp
                           ? null
-                          : () async {
-                              final amt = double.tryParse(_topupController.text.trim());
-                              if (amt == null || amt <= 0) {
+                          : () {
+                              if (_selectedQuickAmount == null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Enter a valid amount'),
+                                    content: Text('Please select an amount'),
                                     behavior: SnackBarBehavior.floating,
                                   ),
                                 );
                                 return;
                               }
                               Navigator.pop(ctx);
-                              setState(() => _isToppingUp = true);
-                              final success =
-                                  await ref.read(loyaltyProvider.notifier).topupWallet(amt);
-                              if (!mounted) return;
-                              setState(() => _isToppingUp = false);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    success
-                                        ? '₹${amt.toStringAsFixed(2)} added to your wallet'
-                                        : 'Top up failed. Please try again.',
-                                  ),
-                                  backgroundColor:
-                                      success ? AppTheme.primaryColor : Colors.red.shade700,
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
+                              _startRazorpayWalletLoad(_selectedQuickAmount!);
                             },
-                      child: const Text(
-                        'Proceed to Pay',
-                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (_isToppingUp)
+                            const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          else
+                            const Icon(Icons.lock_rounded, size: 18),
+                          const SizedBox(width: 8),
+                          Text(
+                            _selectedQuickAmount != null
+                                ? 'Pay ₹$_selectedQuickAmount via Razorpay'
+                                : 'Proceed to Pay',
+                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+                          ),
+                        ],
                       ),
                     ),
                   ),

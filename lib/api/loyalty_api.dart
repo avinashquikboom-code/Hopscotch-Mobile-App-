@@ -140,4 +140,44 @@ class LoyaltyApi {
       return false;
     }
   }
+
+  /// Creates a Razorpay order for wallet top-up. Returns {orderId, amount, currency, keyId}.
+  Future<Map<String, dynamic>?> createWalletLoadOrder(int amount) async {
+    try {
+      final response = await _apiService.post(
+        '/mobile/wallet/load-order',
+        data: {'amount': amount},
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data['data'] as Map<String, dynamic>?;
+      }
+    } catch (e) {
+      print('Error creating wallet load order: $e');
+    }
+    return null;
+  }
+
+  /// Verifies the Razorpay signature for wallet top-up and credits the wallet.
+  Future<Map<String, dynamic>?> verifyWalletLoad({
+    required String razorpayOrderId,
+    required String razorpayPaymentId,
+    required String razorpaySignature,
+  }) async {
+    try {
+      final response = await _apiService.post(
+        '/mobile/wallet/verify',
+        data: {
+          'razorpayOrderId': razorpayOrderId,
+          'razorpayPaymentId': razorpayPaymentId,
+          'razorpaySignature': razorpaySignature,
+        },
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data['data'] as Map<String, dynamic>?;
+      }
+    } catch (e) {
+      print('Error verifying wallet load: $e');
+    }
+    return null;
+  }
 }
