@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 
 class ToastNotification {
@@ -130,7 +129,7 @@ class _ToastWidgetState extends State<ToastWidget>
                   ),
                   GestureDetector(
                     onTap: widget.onDismiss,
-                    child: Icon(
+                    child: const Icon(
                       Icons.close,
                       color: Colors.white,
                       size: 18,

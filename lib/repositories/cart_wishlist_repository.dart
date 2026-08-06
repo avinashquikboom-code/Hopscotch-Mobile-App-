@@ -246,7 +246,7 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
       final rawType = p.taxType.toUpperCase();
       final isInclusive = _isInclusiveTax(rawType);
       final taxType = isInclusive ? 'INCLUSIVE' : 'EXCLUSIVE';
-      final name = 'Taxes';
+      const name = 'Taxes';
 
       final lineSubtotal = p.price * item.quantity;
       final lineTax = isInclusive

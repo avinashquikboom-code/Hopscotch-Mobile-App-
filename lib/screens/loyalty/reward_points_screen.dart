@@ -203,9 +203,9 @@ class RewardPointsScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              _EarnTile(
+              const _EarnTile(
                 icon: Icons.shopping_basket_outlined,
-                color: const Color(0xFF2563EB),
+                color: Color(0xFF2563EB),
                 title: 'Shop Products',
                 subtitle: 'Earn 10–100 points on every successful delivery.',
               ),
@@ -216,7 +216,7 @@ class RewardPointsScreen extends ConsumerWidget {
                 subtitle: 'Get bonus points when friends place first order.',
                 onTap: () => context.push('/referrals'),
               ),
-              _EarnTile(
+              const _EarnTile(
                 icon: Icons.rate_review_outlined,
                 color: AppTheme.primaryColor,
                 title: 'Write Reviews',

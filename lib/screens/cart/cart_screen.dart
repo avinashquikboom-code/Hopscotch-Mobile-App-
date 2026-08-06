@@ -663,7 +663,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 value: progress,
                 minHeight: 6,
                 backgroundColor: colorScheme.outline.withValues(alpha: 0.15),
-                valueColor: AlwaysStoppedAnimation<Color>(
+                valueColor: const AlwaysStoppedAnimation<Color>(
                   AppTheme.primaryColor,
                 ),
               ),
@@ -959,7 +959,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           ),
           Switch(
             value: isGiftWrapped,
-            activeColor: AppTheme.primaryColor,
+            activeThumbColor: AppTheme.primaryColor,
             onChanged: (val) {
               HapticFeedback.lightImpact();
               ref.read(isGiftWrappedProvider.notifier).toggle(val);

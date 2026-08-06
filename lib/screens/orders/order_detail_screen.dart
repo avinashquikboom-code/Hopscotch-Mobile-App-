@@ -504,8 +504,8 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                               Clipboard.setData(ClipboardData(text: order.id));
                               HapticFeedback.lightImpact();
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: const Text('Order ID copied to clipboard! 📋'),
+                                const SnackBar(
+                                  content: Text('Order ID copied to clipboard! 📋'),
                                   behavior: SnackBarBehavior.floating,
                                   backgroundColor: AppTheme.primaryColor,
                                 ),
@@ -607,7 +607,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.amber.shade50.withOpacity(0.6),
+                          color: Colors.amber.shade50.withValues(alpha: 0.6),
                           borderRadius: BorderRadius.circular(18),
                           border: Border.all(color: Colors.amber.shade300),
                         ),
@@ -799,7 +799,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                                                 child: Row(
                                                   mainAxisSize: MainAxisSize.min,
                                                   children: [
-                                                    Icon(Icons.star_outline_rounded, color: AppTheme.accentColor, size: 14),
+                                                    const Icon(Icons.star_outline_rounded, color: AppTheme.accentColor, size: 14),
                                                     const SizedBox(width: 4),
                                                     Text(
                                                       'Rate this Product',

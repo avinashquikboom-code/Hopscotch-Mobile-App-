@@ -17,7 +17,7 @@ class CameraSearchButton extends StatelessWidget {
       icon: Icon(
         Remix.camera_lens_line,
         size: 20,
-        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
       ),
       onPressed: onPressed,
       tooltip: 'Visual Search',

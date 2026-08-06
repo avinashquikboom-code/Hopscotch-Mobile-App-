@@ -508,7 +508,7 @@ class AppTheme {
         thickness: 1,
         space: 1,
       ),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: AppColors.darkSurface,
         selectedItemColor: AppColors.darkPrimary,
         unselectedItemColor: AppColors.darkTextSecondary,

@@ -58,7 +58,7 @@ class InvoiceGenerator {
                   children: [
                     pw.Text(
                       resolvedStoreName,
-                      style: pw.TextStyle(
+                      style: const pw.TextStyle(
                         fontSize: 20,
                         fontWeight: pw.FontWeight.bold,
                         color: PdfColors.teal800,
@@ -81,7 +81,7 @@ class InvoiceGenerator {
                       ),
                       child: pw.Text(
                         'TAX INVOICE',
-                        style: pw.TextStyle(
+                        style: const pw.TextStyle(
                           fontSize: 11,
                           fontWeight: pw.FontWeight.bold,
                           color: PdfColors.white,
@@ -90,9 +90,9 @@ class InvoiceGenerator {
                       ),
                     ),
                     pw.SizedBox(height: 6),
-                    pw.Text('Invoice #: INV-${order.id.replaceAll(RegExp(r'[^0-9A-Za-z]'), '').toUpperCase()}', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
+                    pw.Text('Invoice #: INV-${order.id.replaceAll(RegExp(r'[^0-9A-Za-z]'), '').toUpperCase()}', style: const pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
                     pw.Text('Date: $formattedDate', style: const pw.TextStyle(fontSize: 8)),
-                    pw.Text('Status: ${order.status.toUpperCase()}', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.green800)),
+                    pw.Text('Status: ${order.status.toUpperCase()}', style: const pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.green800)),
                   ],
                 ),
               ],
@@ -117,7 +117,7 @@ class InvoiceGenerator {
                     child: pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
-                        pw.Text('SHIPPED TO:', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.teal900)),
+                        pw.Text('SHIPPED TO:', style: const pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.teal900)),
                         pw.SizedBox(height: 4),
                         pw.Text(order.shippingAddress.isNotEmpty ? order.shippingAddress : 'Customer Shipping Address', style: const pw.TextStyle(fontSize: 8)),
                       ],
@@ -135,7 +135,7 @@ class InvoiceGenerator {
                     child: pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
-                        pw.Text('PAYMENT INFORMATION:', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.teal900)),
+                        pw.Text('PAYMENT INFORMATION:', style: const pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.teal900)),
                         pw.SizedBox(height: 4),
                         pw.Text('Method: ${order.paymentMethod}', style: const pw.TextStyle(fontSize: 8)),
                         if (order.trackingNumber != null && order.trackingNumber!.isNotEmpty)
@@ -164,11 +164,11 @@ class InvoiceGenerator {
                 pw.TableRow(
                   decoration: const pw.BoxDecoration(color: PdfColors.teal800),
                   children: [
-                    pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Item Description', style: pw.TextStyle(color: PdfColors.white, fontSize: 8, fontWeight: pw.FontWeight.bold))),
-                    pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Qty', textAlign: pw.TextAlign.center, style: pw.TextStyle(color: PdfColors.white, fontSize: 8, fontWeight: pw.FontWeight.bold))),
-                    pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Price', textAlign: pw.TextAlign.right, style: pw.TextStyle(color: PdfColors.white, fontSize: 8, fontWeight: pw.FontWeight.bold))),
-                    pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Ship Fee', textAlign: pw.TextAlign.right, style: pw.TextStyle(color: PdfColors.white, fontSize: 8, fontWeight: pw.FontWeight.bold))),
-                    pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Total', textAlign: pw.TextAlign.right, style: pw.TextStyle(color: PdfColors.white, fontSize: 8, fontWeight: pw.FontWeight.bold))),
+                    pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Item Description', style: const pw.TextStyle(color: PdfColors.white, fontSize: 8, fontWeight: pw.FontWeight.bold))),
+                    pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Qty', textAlign: pw.TextAlign.center, style: const pw.TextStyle(color: PdfColors.white, fontSize: 8, fontWeight: pw.FontWeight.bold))),
+                    pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Price', textAlign: pw.TextAlign.right, style: const pw.TextStyle(color: PdfColors.white, fontSize: 8, fontWeight: pw.FontWeight.bold))),
+                    pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Ship Fee', textAlign: pw.TextAlign.right, style: const pw.TextStyle(color: PdfColors.white, fontSize: 8, fontWeight: pw.FontWeight.bold))),
+                    pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Total', textAlign: pw.TextAlign.right, style: const pw.TextStyle(color: PdfColors.white, fontSize: 8, fontWeight: pw.FontWeight.bold))),
                   ],
                 ),
                 ...order.items.map((item) {
@@ -180,7 +180,7 @@ class InvoiceGenerator {
                         child: pw.Column(
                           crossAxisAlignment: pw.CrossAxisAlignment.start,
                           children: [
-                            pw.Text(item.product.title, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+                            pw.Text(item.product.title, style: const pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
                             if (item.selectedSize != null || item.selectedColor != null)
                               pw.Text(
                                 'Variant: ${item.selectedSize ?? ''} ${item.selectedColor ?? ''}'.trim(),
@@ -192,7 +192,7 @@ class InvoiceGenerator {
                       pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('${item.quantity}', textAlign: pw.TextAlign.center, style: const pw.TextStyle(fontSize: 8))),
                       pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(currencyFmt.format(item.product.price), textAlign: pw.TextAlign.right, style: const pw.TextStyle(fontSize: 8))),
                       pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(item.product.shippingCharge > 0 ? currencyFmt.format(item.product.shippingCharge) : 'FREE', textAlign: pw.TextAlign.right, style: const pw.TextStyle(fontSize: 8))),
-                      pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(currencyFmt.format(lineTotal), textAlign: pw.TextAlign.right, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
+                      pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(currencyFmt.format(lineTotal), textAlign: pw.TextAlign.right, style: const pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
                     ],
                   );
                 }),
@@ -239,7 +239,7 @@ class InvoiceGenerator {
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
-                pw.Text('Thank you for shopping with FCI Seller!', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.teal900)),
+                pw.Text('Thank you for shopping with FCI Seller!', style: const pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.teal900)),
                 pw.Text('Computer-generated tax invoice. No signature required.', style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey700)),
               ],
             ),

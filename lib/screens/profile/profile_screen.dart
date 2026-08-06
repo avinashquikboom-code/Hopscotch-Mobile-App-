@@ -324,7 +324,7 @@ class ProfileScreen extends ConsumerWidget {
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(
+                                        const Icon(
                                           Icons.add_rounded,
                                           size: 15,
                                           color: AppTheme.primaryColor,

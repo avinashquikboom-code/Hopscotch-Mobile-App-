@@ -732,9 +732,9 @@ class _WalletHeroCard extends StatelessWidget {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         else ...[
-                          Icon(Icons.add_rounded, size: 18, color: AppTheme.primaryColor),
+                          const Icon(Icons.add_rounded, size: 18, color: AppTheme.primaryColor),
                           const SizedBox(width: 4),
-                          Text(
+                          const Text(
                             'Top Up',
                             style: TextStyle(
                               fontWeight: FontWeight.w800,

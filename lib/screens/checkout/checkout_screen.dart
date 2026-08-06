@@ -1847,7 +1847,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             ),
                             const SizedBox(height: 14),
                             DropdownButtonFormField<String>(
-                              value: _matchCountryName(
+                              initialValue: _matchCountryName(
                                 _selectedCountry,
                                 countriesList,
                                 isoMap: apiIsoMap,
@@ -1988,7 +1988,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                   ),
                                   Switch(
                                     value: isGiftWrapped,
-                                    activeColor: AppTheme.primaryColor,
+                                    activeThumbColor: AppTheme.primaryColor,
                                     onChanged: (val) {
                                       HapticFeedback.lightImpact();
                                       ref
@@ -2054,7 +2054,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                           ),
                                           Switch(
                                             value: loyaltyState.useRewardPoints,
-                                            activeColor: Colors.amber.shade700,
+                                            activeThumbColor: Colors.amber.shade700,
                                             onChanged: (val) {
                                               loyaltyNotifier.toggleUseRewardPoints(val, 1000);
                                             },
@@ -2667,15 +2667,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        const Row(
           children: [
-            const Icon(
+            Icon(
               Icons.touch_app_rounded,
               size: 16,
               color: AppTheme.primaryColor,
             ),
-            const SizedBox(width: 6),
-            const Text(
+            SizedBox(width: 6),
+            Text(
               '1-TAP AUTOFILL SAVED ADDRESS',
               style: TextStyle(
                 fontSize: 11,

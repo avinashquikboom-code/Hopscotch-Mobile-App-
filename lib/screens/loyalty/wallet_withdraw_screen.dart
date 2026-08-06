@@ -414,7 +414,7 @@ class _WalletWithdrawScreenState extends State<WalletWithdrawScreen>
                     color: AppTheme.primaryColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.account_balance_rounded, color: AppTheme.primaryColor, size: 30),
+                  child: const Icon(Icons.account_balance_rounded, color: AppTheme.primaryColor, size: 30),
                 ),
                 const SizedBox(height: 16),
                 const Text(
@@ -715,7 +715,7 @@ class _WalletWithdrawScreenState extends State<WalletWithdrawScreen>
       labelText: labelText,
       hintText: hintText,
       prefixText: prefixText,
-      prefixStyle: TextStyle(
+      prefixStyle: const TextStyle(
         fontSize: 22,
         fontWeight: FontWeight.w800,
         color: AppTheme.primaryColor,
@@ -729,7 +729,7 @@ class _WalletWithdrawScreenState extends State<WalletWithdrawScreen>
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: AppTheme.primaryColor, width: 1.5),
+        borderSide: const BorderSide(color: AppTheme.primaryColor, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),

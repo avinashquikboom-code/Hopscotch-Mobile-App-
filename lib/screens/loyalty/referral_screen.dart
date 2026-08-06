@@ -24,8 +24,8 @@ class _ReferralScreenState extends ConsumerState<ReferralScreen> {
   void _copyCode(String code) {
     Clipboard.setData(ClipboardData(text: code));
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Referral code copied'),
+      const SnackBar(
+        content: Text('Referral code copied'),
         backgroundColor: AppTheme.primaryColor,
         behavior: SnackBarBehavior.floating,
       ),
@@ -33,8 +33,10 @@ class _ReferralScreenState extends ConsumerState<ReferralScreen> {
   }
 
   void _shareReferral(String code) {
-    Share.share(
-      'Join FCI Seller using my referral code "$code" and get ₹100 instant bonus on your first order! Download now: https://fciseller.com/invite/$code',
+    SharePlus.instance.share(
+      ShareParams(
+        text: 'Join FCI Seller using my referral code "$code" and get ₹100 instant bonus on your first order! Download now: https://fciseller.com/invite/$code',
+      ),
     );
   }
 

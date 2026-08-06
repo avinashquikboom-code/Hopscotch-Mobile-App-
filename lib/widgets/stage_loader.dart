@@ -17,12 +17,12 @@ class StageLoader extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         // Progress indicator
-        SizedBox(
+        const SizedBox(
           width: 48,
           height: 48,
           child: CircularProgressIndicator(
             strokeWidth: 3,
-            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF00897B)),
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00897B)),
           ),
         ),
         const SizedBox(height: 24),

@@ -112,8 +112,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     fit: BoxFit.cover,
                                     loadingBuilder:
                                         (context, child, loadingProgress) {
-                                          if (loadingProgress == null)
+                                          if (loadingProgress == null) {
                                             return child;
+                                          }
                                           return Container(
                                             color: const Color(0xFFE2E8F0),
                                           );

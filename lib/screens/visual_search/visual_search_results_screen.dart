@@ -319,8 +319,8 @@ class _VisualSearchResultsScreenState extends ConsumerState<VisualSearchResultsS
             children: [
               Container(
                 padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF1F5F9),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.search_off_rounded, size: 56, color: Color(0xFF64748B)),

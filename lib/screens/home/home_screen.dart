@@ -267,21 +267,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: GestureDetector(
               onTap: () => context.push('/search'),
               behavior: HitTestBehavior.opaque,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.search_rounded,
                       color: Colors.white70,
                       size: 22,
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10),
                     Expanded(
                       child: AnimatedSearchHint(
                         prefix: 'Search for ',
                         hints: searchHints,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white70,
                           fontSize: 14,
                         ),

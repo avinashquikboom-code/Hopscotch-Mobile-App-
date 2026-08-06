@@ -18,18 +18,18 @@ class ResponsiveText {
   double get clampedScale => _scale.clamp(0.85, 1.18);
 
   /// Responsive font size
-  double fontSize(double baseSize) {
-    return baseSize * clampedScale;
+  double fontSize(num baseSize) {
+    return baseSize.toDouble() * clampedScale;
   }
 
   /// Responsive spacing
-  double spacing(double baseSpacing) {
-    return baseSpacing * clampedScale;
+  double spacing(num baseSpacing) {
+    return baseSpacing.toDouble() * clampedScale;
   }
 
   /// Responsive icon size
-  double iconSize(double baseSize) {
-    return baseSize * clampedScale;
+  double iconSize(num baseSize) {
+    return baseSize.toDouble() * clampedScale;
   }
 
   // Predefined responsive font sizes

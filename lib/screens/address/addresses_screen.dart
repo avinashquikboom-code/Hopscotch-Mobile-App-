@@ -333,7 +333,7 @@ class _AddressesScreenState extends ConsumerState<AddressesScreen> {
                     color: AppTheme.primaryColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.location_off_rounded,
                     size: 80,
                     color: AppTheme.primaryColor,
@@ -924,7 +924,7 @@ class _AddressFormBottomSheetState extends ConsumerState<_AddressFormBottomSheet
                         final countriesList = (apiList != null && apiList.isNotEmpty) ? apiList : ['India'];
 
                         return DropdownButtonFormField<String>(
-                          value: countriesList.contains(_selectedCountry)
+                          initialValue: countriesList.contains(_selectedCountry)
                               ? _selectedCountry
                               : (countriesList.isNotEmpty ? countriesList.first : null),
                           decoration: InputDecoration(

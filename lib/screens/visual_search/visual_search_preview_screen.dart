@@ -326,7 +326,7 @@ class _VisualSearchPreviewScreenState
                   child: Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.95),
+                      color: Colors.white.withValues(alpha: 0.95),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: const [
                         BoxShadow(color: Colors.black26, blurRadius: 10),
@@ -373,7 +373,7 @@ class VisualSearchCutoutPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.black.withOpacity(0.5);
+    final paint = Paint()..color = Colors.black.withValues(alpha: 0.5);
     
     // Draw background overlay with crop box cutout path
     canvas.drawPath(
@@ -440,7 +440,7 @@ class _VisualHotspotDotState extends State<VisualHotspotDot>
                 width: _pulseAnimation.value,
                 height: _pulseAnimation.value,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.4),
+                  color: Colors.white.withValues(alpha: 0.4),
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 1.0),
                 ),

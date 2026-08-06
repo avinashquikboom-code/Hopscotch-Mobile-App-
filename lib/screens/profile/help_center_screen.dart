@@ -262,7 +262,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                       trailing: AnimatedRotation(
                         duration: const Duration(milliseconds: 200),
                         turns: isExpanded ? 0.5 : 0.0,
-                        child: Icon(
+                        child: const Icon(
                           Icons.keyboard_arrow_down_rounded,
                           color: AppTheme.textSecondaryColor,
                         ),

@@ -142,9 +142,9 @@ class _ImagePreviewScreenState extends ConsumerState<ImagePreviewScreen>
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withOpacity(0.7),
+                    Colors.black.withValues(alpha: 0.7),
                     Colors.transparent,
-                    Colors.black.withOpacity(0.7),
+                    Colors.black.withValues(alpha: 0.7),
                   ],
                 ),
               ),
@@ -168,11 +168,11 @@ class _ImagePreviewScreenState extends ConsumerState<ImagePreviewScreen>
                         right: 0,
                         child: Container(
                           height: 2,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
                                 Colors.transparent,
-                                const Color(0xFF00897B),
+                                Color(0xFF00897B),
                                 Colors.transparent,
                               ],
                             ),
@@ -213,7 +213,7 @@ class _ImagePreviewScreenState extends ConsumerState<ImagePreviewScreen>
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: const Color(0xFF00897B).withOpacity(0.3),
+                                  color: const Color(0xFF00897B).withValues(alpha: 0.3),
                                   width: 2,
                                 ),
                               ),
@@ -237,7 +237,7 @@ class _ImagePreviewScreenState extends ConsumerState<ImagePreviewScreen>
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.8),
+                    color: Colors.black.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: Row(
@@ -289,7 +289,7 @@ class _ImagePreviewScreenState extends ConsumerState<ImagePreviewScreen>
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF00897B).withOpacity(0.1),
+                            color: const Color(0xFF00897B).withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(

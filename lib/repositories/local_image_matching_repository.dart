@@ -9,8 +9,8 @@ class LocalImageMatchingRepository implements ImageMatchingRepository {
   final LocalImageMatchingService _matchingService;
 
   LocalImageMatchingRepository({
-    required LocalImageMatchingService matchingService,
-  }) : _matchingService = matchingService;
+    required this._matchingService,
+  });
 
   @override
   Future<VisualSearchResult> search(File image) async {

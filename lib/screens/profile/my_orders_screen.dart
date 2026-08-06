@@ -224,7 +224,7 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
                                   children: [
                                     Row(
                                       children: [
-                                        Icon(Icons.local_mall_outlined, size: 18, color: AppTheme.primaryColor),
+                                        const Icon(Icons.local_mall_outlined, size: 18, color: AppTheme.primaryColor),
                                         const SizedBox(width: 8),
                                         Text(
                                           '#${order.id}',

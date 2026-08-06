@@ -209,9 +209,9 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen> with Sing
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withOpacity(0.6),
+                      Colors.black.withValues(alpha: 0.6),
                       Colors.transparent,
-                      Colors.black.withOpacity(0.7),
+                      Colors.black.withValues(alpha: 0.7),
                     ],
                     stops: const [0.0, 0.3, 1.0],
                   ),
@@ -283,7 +283,7 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen> with Sing
                               Text(
                                 '24h Expiry Content',
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.7),
+                                  color: Colors.white.withValues(alpha: 0.7),
                                   fontSize: 11,
                                 ),
                               ),
@@ -320,12 +320,12 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen> with Sing
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.85),
+        color: Colors.black.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.accentColor.withOpacity(0.6), width: 1.5),
+        border: Border.all(color: AppTheme.accentColor.withValues(alpha: 0.6), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.accentColor.withOpacity(0.3),
+            color: AppTheme.accentColor.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),

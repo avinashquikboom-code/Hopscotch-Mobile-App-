@@ -47,7 +47,7 @@ class VisualSearchController extends StateNotifier<VisualSearchState> {
   /// Returns a Future that completes after all stages
   Future<void> _playStageSequence() async {
     const stageDuration = Duration(milliseconds: 500);
-    final stages = AnalysisStage.values;
+    const stages = AnalysisStage.values;
 
     for (int i = 0; i < stages.length; i++) {
       if (mounted) {

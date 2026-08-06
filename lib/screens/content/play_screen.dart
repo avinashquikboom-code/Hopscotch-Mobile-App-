@@ -193,7 +193,12 @@ class _PlayScreenState extends ConsumerState<PlayScreen> {
   void _sharePost(ContentPostModel post) {
     HapticFeedback.lightImpact();
     final text = 'Check out ${post.title ?? "this video"} on FCI Seller!\n${AppUrls.resolveUrl(post.mediaUrls.firstOrNull)}';
-    Share.share(text);
+    SharePlus.instance.share(
+      ShareParams(
+        text: text,
+        subject: post.title ?? 'Check out this on FCI Seller!',
+      ),
+    );
   }
 
   @override
@@ -207,9 +212,9 @@ class _PlayScreenState extends ConsumerState<PlayScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(
+      return const Scaffold(
         backgroundColor: Colors.black,
-        body: const Center(
+        body: Center(
           child: CircularProgressIndicator(color: AppTheme.accentColor),
         ),
       );
@@ -236,7 +241,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen> {
               const SizedBox(height: 8),
               Text(
                 'Check back soon for new shoppable videos',
-                style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 13),
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 13),
               ),
             ],
           ),
@@ -414,9 +419,9 @@ class _PlayScreenState extends ConsumerState<PlayScreen> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.black.withOpacity(0.3),
+                  Colors.black.withValues(alpha: 0.3),
                   Colors.transparent,
-                  Colors.black.withOpacity(0.85),
+                  Colors.black.withValues(alpha: 0.85),
                 ],
                 stops: const [0.0, 0.5, 1.0],
               ),
@@ -576,11 +581,11 @@ class _PlayScreenState extends ConsumerState<PlayScreen> {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.95),
+        color: Colors.white.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

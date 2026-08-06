@@ -370,7 +370,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       ? Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            SizedBox(
+                            const SizedBox(
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(

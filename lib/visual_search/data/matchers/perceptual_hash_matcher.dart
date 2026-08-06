@@ -45,8 +45,8 @@ class PerceptualHashMatcher implements ImageMatcher {
     final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
     if (byteData == null) throw Exception('Failed to get image data');
 
-    final width = 9;
-    final height = 8;
+    const width = 9;
+    const height = 8;
     final pixels = byteData.buffer.asUint8List();
 
     // Simple downsampling (in production, use proper resizing)

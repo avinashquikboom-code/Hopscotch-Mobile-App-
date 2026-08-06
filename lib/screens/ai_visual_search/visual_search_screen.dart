@@ -114,7 +114,7 @@ class VisualSearchScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF00897B).withOpacity(0.1),
+                color: const Color(0xFF00897B).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -166,7 +166,7 @@ class VisualSearchScreen extends StatelessWidget {
               width: 200,
               height: 200,
               decoration: BoxDecoration(
-                color: const Color(0xFF00897B).withOpacity(0.1),
+                color: const Color(0xFF00897B).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
