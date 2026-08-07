@@ -372,11 +372,15 @@ class ProductRepository {
 
   Future<List<ProductModel>> searchProducts(String query) async {
     final products = await getProducts();
-    if (query.isEmpty) return [];
+    if (query.trim().isEmpty) return [];
+    final q = query.trim().toLowerCase();
     return products.where((p) => 
-      p.title.toLowerCase().contains(query.toLowerCase()) || 
-      p.description.toLowerCase().contains(query.toLowerCase()) ||
-      p.subcategory.toLowerCase().contains(query.toLowerCase())
+      p.title.toLowerCase().contains(q) || 
+      p.description.toLowerCase().contains(q) ||
+      p.subcategory.toLowerCase().contains(q) ||
+      (p.subCategoryName != null && p.subCategoryName!.toLowerCase().contains(q)) ||
+      p.categoryId.toLowerCase().contains(q) ||
+      p.id.contains(q)
     ).toList();
   }
 
