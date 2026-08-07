@@ -89,17 +89,17 @@ class _LegalPoliciesScreenState extends State<LegalPoliciesScreen> {
     );
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC), // Premium light ivory canvas
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? Theme.of(context).colorScheme.surface
+          : const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: Text(
-          'LEGAL POLICIES',
+          'Legal & Policies',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
-            letterSpacing: 2.0,
-            fontSize: responsive.fontSize14,
+            fontWeight: FontWeight.w800,
+            fontSize: responsive.fontSize18,
           ),
         ),
-        centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.adaptive.arrow_back, size: responsive.iconSize(24)),
           onPressed: () {
@@ -113,56 +113,68 @@ class _LegalPoliciesScreenState extends State<LegalPoliciesScreen> {
       ),
       body: Column(
         children: [
-          // 1. Premium Horizontal Custom Segmented Tabs
+          // Improved Tab Selector
           Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: responsive.spacing(AppTheme.spaceXL),
-              vertical: responsive.spacing(AppTheme.spaceM),
-            ),
-            child: Container(
-              height: responsive.spacing(48),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE2E8F0).withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(AppTheme.radiusM),
-              ),
-              padding: EdgeInsets.all(responsive.spacing(4)),
+            padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
               child: Row(
                 children: List.generate(_policies.length, (index) {
                   final isSelected = _activeTab == index;
-                  return Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _activeTab = index;
-                        });
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        decoration: BoxDecoration(
-                          color: isSelected ? Colors.white : Colors.transparent,
-                          borderRadius: BorderRadius.circular(AppTheme.radiusS),
-                          boxShadow: isSelected
-                              ? [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.04),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ]
-                              : [],
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          _policies[index]['title']!,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: responsive.fontSize11,
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.w600,
+                  final isDark = Theme.of(context).brightness == Brightness.dark;
+                  return Padding(
+                    padding: EdgeInsets.only(right: responsive.spacing(8)),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          setState(() {
+                            _activeTab = index;
+                          });
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: responsive.spacing(16),
+                            vertical: responsive.spacing(10),
+                          ),
+                          decoration: BoxDecoration(
                             color: isSelected
                                 ? AppTheme.primaryColor
-                                : AppTheme.textSecondaryColor,
+                                : (isDark
+                                    ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.8)
+                                    : Colors.white),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppTheme.primaryColor
+                                  : (isDark
+                                      ? Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)
+                                      : AppTheme.borderColor),
+                              width: 1.5,
+                            ),
+                            boxShadow: isSelected && !isDark
+                                ? [
+                                    BoxShadow(
+                                      color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          child: Text(
+                            _policies[index]['title']!,
+                            style: TextStyle(
+                              fontSize: responsive.fontSize12,
+                              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                              color: isSelected
+                                  ? Colors.white
+                                  : (isDark
+                                      ? Theme.of(context).colorScheme.onSurface
+                                      : AppTheme.textPrimaryColor),
+                            ),
                           ),
                         ),
                       ),
@@ -173,87 +185,80 @@ class _LegalPoliciesScreenState extends State<LegalPoliciesScreen> {
             ),
           ),
 
-          // 2. Main Scrollable Editorial Document Reader
+          // Policy Content
           Expanded(
             child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(
-                horizontal: responsive.spacing(AppTheme.spaceXL),
-                vertical: responsive.spacing(AppTheme.spaceM),
+              padding: EdgeInsets.fromLTRB(
+                responsive.spacing(AppTheme.spaceXL),
+                0,
+                responsive.spacing(AppTheme.spaceXL),
+                responsive.spacing(AppTheme.spaceXL),
               ),
-              child: Container(
-                padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-                  border: Border.all(color: AppTheme.borderColor),
-                  boxShadow: AppTheme.softShadow,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      activePolicy['title']!.toUpperCase(),
-                      style: TextStyle(
-                        fontSize: responsive.fontSize16,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.8,
-                        color: AppTheme.textPrimaryColor,
-                      ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    activePolicy['title']!,
+                    style: TextStyle(
+                      fontSize: responsive.fontSize20,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
                     ),
-                    SizedBox(height: responsive.spacing(4)),
-                    Text(
-                      activePolicy['lastUpdated']!,
-                      style: TextStyle(
-                        fontSize: responsive.fontSize10,
-                        color: AppTheme.textLightColor,
-                      ),
+                  ),
+                  SizedBox(height: responsive.spacing(6)),
+                  Text(
+                    activePolicy['lastUpdated']!,
+                    style: TextStyle(
+                      fontSize: responsive.fontSize11,
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
-                    Divider(
-                      height: responsive.spacing(AppTheme.spaceXXL),
-                      color: AppTheme.borderColor,
-                    ),
+                  ),
+                  SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
 
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: sections.length,
-                      separatorBuilder: (context, index) => SizedBox(
-                        height: responsive.spacing(AppTheme.spaceXXL),
-                      ),
-                      itemBuilder: (context, index) {
-                        final sec = sections[index];
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: sections.length,
+                    separatorBuilder: (context, index) =>
+                        SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+                    itemBuilder: (context, index) {
+                      final sec = sections[index];
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(responsive.spacing(12)),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
                               sec['heading']!,
                               style: TextStyle(
-                                fontSize: responsive.fontSize12,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.textPrimaryColor,
+                                fontSize: responsive.fontSize13,
+                                fontWeight: FontWeight.w800,
+                                color: AppTheme.primaryColor,
                               ),
                             ),
-                            SizedBox(
-                              height: responsive.spacing(AppTheme.spaceS),
+                          ),
+                          SizedBox(height: responsive.spacing(AppTheme.spaceM)),
+                          Text(
+                            sec['body']!,
+                            style: TextStyle(
+                              fontSize: responsive.fontSize12,
+                              height: 1.8,
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.75),
                             ),
-                            Text(
-                              sec['body']!,
-                              style: TextStyle(
-                                fontSize: responsive.fontSize10,
-                                height: 1.5,
-                                color: AppTheme.textSecondaryColor,
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ],
-                ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+                ],
               ),
             ),
           ),
-          SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
         ],
       ),
     );

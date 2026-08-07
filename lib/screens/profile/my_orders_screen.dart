@@ -115,23 +115,32 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
       ),
       body: Column(
         children: [
-          // Filter Tabs Row
+          // Filter Tabs Row - Improved Design
           Container(
-            height: 52,
-            color: colorScheme.surface,
+            height: 60,
+            color: Colors.transparent,
+            padding: EdgeInsets.fromLTRB(
+              responsive.spacing(AppTheme.spaceL),
+              responsive.spacing(AppTheme.spaceM),
+              responsive.spacing(AppTheme.spaceL),
+              responsive.spacing(AppTheme.spaceM),
+            ),
             child: ListView(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              physics: const BouncingScrollPhysics(),
               children: [
-                _buildFilterChip('ALL', 'All Orders', colorScheme),
-                _buildFilterChip('PROCESSING', 'Processing', colorScheme),
-                _buildFilterChip('SHIPPED', 'Shipped', colorScheme),
-                _buildFilterChip('DELIVERED', 'Delivered', colorScheme),
-                _buildFilterChip('CANCELLED', 'Cancelled', colorScheme),
+                _buildFilterChip('ALL', 'All Orders', colorScheme, responsive),
+                SizedBox(width: responsive.spacing(8)),
+                _buildFilterChip('PROCESSING', 'Processing', colorScheme, responsive),
+                SizedBox(width: responsive.spacing(8)),
+                _buildFilterChip('SHIPPED', 'Shipped', colorScheme, responsive),
+                SizedBox(width: responsive.spacing(8)),
+                _buildFilterChip('DELIVERED', 'Delivered', colorScheme, responsive),
+                SizedBox(width: responsive.spacing(8)),
+                _buildFilterChip('CANCELLED', 'Cancelled', colorScheme, responsive),
               ],
             ),
           ),
-          const Divider(height: 1),
 
           // Orders List
           Expanded(
@@ -200,48 +209,80 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
                         },
                         child: Container(
                           decoration: BoxDecoration(
-                            color: isDark ? colorScheme.surface : Colors.white,
+                            color: isDark ? colorScheme.surface.withValues(alpha: 0.8) : Colors.white,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: colorScheme.outline.withValues(alpha: isDark ? 0.2 : 0.1),
+                              color: colorScheme.outline.withValues(alpha: isDark ? 0.2 : 0.12),
+                              width: 1.5,
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.04),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
+                            boxShadow: isDark
+                                ? null
+                                : [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.05),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Header Row
+                              // Header Row - Order ID & Status
                               Padding(
-                                padding: const EdgeInsets.all(16),
+                                padding: EdgeInsets.all(responsive.spacing(14)),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Row(
                                       children: [
-                                        const Icon(Icons.local_mall_outlined, size: 18, color: AppTheme.primaryColor),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          '#${order.id}',
-                                          style: TextStyle(
-                                            fontSize: responsive.fontSize14,
-                                            fontWeight: FontWeight.bold,
-                                            color: colorScheme.onSurface,
+                                        Container(
+                                          padding: EdgeInsets.all(responsive.spacing(8)),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                                            borderRadius: BorderRadius.circular(10),
                                           ),
+                                          child: const Icon(
+                                            Icons.local_mall_outlined,
+                                            size: 18,
+                                            color: AppTheme.primaryColor,
+                                          ),
+                                        ),
+                                        SizedBox(width: responsive.spacing(10)),
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Order #${order.id}',
+                                              style: TextStyle(
+                                                fontSize: responsive.fontSize13,
+                                                fontWeight: FontWeight.w800,
+                                                color: colorScheme.onSurface,
+                                              ),
+                                            ),
+                                            SizedBox(height: responsive.spacing(2)),
+                                            Text(
+                                              order.orderDate,
+                                              style: TextStyle(
+                                                fontSize: responsive.fontSize10,
+                                                color: colorScheme.onSurface.withValues(alpha: 0.5),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: responsive.spacing(10),
+                                        vertical: responsive.spacing(6),
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: statusColor.withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+                                        color: statusColor.withValues(alpha: 0.12),
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(
+                                          color: statusColor.withValues(alpha: 0.25),
+                                        ),
                                       ),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
@@ -254,14 +295,14 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
                                               color: statusColor,
                                             ),
                                           ),
-                                          const SizedBox(width: 6),
+                                          SizedBox(width: responsive.spacing(6)),
                                           Text(
                                             order.status.toUpperCase(),
                                             style: TextStyle(
                                               color: statusColor,
-                                              fontWeight: FontWeight.bold,
+                                              fontWeight: FontWeight.w700,
                                               fontSize: responsive.fontSize10,
-                                              letterSpacing: 0.5,
+                                              letterSpacing: 0.3,
                                             ),
                                           ),
                                         ],
@@ -270,16 +311,20 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
                                   ],
                                 ),
                               ),
-                              const Divider(height: 1),
 
-                              // Items Preview Row
+                              // Items Preview
                               Padding(
-                                padding: const EdgeInsets.all(16),
+                                padding: EdgeInsets.fromLTRB(
+                                  responsive.spacing(14),
+                                  0,
+                                  responsive.spacing(14),
+                                  responsive.spacing(12),
+                                ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     SizedBox(
-                                      height: 64,
+                                      height: 70,
                                       child: ListView.builder(
                                         scrollDirection: Axis.horizontal,
                                         itemCount: order.items.length,
@@ -288,75 +333,104 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
                                           final resolvedUrl = AppUrls.resolveUrl(item.product.imageUrl);
 
                                           return Container(
-                                            margin: const EdgeInsets.only(right: 12),
+                                            margin: EdgeInsets.only(right: responsive.spacing(10)),
                                             child: Stack(
                                               children: [
                                                 ClipRRect(
-                                                  borderRadius: BorderRadius.circular(10),
+                                                  borderRadius: BorderRadius.circular(12),
                                                   child: resolvedUrl.isNotEmpty
                                                       ? Image.network(
                                                           resolvedUrl,
-                                                          width: 64,
-                                                          height: 64,
+                                                          width: 70,
+                                                          height: 70,
                                                           fit: BoxFit.cover,
                                                           errorBuilder: (_, __, ___) => Container(
-                                                            width: 64,
-                                                            height: 64,
-                                                            color: colorScheme.outline.withValues(alpha: 0.1),
-                                                            child: const Icon(Icons.image_not_supported_outlined, size: 20),
+                                                            width: 70,
+                                                            height: 70,
+                                                            decoration: BoxDecoration(
+                                                              color: colorScheme.outline.withValues(alpha: 0.1),
+                                                              borderRadius: BorderRadius.circular(12),
+                                                            ),
+                                                            child: Icon(
+                                                              Icons.image_not_supported_outlined,
+                                                              size: 24,
+                                                              color: colorScheme.onSurface.withValues(alpha: 0.3),
+                                                            ),
                                                           ),
                                                         )
                                                       : Container(
-                                                          width: 64,
-                                                          height: 64,
-                                                          color: colorScheme.outline.withValues(alpha: 0.1),
-                                                          child: const Icon(Icons.image_not_supported_outlined, size: 20),
+                                                          width: 70,
+                                                          height: 70,
+                                                          decoration: BoxDecoration(
+                                                            color: colorScheme.outline.withValues(alpha: 0.1),
+                                                            borderRadius: BorderRadius.circular(12),
+                                                          ),
+                                                          child: Icon(
+                                                            Icons.image_not_supported_outlined,
+                                                            size: 24,
+                                                            color: colorScheme.onSurface.withValues(alpha: 0.3),
+                                                          ),
                                                         ),
                                                 ),
-                                                Positioned(
-                                                  right: 0,
-                                                  bottom: 0,
-                                                  child: Container(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.black.withValues(alpha: 0.75),
-                                                      borderRadius: const BorderRadius.only(
-                                                        topLeft: Radius.circular(6),
-                                                        bottomRight: Radius.circular(10),
+                                                if (item.quantity > 1)
+                                                  Positioned(
+                                                    right: 0,
+                                                    bottom: 0,
+                                                    child: Container(
+                                                      padding: EdgeInsets.symmetric(
+                                                        horizontal: responsive.spacing(6),
+                                                        vertical: responsive.spacing(3),
                                                       ),
-                                                    ),
-                                                    child: Text(
-                                                      'x${item.quantity}',
-                                                      style: const TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 10,
-                                                        fontWeight: FontWeight.bold,
+                                                      decoration: BoxDecoration(
+                                                        color: AppTheme.primaryColor,
+                                                        borderRadius: const BorderRadius.only(
+                                                          topLeft: Radius.circular(8),
+                                                          bottomRight: Radius.circular(12),
+                                                        ),
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            color: Colors.black.withValues(alpha: 0.2),
+                                                            blurRadius: 4,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      child: Text(
+                                                        'x${item.quantity}',
+                                                        style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: responsive.fontSize10,
+                                                          fontWeight: FontWeight.w700,
+                                                        ),
                                                       ),
                                                     ),
                                                   ),
-                                                ),
                                               ],
                                             ),
                                           );
                                         },
                                       ),
                                     ),
-                                    const SizedBox(height: 12),
+                                    SizedBox(height: responsive.spacing(10)),
                                     Text(
-                                      '${order.items.length} ${order.items.length == 1 ? 'item' : 'items'} • Placed on ${order.orderDate}',
+                                      '${order.items.length} ${order.items.length == 1 ? 'item' : 'items'}',
                                       style: TextStyle(
                                         fontSize: responsive.fontSize12,
-                                        color: colorScheme.onSurface.withValues(alpha: 0.5),
+                                        fontWeight: FontWeight.w600,
+                                        color: colorScheme.onSurface.withValues(alpha: 0.6),
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                              const Divider(height: 1),
 
-                              // Footer Row
+                              Divider(
+                                height: 1,
+                                color: colorScheme.outline.withValues(alpha: isDark ? 0.1 : 0.08),
+                              ),
+
+                              // Footer - Amount & Action
                               Padding(
-                                padding: const EdgeInsets.all(16),
+                                padding: EdgeInsets.all(responsive.spacing(14)),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
@@ -364,15 +438,14 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'TOTAL AMOUNT',
+                                          'Total Amount',
                                           style: TextStyle(
                                             fontSize: responsive.fontSize10,
-                                            fontWeight: FontWeight.w800,
-                                            color: colorScheme.onSurface.withValues(alpha: 0.4),
-                                            letterSpacing: 0.5,
+                                            fontWeight: FontWeight.w600,
+                                            color: colorScheme.onSurface.withValues(alpha: 0.5),
                                           ),
                                         ),
-                                        const SizedBox(height: 2),
+                                        SizedBox(height: responsive.spacing(4)),
                                         Text(
                                           currency.formatPrice(order.totalAmount),
                                           style: TextStyle(
@@ -385,38 +458,54 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
                                     ),
                                     Row(
                                       children: [
-                                        if (_isCancellable(order.status)) ...[
+                                        if (_isCancellable(order.status))
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: responsive.spacing(8),
+                                              vertical: responsive.spacing(4),
+                                            ),
                                             decoration: BoxDecoration(
-                                              color: Colors.red.shade50,
-                                              borderRadius: BorderRadius.circular(6),
-                                              border: Border.all(color: Colors.red.shade200),
+                                              color: AppTheme.errorColor.withValues(alpha: 0.1),
+                                              borderRadius: BorderRadius.circular(8),
                                             ),
                                             child: Text(
                                               'Cancellable',
                                               style: TextStyle(
                                                 fontSize: responsive.fontSize10,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.red.shade700,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppTheme.errorColor,
                                               ),
                                             ),
                                           ),
-                                          const SizedBox(width: 8),
-                                        ],
-                                        Text(
-                                          'View Details',
-                                          style: TextStyle(
-                                            fontSize: responsive.fontSize12,
-                                            fontWeight: FontWeight.bold,
-                                            color: colorScheme.onSurface,
+                                        if (_isCancellable(order.status)) SizedBox(width: responsive.spacing(8)),
+                                        Container(
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: responsive.spacing(12),
+                                            vertical: responsive.spacing(6),
                                           ),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Icon(
-                                          Icons.arrow_forward_ios_rounded,
-                                          size: 12,
-                                          color: colorScheme.onSurface.withValues(alpha: 0.6),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                'View',
+                                                style: TextStyle(
+                                                  fontSize: responsive.fontSize12,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: AppTheme.primaryColor,
+                                                ),
+                                              ),
+                                              SizedBox(width: responsive.spacing(4)),
+                                              Icon(
+                                                Icons.arrow_forward_ios_rounded,
+                                                size: responsive.iconSize(12),
+                                                color: AppTheme.primaryColor,
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -438,30 +527,59 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
     );
   }
 
-  Widget _buildFilterChip(String value, String label, ColorScheme colorScheme) {
+  Widget _buildFilterChip(String value, String label, ColorScheme colorScheme, ResponsiveText responsive) {
     final isSelected = _selectedFilter == value;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: ChoiceChip(
-        label: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : AppTheme.primaryColor,
-            fontWeight: FontWeight.w700,
-            fontSize: 12,
-          ),
-        ),
-        selected: isSelected,
-        onSelected: (selected) {
-          if (selected) setState(() => _selectedFilter = value);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          setState(() => _selectedFilter = value);
         },
-        selectedColor: AppTheme.primaryColor,
-        backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.08),
-        side: BorderSide(
-          color: isSelected
-              ? AppTheme.primaryColor
-              : AppTheme.primaryColor.withValues(alpha: 0.25),
+        borderRadius: BorderRadius.circular(12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: EdgeInsets.symmetric(
+            horizontal: responsive.spacing(14),
+            vertical: responsive.spacing(8),
+          ),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppTheme.primaryColor
+                : (isDark
+                    ? colorScheme.surface.withValues(alpha: 0.8)
+                    : Colors.white),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected
+                  ? AppTheme.primaryColor
+                  : (isDark
+                      ? colorScheme.outline.withValues(alpha: 0.2)
+                      : AppTheme.primaryColor.withValues(alpha: 0.15)),
+              width: 1.5,
+            ),
+            boxShadow: isSelected && !isDark
+                ? [
+                    BoxShadow(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isSelected
+                  ? Colors.white
+                  : (isDark ? colorScheme.onSurface : AppTheme.primaryColor),
+              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+              fontSize: responsive.fontSize11,
+            ),
+          ),
         ),
       ),
     );

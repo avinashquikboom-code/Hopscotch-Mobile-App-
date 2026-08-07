@@ -146,7 +146,6 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final double freeShippingProgress = (subtotal / freeShippingThreshold)
         .clamp(0.0, 1.0);
 
-    final yourBagTitle = l10n?.yourBag ?? 'Your Shopping Bag';
     final clearText = l10n?.clear ?? 'Clear';
     final orderSummaryText = l10n?.orderSummary ?? 'Order Summary';
     final subtotalText = l10n?.subtotal ?? 'Subtotal';
@@ -157,46 +156,39 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
+        backgroundColor: colorScheme.surface,
         centerTitle: false,
         title: Text(
-          yourBagTitle.toUpperCase(),
+          'Your Bag',
           style: TextStyle(
             fontSize: responsive.fontSize18,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 1.5,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.2,
             color: colorScheme.onSurface,
           ),
         ),
         actions: [
           if (cart.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(right: 16),
+              padding: const EdgeInsets.only(right: 8),
               child: TextButton.icon(
                 onPressed: () {
                   HapticFeedback.mediumImpact();
                   cartNotifier.clearCart();
                 },
-                icon: const Icon(Icons.delete_outline_rounded, size: 16),
-                label: Text(
-                  clearText.toUpperCase(),
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.8,
-                  ),
+                icon: Icon(
+                  Icons.delete_outline_rounded,
+                  size: responsive.iconSize(18),
+                  color: colorScheme.error,
                 ),
-                style: TextButton.styleFrom(
-                  foregroundColor: colorScheme.error,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  backgroundColor: colorScheme.error.withValues(alpha: 0.1),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                label: Text(
+                  clearText,
+                  style: TextStyle(
+                    fontSize: responsive.fontSize12,
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.error,
                   ),
                 ),
               ),
@@ -204,21 +196,36 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         ],
       ),
       body: cart.isEmpty
-          ? _buildEmptyBagState(context, responsive, colorScheme, isDark)
+          ? _buildEmptyBagState(
+              context,
+              responsive,
+              colorScheme,
+              isDark,
+              l10n,
+            )
           : Stack(
               children: [
                 Positioned.fill(
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 160),
+                    padding: EdgeInsets.fromLTRB(
+                      responsive.spacing(AppTheme.spaceXL),
+                      responsive.spacing(AppTheme.spaceM),
+                      responsive.spacing(AppTheme.spaceXL),
+                      160,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Checkout Stepper
-                        _buildCheckoutStepper(context, colorScheme, isDark),
-                        const SizedBox(height: 20),
+                        _buildCartHeroStrip(
+                          context,
+                          itemCount: cart.length,
+                          totalAmount: totalAmount,
+                          currency: currency,
+                          isDark: isDark,
+                        ),
+                        SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
 
-                        // Free Shipping Threshold Card
                         _buildFreeShippingBar(
                           context,
                           subtotal: subtotal,
@@ -228,36 +235,25 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           colorScheme: colorScheme,
                           isDark: isDark,
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
 
-                        // Cart Items List Header
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'ITEMS IN BAG (${cart.length})',
-                              style: TextStyle(
-                                fontSize: responsive.fontSize11,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 1.5,
-                                color: colorScheme.onSurface.withValues(
-                                  alpha: 0.5,
-                                ),
-                              ),
-                            ),
-                          ],
+                        _CartSectionTitle(
+                          text: '${cart.length} ${l10n?.items ?? 'items'}',
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: responsive.spacing(AppTheme.spaceM)),
 
-                        // Cart items list
-                        ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: cart.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(height: 14),
-                          itemBuilder: (context, index) {
-                            final item = cart[index];
+                        _CartGroupedCard(
+                          children: List.generate(cart.length * 2 - 1, (index) {
+                            if (index.isOdd) {
+                              return Divider(
+                                height: 1,
+                                color: colorScheme.outline.withValues(
+                                  alpha: 0.35,
+                                ),
+                              );
+                            }
+                            final itemIndex = index ~/ 2;
+                            final item = cart[itemIndex];
                             return _buildCartItemCard(
                               context,
                               item: item,
@@ -266,12 +262,14 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                               responsive: responsive,
                               colorScheme: colorScheme,
                               isDark: isDark,
+                              grouped: true,
                             );
-                          },
+                          }),
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
 
-                        // Luxury Gift Wrapping Card
+                        _CartSectionTitle(text: l10n?.giftWrapping ?? 'Gift wrapping'),
+                        SizedBox(height: responsive.spacing(AppTheme.spaceM)),
                         _buildGiftWrappingCard(
                           context,
                           responsive,
@@ -282,9 +280,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           giftWrappingCost: giftWrappingCost,
                           isEnabled: giftWrapConfig.enabled,
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
 
-                        // Order Summary Card
+                        _CartSectionTitle(text: orderSummaryText),
+                        SizedBox(height: responsive.spacing(AppTheme.spaceM)),
                         _buildOrderSummaryCard(
                           context,
                           responsive: responsive,
@@ -309,32 +308,26 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   ),
                 ),
 
-                // Floating Bottom Checkout Panel
                 Positioned(
                   left: 0,
                   right: 0,
                   bottom: 0,
                   child: Container(
                     padding: EdgeInsets.fromLTRB(
-                      20,
-                      16,
-                      20,
-                      MediaQuery.of(context).padding.bottom + 16,
+                      responsive.spacing(AppTheme.spaceXL),
+                      responsive.spacing(AppTheme.spaceM),
+                      responsive.spacing(AppTheme.spaceXL),
+                      MediaQuery.of(context).padding.bottom +
+                          responsive.spacing(AppTheme.spaceM),
                     ),
                     decoration: BoxDecoration(
                       color: colorScheme.surface,
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(24),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(
-                            alpha: isDark ? 0.3 : 0.08,
-                          ),
-                          blurRadius: 20,
-                          offset: const Offset(0, -6),
+                      border: Border(
+                        top: BorderSide(
+                          color: colorScheme.outline.withValues(alpha: 0.2),
                         ),
-                      ],
+                      ),
+                      boxShadow: AppTheme.softShadow,
                     ),
                     child: Row(
                       children: [
@@ -345,13 +338,12 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'TOTAL',
+                                totalText,
                                 style: TextStyle(
-                                  fontSize: responsive.fontSize10,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 1.5,
+                                  fontSize: responsive.fontSize11,
+                                  fontWeight: FontWeight.w600,
                                   color: colorScheme.onSurface.withValues(
-                                    alpha: 0.5,
+                                    alpha: 0.55,
                                   ),
                                 ),
                               ),
@@ -359,7 +351,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 currency.formatPrice(totalAmount),
                                 style: TextStyle(
                                   fontSize: responsive.fontSize20,
-                                  fontWeight: FontWeight.w900,
+                                  fontWeight: FontWeight.w800,
                                   color: colorScheme.onSurface,
                                 ),
                               ),
@@ -368,37 +360,41 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                         ),
                         Expanded(
                           flex: 4,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              HapticFeedback.lightImpact();
-                              context.go('/checkout');
-                            },
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              backgroundColor: AppTheme.primaryColor,
-                              foregroundColor: Colors.white,
-                              elevation: 4,
-                              shadowColor: AppTheme.primaryColor.withValues(
-                                alpha: 0.4,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'CHECKOUT',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 1.5,
+                          child: SizedBox(
+                            height: responsive.spacing(48),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                HapticFeedback.lightImpact();
+                                context.go('/checkout');
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.primaryColor,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusM,
                                   ),
                                 ),
-                                SizedBox(width: 8),
-                                Icon(Icons.arrow_forward_rounded, size: 18),
-                              ],
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    l10n?.proceedToCheckout ??
+                                        'Checkout',
+                                    style: TextStyle(
+                                      fontSize: responsive.fontSize13,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Icon(
+                                    Icons.arrow_forward_rounded,
+                                    size: responsive.iconSize(18),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -411,12 +407,76 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     );
   }
 
+  Widget _buildCartHeroStrip(
+    BuildContext context, {
+    required int itemCount,
+    required double totalAmount,
+    required dynamic currency,
+    required bool isDark,
+  }) {
+    final responsive = context.responsive;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDark
+              ? [AppColors.darkPrimaryBg, AppColors.darkSurface]
+              : [AppColors.primary, AppColors.primaryHover],
+        ),
+        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(responsive.spacing(12)),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(
+              Icons.shopping_bag_rounded,
+              color: Colors.white,
+              size: responsive.iconSize(26),
+            ),
+          ),
+          SizedBox(width: responsive.spacing(14)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$itemCount item${itemCount == 1 ? '' : 's'} in your bag',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: responsive.fontSize16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Total ${currency.formatPrice(totalAmount)} · Free shipping over ₹1,000',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.85),
+                    fontSize: responsive.fontSize11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ── Redesigned Empty Bag State ─────────────────────────────────────────────
   Widget _buildEmptyBagState(
     BuildContext context,
     ResponsiveText responsive,
     ColorScheme colorScheme,
     bool isDark,
+    AppLocalizations? l10n,
   ) {
     return Center(
       child: SingleChildScrollView(
@@ -456,17 +516,17 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             const SizedBox(height: 28),
 
             Text(
-              'YOUR BAG IS EMPTY',
+              l10n?.bagEmpty ?? 'Your Bag is Empty',
               style: TextStyle(
                 fontSize: responsive.fontSize18,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.5,
+                fontWeight: FontWeight.w700,
                 color: colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 12),
             Text(
-              'Explore our curated luxury collections and discover pieces tailored to your style.',
+              l10n?.bagEmptyDescription ??
+                  'Explore our curated collections and discover pieces tailored to your style.',
               style: TextStyle(
                 fontSize: responsive.fontSize13,
                 color: colorScheme.onSurface.withValues(alpha: 0.6),
@@ -496,12 +556,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 context.go('/');
               },
               icon: const Icon(Icons.auto_awesome_rounded, size: 18),
-              label: const Text(
-                'SHOP NEW ARRIVALS',
+              label: Text(
+                l10n?.shopNewArrivals ?? 'Shop New Arrivals',
                 style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.5,
+                  fontSize: responsive.fontSize12,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               style: ElevatedButton.styleFrom(
@@ -536,60 +595,6 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       side: BorderSide(color: colorScheme.outline.withValues(alpha: 0.15)),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       onPressed: () => context.go(route),
-    );
-  }
-
-  // ── Checkout Stepper Header ────────────────────────────────────────────────
-  Widget _buildCheckoutStepper(
-    BuildContext context,
-    ColorScheme colorScheme,
-    bool isDark,
-  ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.1)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _stepItem(context, '1. BAG', isActive: true, isDone: false),
-          Container(
-            width: 24,
-            height: 1,
-            color: colorScheme.outline.withValues(alpha: 0.2),
-          ),
-          _stepItem(context, '2. DELIVERY', isActive: false, isDone: false),
-          Container(
-            width: 24,
-            height: 1,
-            color: colorScheme.outline.withValues(alpha: 0.2),
-          ),
-          _stepItem(context, '3. PAYMENT', isActive: false, isDone: false),
-        ],
-      ),
-    );
-  }
-
-  Widget _stepItem(
-    BuildContext context,
-    String label, {
-    required bool isActive,
-    required bool isDone,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Text(
-      label,
-      style: TextStyle(
-        fontSize: 11,
-        fontWeight: isActive ? FontWeight.w900 : FontWeight.w600,
-        letterSpacing: 1.0,
-        color: isActive
-            ? AppTheme.primaryColor
-            : colorScheme.onSurface.withValues(alpha: 0.4),
-      ),
     );
   }
 
@@ -683,27 +688,14 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     required ResponsiveText responsive,
     required ColorScheme colorScheme,
     required bool isDark,
+    bool grouped = false,
   }) {
     final product = item.product;
     final imageUrl = _resolveCartItemImage(item);
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.1)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    final content = Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
           // Image Thumbnail
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
@@ -894,7 +886,30 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             ),
           ),
         ],
+    );
+
+    if (grouped) {
+      return Padding(
+        padding: const EdgeInsets.all(14),
+        child: content,
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
+      child: content,
     );
   }
 
@@ -911,61 +926,58 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   }) {
     if (!isEnabled) return const SizedBox.shrink();
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.1)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.amber.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
+    return _CartGroupedCard(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.card_giftcard_rounded,
+                color: AppTheme.primaryColor,
+                size: 22,
+              ),
             ),
-            child: const Icon(
-              Icons.card_giftcard_rounded,
-              color: Colors.amber,
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'LUXURY GIFT WRAPPING',
-                  style: TextStyle(
-                    fontSize: responsive.fontSize11,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.8,
-                    color: colorScheme.onSurface,
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Gift wrapping',
+                    style: TextStyle(
+                      fontSize: responsive.fontSize13,
+                      fontWeight: FontWeight.w700,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Includes luxury box & satin ribbon (${currency.formatPrice(giftWrappingCost)})',
-                  style: TextStyle(
-                    fontSize: responsive.fontSize10,
-                    color: colorScheme.onSurface.withValues(alpha: 0.5),
+                  const SizedBox(height: 2),
+                  Text(
+                    AppLocalizations.of(context)?.giftWrappingDesc ??
+                        'Premium boxed wrap (${currency.formatPrice(giftWrappingCost)})',
+                    style: TextStyle(
+                      fontSize: responsive.fontSize11,
+                      color: colorScheme.onSurface.withValues(alpha: 0.55),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Switch(
-            value: isGiftWrapped,
-            activeThumbColor: AppTheme.primaryColor,
-            onChanged: (val) {
-              HapticFeedback.lightImpact();
-              ref.read(isGiftWrappedProvider.notifier).toggle(val);
-            },
-          ),
-        ],
+            Switch(
+              value: isGiftWrapped,
+              activeThumbColor: AppTheme.primaryColor,
+              onChanged: (val) {
+                HapticFeedback.lightImpact();
+                ref.read(isGiftWrappedProvider.notifier).toggle(val);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1367,6 +1379,58 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               ),
             ),
       ],
+    );
+  }
+}
+
+class _CartSectionTitle extends StatelessWidget {
+  const _CartSectionTitle({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final responsive = context.responsive;
+    return Padding(
+      padding: EdgeInsets.only(left: responsive.spacing(4)),
+      child: Text(
+        text.toUpperCase(),
+        style: TextStyle(
+          fontSize: responsive.fontSize10,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.1,
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45),
+        ),
+      ),
+    );
+  }
+}
+
+class _CartGroupedCard extends StatelessWidget {
+  const _CartGroupedCard({this.child, this.children});
+
+  final Widget? child;
+  final List<Widget>? children;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+        border: Border.all(
+          color: isDark
+              ? colorScheme.outline.withValues(alpha: 0.35)
+              : colorScheme.outline,
+        ),
+        boxShadow: AppTheme.softShadow,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: child ?? Column(children: children ?? const []),
     );
   }
 }

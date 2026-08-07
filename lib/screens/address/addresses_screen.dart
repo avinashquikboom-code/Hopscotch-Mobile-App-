@@ -387,58 +387,69 @@ class _AddressesScreenState extends ConsumerState<AddressesScreen> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+        color: isDark
+            ? colorScheme.surface.withValues(alpha: 0.8)
+            : Colors.white,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: address.isDefault
               ? AppTheme.primaryColor
-              : colorScheme.outline.withValues(alpha: isDark ? 0.3 : 0.8),
-          width: address.isDefault ? 2 : 1,
+              : colorScheme.outline.withValues(alpha: isDark ? 0.2 : 0.15),
+          width: address.isDefault ? 2 : 1.5,
         ),
-        boxShadow: address.isDefault
+        boxShadow: address.isDefault && !isDark
             ? [
                 BoxShadow(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.12),
-                  blurRadius: 12,
+                  color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                  blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
               ]
-            : AppTheme.softShadow,
+            : (isDark
+                ? null
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]),
       ),
       child: Padding(
-        padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
+        padding: EdgeInsets.all(responsive.spacing(16)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Badge Row (Type Pill + Default Badge)
+            // Top Row with Badge and Default Indicator
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
                   padding: EdgeInsets.symmetric(
-                    horizontal: responsive.spacing(10),
-                    vertical: responsive.spacing(5),
+                    horizontal: responsive.spacing(12),
+                    vertical: responsive.spacing(6),
                   ),
                   decoration: BoxDecoration(
                     color: typeDetails.color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusM),
-                    border: Border.all(color: typeDetails.color.withValues(alpha: 0.3)),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: typeDetails.color.withValues(alpha: 0.25),
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         typeDetails.icon,
-                        size: responsive.iconSize(14),
+                        size: responsive.iconSize(16),
                         color: typeDetails.color,
                       ),
                       SizedBox(width: responsive.spacing(6)),
                       Text(
-                        typeDetails.label.toUpperCase(),
+                        typeDetails.label,
                         style: TextStyle(
                           fontSize: responsive.fontSize11,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.8,
+                          fontWeight: FontWeight.w800,
                           color: typeDetails.color,
                         ),
                       ),
@@ -448,37 +459,31 @@ class _AddressesScreenState extends ConsumerState<AddressesScreen> {
                 if (address.isDefault)
                   Container(
                     padding: EdgeInsets.symmetric(
-                      horizontal: responsive.spacing(10),
-                      vertical: responsive.spacing(5),
+                      horizontal: responsive.spacing(12),
+                      vertical: responsive.spacing(6),
                     ),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppTheme.primaryColor,
-                          AppTheme.primaryColor.withValues(alpha: 0.85),
-                        ],
+                      color: AppTheme.primaryColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: AppTheme.primaryColor.withValues(alpha: 0.25),
                       ),
-                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.star_rounded, color: Colors.white, size: 12),
-                        const SizedBox(width: 4),
+                        const Icon(
+                          Icons.star_rounded,
+                          color: AppTheme.primaryColor,
+                          size: 14,
+                        ),
+                        SizedBox(width: responsive.spacing(4)),
                         Text(
-                          'DEFAULT',
+                          'Default',
                           style: TextStyle(
-                            color: Colors.white,
-                            fontSize: responsive.fontSize10,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1.0,
+                            color: AppTheme.primaryColor,
+                            fontSize: responsive.fontSize11,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ],
@@ -486,119 +491,145 @@ class _AddressesScreenState extends ConsumerState<AddressesScreen> {
                   ),
               ],
             ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceM)),
+            SizedBox(height: responsive.spacing(14)),
 
-            // Name & Phone Pill
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    address.fullName,
-                    style: TextStyle(
-                      fontSize: responsive.fontSize16,
-                      fontWeight: FontWeight.w800,
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                ),
-              ],
+            // Name
+            Text(
+              address.fullName,
+              style: TextStyle(
+                fontSize: responsive.fontSize16,
+                fontWeight: FontWeight.w800,
+                color: colorScheme.onSurface,
+              ),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: responsive.spacing(6)),
+
+            // Phone
             Row(
               children: [
                 Icon(
                   Icons.phone_outlined,
-                  size: responsive.iconSize(14),
-                  color: AppTheme.primaryColor,
+                  size: responsive.iconSize(16),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.7),
                 ),
-                SizedBox(width: responsive.spacing(6)),
-                Text(
-                  address.phone.trim().isNotEmpty
-                      ? address.phone
-                      : 'Mobile Number Not Provided',
-                  style: TextStyle(
-                    fontSize: responsive.fontSize13,
-                    fontWeight: FontWeight.w600,
-                    color: address.phone.trim().isNotEmpty
-                        ? colorScheme.onSurface.withValues(alpha: 0.8)
-                        : AppTheme.errorColor,
+                SizedBox(width: responsive.spacing(8)),
+                Expanded(
+                  child: Text(
+                    address.phone.trim().isNotEmpty
+                        ? address.phone
+                        : 'No phone provided',
+                    style: TextStyle(
+                      fontSize: responsive.fontSize12,
+                      fontWeight: FontWeight.w500,
+                      color: colorScheme.onSurface.withValues(alpha: 0.7),
+                    ),
                   ),
                 ),
               ],
             ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceM)),
-            const Divider(height: 1),
-            SizedBox(height: responsive.spacing(AppTheme.spaceM)),
+            SizedBox(height: responsive.spacing(12)),
 
-            // Address Details Text
-            Text(
-              address.fullAddress,
-              style: TextStyle(
-                fontSize: responsive.fontSize14,
-                color: colorScheme.onSurface.withValues(alpha: 0.85),
-                height: 1.45,
-              ),
+            // Divider
+            Divider(
+              height: 1,
+              color: colorScheme.outline.withValues(alpha: isDark ? 0.1 : 0.08),
             ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
+            SizedBox(height: responsive.spacing(12)),
 
-            // Bottom Actions Row
+            // Full Address
             Row(
               children: [
-                if (!address.isDefault) ...[
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => _setDefaultAddress(address.id),
-                      icon: const Icon(Icons.star_outline_rounded, size: 16),
-                      label: Text(
-                        'SET AS DEFAULT',
-                        style: TextStyle(
-                          fontSize: responsive.fontSize11,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: AppTheme.primaryColor.withValues(alpha: 0.6)),
-                        foregroundColor: AppTheme.primaryColor,
-                        padding: EdgeInsets.symmetric(vertical: responsive.spacing(10)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppTheme.radiusM),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: responsive.spacing(8)),
-                ],
-                IconButton(
-                  onPressed: () => _showAddressBottomSheet(address),
-                  tooltip: 'Edit Address',
-                  icon: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: colorScheme.onSurface.withValues(alpha: 0.06),
-                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
-                    ),
-                    child: Icon(
-                      Icons.edit_outlined,
-                      size: responsive.iconSize(16),
-                      color: colorScheme.onSurface.withValues(alpha: 0.8),
+                Icon(
+                  Icons.location_on_outlined,
+                  size: responsive.iconSize(16),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.7),
+                ),
+                SizedBox(width: responsive.spacing(8)),
+                Expanded(
+                  child: Text(
+                    address.fullAddress,
+                    style: TextStyle(
+                      fontSize: responsive.fontSize12,
+                      height: 1.6,
+                      color: colorScheme.onSurface.withValues(alpha: 0.75),
                     ),
                   ),
                 ),
-                SizedBox(width: responsive.spacing(4)),
-                IconButton(
-                  onPressed: () => _confirmDeleteAddress(address),
-                  tooltip: 'Delete Address',
-                  icon: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppTheme.errorColor.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
+              ],
+            ),
+            SizedBox(height: responsive.spacing(14)),
+
+            // Action Buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (!address.isDefault)
+                  Expanded(
+                    child: FilledButton.tonal(
+                      onPressed: () => _setDefaultAddress(address.id),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.12),
+                        foregroundColor: AppTheme.primaryColor,
+                        padding: EdgeInsets.symmetric(
+                          vertical: responsive.spacing(10),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.star_outline_rounded, size: 16),
+                          SizedBox(width: responsive.spacing(6)),
+                          Text(
+                            'Set Default',
+                            style: TextStyle(
+                              fontSize: responsive.fontSize11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: const Icon(
+                  ),
+                if (!address.isDefault) SizedBox(width: responsive.spacing(8)),
+                Container(
+                  decoration: BoxDecoration(
+                    color: colorScheme.onSurface.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: IconButton(
+                    onPressed: () => _showAddressBottomSheet(address),
+                    tooltip: 'Edit',
+                    icon: Icon(
+                      Icons.edit_outlined,
+                      size: responsive.iconSize(18),
+                      color: colorScheme.onSurface.withValues(alpha: 0.7),
+                    ),
+                    constraints: BoxConstraints(
+                      minHeight: responsive.spacing(40),
+                      minWidth: responsive.spacing(40),
+                    ),
+                  ),
+                ),
+                SizedBox(width: responsive.spacing(8)),
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppTheme.errorColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: IconButton(
+                    onPressed: () => _confirmDeleteAddress(address),
+                    tooltip: 'Delete',
+                    icon: Icon(
                       Icons.delete_outline_rounded,
-                      size: 16,
+                      size: responsive.iconSize(18),
                       color: AppTheme.errorColor,
+                    ),
+                    constraints: BoxConstraints(
+                      minHeight: responsive.spacing(40),
+                      minWidth: responsive.spacing(40),
                     ),
                   ),
                 ),

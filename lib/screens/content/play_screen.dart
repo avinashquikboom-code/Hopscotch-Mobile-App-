@@ -361,23 +361,62 @@ class _PlayScreenState extends ConsumerState<PlayScreen> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Thumbnail Image Preview (Layered behind video player)
-              if (post.effectiveThumbnailUrl != null &&
-                  post.effectiveThumbnailUrl!.isNotEmpty)
-                CachedNetworkImage(
-                  imageUrl: AppUrls.resolveUrl(post.effectiveThumbnailUrl),
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => const Center(
-                    child: CircularProgressIndicator(color: AppTheme.accentColor),
-                  ),
-                  errorWidget: (context, url, err) => const Center(
-                    child: Icon(Icons.movie_rounded, color: Colors.white38, size: 64),
-                  ),
-                )
-              else
-                const Center(
-                  child: Icon(Icons.movie_rounded, color: Colors.white38, size: 64),
-                ),
+              // Thumbnail Background
+              Container(
+                color: Colors.black,
+                child: post.effectiveThumbnailUrl != null &&
+                        post.effectiveThumbnailUrl!.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: AppUrls.resolveUrl(post.effectiveThumbnailUrl),
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          color: Colors.black,
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: AppTheme.accentColor,
+                            ),
+                          ),
+                        ),
+                        errorWidget: (context, url, err) => Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.grey.shade900,
+                                Colors.black,
+                              ],
+                            ),
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.play_circle_outline_rounded,
+                              color: Colors.white30,
+                              size: 80,
+                            ),
+                          ),
+                        ),
+                      )
+                    : Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Colors.grey.shade900,
+                              Colors.black,
+                            ],
+                          ),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.play_circle_outline_rounded,
+                            color: Colors.white30,
+                            size: 80,
+                          ),
+                        ),
+                      ),
+              ),
 
               // Video Player (Layered on top once initialized)
               if (isInitialized)

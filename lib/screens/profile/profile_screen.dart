@@ -11,9 +11,30 @@ import 'package:hopscotch/widgets/toast_notification.dart';
 import 'package:hopscotch/widgets/user_avatar.dart';
 import 'package:hopscotch/l10n/app_localizations.dart';
 import 'package:hopscotch/providers/loyalty_provider.dart';
+import 'package:hopscotch/screens/wishlist/wishlist_screen.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {
     // Show confirmation dialog
@@ -75,10 +96,10 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final userProfile = ref.watch(profileNotifierProvider);
+  Widget build(BuildContext context) {
     final responsive = context.responsive;
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -86,12 +107,52 @@ class ProfileScreen extends ConsumerWidget {
           l10n.myPortfolio,
           style: TextStyle(
             fontSize: responsive.fontSize18,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.2,
           ),
         ),
         elevation: 0,
+        scrolledUnderElevation: 0,
+        backgroundColor: colorScheme.surface,
+        bottom: TabBar(
+          controller: _tabController,
+          labelColor: AppTheme.primaryColor,
+          unselectedLabelColor:
+              colorScheme.onSurface.withValues(alpha: 0.5),
+          indicatorColor: AppTheme.primaryColor,
+          indicatorWeight: 2.5,
+          labelStyle: TextStyle(
+            fontSize: responsive.fontSize13,
+            fontWeight: FontWeight.w700,
+          ),
+          unselectedLabelStyle: TextStyle(
+            fontSize: responsive.fontSize13,
+            fontWeight: FontWeight.w500,
+          ),
+          tabs: [
+            Tab(text: l10n.profile),
+            Tab(text: l10n.myWishlist),
+          ],
+        ),
       ),
-      body: SingleChildScrollView(
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildPortfolioTab(context, l10n, responsive),
+          const WishlistBody(embedded: true),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPortfolioTab(
+    BuildContext context,
+    AppLocalizations l10n,
+    ResponsiveText responsive,
+  ) {
+    final userProfile = ref.watch(profileNotifierProvider);
+
+    return SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 120),
         child: Column(
           children: [
@@ -623,8 +684,7 @@ class ProfileScreen extends ConsumerWidget {
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildPortfolioStatCard({

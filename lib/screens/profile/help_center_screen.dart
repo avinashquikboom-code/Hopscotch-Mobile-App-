@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
-import 'package:hopscotch/widgets/fade_in_animation.dart';
 import 'package:hopscotch/widgets/toast_notification.dart';
 
 class HelpCenterScreen extends StatefulWidget {
@@ -76,13 +75,14 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: isDark ? Theme.of(context).colorScheme.surface : const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: Text(
-          'HELP CENTER',
+          'Help Center',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w800,
             fontSize: responsive.fontSize18,
           ),
         ),
@@ -96,175 +96,200 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
+        padding: EdgeInsets.fromLTRB(
+          responsive.spacing(AppTheme.spaceXL),
+          responsive.spacing(AppTheme.spaceL),
+          responsive.spacing(AppTheme.spaceXL),
+          responsive.spacing(AppTheme.spaceXL),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
-            FadeInAnimation(
-              delay: const Duration(milliseconds: 100),
-              child: Text(
-                'How can we help you?',
-                style: TextStyle(
-                  fontSize: responsive.fontSize24,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimaryColor,
-                ),
+            Text(
+              'How can we help?',
+              style: TextStyle(
+                fontSize: responsive.fontSize24,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
               ),
             ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceS)),
-            FadeInAnimation(
-              delay: const Duration(milliseconds: 200),
-              child: Text(
-                'Choose a topic or search for help',
-                style: TextStyle(
-                  fontSize: responsive.fontSize14,
-                  color: AppTheme.textSecondaryColor,
-                ),
+            SizedBox(height: responsive.spacing(6)),
+            Text(
+              'Browse topics or explore our support options below',
+              style: TextStyle(
+                fontSize: responsive.fontSize14,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+            SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
-            // Contact Options Grid
-            FadeInAnimation(
-              delay: const Duration(milliseconds: 300),
-              child: GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 1.1,
-                  crossAxisSpacing: responsive.spacing(AppTheme.spaceM),
-                  mainAxisSpacing: responsive.spacing(AppTheme.spaceM),
-                ),
-                itemCount: _contactOptions.length,
-                itemBuilder: (context, index) {
-                  final option = _contactOptions[index];
-                  return GestureDetector(
+            // Contact Options Grid - Improved Cards
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 1,
+                crossAxisSpacing: responsive.spacing(12),
+                mainAxisSpacing: responsive.spacing(12),
+              ),
+              itemCount: _contactOptions.length,
+              itemBuilder: (context, index) {
+                final option = _contactOptions[index];
+                return Material(
+                  color: Colors.transparent,
+                  child: InkWell(
                     onTap: () => _handleContactOption(option['title']),
+                    borderRadius: BorderRadius.circular(18),
                     child: Container(
-                      padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(AppTheme.radiusM),
-                        border: Border.all(color: AppTheme.borderColor),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        color: isDark
+                            ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.8)
+                            : option['color'].withValues(alpha: 0.04),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: option['color'].withValues(alpha: 0.15),
+                          width: 1.5,
+                        ),
+                        boxShadow: isDark
+                            ? null
+                            : [
+                                BoxShadow(
+                                  color: option['color'].withValues(alpha: 0.08),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Container(
-                            padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceM)),
+                            padding: EdgeInsets.all(responsive.spacing(12)),
                             decoration: BoxDecoration(
-                              color: option['color'].withValues(alpha: 0.1),
-                              shape: BoxShape.circle,
+                              color: option['color'].withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                             child: Icon(
                               option['icon'],
                               color: option['color'],
-                              size: responsive.iconSize(24),
+                              size: responsive.iconSize(28),
                             ),
                           ),
-                          SizedBox(height: responsive.spacing(AppTheme.spaceM)),
-                          Text(
-                            option['title'],
-                            style: TextStyle(
-                              fontSize: responsive.fontSize14,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textPrimaryColor,
+                          SizedBox(height: responsive.spacing(12)),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: responsive.spacing(8)),
+                            child: Text(
+                              option['title'],
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: responsive.fontSize12,
+                                fontWeight: FontWeight.w800,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
                             ),
                           ),
                           SizedBox(height: responsive.spacing(4)),
                           Expanded(
-                            child: Text(
-                              option['subtitle'],
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: responsive.fontSize11,
-                                color: AppTheme.textSecondaryColor,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: responsive.spacing(6)),
+                              child: Text(
+                                option['subtitle'],
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: responsive.fontSize10,
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                ),
+                                textAlign: TextAlign.center,
                               ),
-                              textAlign: TextAlign.center,
                             ),
                           ),
                         ],
                       ),
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
 
-            // FAQ Section
-            FadeInAnimation(
-              delay: const Duration(milliseconds: 400),
-              child: Text(
-                'FREQUENTLY ASKED QUESTIONS',
-                style: TextStyle(
-                  fontSize: responsive.fontSize16,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimaryColor,
-                ),
+            // FAQ Section Header
+            Text(
+              'Frequently Asked Questions'.toUpperCase(),
+              style: TextStyle(
+                fontSize: responsive.fontSize10,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.2,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
               ),
             ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
+            SizedBox(height: responsive.spacing(AppTheme.spaceM)),
 
-            // FAQ List
+            // FAQ List - Improved Expansion Tiles
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _faqs.length,
               separatorBuilder: (context, index) =>
-                  SizedBox(height: responsive.spacing(AppTheme.spaceM)),
+                  SizedBox(height: responsive.spacing(10)),
               itemBuilder: (context, index) {
                 final faq = _faqs[index];
                 final isExpanded = _expandedFaqIndex == index;
 
-                return FadeInAnimation(
-                  delay: Duration(milliseconds: 500 + (index * 100)),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
-                      border: Border.all(color: AppTheme.borderColor),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.03),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                return Container(
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.8)
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isExpanded
+                          ? AppTheme.primaryColor.withValues(alpha: 0.3)
+                          : Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+                      width: 1.5,
                     ),
+                    boxShadow: isExpanded && !isDark
+                        ? [
+                            BoxShadow(
+                              color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
                     child: ExpansionTile(
                       tilePadding: EdgeInsets.symmetric(
-                        horizontal: responsive.spacing(AppTheme.spaceL),
-                        vertical: responsive.spacing(AppTheme.spaceS),
+                        horizontal: responsive.spacing(16),
+                        vertical: responsive.spacing(12),
                       ),
-                      childrenPadding: EdgeInsets.symmetric(
-                        horizontal: responsive.spacing(AppTheme.spaceL),
-                        vertical: responsive.spacing(AppTheme.spaceM),
+                      childrenPadding: EdgeInsets.fromLTRB(
+                        responsive.spacing(16),
+                        0,
+                        responsive.spacing(16),
+                        responsive.spacing(16),
                       ),
+                      collapsedBackgroundColor: Colors.transparent,
+                      backgroundColor: Colors.transparent,
                       title: Text(
                         faq['question']!,
                         style: TextStyle(
-                          fontSize: responsive.fontSize14,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textPrimaryColor,
+                          fontSize: responsive.fontSize13,
+                          fontWeight: FontWeight.w700,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       trailing: AnimatedRotation(
-                        duration: const Duration(milliseconds: 200),
+                        duration: const Duration(milliseconds: 300),
                         turns: isExpanded ? 0.5 : 0.0,
-                        child: const Icon(
-                          Icons.keyboard_arrow_down_rounded,
-                          color: AppTheme.textSecondaryColor,
+                        child: Icon(
+                          Icons.expand_more_rounded,
+                          color: isExpanded ? AppTheme.primaryColor : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                          size: responsive.iconSize(24),
                         ),
                       ),
                       onExpansionChanged: (expanded) {
@@ -273,12 +298,16 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                         });
                       },
                       children: [
+                        Divider(
+                          height: responsive.spacing(12),
+                          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
+                        ),
                         Text(
                           faq['answer']!,
                           style: TextStyle(
-                            fontSize: responsive.fontSize13,
-                            height: 1.5,
-                            color: AppTheme.textSecondaryColor,
+                            fontSize: responsive.fontSize12,
+                            height: 1.6,
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
                         ),
                       ],

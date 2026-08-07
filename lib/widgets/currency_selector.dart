@@ -48,26 +48,38 @@ class _CurrencySelectorState extends ConsumerState<CurrencySelector> {
     final enabledCurrsAsync = ref.watch(enabledCurrenciesProvider);
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accent = isDark ? AppColors.darkPrimary : AppTheme.primaryColor;
 
-    final allCurrencies =
-        enabledCurrsAsync.value ?? AppCurrency.values;
+    final allCurrencies = enabledCurrsAsync.value ?? AppCurrency.values;
     final filtered = _filter(allCurrencies);
 
     return Scaffold(
       backgroundColor: isDark ? colorScheme.surface : AppColors.background,
+      appBar: AppBar(
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        backgroundColor: Colors.transparent,
+        centerTitle: true,
+        leading: IconButton(
+          icon: Icon(Icons.adaptive.arrow_back, size: responsive.iconSize(24)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          l10n.currency,
+          style: TextStyle(
+            fontSize: responsive.fontSize16,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
       body: Column(
         children: [
-          _CurrencyHeader(
-            title: l10n.currency,
-            subtitle: 'Choose how prices appear across the app',
-            onBack: () => Navigator.pop(context),
-          ),
           Padding(
             padding: EdgeInsets.fromLTRB(
               responsive.spacing(AppTheme.spaceXL),
-              responsive.spacing(AppTheme.spaceM),
+              0,
               responsive.spacing(AppTheme.spaceXL),
-              responsive.spacing(AppTheme.spaceS),
+              responsive.spacing(AppTheme.spaceM),
             ),
             child: TextField(
               controller: _searchController,
@@ -77,15 +89,8 @@ class _CurrencySelectorState extends ConsumerState<CurrencySelector> {
                 fontWeight: FontWeight.w600,
               ),
               decoration: InputDecoration(
-                hintText: 'Search by code or country…',
-                hintStyle: TextStyle(
-                  fontSize: responsive.fontSize13,
-                  color: colorScheme.onSurface.withValues(alpha: 0.45),
-                ),
-                prefixIcon: Icon(
-                  Icons.search_rounded,
-                  color: isDark ? AppColors.darkPrimary : AppTheme.primaryColor,
-                ),
+                hintText: 'Search currency…',
+                prefixIcon: Icon(Icons.search_rounded, color: accent),
                 suffixIcon: _query.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.close_rounded, size: 20),
@@ -97,28 +102,21 @@ class _CurrencySelectorState extends ConsumerState<CurrencySelector> {
                     : null,
                 filled: true,
                 fillColor: isDark ? AppColors.darkSurface : Colors.white,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: responsive.spacing(16),
-                  vertical: responsive.spacing(14),
-                ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide(
                     color: isDark ? AppColors.darkBorder : AppColors.border,
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide(
                     color: isDark ? AppColors.darkBorder : AppColors.border,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(
-                    color: isDark ? AppColors.darkPrimary : AppTheme.primaryColor,
-                    width: 1.5,
-                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: accent, width: 1.5),
                 ),
               ),
             ),
@@ -126,55 +124,60 @@ class _CurrencySelectorState extends ConsumerState<CurrencySelector> {
           if (enabledCurrsAsync.isLoading)
             const Expanded(
               child: Center(
-                child: CircularProgressIndicator(
-                  color: AppTheme.primaryColor,
-                ),
+                child: CircularProgressIndicator(color: AppTheme.primaryColor),
               ),
             )
           else if (filtered.isEmpty)
             Expanded(
               child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.currency_exchange_rounded,
-                      size: 48,
-                      color: colorScheme.onSurface.withValues(alpha: 0.25),
-                    ),
-                    SizedBox(height: responsive.spacing(12)),
-                    Text(
-                      'No currencies match your search',
-                      style: TextStyle(
-                        fontSize: responsive.fontSize13,
-                        color: colorScheme.onSurface.withValues(alpha: 0.55),
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  'No currencies found',
+                  style: TextStyle(
+                    color: colorScheme.onSurface.withValues(alpha: 0.5),
+                    fontSize: responsive.fontSize13,
+                  ),
                 ),
               ),
             )
           else
             Expanded(
-              child: ListView.separated(
+              child: ListView(
                 padding: EdgeInsets.fromLTRB(
                   responsive.spacing(AppTheme.spaceXL),
-                  responsive.spacing(AppTheme.spaceS),
+                  0,
                   responsive.spacing(AppTheme.spaceXL),
                   responsive.spacing(AppTheme.spaceXXL),
                 ),
-                itemCount: filtered.length,
-                separatorBuilder: (_, __) =>
-                    SizedBox(height: responsive.spacing(10)),
-                itemBuilder: (context, index) {
-                  final currency = filtered[index];
-                  final selected = currentCurrency == currency;
-                  return _CurrencyCard(
-                    currency: currency,
-                    selected: selected,
-                    onTap: () => _selectCurrency(currency),
-                  );
-                },
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: colorScheme.surface,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                      border: Border.all(
+                        color: isDark ? AppColors.darkBorder : colorScheme.outline,
+                      ),
+                      boxShadow: isDark ? null : AppTheme.softShadow,
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      children: [
+                        for (var i = 0; i < filtered.length; i++) ...[
+                          _CurrencyRow(
+                            currency: filtered[i],
+                            selected: currentCurrency == filtered[i],
+                            onTap: () => _selectCurrency(filtered[i]),
+                          ),
+                          if (i < filtered.length - 1)
+                            Divider(
+                              height: 1,
+                              indent: 56,
+                              color: colorScheme.outline.withValues(alpha: 0.5),
+                            ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
         ],
@@ -183,142 +186,8 @@ class _CurrencySelectorState extends ConsumerState<CurrencySelector> {
   }
 }
 
-class _CurrencyHeader extends StatelessWidget {
-  const _CurrencyHeader({
-    required this.title,
-    required this.subtitle,
-    required this.onBack,
-  });
-
-  final String title;
-  final String subtitle;
-  final VoidCallback onBack;
-
-  @override
-  Widget build(BuildContext context) {
-    final responsive = context.responsive;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return ClipPath(
-      clipper: _CurrencyHeaderClipper(),
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.fromLTRB(
-          responsive.spacing(AppTheme.spaceXL),
-          MediaQuery.of(context).padding.top + 8,
-          responsive.spacing(AppTheme.spaceXL),
-          40,
-        ),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDark
-                ? [AppColors.darkPrimaryBg, AppColors.darkSurface]
-                : [AppColors.primary, AppColors.primaryHover],
-          ),
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              right: -16,
-              top: 16,
-              child: Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.08),
-                ),
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                IconButton(
-                  onPressed: onBack,
-                  icon: Icon(
-                    Icons.adaptive.arrow_back,
-                    color: Colors.white,
-                    size: responsive.iconSize(24),
-                  ),
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.white.withValues(alpha: 0.15),
-                  ),
-                ),
-                SizedBox(height: responsive.spacing(8)),
-                Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(responsive.spacing(10)),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Icon(
-                        Icons.currency_exchange_rounded,
-                        color: Colors.white,
-                        size: responsive.iconSize(26),
-                      ),
-                    ),
-                    SizedBox(width: responsive.spacing(14)),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: responsive.fontSize20,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.3,
-                            ),
-                          ),
-                          SizedBox(height: responsive.spacing(4)),
-                          Text(
-                            subtitle,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.85),
-                              fontSize: responsive.fontSize11,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _CurrencyHeaderClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    path.lineTo(0, size.height - 24);
-    path.quadraticBezierTo(
-      size.width / 2,
-      size.height + 10,
-      size.width,
-      size.height - 24,
-    );
-    path.lineTo(size.width, 0);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
-}
-
-class _CurrencyCard extends StatelessWidget {
-  const _CurrencyCard({
+class _CurrencyRow extends StatelessWidget {
+  const _CurrencyRow({
     required this.currency,
     required this.selected,
     required this.onTap,
@@ -335,119 +204,57 @@ class _CurrencyCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final accent = isDark ? AppColors.darkPrimary : AppTheme.primaryColor;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          padding: EdgeInsets.symmetric(
-            horizontal: responsive.spacing(16),
-            vertical: responsive.spacing(14),
+    return ListTile(
+      onTap: onTap,
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: responsive.spacing(AppTheme.spaceL),
+        vertical: responsive.spacing(4),
+      ),
+      leading: Container(
+        width: 44,
+        height: 44,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: selected
+              ? accent.withValues(alpha: 0.15)
+              : accent.withValues(alpha: 0.08),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: selected ? accent : accent.withValues(alpha: 0.2),
+            width: selected ? 2 : 1,
           ),
-          decoration: BoxDecoration(
-            color: selected
-                ? accent.withValues(alpha: isDark ? 0.12 : 0.07)
-                : (isDark ? AppColors.darkSurface : Colors.white),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: selected
-                  ? accent
-                  : (isDark ? AppColors.darkBorder : AppColors.border),
-              width: selected ? 2 : 1,
-            ),
-            boxShadow: selected
-                ? [
-                    BoxShadow(
-                      color: accent.withValues(alpha: 0.2),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : isDark
-                    ? null
-                    : [
-                        BoxShadow(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.04),
-                          blurRadius: 10,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: selected
-                      ? accent.withValues(alpha: 0.15)
-                      : (isDark
-                          ? AppColors.darkPrimaryBg.withValues(alpha: 0.5)
-                          : AppColors.primaryBg),
-                  border: Border.all(
-                    color: accent.withValues(alpha: selected ? 0.5 : 0.2),
-                  ),
-                ),
-                child: Text(
-                  currency.symbol,
-                  style: TextStyle(
-                    fontSize: responsive.fontSize18,
-                    fontWeight: FontWeight.w900,
-                    color: accent,
-                  ),
-                ),
-              ),
-              SizedBox(width: responsive.spacing(14)),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      currency.code,
-                      style: TextStyle(
-                        fontSize: responsive.fontSize15,
-                        fontWeight: FontWeight.w800,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      currency.name,
-                      style: TextStyle(
-                        fontSize: responsive.fontSize11,
-                        color: colorScheme.onSurface.withValues(alpha: 0.55),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (selected)
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: accent,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.check_rounded,
-                    color: Colors.white,
-                    size: 16,
-                  ),
-                )
-              else
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: colorScheme.onSurface.withValues(alpha: 0.3),
-                  size: 22,
-                ),
-            ],
+        ),
+        child: Text(
+          currency.symbol,
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+            fontSize: responsive.fontSize14,
+            color: accent,
           ),
         ),
       ),
+      title: Text(
+        currency.code,
+        style: TextStyle(
+          fontWeight: FontWeight.w800,
+          fontSize: responsive.fontSize14,
+          color: selected ? accent : colorScheme.onSurface,
+        ),
+      ),
+      subtitle: Text(
+        currency.name,
+        style: TextStyle(
+          fontSize: responsive.fontSize11,
+          color: colorScheme.onSurface.withValues(alpha: 0.55),
+        ),
+      ),
+      trailing: selected
+          ? Icon(Icons.check_circle_rounded, color: accent, size: 22)
+          : Icon(
+              Icons.radio_button_unchecked_rounded,
+              color: colorScheme.onSurface.withValues(alpha: 0.25),
+              size: 22,
+            ),
     );
   }
 }
