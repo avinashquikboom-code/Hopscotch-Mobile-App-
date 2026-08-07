@@ -403,6 +403,35 @@ class ProductRepository {
     }
     return [];
   }
+
+  Future<List<ProductModel>> getRelatedProducts(String productId) async {
+    try {
+      final response = await _apiService.get('/api/products/$productId/related');
+      if (response.statusCode == 200) {
+        final data = response.data;
+        List<dynamic> list = [];
+        if (data is Map) {
+          final innerData = data['data'];
+          if (innerData is List) {
+            list = innerData;
+          } else if (data['products'] is List) {
+            list = data['products'] as List;
+          }
+        } else if (data is List) {
+          list = data;
+        }
+
+        if (list.isNotEmpty) {
+          return list
+              .map((item) => mapBackendToMobileProduct(Map<String, dynamic>.from(item as Map)))
+              .toList();
+        }
+      }
+    } catch (e) {
+      DevLogger.logError('Error fetching related products: $e', context: 'ProductRepository');
+    }
+    return [];
+  }
 }
 
 final productRepositoryProvider = Provider<ProductRepository>((ref) {
@@ -428,6 +457,18 @@ final featuredProductsProvider = FutureProvider<List<ProductModel>>((ref) {
 
 final categoryProductsProvider = FutureProvider.family<List<ProductModel>, String>((ref, categoryId) {
   return ref.watch(productRepositoryProvider).getProductsByCategory(categoryId);
+});
+
+final relatedProductsProvider = FutureProvider.family<List<ProductModel>, String>((ref, productId) async {
+  final repo = ref.watch(productRepositoryProvider);
+  final related = await repo.getRelatedProducts(productId);
+  if (related.isNotEmpty) return related;
+
+  final product = await ref.watch(productDetailProvider(productId).future);
+  if (product != null) {
+    return repo.getProductsByCategory(product.categoryId);
+  }
+  return [];
 });
 
 final productDetailProvider = FutureProvider.family<ProductModel?, String>((ref, id) {

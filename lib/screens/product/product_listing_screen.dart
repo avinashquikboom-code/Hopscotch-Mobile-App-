@@ -422,46 +422,57 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
           ),
         ],
       ),
-      body: productsAsync.when(
-        data: (allProducts) {
-          final displayProducts = _applyFiltersAndSort(allProducts);
-          _filteredProducts = displayProducts;
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ProductRepository.clearCache();
+          ref.invalidate(allProductsProvider);
+        },
+        child: productsAsync.when(
+          data: (allProducts) {
+            final displayProducts = _applyFiltersAndSort(allProducts);
+            _filteredProducts = displayProducts;
 
-          if (displayProducts.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+            if (displayProducts.isEmpty) {
+              return ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 children: [
-                  Icon(
-                    Icons.search_off_rounded,
-                    size: responsive.iconSize(64),
-                    color: AppTheme.textLightColor,
-                  ),
-                  SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-                  Text(
-                    'No garments found',
-                    style: TextStyle(
-                      fontSize: responsive.fontSize20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: responsive.spacing(AppTheme.spaceS)),
-                  Text(
-                    'Try modifying your filters or sort choices.',
-                    style: TextStyle(
-                      fontSize: responsive.fontSize14,
-                      color: AppTheme.textSecondaryColor,
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.25),
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_off_rounded,
+                          size: responsive.iconSize(64),
+                          color: AppTheme.textLightColor,
+                        ),
+                        SizedBox(height: responsive.spacing(AppTheme.spaceL)),
+                        Text(
+                          'No garments found',
+                          style: TextStyle(
+                            fontSize: responsive.fontSize20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: responsive.spacing(AppTheme.spaceS)),
+                        Text(
+                          'Try modifying your filters or sort choices.',
+                          style: TextStyle(
+                            fontSize: responsive.fontSize14,
+                            color: AppTheme.textSecondaryColor,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
-              ),
-            );
-          }
+              );
+            }
 
-          final paginatedList = displayProducts.take(_displayLimit).toList();
+            final paginatedList = displayProducts.take(_displayLimit).toList();
 
-          return Column(
-            children: [
+            return Column(
+              children: [
               // Dynamic stats bar
               Padding(
                 padding: EdgeInsets.symmetric(
@@ -568,6 +579,7 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
             style: TextStyle(fontSize: responsive.fontSize14),
           ),
         ),
+      ),
       ),
     );
   }

@@ -433,7 +433,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           final reviewsAsync = ref.watch(productReviewsProvider(widget.productId));
           final fetchedReviews = reviewsAsync.valueOrNull ?? product.reviews;
           final similarProductsAsync = ref.watch(
-            categoryProductsProvider(product.categoryId),
+            relatedProductsProvider(widget.productId),
           );
 
           // Set default size and color selections once loaded

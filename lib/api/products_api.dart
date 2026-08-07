@@ -43,4 +43,8 @@ class ProductsApi {
       'search': query,
     });
   }
+
+  Future<Response> getRelatedProducts(String productId) async {
+    return await _apiService.get('/api/products/$productId/related');
+  }
 }
