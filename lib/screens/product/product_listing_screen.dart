@@ -34,24 +34,25 @@ class ProductListingScreen extends ConsumerStatefulWidget {
 
 class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
   final ScrollController _scrollController = ScrollController();
-  List<ProductModel> _filteredProducts = [];
+
+  List<ProductModel> _products = [];
+  bool _isInitialLoading = true;
   bool _isLoadingMore = false;
-  int _displayLimit = 100;
+  bool _hasMore = true;
+  int _currentPage = 0;
+  int _totalCount = 0;
+  String? _error;
 
-  // Sorting state
-  String _sortBy = 'Recommended'; // Recommended, LowToHigh, HighToLow, Rating
-
-  // Filter state
+  String _sortBy = 'Recommended';
   String? _selectedSize;
   String? _selectedColor;
-
-  // View mode: grid (false) or vertical feed (true)
   bool _isVerticalFeed = false;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
+    _loadFirstPage();
   }
 
   @override
@@ -61,120 +62,141 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
   }
 
   void _scrollListener() {
+    if (!_scrollController.hasClients) return;
     if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 100) {
+        _scrollController.position.maxScrollExtent - 200) {
       _loadMoreProducts();
     }
   }
 
-  void _loadMoreProducts() {
-    if (_isLoadingMore || _displayLimit >= _filteredProducts.length) return;
+  ProductListFilters _buildApiFilters() {
+    String? catId;
+    if (widget.subCategoryId != null && widget.subCategoryId!.isNotEmpty) {
+      catId = widget.subCategoryId;
+    } else if (widget.categoryId != null && widget.categoryId!.isNotEmpty) {
+      catId = widget.categoryId;
+    }
 
-    setState(() {
-      _isLoadingMore = true;
-    });
+    String sort = 'newest';
+    switch (_sortBy) {
+      case 'LowToHigh':
+        sort = 'price_asc';
+        break;
+      case 'HighToLow':
+        sort = 'price_desc';
+        break;
+      case 'Rating':
+        sort = 'rating';
+        break;
+      case 'Recommended':
+      default:
+        sort = 'newest';
+    }
 
-    // Simulate database cursor fetch delay
-    Future.delayed(const Duration(milliseconds: 600), () {
-      if (mounted) {
-        setState(() {
-          _displayLimit += 4;
-          _isLoadingMore = false;
-        });
-      }
-    });
+    final filterVal = widget.filter?.toLowerCase();
+    bool? trending;
+    bool? newArrival;
+    if (filterVal == 'trending' || filterVal == 'trending_products') {
+      trending = true;
+      if (_sortBy == 'Recommended') sort = 'popular';
+    } else if (filterVal == 'new' ||
+        filterVal == 'new_arrivals' ||
+        filterVal == 'newarrivals') {
+      newArrival = true;
+    } else if (filterVal == 'top_rated' && _sortBy == 'Recommended') {
+      sort = 'rating';
+    }
+
+    return ProductListFilters(
+      categoryId: catId,
+      isTrending: trending,
+      isNewArrival: newArrival,
+      sort: sort,
+    );
   }
 
-  List<ProductModel> _applyFiltersAndSort(List<ProductModel> allProducts) {
-    List<ProductModel> result = List.from(allProducts);
+  List<ProductModel> _applyLocalFilters(List<ProductModel> items) {
+    var result = List<ProductModel>.from(items);
 
-    final subCatId = widget.subCategoryId;
-    final catId = widget.categoryId;
-    final subName = widget.subcategory?.trim().toLowerCase();
-
-    // 1. If explicit subCategoryId is provided, filter by subcategory ID or name
-    if (subCatId != null && subCatId.isNotEmpty) {
-      final targetSubId = subCatId.toLowerCase();
-      final targetSubName = subName ?? '';
-      result = result.where((p) =>
-        (p.subCategoryId != null && p.subCategoryId!.toLowerCase() == targetSubId) ||
-        p.categoryId.toLowerCase() == targetSubId ||
-        (targetSubName.isNotEmpty && (
-          p.subcategory.toLowerCase() == targetSubName ||
-          (p.subCategoryName != null && p.subCategoryName!.toLowerCase() == targetSubName)
-        ))
-      ).toList();
-    }
-    // 2. Else if categoryId is provided (top-level category view)
-    else if (catId != null && catId.isNotEmpty) {
-      final targetCatId = catId.toLowerCase();
-      final catNameLower = widget.categoryName.trim().toLowerCase();
-
-      result = result.where((p) =>
-        p.categoryId.toLowerCase() == targetCatId ||
-        (p.parentCategoryId != null && p.parentCategoryId!.toLowerCase() == targetCatId) ||
-        (p.subCategoryId != null && p.subCategoryId!.toLowerCase() == targetCatId) ||
-        p.subcategory.toLowerCase() == catNameLower
-      ).toList();
-    }
-
-    // 3. Additional strict subcategory name filter if provided without subCategoryId
-    if ((subCatId == null || subCatId.isEmpty) && subName != null && subName.isNotEmpty) {
-      final subMatches = result.where((p) =>
-        p.subcategory.toLowerCase() == subName ||
-        (p.subCategoryName != null && p.subCategoryName!.toLowerCase() == subName)
-      ).toList();
-      result = subMatches;
-    }
-
-    // Filter by standard filters (trending / new)
-    final filterVal = widget.filter?.toLowerCase();
-    if (filterVal == 'trending' || filterVal == 'trending_products') {
-      final matches = result.where((p) => p.isTrending).toList();
-      result = matches.isNotEmpty ? matches : result.take(20).toList();
-    } else if (filterVal == 'new' || filterVal == 'new_arrivals' || filterVal == 'newarrivals') {
-      final matches = result.where((p) => p.isNewArrival).toList();
-      result = matches.isNotEmpty ? matches : result.take(20).toList();
-    }
-
-    // Size filter
     if (_selectedSize != null) {
       result = result.where((p) => p.sizes.contains(_selectedSize!)).toList();
     }
-
-    // Color filter
     if (_selectedColor != null) {
       result = result.where((p) => p.colors.contains(_selectedColor!)).toList();
     }
 
-    // Apply Sorting
-    switch (_sortBy) {
-      case 'LowToHigh':
-        result.sort((a, b) => a.price.compareTo(b.price));
-        break;
-      case 'HighToLow':
-        result.sort((a, b) => b.price.compareTo(a.price));
-        break;
-      case 'Rating':
-        result.sort((a, b) => b.rating.compareTo(a.rating));
-        break;
-      case 'Recommended':
-      default:
-        // Default sort (e.g. isFeatured first)
-        result.sort(
-          (a, b) => (b.isFeatured ? 1 : 0).compareTo(a.isFeatured ? 1 : 0),
-        );
-        break;
+    if (_sortBy == 'Recommended') {
+      result.sort(
+        (a, b) => (b.isFeatured ? 1 : 0).compareTo(a.isFeatured ? 1 : 0),
+      );
     }
 
     return result;
+  }
+
+  Future<void> _loadFirstPage() async {
+    setState(() {
+      _isInitialLoading = true;
+      _error = null;
+      _products = [];
+      _currentPage = 0;
+      _hasMore = true;
+      _totalCount = 0;
+    });
+
+    await _fetchPage(1, reset: true);
+  }
+
+  Future<void> _fetchPage(int page, {bool reset = false}) async {
+    try {
+      final repo = ref.read(productRepositoryProvider);
+      final result = await repo.fetchProductPage(
+        filters: _buildApiFilters(),
+        page: page,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        if (reset) {
+          _products = result.products;
+        } else {
+          final existingIds = _products.map((p) => p.id).toSet();
+          for (final p in result.products) {
+            if (!existingIds.contains(p.id)) {
+              _products.add(p);
+            }
+          }
+        }
+        _currentPage = page;
+        _hasMore = result.hasMore;
+        _totalCount = result.total;
+        _isInitialLoading = false;
+        _isLoadingMore = false;
+        _error = null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isInitialLoading = false;
+        _isLoadingMore = false;
+        if (reset) _error = e.toString();
+      });
+    }
+  }
+
+  void _loadMoreProducts() {
+    if (_isLoadingMore || !_hasMore || _isInitialLoading) return;
+
+    setState(() => _isLoadingMore = true);
+    _fetchPage(_currentPage + 1);
   }
 
   void _showFilterSortSheet() {
     final responsive = context.responsive;
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFFF8FAFC), // Premium light ivory backdrop
+      backgroundColor: const Color(0xFFF8FAFC),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(AppTheme.radiusXXL),
@@ -194,7 +216,6 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Delicate Champagne Gold Handle Indicator
                     Center(
                       child: Container(
                         width: responsive.spacing(36),
@@ -206,8 +227,6 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                       ),
                     ),
                     SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
-
-                    // Serif Luxury Title
                     Text(
                       'FILTER & SORT',
                       style: TextStyle(
@@ -218,8 +237,6 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                       ),
                     ),
                     SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
-
-                    // Sorting options
                     Text(
                       'SORT BY',
                       style: TextStyle(
@@ -265,8 +282,6 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                       ],
                     ),
                     SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
-
-                    // Sizing filters
                     Text(
                       'SIZE',
                       style: TextStyle(
@@ -295,7 +310,6 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                       }).toList(),
                     ),
                     SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
-
                     Row(
                       children: [
                         Expanded(
@@ -309,6 +323,7 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                                 });
                               });
                               context.pop();
+                              _loadFirstPage();
                             },
                             child: Text(
                               'Reset All',
@@ -319,7 +334,10 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                         SizedBox(width: responsive.spacing(AppTheme.spaceM)),
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: () => context.pop(),
+                            onPressed: () {
+                              context.pop();
+                              _loadFirstPage();
+                            },
                             child: Text(
                               'Apply',
                               style: TextStyle(fontSize: responsive.fontSize14),
@@ -385,17 +403,23 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
-    final productsAsync = ref.watch(allProductsProvider);
+    final displayProducts = _applyLocalFilters(_products);
+    final countLabel = _totalCount > 0
+        ? '$_totalCount Items'
+        : '${displayProducts.length} Items';
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.categoryName.toUpperCase(),
+          widget.categoryName,
           style: TextStyle(
             fontSize: responsive.fontSize18,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.2,
           ),
         ),
+        elevation: 0,
+        scrolledUnderElevation: 0,
         leading: IconButton(
           icon: Icon(Icons.adaptive.arrow_back, size: responsive.iconSize(24)),
           onPressed: () {
@@ -423,163 +447,167 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () async {
-          ProductRepository.clearCache();
-          ref.invalidate(allProductsProvider);
-        },
-        child: productsAsync.when(
-          data: (allProducts) {
-            final displayProducts = _applyFiltersAndSort(allProducts);
-            _filteredProducts = displayProducts;
-
-            if (displayProducts.isEmpty) {
-              return ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                children: [
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.25),
-                  Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.search_off_rounded,
-                          size: responsive.iconSize(64),
-                          color: AppTheme.textLightColor,
-                        ),
-                        SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-                        Text(
-                          'No garments found',
-                          style: TextStyle(
-                            fontSize: responsive.fontSize20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: responsive.spacing(AppTheme.spaceS)),
-                        Text(
-                          'Try modifying your filters or sort choices.',
-                          style: TextStyle(
-                            fontSize: responsive.fontSize14,
-                            color: AppTheme.textSecondaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            }
-
-            final paginatedList = displayProducts.take(_displayLimit).toList();
-
-            return Column(
-              children: [
-              // Dynamic stats bar
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: responsive.spacing(AppTheme.spaceXL),
-                  vertical: responsive.spacing(AppTheme.spaceS),
+        onRefresh: _loadFirstPage,
+        child: _isInitialLoading
+            ? GridView.builder(
+                padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: MediaQuery.of(context).size.width < 600
+                      ? 2
+                      : (MediaQuery.of(context).size.width < 900 ? 3 : 5),
+                  mainAxisSpacing: AppTheme.spaceL,
+                  crossAxisSpacing: AppTheme.spaceL,
+                  childAspectRatio: 0.58,
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '${displayProducts.length} Items Available',
-                      style: TextStyle(
-                        fontSize: responsive.fontSize14,
-                        fontWeight: FontWeight.w600,
+                itemCount: 6,
+                itemBuilder: (context, index) => const ProductCardSkeleton(),
+              )
+            : _error != null
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      SizedBox(height: MediaQuery.of(context).size.height * 0.2),
+                      Center(
+                        child: Column(
+                          children: [
+                            Text('Failed to load products'),
+                            const SizedBox(height: 12),
+                            ElevatedButton(
+                              onPressed: _loadFirstPage,
+                              child: const Text('Retry'),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    GestureDetector(
-                      onTap: _showFilterSortSheet,
-                      child: Row(
+                    ],
+                  )
+                : displayProducts.isEmpty
+                    ? ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
                         children: [
-                          Text(
-                            _sortBy == 'Recommended'
-                                ? 'Recommended'
-                                : 'Filtered',
-                            style: TextStyle(
-                              color: AppTheme.primaryColor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: responsive.fontSize13,
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.25,
+                          ),
+                          Center(
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.search_off_rounded,
+                                  size: responsive.iconSize(64),
+                                  color: AppTheme.textLightColor,
+                                ),
+                                SizedBox(
+                                  height: responsive.spacing(AppTheme.spaceL),
+                                ),
+                                Text(
+                                  'No products found',
+                                  style: TextStyle(
+                                    fontSize: responsive.fontSize20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          SizedBox(width: responsive.spacing(4)),
-                          Icon(
-                            Icons.keyboard_arrow_down_rounded,
-                            color: AppTheme.primaryColor,
-                            size: responsive.iconSize(16),
+                        ],
+                      )
+                    : Column(
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: responsive.spacing(AppTheme.spaceXL),
+                              vertical: responsive.spacing(AppTheme.spaceS),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  countLabel,
+                                  style: TextStyle(
+                                    fontSize: responsive.fontSize14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: _showFilterSortSheet,
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        _sortBy == 'Recommended'
+                                            ? 'Recommended'
+                                            : 'Sorted',
+                                        style: TextStyle(
+                                          color: AppTheme.primaryColor,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: responsive.fontSize13,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: responsive.spacing(4),
+                                      ),
+                                      Icon(
+                                        Icons.keyboard_arrow_down_rounded,
+                                        color: AppTheme.primaryColor,
+                                        size: responsive.iconSize(16),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: _isVerticalFeed
+                                ? VerticalProductFeed(
+                                    products: displayProducts,
+                                    scrollController: _scrollController,
+                                    loadingExtra: _isLoadingMore ? 2 : 0,
+                                    onTap: (product) => safeNavigate(
+                                      context,
+                                      '/product/${product.id}?heroTagPrefix=listing',
+                                    ),
+                                  )
+                                : GridView.builder(
+                                    controller: _scrollController,
+                                    padding: EdgeInsets.all(
+                                      responsive.spacing(AppTheme.spaceXL),
+                                    ).copyWith(bottom: 40),
+                                    gridDelegate:
+                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount:
+                                          MediaQuery.of(context).size.width <
+                                              600
+                                          ? 2
+                                          : (MediaQuery.of(context)
+                                                      .size
+                                                      .width <
+                                                  900
+                                              ? 3
+                                              : 5),
+                                      mainAxisSpacing: AppTheme.spaceL,
+                                      crossAxisSpacing: AppTheme.spaceL,
+                                      childAspectRatio: 0.58,
+                                    ),
+                                    itemCount: displayProducts.length +
+                                        (_isLoadingMore ? 2 : 0),
+                                    itemBuilder: (context, index) {
+                                      if (index >= displayProducts.length) {
+                                        return const ProductCardSkeleton();
+                                      }
+                                      final product = displayProducts[index];
+                                      return ProductCard(
+                                        product: product,
+                                        heroTagPrefix: 'listing',
+                                        onTap: () => safeNavigate(
+                                          context,
+                                          '/product/${product.id}?heroTagPrefix=listing',
+                                        ),
+                                      );
+                                    },
+                                  ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              // Show correct view based on mode
-              Expanded(
-                child: _isVerticalFeed
-                    ? VerticalProductFeed(
-                        products: paginatedList,
-                        scrollController: _scrollController,
-                        loadingExtra: _isLoadingMore ? 2 : 0,
-                        onTap: (product) => safeNavigate(
-                          context,
-                          '/product/${product.id}?heroTagPrefix=listing',
-                        ),
-                      )
-                    : GridView.builder(
-                        controller: _scrollController,
-                        padding: EdgeInsets.all(
-                          responsive.spacing(AppTheme.spaceXL),
-                        ).copyWith(bottom: 40),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: MediaQuery.of(context).size.width < 600
-                              ? 2
-                              : (MediaQuery.of(context).size.width < 900 ? 3 : 5),
-                          mainAxisSpacing: AppTheme.spaceL,
-                          crossAxisSpacing: AppTheme.spaceL,
-                          childAspectRatio: 0.58,
-                        ),
-                        itemCount: paginatedList.length + (_isLoadingMore ? 2 : 0),
-                        itemBuilder: (context, index) {
-                          if (index >= paginatedList.length) {
-                            return const ProductCardSkeleton();
-                          }
-                          final product = paginatedList[index];
-                          return ProductCard(
-                            product: product,
-                            heroTagPrefix: 'listing',
-                            onTap: () => safeNavigate(
-                              context,
-                              '/product/${product.id}?heroTagPrefix=listing',
-                            ),
-                          );
-                        },
-                      ),
-              ),
-            ],
-          );
-        },
-        loading: () => GridView.builder(
-          padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: MediaQuery.of(context).size.width < 600
-                ? 2
-                : (MediaQuery.of(context).size.width < 900 ? 3 : 5),
-            mainAxisSpacing: AppTheme.spaceL,
-            crossAxisSpacing: AppTheme.spaceL,
-            childAspectRatio: 0.58,
-          ),
-          itemCount: 4,
-          itemBuilder: (context, index) => const ProductCardSkeleton(),
-        ),
-        error: (err, stack) => Center(
-          child: Text(
-            'Error: $err',
-            style: TextStyle(fontSize: responsive.fontSize14),
-          ),
-        ),
-      ),
       ),
     );
   }

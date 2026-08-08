@@ -432,7 +432,11 @@ class ProductModel {
         }
         return list;
       }(),
-      categoryId: _asString(json['categoryId'] ?? json['category_id'] ?? json['category']),
+      categoryId: _asString(
+        json['categoryId'] ??
+            json['category_id'] ??
+            (categoryObj != null ? categoryObj['id'] : null),
+      ),
       parentCategoryId: parentCategoryId,
       subCategoryId: subCategoryId,
       subCategoryName: subCategoryName,

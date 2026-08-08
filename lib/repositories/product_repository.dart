@@ -235,6 +235,56 @@ ProductModel mapBackendToMobileProduct(Map<String, dynamic> raw) {
   );
 }
 
+/// Filters for paginated product listing API calls.
+class ProductListFilters {
+  const ProductListFilters({
+    this.categoryId,
+    this.search,
+    this.isFeatured,
+    this.isTrending,
+    this.isNewArrival,
+    this.sort = 'newest',
+  });
+
+  final String? categoryId;
+  final String? search;
+  final bool? isFeatured;
+  final bool? isTrending;
+  final bool? isNewArrival;
+  final String sort;
+
+  Map<String, dynamic> toQueryParams() {
+    final params = <String, dynamic>{'sort': sort};
+    if (categoryId != null && categoryId!.trim().isNotEmpty) {
+      params['categoryId'] = categoryId!.trim();
+    }
+    if (search != null && search!.trim().isNotEmpty) {
+      params['search'] = search!.trim();
+    }
+    if (isFeatured == true) params['isFeatured'] = true;
+    if (isTrending == true) params['isTrending'] = true;
+    if (isNewArrival == true) params['isNewArrival'] = true;
+    return params;
+  }
+}
+
+/// One page of products from the catalog API.
+class ProductPageResult {
+  const ProductPageResult({
+    required this.products,
+    required this.page,
+    required this.total,
+    required this.totalPages,
+    required this.hasMore,
+  });
+
+  final List<ProductModel> products;
+  final int page;
+  final int total;
+  final int totalPages;
+  final bool hasMore;
+}
+
 class ProductRepository {
   static List<ProductModel>? _cachedProducts;
   static DateTime? _lastFetchTime;
@@ -254,6 +304,151 @@ class ProductRepository {
     _lastFetchTime = null;
   }
 
+  static const int _bulkPageSize = 100;
+  static const int _maxPages = 50;
+  static const int listingPageSize = 24;
+
+  int _extractTotalCount(dynamic data) {
+    if (data is! Map) return 0;
+    final inner = data['data'];
+    final pagination = (inner is Map ? inner['pagination'] : null) ??
+        data['pagination'];
+    if (pagination is Map && pagination['total'] is num) {
+      return pagination['total'].toInt();
+    }
+    return 0;
+  }
+
+  List<dynamic> _extractRawProductList(dynamic data) {
+    if (data is Map) {
+      final innerData = data['data'];
+      if (innerData is Map) {
+        if (innerData['products'] is List) {
+          return innerData['products'] as List;
+        }
+        if (innerData['data'] is List) {
+          return innerData['data'] as List;
+        }
+      } else if (innerData is List) {
+        return innerData;
+      }
+      if (data['products'] is List) {
+        return data['products'] as List;
+      }
+    } else if (data is List) {
+      return data;
+    }
+    return [];
+  }
+
+  int _extractTotalPages(dynamic data, {required int pageSize, required int pageCount}) {
+    if (data is! Map) return pageCount;
+
+    final inner = data['data'];
+    final pagination = (inner is Map ? inner['pagination'] : null) ??
+        data['pagination'];
+
+    if (pagination is Map) {
+      final totalPages = pagination['totalPages'];
+      if (totalPages is num) return totalPages.toInt();
+      final total = pagination['total'];
+      if (total is num && total > 0) {
+        return (total.toInt() + pageSize - 1) ~/ pageSize;
+      }
+    }
+    return pageCount;
+  }
+
+  List<ProductModel> _mapRawProducts(List<dynamic> list) {
+    return list
+        .whereType<Map>()
+        .map((item) => mapBackendToMobileProduct(
+              Map<String, dynamic>.from(item),
+            ))
+        .toList();
+  }
+
+  Future<ProductPageResult> fetchProductPage({
+    required ProductListFilters filters,
+    required int page,
+    int limit = listingPageSize,
+  }) async {
+    final query = filters.toQueryParams();
+    query['page'] = page;
+    query['limit'] = limit;
+
+    final response = await _apiService.get(
+      AppUrls.products,
+      queryParameters: query,
+    );
+
+    if (response.statusCode != 200) {
+      return ProductPageResult(
+        products: [],
+        page: page,
+        total: 0,
+        totalPages: 0,
+        hasMore: false,
+      );
+    }
+
+    final list = _extractRawProductList(response.data);
+    final products = _mapRawProducts(list);
+    final totalPages = _extractTotalPages(
+      response.data,
+      pageSize: limit,
+      pageCount: page,
+    );
+    final total = _extractTotalCount(response.data);
+
+    return ProductPageResult(
+      products: products,
+      page: page,
+      total: total > 0 ? total : products.length,
+      totalPages: totalPages,
+      hasMore: page < totalPages && products.isNotEmpty,
+    );
+  }
+
+  Future<List<ProductModel>> _fetchProductsWithQuery(
+    Map<String, dynamic> baseQuery, {
+    bool paginate = true,
+  }) async {
+    final allRaw = <dynamic>[];
+    int page = 1;
+    int totalPages = 1;
+
+    while (page <= totalPages && page <= _maxPages) {
+      final query = Map<String, dynamic>.from(baseQuery);
+      query['page'] = page;
+      query['limit'] = _bulkPageSize;
+
+      final response = await _apiService.get(
+        AppUrls.products,
+        queryParameters: query,
+      );
+
+      if (response.statusCode != 200) break;
+
+      final list = _extractRawProductList(response.data);
+      if (list.isEmpty) break;
+
+      allRaw.addAll(list);
+      totalPages = paginate
+          ? _extractTotalPages(
+              response.data,
+              pageSize: _bulkPageSize,
+              pageCount: page,
+            )
+          : page;
+
+      if (!paginate || list.length < _bulkPageSize) break;
+      page++;
+    }
+
+    return _mapRawProducts(allRaw);
+  }
+
   Future<List<ProductModel>> getProducts({bool forceRefresh = false}) async {
     if (forceRefresh) {
       clearCache();
@@ -263,42 +458,22 @@ class ProductRepository {
     }
 
     try {
-      final response = await _apiService.get('${AppUrls.products}?limit=100');
+      final products = await _fetchProductsWithQuery(
+        {'sort': 'newest'},
+        paginate: true,
+      );
 
-      if (response.statusCode == 200) {
-        final data = response.data;
-        List<dynamic> list = [];
-
-        if (data is Map) {
-          final innerData = data['data'];
-          if (innerData is Map) {
-            if (innerData['products'] is List) {
-              list = innerData['products'] as List;
-            } else if (innerData['data'] is List) {
-              list = innerData['data'] as List;
-            }
-          } else if (innerData is List) {
-            list = innerData;
-          } else if (data['products'] is List) {
-            list = data['products'] as List;
-          }
-        } else if (data is List) {
-          list = data;
-        }
-
-        final products = list
-            .map((item) => ProductModel.fromJson(Map<String, dynamic>.from(item as Map)))
-            .toList();
-
-        if (products.isNotEmpty) {
-          _cachedProducts = products;
-          _lastFetchTime = DateTime.now();
-          DevLogger.log('✅ Updated product cache (${products.length} items)');
-          return products;
-        }
+      if (products.isNotEmpty) {
+        _cachedProducts = products;
+        _lastFetchTime = DateTime.now();
+        DevLogger.log('✅ Updated product cache (${products.length} items)');
+        return products;
       }
     } catch (e) {
-      DevLogger.logError('❌ Failed to fetch products from backend API: $e', context: 'ProductRepository');
+      DevLogger.logError(
+        '❌ Failed to fetch products from backend API: $e',
+        context: 'ProductRepository',
+      );
     }
 
     if (_cachedProducts != null) {
@@ -309,59 +484,91 @@ class ProductRepository {
   }
 
   Future<List<ProductModel>> getTrendingProducts() async {
-    final products = await getProducts();
-    final list = products.where((p) => p.isTrending).toList();
-    return list.isNotEmpty ? list : products.take(10).toList();
+    try {
+      final products = await _fetchProductsWithQuery(
+        {'isTrending': true, 'sort': 'popular'},
+        paginate: true,
+      );
+      if (products.isNotEmpty) return products;
+    } catch (e) {
+      DevLogger.logError(
+        '❌ Failed to fetch trending products: $e',
+        context: 'ProductRepository',
+      );
+    }
+
+    final cached = await getProducts();
+    final list = cached.where((p) => p.isTrending).toList();
+    return list.isNotEmpty ? list : cached.take(10).toList();
   }
 
   Future<List<ProductModel>> getNewArrivals() async {
-    final products = await getProducts();
-    final markedNew = products.where((p) => p.isNewArrival).toList();
-    final remaining = products.where((p) => !p.isNewArrival).toList();
+    try {
+      final products = await _fetchProductsWithQuery(
+        {'isNewArrival': true, 'sort': 'newest'},
+        paginate: true,
+      );
+      if (products.isNotEmpty) return products;
+    } catch (e) {
+      DevLogger.logError(
+        '❌ Failed to fetch new arrivals: $e',
+        context: 'ProductRepository',
+      );
+    }
+
+    final cached = await getProducts();
+    final markedNew = cached.where((p) => p.isNewArrival).toList();
+    final remaining = cached.where((p) => !p.isNewArrival).toList();
     return [...markedNew, ...remaining];
   }
 
   Future<List<ProductModel>> getFeaturedProducts() async {
-    final products = await getProducts();
-    final list = products.where((p) => p.isFeatured).toList();
-    return list.isNotEmpty ? list : products.take(10).toList();
+    try {
+      final result = await fetchProductPage(
+        filters: const ProductListFilters(isFeatured: true),
+        page: 1,
+        limit: 100,
+      );
+      if (result.products.isNotEmpty) return result.products;
+    } catch (e) {
+      DevLogger.logError(
+        '❌ Failed to fetch featured products: $e',
+        context: 'ProductRepository',
+      );
+    }
+
+    final cached = await getProducts();
+    final list = cached.where((p) => p.isFeatured).toList();
+    return list.isNotEmpty ? list : cached.take(10).toList();
   }
 
   Future<List<ProductModel>> getProductsByCategory(String categoryIdOrName) async {
     try {
-      final response = await _apiService.get('${AppUrls.products}?categoryId=$categoryIdOrName&limit=100');
-      if (response.statusCode == 200) {
-        final data = response.data;
-        List<dynamic> list = [];
-        if (data is Map) {
-          final innerData = data['data'];
-          if (innerData is Map && innerData['products'] is List) {
-            list = innerData['products'] as List;
-          } else if (innerData is List) {
-            list = innerData;
-          } else if (data['products'] is List) {
-            list = data['products'] as List;
-          }
-        } else if (data is List) {
-          list = data;
-        }
+      final result = await fetchProductPage(
+        filters: ProductListFilters(categoryId: categoryIdOrName),
+        page: 1,
+        limit: 100,
+      );
+      if (result.products.isNotEmpty) return result.products;
 
-        if (list.isNotEmpty) {
-          return list
-              .map((item) => ProductModel.fromJson(Map<String, dynamic>.from(item as Map)))
-              .toList();
-        }
-      }
+      final allPages = await _fetchProductsWithQuery(
+        {'categoryId': categoryIdOrName},
+        paginate: true,
+      );
+      if (allPages.isNotEmpty) return allPages;
     } catch (e) {
-      DevLogger.logError('❌ Failed to fetch category products from API: $e', context: 'ProductRepository');
+      DevLogger.logError(
+        '❌ Failed to fetch category products from API: $e',
+        context: 'ProductRepository',
+      );
     }
 
-    final products = await getProducts();
-    if (products.isEmpty) return [];
+    final cached = await getProducts();
+    if (cached.isEmpty) return [];
 
     final target = categoryIdOrName.trim().toLowerCase();
 
-    return products.where((p) {
+    return cached.where((p) {
       final pCatId = p.categoryId.trim().toLowerCase();
       final pParentCatId = (p.parentCategoryId ?? '').trim().toLowerCase();
       final pSubCatId = (p.subCategoryId ?? '').trim().toLowerCase();
@@ -369,10 +576,10 @@ class ProductRepository {
       final pSubCatName = (p.subCategoryName ?? '').trim().toLowerCase();
 
       return pCatId == target ||
-             pParentCatId == target ||
-             pSubCatId == target ||
-             pSubName == target ||
-             pSubCatName == target;
+          pParentCatId == target ||
+          pSubCatId == target ||
+          pSubName == target ||
+          pSubCatName == target;
     }).toList();
   }
 
@@ -398,18 +605,67 @@ class ProductRepository {
     }
   }
 
-  Future<List<ProductModel>> searchProducts(String query) async {
-    final products = await getProducts();
-    if (query.trim().isEmpty) return [];
-    final q = query.trim().toLowerCase();
-    return products.where((p) => 
-      p.title.toLowerCase().contains(q) || 
-      p.description.toLowerCase().contains(q) ||
-      p.subcategory.toLowerCase().contains(q) ||
-      (p.subCategoryName != null && p.subCategoryName!.toLowerCase().contains(q)) ||
-      p.categoryId.toLowerCase().contains(q) ||
-      p.id.contains(q)
-    ).toList();
+  Future<List<ProductModel>> searchProducts(
+    String query, {
+    int page = 1,
+    int limit = listingPageSize,
+  }) async {
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) return [];
+
+    try {
+      final result = await fetchProductPage(
+        filters: ProductListFilters(search: trimmed),
+        page: page,
+        limit: limit,
+      );
+      if (result.products.isNotEmpty) return result.products;
+    } catch (e) {
+      DevLogger.logError(
+        '❌ Failed to search products via API: $e',
+        context: 'ProductRepository',
+      );
+    }
+
+    if (page > 1) return [];
+
+    final cached = await getProducts();
+    final q = trimmed.toLowerCase();
+    return cached
+        .where(
+          (p) =>
+              p.title.toLowerCase().contains(q) ||
+              p.description.toLowerCase().contains(q) ||
+              p.subcategory.toLowerCase().contains(q) ||
+              (p.subCategoryName != null &&
+                  p.subCategoryName!.toLowerCase().contains(q)) ||
+              p.categoryId.toLowerCase().contains(q) ||
+              p.id.contains(q),
+        )
+        .toList();
+  }
+
+  Future<ProductPageResult> searchProductsPage(
+    String query, {
+    required int page,
+    int limit = listingPageSize,
+  }) async {
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) {
+      return const ProductPageResult(
+        products: [],
+        page: 1,
+        total: 0,
+        totalPages: 0,
+        hasMore: false,
+      );
+    }
+
+    return fetchProductPage(
+      filters: ProductListFilters(search: trimmed),
+      page: page,
+      limit: limit,
+    );
   }
 
   Future<List<ProductReviewModel>> fetchProductReviews(String productId) async {

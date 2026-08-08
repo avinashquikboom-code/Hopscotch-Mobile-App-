@@ -21,8 +21,13 @@ class SearchScreen extends ConsumerStatefulWidget {
 class _SearchScreenState extends ConsumerState<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
   List<ProductModel> _searchResults = [];
   bool _isSearching = false;
+  bool _isLoadingMore = false;
+  bool _searchHasMore = true;
+  int _searchPage = 0;
+  String _lastQuery = '';
   bool _isImageSearch = false;
 
   final List<String> _recentSearches = [
@@ -42,45 +47,85 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
     });
   }
 
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMoreSearchResults();
+    }
+  }
+
   @override
   void dispose() {
+    _scrollController.dispose();
     _searchController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
-  Future<void> _performSearch(String query) async {
+  Future<void> _loadMoreSearchResults() async {
+    if (_isLoadingMore || !_searchHasMore || _lastQuery.isEmpty) return;
+    await _performSearch(_lastQuery, loadMore: true);
+  }
+
+  Future<void> _performSearch(String query, {bool loadMore = false}) async {
     if (query.trim().isEmpty) {
       setState(() {
         _searchResults = [];
         _isSearching = false;
         _isImageSearch = false;
+        _searchHasMore = true;
+        _searchPage = 0;
+        _lastQuery = '';
       });
       return;
     }
 
-    setState(() {
-      _isSearching = true;
-      _isImageSearch = false;
-    });
-
-    try {
-      final results = await ref.read(productRepositoryProvider).searchProducts(query);
+    if (loadMore) {
+      setState(() => _isLoadingMore = true);
+    } else {
       setState(() {
-        _searchResults = results;
-      });
-    } catch (_) {
-      setState(() {
+        _isSearching = true;
+        _isImageSearch = false;
+        _lastQuery = query.trim();
+        _searchPage = 0;
+        _searchHasMore = true;
         _searchResults = [];
       });
+    }
+
+    try {
+      final page = loadMore ? _searchPage + 1 : 1;
+      final result = await ref
+          .read(productRepositoryProvider)
+          .searchProductsPage(_lastQuery, page: page);
+
+      setState(() {
+        if (loadMore) {
+          final ids = _searchResults.map((p) => p.id).toSet();
+          for (final p in result.products) {
+            if (!ids.contains(p.id)) _searchResults.add(p);
+          }
+        } else {
+          _searchResults = result.products;
+        }
+        _searchPage = page;
+        _searchHasMore = result.hasMore;
+      });
+    } catch (_) {
+      if (!loadMore) {
+        setState(() => _searchResults = []);
+      }
     } finally {
       setState(() {
         _isSearching = false;
+        _isLoadingMore = false;
       });
     }
   }
@@ -273,6 +318,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     }
 
     return GridView.builder(
+      controller: _scrollController,
       padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
@@ -280,8 +326,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         crossAxisSpacing: responsive.spacing(AppTheme.spaceL),
         childAspectRatio: 0.58,
       ),
-      itemCount: _searchResults.length,
+      itemCount: _searchResults.length + (_isLoadingMore ? 2 : 0),
       itemBuilder: (context, index) {
+        if (index >= _searchResults.length) {
+          return const Padding(
+            padding: EdgeInsets.all(8),
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          );
+        }
         final product = _searchResults[index];
         return ProductCard(
           product: product,
