@@ -14,21 +14,30 @@ class NotificationNotifier extends StateNotifier<List<NotificationModel>> {
 
   Future<void> loadNotifications() async {
     try {
-      final response = await _apiService.get(AppUrls.notifications);
+      final response = await _apiService.get('/notifications/my');
       if (response.statusCode == 200) {
         final data = response.data;
         final List? rawList = data is Map ? data['data'] : data;
         if (rawList != null) {
-          state = rawList.map((e) {
-            return NotificationModel(
-              id: e['id']?.toString() ?? '',
+          final seenIds = <String>{};
+          final items = <NotificationModel>[];
+
+          for (final e in rawList) {
+            final idStr = e['id']?.toString() ?? '${e['title']}-${e['createdAt']}';
+            if (seenIds.contains(idStr)) continue;
+            seenIds.add(idStr);
+
+            items.add(NotificationModel(
+              id: idStr,
               title: e['title']?.toString() ?? '',
               body: e['message']?.toString() ?? e['body']?.toString() ?? '',
               createdAt: e['sentAt']?.toString() ?? e['createdAt']?.toString() ?? '',
               isRead: e['isRead'] as bool? ?? false,
               type: e['type']?.toString() ?? 'general',
-            );
-          }).toList();
+            ));
+          }
+
+          state = items;
           return;
         }
       }

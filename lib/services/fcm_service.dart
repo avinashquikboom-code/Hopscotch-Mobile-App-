@@ -144,9 +144,16 @@ class FcmService {
     }
   }
 
+  final Set<String> _processedMessageKeys = {};
+
   void _showForegroundNotification(BuildContext? context, RemoteMessage message) {
     final notification = message.notification;
     if (notification == null) return;
+
+    final msgKey = message.messageId ?? '${notification.title}-${notification.body}';
+    if (_processedMessageKeys.contains(msgKey)) return;
+    _processedMessageKeys.add(msgKey);
+    Future.delayed(const Duration(seconds: 10), () => _processedMessageKeys.remove(msgKey));
 
     // Show Android/iOS Local Notification with sound & vibration
     const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
