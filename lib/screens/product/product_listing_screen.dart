@@ -408,10 +408,26 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
         ? '$_totalCount Items'
         : '${displayProducts.length} Items';
 
+    String headerTitle = widget.categoryName.trim();
+    if (headerTitle.isEmpty || headerTitle == 'Elite Clothing') {
+      if (widget.subcategory != null && widget.subcategory!.trim().isNotEmpty) {
+        headerTitle = widget.subcategory!.trim();
+      } else if (widget.filter != null && widget.filter!.trim().isNotEmpty) {
+        final f = widget.filter!.toLowerCase().trim();
+        if (f == 'trending' || f == 'trending_products') headerTitle = 'Trending Products';
+        else if (f == 'new' || f == 'new_arrivals' || f == 'newarrivals') headerTitle = 'New Arrivals';
+        else if (f == 'popular' || f == 'best_sellers' || f == 'bestsellers') headerTitle = 'Best Sellers';
+        else if (f == 'featured' || f == 'featured_products') headerTitle = 'Featured Products';
+        else headerTitle = widget.filter!;
+      } else {
+        headerTitle = 'Products';
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.categoryName,
+          headerTitle,
           style: TextStyle(
             fontSize: responsive.fontSize18,
             fontWeight: FontWeight.w700,

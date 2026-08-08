@@ -298,7 +298,19 @@ class AppPages {
           final subCategoryId = state.uri.queryParameters['subCategoryId'];
           final subcategory = state.uri.queryParameters['subcategory'];
           final filter = state.uri.queryParameters['filter'] ?? state.uri.queryParameters['section'];
-          final categoryName = state.uri.queryParameters['categoryName'] ?? 'Elite Clothing';
+          final rawTitle = state.uri.queryParameters['categoryName'] ?? state.uri.queryParameters['title'];
+          String title = rawTitle ?? subcategory ?? filter ?? 'Products';
+
+          final lower = title.toLowerCase().trim();
+          if (lower == 'trending' || lower == 'trending_products') {
+            title = 'Trending Products';
+          } else if (lower == 'new' || lower == 'new_arrivals' || lower == 'newarrivals') {
+            title = 'New Arrivals';
+          } else if (lower == 'popular' || lower == 'best_sellers' || lower == 'bestsellers') {
+            title = 'Best Sellers';
+          } else if (lower == 'featured' || lower == 'featured_products') {
+            title = 'Featured Products';
+          }
           
           return CustomTransitionPage(
             key: _pageKey(state),
@@ -307,7 +319,7 @@ class AppPages {
               subCategoryId: subCategoryId,
               subcategory: subcategory,
               filter: filter,
-              categoryName: categoryName,
+              categoryName: title,
             ),
             transitionDuration: const Duration(milliseconds: 450),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
