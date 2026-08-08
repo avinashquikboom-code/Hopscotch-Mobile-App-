@@ -13,7 +13,7 @@ class NotificationNotifier extends StateNotifier<List<NotificationModel>> {
 
   Future<void> loadNotifications() async {
     try {
-      final response = await _apiService.get('/notifications/my');
+      final response = await _apiService.get('/api/notifications/my');
       if (response.statusCode == 200) {
         final data = response.data;
         final List? rawList = data is Map ? data['data'] : data;
