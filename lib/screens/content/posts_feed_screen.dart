@@ -40,7 +40,7 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
 
     if (mounted) {
       setState(() {
-        _posts = postItems;
+        _posts = postItems.isNotEmpty ? postItems : _getFallbackGridItems();
         _isLoading = false;
       });
     }
