@@ -328,6 +328,34 @@ class ProductRepository {
   }
 
   Future<List<ProductModel>> getProductsByCategory(String categoryIdOrName) async {
+    try {
+      final response = await _apiService.get('${AppUrls.products}?categoryId=$categoryIdOrName&limit=100');
+      if (response.statusCode == 200) {
+        final data = response.data;
+        List<dynamic> list = [];
+        if (data is Map) {
+          final innerData = data['data'];
+          if (innerData is Map && innerData['products'] is List) {
+            list = innerData['products'] as List;
+          } else if (innerData is List) {
+            list = innerData;
+          } else if (data['products'] is List) {
+            list = data['products'] as List;
+          }
+        } else if (data is List) {
+          list = data;
+        }
+
+        if (list.isNotEmpty) {
+          return list
+              .map((item) => ProductModel.fromJson(Map<String, dynamic>.from(item as Map)))
+              .toList();
+        }
+      }
+    } catch (e) {
+      DevLogger.logError('❌ Failed to fetch category products from API: $e', context: 'ProductRepository');
+    }
+
     final products = await getProducts();
     if (products.isEmpty) return [];
 
