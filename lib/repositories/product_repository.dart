@@ -485,6 +485,15 @@ class ProductRepository {
 
   Future<List<ProductModel>> getTrendingProducts() async {
     try {
+      final response = await _apiService.get('/api/products/trending');
+      if (response.statusCode == 200) {
+        final list = _extractRawProductList(response.data);
+        final products = _mapRawProducts(list);
+        if (products.isNotEmpty) return products;
+      }
+    } catch (_) {}
+
+    try {
       final products = await _fetchProductsWithQuery(
         {'isTrending': true, 'sort': 'popular'},
         paginate: true,
@@ -504,6 +513,15 @@ class ProductRepository {
 
   Future<List<ProductModel>> getNewArrivals() async {
     try {
+      final response = await _apiService.get('/api/products/new');
+      if (response.statusCode == 200) {
+        final list = _extractRawProductList(response.data);
+        final products = _mapRawProducts(list);
+        if (products.isNotEmpty) return products;
+      }
+    } catch (_) {}
+
+    try {
       final products = await _fetchProductsWithQuery(
         {'isNewArrival': true, 'sort': 'newest'},
         paginate: true,
@@ -519,10 +537,20 @@ class ProductRepository {
     final cached = await getProducts();
     final markedNew = cached.where((p) => p.isNewArrival).toList();
     final remaining = cached.where((p) => !p.isNewArrival).toList();
-    return [...markedNew, ...remaining];
+    final combined = [...markedNew, ...remaining];
+    return combined.isNotEmpty ? combined.take(10).toList() : [];
   }
 
   Future<List<ProductModel>> getFeaturedProducts() async {
+    try {
+      final response = await _apiService.get('/api/products/featured');
+      if (response.statusCode == 200) {
+        final list = _extractRawProductList(response.data);
+        final products = _mapRawProducts(list);
+        if (products.isNotEmpty) return products;
+      }
+    } catch (_) {}
+
     try {
       final result = await fetchProductPage(
         filters: const ProductListFilters(isFeatured: true),
@@ -567,6 +595,8 @@ class ProductRepository {
     if (cached.isEmpty) return [];
 
     final target = categoryIdOrName.trim().toLowerCase();
+    final isMenTarget = target == 'men' || target == 'male' || target == 'boy' || target == 'boys';
+    final isWomenTarget = target == 'women' || target == 'female' || target == 'girl' || target == 'girls';
 
     return cached.where((p) {
       final pCatId = p.categoryId.trim().toLowerCase();
@@ -575,11 +605,24 @@ class ProductRepository {
       final pSubName = p.subcategory.trim().toLowerCase();
       final pSubCatName = (p.subCategoryName ?? '').trim().toLowerCase();
 
+      if (isMenTarget) {
+        if (pSubName.contains('men') || pSubName.contains('boy') || pSubCatName.contains('men') || pSubCatName.contains('boy')) {
+          return true;
+        }
+      }
+      if (isWomenTarget) {
+        if (pSubName.contains('women') || pSubName.contains('girl') || pSubCatName.contains('women') || pSubCatName.contains('girl')) {
+          return true;
+        }
+      }
+
       return pCatId == target ||
           pParentCatId == target ||
           pSubCatId == target ||
           pSubName == target ||
-          pSubCatName == target;
+          pSubCatName == target ||
+          pSubName.contains(target) ||
+          pSubCatName.contains(target);
     }).toList();
   }
 
