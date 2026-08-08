@@ -52,8 +52,27 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark
+        ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.8)
+        : AppTheme.surfaceColor;
+    final cardBorder = isDark
+        ? Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)
+        : AppTheme.borderColor;
+    final primaryTextColor = isDark
+        ? Theme.of(context).colorScheme.onSurface
+        : AppTheme.textPrimaryColor;
+    final secondaryTextColor = isDark
+        ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)
+        : AppTheme.textSecondaryColor;
+    final lightTextColor = isDark
+        ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)
+        : AppTheme.textLightColor;
+
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: isDark
+          ? Theme.of(context).colorScheme.surface
+          : const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: Text(
           'Contact Us',
@@ -75,14 +94,14 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
               style: TextStyle(
                 fontSize: responsive.fontSize24,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimaryColor,
+                color: primaryTextColor,
               ),
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceS)),
             Text(
               'We\'d love to hear from you. Send us a message and we\'ll respond as soon as possible.',
               style: responsive.bodyMedium.copyWith(
-                color: AppTheme.textSecondaryColor,
+                color: secondaryTextColor,
               ),
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
@@ -120,10 +139,10 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
             Container(
               padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
               decoration: BoxDecoration(
-                color: AppTheme.surfaceColor,
+                color: cardBg,
                 borderRadius: BorderRadius.circular(AppTheme.radiusL),
-                border: Border.all(color: AppTheme.borderColor, width: 1),
-                boxShadow: AppTheme.softShadow,
+                border: Border.all(color: cardBorder, width: 1.5),
+                boxShadow: isDark ? null : AppTheme.softShadow,
               ),
               child: Form(
                 key: _formKey,
@@ -133,7 +152,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     Text(
                       'SEND US A MESSAGE',
                       style: responsive.bodySmall.copyWith(
-                        color: AppTheme.textLightColor,
+                        color: lightTextColor,
                         letterSpacing: 1,
                       ),
                     ),
@@ -141,34 +160,34 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     // Category Dropdown
                     DropdownButtonFormField<String>(
                       initialValue: _selectedCategory,
+                      dropdownColor: isDark
+                          ? Theme.of(context).colorScheme.surface
+                          : Colors.white,
+                      style: TextStyle(
+                        fontSize: responsive.fontSize14,
+                        color: primaryTextColor,
+                      ),
                       decoration: InputDecoration(
                         labelText: 'Category',
                         hintText: 'Select a category',
                         labelStyle: TextStyle(fontSize: responsive.fontSize14),
                       ),
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'General Inquiry',
-                          child: Text('General Inquiry'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'Order Related',
-                          child: Text('Order Related'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'Product Question',
-                          child: Text('Product Question'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'Return/Refund',
-                          child: Text('Return/Refund'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'Feedback',
-                          child: Text('Feedback'),
-                        ),
-                        DropdownMenuItem(value: 'Other', child: Text('Other')),
-                      ],
+                      items: [
+                        'General Inquiry',
+                        'Order Related',
+                        'Product Question',
+                        'Return/Refund',
+                        'Feedback',
+                        'Other',
+                      ].map((category) {
+                        return DropdownMenuItem(
+                          value: category,
+                          child: Text(
+                            category,
+                            style: TextStyle(color: primaryTextColor),
+                          ),
+                        );
+                      }).toList(),
                       onChanged: (value) {
                         setState(() {
                           _selectedCategory = value!;
@@ -178,7 +197,10 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     SizedBox(height: responsive.spacing(AppTheme.spaceM)),
                     TextFormField(
                       controller: _nameController,
-                      style: TextStyle(fontSize: responsive.fontSize14),
+                      style: TextStyle(
+                        fontSize: responsive.fontSize14,
+                        color: primaryTextColor,
+                      ),
                       decoration: InputDecoration(
                         labelText: 'Your Name',
                         hintText: 'Enter your name',
@@ -195,7 +217,10 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      style: TextStyle(fontSize: responsive.fontSize14),
+                      style: TextStyle(
+                        fontSize: responsive.fontSize14,
+                        color: primaryTextColor,
+                      ),
                       decoration: InputDecoration(
                         labelText: 'Email Address',
                         hintText: 'Enter your email',
@@ -214,7 +239,10 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     SizedBox(height: responsive.spacing(AppTheme.spaceM)),
                     TextFormField(
                       controller: _subjectController,
-                      style: TextStyle(fontSize: responsive.fontSize14),
+                      style: TextStyle(
+                        fontSize: responsive.fontSize14,
+                        color: primaryTextColor,
+                      ),
                       decoration: InputDecoration(
                         labelText: 'Subject',
                         hintText: 'Enter the subject',
@@ -231,7 +259,10 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     TextFormField(
                       controller: _messageController,
                       maxLines: 5,
-                      style: TextStyle(fontSize: responsive.fontSize14),
+                      style: TextStyle(
+                        fontSize: responsive.fontSize14,
+                        color: primaryTextColor,
+                      ),
                       decoration: InputDecoration(
                         labelText: 'Message',
                         hintText: 'Type your message here...',
@@ -265,7 +296,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
               style: TextStyle(
                 fontSize: responsive.fontSize16,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimaryColor,
+                color: primaryTextColor,
               ),
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceM)),
@@ -293,13 +324,24 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     String value,
   ) {
     final responsive = context.responsive;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark
+        ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.8)
+        : AppTheme.surfaceColor;
+    final cardBorder = isDark
+        ? Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)
+        : AppTheme.borderColor;
+    final lightTextColor = isDark
+        ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)
+        : AppTheme.textLightColor;
+
     return Container(
       padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceM)),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: cardBg,
         borderRadius: BorderRadius.circular(AppTheme.radiusM),
-        border: Border.all(color: AppTheme.borderColor, width: 1),
-        boxShadow: AppTheme.softShadow,
+        border: Border.all(color: cardBorder, width: 1.5),
+        boxShadow: isDark ? null : AppTheme.softShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -313,14 +355,17 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
           Text(
             title,
             style: responsive.bodySmall.copyWith(
-              color: AppTheme.textLightColor,
+              color: lightTextColor,
               letterSpacing: 0.5,
             ),
           ),
           SizedBox(height: responsive.spacing(2)),
           Text(
             value,
-            style: responsive.bodyMedium.copyWith(fontWeight: FontWeight.w500),
+            style: responsive.bodyMedium.copyWith(
+              fontWeight: FontWeight.w500,
+              color: isDark ? Theme.of(context).colorScheme.onSurface : null,
+            ),
           ),
         ],
       ),
@@ -329,6 +374,14 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
 
   Widget _buildSocialButton(BuildContext context, IconData icon) {
     final responsive = context.responsive;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark
+        ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.8)
+        : AppTheme.surfaceColor;
+    final cardBorder = isDark
+        ? Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)
+        : AppTheme.borderColor;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -341,9 +394,9 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
           width: responsive.spacing(50),
           height: responsive.spacing(50),
           decoration: BoxDecoration(
-            color: AppTheme.surfaceColor,
+            color: cardBg,
             borderRadius: BorderRadius.circular(AppTheme.radiusM),
-            border: Border.all(color: AppTheme.borderColor, width: 1),
+            border: Border.all(color: cardBorder, width: 1.5),
           ),
           child: Icon(
             icon,

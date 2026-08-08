@@ -492,7 +492,7 @@ class _VisualSearchScreenState extends ConsumerState<VisualSearchScreen> with Ti
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'AURA AI MULTI-OBJECT DETECTED',
+                'FCI AI MULTI-OBJECT DETECTED',
                 style: TextStyle(
                   color: AppTheme.primaryColor,
                   fontWeight: FontWeight.bold,
@@ -719,7 +719,7 @@ class _VisualSearchScreenState extends ConsumerState<VisualSearchScreen> with Ti
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Text(
-                        'AURA SCANNING OBJECTS',
+                        'FCI SCANNING OBJECTS',
                         style: TextStyle(
                           color: AppTheme.primaryColor,
                           fontWeight: FontWeight.bold,
@@ -834,7 +834,7 @@ class _VisualSearchScreenState extends ConsumerState<VisualSearchScreen> with Ti
                       Icon(Icons.terminal_rounded, color: Colors.white60, size: 14),
                       SizedBox(width: 6),
                       Text(
-                        'AURA SEARCH LOGGER',
+                        'FCI SEARCH LOGGER',
                         style: TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1),
                       ),
                     ],
@@ -866,7 +866,7 @@ class _VisualSearchScreenState extends ConsumerState<VisualSearchScreen> with Ti
             ),
             const Spacer(),
             const Text(
-              'Aura style matching engine running...',
+              'FCISeller style matching engine running...',
               style: TextStyle(color: Colors.white38, fontSize: 11),
             ),
             const SizedBox(height: 16),

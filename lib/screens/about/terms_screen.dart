@@ -8,10 +8,26 @@ class TermsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryTextColor = isDark
+        ? Theme.of(context).colorScheme.onSurface
+        : AppTheme.textPrimaryColor;
+    final lightTextColor = isDark
+        ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)
+        : AppTheme.textLightColor;
+
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: isDark
+          ? Theme.of(context).colorScheme.surface
+          : const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: Text('Terms of Service', style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold)),
+        title: Text(
+          'Terms of Service',
+          style: TextStyle(
+            fontSize: responsive.fontSize18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -24,14 +40,14 @@ class TermsScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: responsive.fontSize24,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimaryColor,
+                color: primaryTextColor,
               ),
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceS)),
             Text(
               'Last updated: January 2024',
               style: responsive.bodySmall.copyWith(
-                color: AppTheme.textLightColor,
+                color: lightTextColor,
               ),
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
@@ -97,13 +113,24 @@ class TermsScreen extends StatelessWidget {
 
   Widget _buildTermsSection(BuildContext context, String title, String content) {
     final responsive = context.responsive;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark
+        ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.8)
+        : AppTheme.surfaceColor;
+    final cardBorder = isDark
+        ? Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)
+        : AppTheme.borderColor;
+    final secondaryTextColor = isDark
+        ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.75)
+        : AppTheme.textSecondaryColor;
+
     return Container(
       padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: cardBg,
         borderRadius: BorderRadius.circular(AppTheme.radiusL),
-        border: Border.all(color: AppTheme.borderColor, width: 1),
-        boxShadow: AppTheme.softShadow,
+        border: Border.all(color: cardBorder, width: 1.5),
+        boxShadow: isDark ? null : AppTheme.softShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,7 +148,7 @@ class TermsScreen extends StatelessWidget {
           Text(
             content,
             style: responsive.bodyMedium.copyWith(
-              color: AppTheme.textSecondaryColor,
+              color: secondaryTextColor,
               height: 1.5,
             ),
           ),

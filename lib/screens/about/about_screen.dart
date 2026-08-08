@@ -8,10 +8,35 @@ class AboutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark
+        ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.8)
+        : AppTheme.surfaceColor;
+    final cardBorder = isDark
+        ? Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)
+        : AppTheme.borderColor;
+    final primaryTextColor = isDark
+        ? Theme.of(context).colorScheme.onSurface
+        : AppTheme.textPrimaryColor;
+    final secondaryTextColor = isDark
+        ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)
+        : AppTheme.textSecondaryColor;
+    final lightTextColor = isDark
+        ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)
+        : AppTheme.textLightColor;
+
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: isDark
+          ? Theme.of(context).colorScheme.surface
+          : const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: Text('About Us', style: TextStyle(fontSize: responsive.fontSize18, fontWeight: FontWeight.bold)),
+        title: Text(
+          'About Us',
+          style: TextStyle(
+            fontSize: responsive.fontSize18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -30,10 +55,15 @@ class AboutScreen extends StatelessWidget {
                       gradient: const LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [AppTheme.primaryColor, AppTheme.secondaryColor],
+                        colors: [
+                          AppTheme.primaryColor,
+                          AppTheme.secondaryColor,
+                        ],
                       ),
                       borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-                      boxShadow: AppTheme.intenseShadow,
+                      boxShadow: isDark
+                          ? AppTheme.darkIntenseShadow
+                          : AppTheme.intenseShadow,
                     ),
                     child: Center(
                       child: ClipRRect(
@@ -55,14 +85,14 @@ class AboutScreen extends StatelessWidget {
                       fontSize: responsive.fontSize18,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 2,
-                      color: AppTheme.textPrimaryColor,
+                      color: primaryTextColor,
                     ),
                   ),
                   SizedBox(height: responsive.spacing(AppTheme.spaceS)),
                   Text(
                     'Premium Fashion Destination',
                     style: responsive.bodyMedium.copyWith(
-                      color: AppTheme.textSecondaryColor,
+                      color: secondaryTextColor,
                     ),
                   ),
                 ],
@@ -73,10 +103,10 @@ class AboutScreen extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
               decoration: BoxDecoration(
-                color: AppTheme.surfaceColor,
+                color: cardBg,
                 borderRadius: BorderRadius.circular(AppTheme.radiusL),
-                border: Border.all(color: AppTheme.borderColor, width: 1),
-                boxShadow: AppTheme.softShadow,
+                border: Border.all(color: cardBorder, width: 1.5),
+                boxShadow: isDark ? null : AppTheme.softShadow,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -85,12 +115,13 @@ class AboutScreen extends StatelessWidget {
                     'App Version',
                     style: responsive.bodyMedium.copyWith(
                       fontWeight: FontWeight.w500,
+                      color: primaryTextColor,
                     ),
                   ),
                   Text(
                     '1.0.0',
                     style: responsive.bodyMedium.copyWith(
-                      color: AppTheme.textSecondaryColor,
+                      color: secondaryTextColor,
                     ),
                   ),
                 ],
@@ -122,7 +153,7 @@ class AboutScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: responsive.fontSize16,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimaryColor,
+                color: primaryTextColor,
               ),
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceM)),
@@ -150,7 +181,7 @@ class AboutScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: responsive.fontSize16,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimaryColor,
+                color: primaryTextColor,
               ),
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceM)),
@@ -171,7 +202,7 @@ class AboutScreen extends StatelessWidget {
               child: Text(
                 '© 2026 FCI Seller. All rights reserved.',
                 style: responsive.bodySmall.copyWith(
-                  color: AppTheme.textLightColor,
+                  color: lightTextColor,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -184,13 +215,24 @@ class AboutScreen extends StatelessWidget {
 
   Widget _buildSectionCard(BuildContext context, String title, String content) {
     final responsive = context.responsive;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark
+        ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.8)
+        : AppTheme.surfaceColor;
+    final cardBorder = isDark
+        ? Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)
+        : AppTheme.borderColor;
+    final secondaryTextColor = isDark
+        ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.75)
+        : AppTheme.textSecondaryColor;
+
     return Container(
       padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: cardBg,
         borderRadius: BorderRadius.circular(AppTheme.radiusL),
-        border: Border.all(color: AppTheme.borderColor, width: 1),
-        boxShadow: AppTheme.softShadow,
+        border: Border.all(color: cardBorder, width: 1.5),
+        boxShadow: isDark ? null : AppTheme.softShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,7 +250,7 @@ class AboutScreen extends StatelessWidget {
           Text(
             content,
             style: responsive.bodyMedium.copyWith(
-              color: AppTheme.textSecondaryColor,
+              color: secondaryTextColor,
               height: 1.5,
             ),
           ),
@@ -219,12 +261,23 @@ class AboutScreen extends StatelessWidget {
 
   Widget _buildContactItem(BuildContext context, IconData icon, String text) {
     final responsive = context.responsive;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark
+        ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.8)
+        : AppTheme.surfaceColor;
+    final cardBorder = isDark
+        ? Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)
+        : AppTheme.borderColor;
+    final primaryTextColor = isDark
+        ? Theme.of(context).colorScheme.onSurface
+        : AppTheme.textPrimaryColor;
+
     return Container(
       padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceM)),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: cardBg,
         borderRadius: BorderRadius.circular(AppTheme.radiusM),
-        border: Border.all(color: AppTheme.borderColor, width: 1),
+        border: Border.all(color: cardBorder, width: 1.5),
       ),
       child: Row(
         children: [
@@ -237,7 +290,7 @@ class AboutScreen extends StatelessWidget {
           Text(
             text,
             style: responsive.bodyMedium.copyWith(
-              color: AppTheme.textPrimaryColor,
+              color: primaryTextColor,
             ),
           ),
         ],
@@ -247,13 +300,21 @@ class AboutScreen extends StatelessWidget {
 
   Widget _buildSocialButton(BuildContext context, IconData icon) {
     final responsive = context.responsive;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark
+        ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.8)
+        : AppTheme.surfaceColor;
+    final cardBorder = isDark
+        ? Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)
+        : AppTheme.borderColor;
+
     return Container(
       width: responsive.spacing(50),
       height: responsive.spacing(50),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: cardBg,
         borderRadius: BorderRadius.circular(AppTheme.radiusM),
-        border: Border.all(color: AppTheme.borderColor, width: 1),
+        border: Border.all(color: cardBorder, width: 1.5),
       ),
       child: Icon(
         icon,
