@@ -379,19 +379,23 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(
-                                    l10n?.proceedToCheckout ??
-                                        'Checkout',
-                                    style: TextStyle(
-                                      fontSize: responsive.fontSize13,
-                                      fontWeight: FontWeight.w700,
+                                  Flexible(
+                                    child: Text(
+                                      l10n?.proceedToCheckout ?? 'Checkout',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: responsive.fontSize13,
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
                                   ),
-                                  const SizedBox(width: 6),
+                                  const SizedBox(width: 4),
                                   Icon(
                                     Icons.arrow_forward_rounded,
-                                    size: responsive.iconSize(18),
+                                    size: responsive.iconSize(16),
                                   ),
                                 ],
                               ),

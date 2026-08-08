@@ -173,8 +173,8 @@ class _StoriesStripState extends ConsumerState<StoriesStrip> {
   }
 
   Widget _buildStoryAvatar(ContentPostModel story, int index, bool isViewed) {
-    final rawUrl = story.effectiveThumbnailUrl ?? (story.mediaUrls.isNotEmpty ? story.mediaUrls.first : '');
-    final resolvedUrl = AppUrls.resolveUrl(rawUrl);
+    final rawUrl = story.effectiveThumbnailUrl ?? '';
+    final resolvedUrl = rawUrl.isNotEmpty ? AppUrls.resolveUrl(rawUrl) : '';
 
     return GestureDetector(
       onTap: () => _openStoryViewer(index),
@@ -222,12 +222,12 @@ class _StoriesStripState extends ConsumerState<StoriesStrip> {
                             ),
                             errorWidget: (context, url, err) => Container(
                               color: Colors.teal.shade50,
-                              child: const Icon(Icons.style_rounded, color: AppTheme.accentColor, size: 22),
+                              child: const Icon(Icons.slow_motion_video_rounded, color: AppTheme.accentColor, size: 24),
                             ),
                           )
                         : Container(
                             color: Colors.teal.shade50,
-                            child: const Icon(Icons.style_rounded, color: AppTheme.accentColor, size: 22),
+                            child: const Icon(Icons.slow_motion_video_rounded, color: AppTheme.accentColor, size: 24),
                           ),
                   ),
                 ),

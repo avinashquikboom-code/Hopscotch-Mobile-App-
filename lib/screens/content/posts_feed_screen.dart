@@ -36,18 +36,11 @@ class _PostsFeedScreenState extends ConsumerState<PostsFeedScreen> {
 
   Future<void> _fetchFeed() async {
     final repo = ref.read(contentRepositoryProvider);
-    final playItems = await repo.getPlayFeed(page: 1, limit: 20);
     final postItems = await repo.getPostsFeed(page: 1, limit: 20);
-
-    List<ContentPostModel> combined = [...playItems, ...postItems];
-
-    if (combined.isEmpty) {
-      combined = _getFallbackGridItems();
-    }
 
     if (mounted) {
       setState(() {
-        _posts = combined;
+        _posts = postItems;
         _isLoading = false;
       });
     }
