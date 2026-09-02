@@ -414,11 +414,17 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
         headerTitle = widget.subcategory!.trim();
       } else if (widget.filter != null && widget.filter!.trim().isNotEmpty) {
         final f = widget.filter!.toLowerCase().trim();
-        if (f == 'trending' || f == 'trending_products') headerTitle = 'Trending Products';
-        else if (f == 'new' || f == 'new_arrivals' || f == 'newarrivals') headerTitle = 'New Arrivals';
-        else if (f == 'popular' || f == 'best_sellers' || f == 'bestsellers') headerTitle = 'Best Sellers';
-        else if (f == 'featured' || f == 'featured_products') headerTitle = 'Featured Products';
-        else headerTitle = widget.filter!;
+        if (f == 'trending' || f == 'trending_products') {
+          headerTitle = 'Trending Products';
+        } else if (f == 'new' || f == 'new_arrivals' || f == 'newarrivals') {
+          headerTitle = 'New Arrivals';
+        } else if (f == 'popular' || f == 'best_sellers' || f == 'bestsellers') {
+          headerTitle = 'Best Sellers';
+        } else if (f == 'featured' || f == 'featured_products') {
+          headerTitle = 'Featured Products';
+        } else {
+          headerTitle = widget.filter!;
+        }
       } else {
         headerTitle = 'Products';
       }
@@ -486,7 +492,7 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                       Center(
                         child: Column(
                           children: [
-                            Text('Failed to load products'),
+                            const Text('Failed to load products'),
                             const SizedBox(height: 12),
                             ElevatedButton(
                               onPressed: _loadFirstPage,
