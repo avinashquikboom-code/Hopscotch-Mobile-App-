@@ -305,7 +305,7 @@ class ProductRepository {
   }
 
   static const int _bulkPageSize = 100;
-  static const int _maxPages = 50;
+  static const int _maxPages = 10000;
   static const int listingPageSize = 24;
 
   int _extractTotalCount(dynamic data) {
