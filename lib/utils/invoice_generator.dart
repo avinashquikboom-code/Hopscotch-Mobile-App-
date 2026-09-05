@@ -97,6 +97,7 @@ class InvoiceGenerator {
                     ),
                     pw.SizedBox(height: 6),
                     pw.Text('Invoice #: INV-${order.id.replaceAll(RegExp(r'[^0-9A-Za-z]'), '').toUpperCase()}', style: const pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
+                    pw.Text('Order #: ${order.displayOrderId}', style: const pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.teal900)),
                     pw.Text('Date: $formattedDate', style: const pw.TextStyle(fontSize: 8)),
                     pw.Text('Status: ${order.status.toUpperCase()}', style: const pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.green800)),
                   ],
@@ -255,9 +256,18 @@ class InvoiceGenerator {
     );
 
     final bytes = await pdf.save();
-    final fileName = 'Invoice_${order.id.replaceAll(RegExp(r'[^0-9A-Za-z]'), '')}.pdf';
+    final cleanId = order.displayOrderId.replaceAll(RegExp(r'[^0-9A-Za-z]'), '');
+    final fileName = 'Invoice_$cleanId.pdf';
 
     try {
+      if (!kIsWeb && Platform.isAndroid) {
+        final downloadDir = Directory('/storage/emulated/0/Download');
+        if (await downloadDir.exists()) {
+          final targetFile = File('${downloadDir.path}/$fileName');
+          await targetFile.writeAsBytes(bytes);
+          debugPrint('Invoice saved to Download directory: ${targetFile.path}');
+        }
+      }
       if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
         final dir = await getApplicationDocumentsDirectory();
         final file = File('${dir.path}/$fileName');

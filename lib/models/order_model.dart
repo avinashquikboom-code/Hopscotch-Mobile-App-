@@ -2,6 +2,7 @@ import 'package:hopscotch/models/cart_item_model.dart';
 
 class OrderModel {
   final String id;
+  final String? orderNumber;
   final List<CartItemModel> items;
   final double totalAmount;
   final String orderDate;
@@ -9,6 +10,9 @@ class OrderModel {
   final String shippingAddress;
   final String paymentMethod;
   final String? trackingNumber;
+  final String? awbNumber;
+  final String? courierName;
+  final String? trackingUrl;
   final double taxAmount;
   final double subtotal;
   final double shippingFee;
@@ -18,8 +22,19 @@ class OrderModel {
   final String sellerContact;
   final String sellerAddress;
 
+  String get displayOrderId {
+    if (orderNumber != null && orderNumber!.trim().isNotEmpty) {
+      return orderNumber!.trim();
+    }
+    if (id.startsWith('ORD-') || id.startsWith('#')) {
+      return id;
+    }
+    return '#ORD-$id';
+  }
+
   const OrderModel({
     required this.id,
+    this.orderNumber,
     required this.items,
     required this.totalAmount,
     required this.orderDate,
@@ -27,6 +42,9 @@ class OrderModel {
     required this.shippingAddress,
     required this.paymentMethod,
     this.trackingNumber,
+    this.awbNumber,
+    this.courierName,
+    this.trackingUrl,
     this.taxAmount = 0.0,
     this.subtotal = 0.0,
     this.shippingFee = 0.0,
@@ -65,15 +83,24 @@ class OrderModel {
         ? (totalAmount - subtotal - rawTax - giftWrapCharge)
         : rawShipping;
 
+    final orderNumber = (json['orderNumber'] ?? json['order_number'] ?? json['orderId'])?.toString();
+    final awbNumber = (json['awbNumber'] ?? json['awb_number'] ?? json['trackingNumber'] ?? json['tracking_number'] ?? json['awb'])?.toString();
+    final courierName = (json['courierName'] ?? json['courier_name'] ?? json['courier'])?.toString();
+    final trackingUrl = json['trackingUrl']?.toString();
+
     return OrderModel(
       id: (json['id'] ?? json['_id'] ?? '').toString(),
+      orderNumber: orderNumber,
       items: parsedItems,
       totalAmount: totalAmount,
       orderDate: (json['orderDate'] ?? json['createdAt'] ?? json['created_at'] ?? '').toString(),
       status: (json['status'] ?? 'Pending').toString(),
       shippingAddress: _parseAddress(json['shippingAddress'] ?? json['address']),
       paymentMethod: (json['paymentMethod'] ?? json['payment_method'] ?? '').toString(),
-      trackingNumber: json['trackingNumber'] as String? ?? json['tracking_number'] as String?,
+      trackingNumber: awbNumber ?? (json['trackingNumber'] as String? ?? json['tracking_number'] as String?),
+      awbNumber: awbNumber,
+      courierName: courierName,
+      trackingUrl: trackingUrl,
       taxAmount: rawTax,
       subtotal: subtotal,
       shippingFee: shippingFee,
@@ -156,6 +183,7 @@ class OrderModel {
 
   OrderModel copyWith({
     String? id,
+    String? orderNumber,
     List<CartItemModel>? items,
     double? totalAmount,
     String? orderDate,
@@ -163,9 +191,21 @@ class OrderModel {
     String? shippingAddress,
     String? paymentMethod,
     String? trackingNumber,
+    String? awbNumber,
+    String? courierName,
+    String? trackingUrl,
+    double? taxAmount,
+    double? subtotal,
+    double? shippingFee,
+    bool? giftWrapped,
+    double? giftWrapCharge,
+    String? sellerName,
+    String? sellerContact,
+    String? sellerAddress,
   }) {
     return OrderModel(
       id: id ?? this.id,
+      orderNumber: orderNumber ?? this.orderNumber,
       items: items ?? this.items,
       totalAmount: totalAmount ?? this.totalAmount,
       orderDate: orderDate ?? this.orderDate,
@@ -173,6 +213,17 @@ class OrderModel {
       shippingAddress: shippingAddress ?? this.shippingAddress,
       paymentMethod: paymentMethod ?? this.paymentMethod,
       trackingNumber: trackingNumber ?? this.trackingNumber,
+      awbNumber: awbNumber ?? this.awbNumber,
+      courierName: courierName ?? this.courierName,
+      trackingUrl: trackingUrl ?? this.trackingUrl,
+      taxAmount: taxAmount ?? this.taxAmount,
+      subtotal: subtotal ?? this.subtotal,
+      shippingFee: shippingFee ?? this.shippingFee,
+      giftWrapped: giftWrapped ?? this.giftWrapped,
+      giftWrapCharge: giftWrapCharge ?? this.giftWrapCharge,
+      sellerName: sellerName ?? this.sellerName,
+      sellerContact: sellerContact ?? this.sellerContact,
+      sellerAddress: sellerAddress ?? this.sellerAddress,
     );
   }
 
