@@ -53,7 +53,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     {
       'icon': Icons.email_outlined,
       'title': 'Email',
-      'subtitle': 'support@fciseller.com',
+      'subtitle': 'fashioncityinidia18@gmail.com',
       'color': Colors.blue,
     },
     {

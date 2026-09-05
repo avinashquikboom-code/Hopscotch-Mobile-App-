@@ -160,7 +160,7 @@ class AboutScreen extends StatelessWidget {
             _buildContactItem(
               context,
               Icons.email_outlined,
-              'support@fciseller.com',
+              'fashioncityinidia18@gmail.com',
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceM)),
             _buildContactItem(

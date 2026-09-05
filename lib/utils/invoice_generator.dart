@@ -6,6 +6,7 @@ import 'package:printing/printing.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:hopscotch/models/order_model.dart';
 import 'package:intl/intl.dart';
+import 'package:hopscotch/constants/seller_constants.dart';
 
 class InvoiceGenerator {
   /// Generates and previews/prints/downloads a PDF invoice for a given order.
@@ -14,22 +15,22 @@ class InvoiceGenerator {
     String? storeName,
     String? storeAddress,
     String? storeContact,
-    String storeGst = '27AAACH1234F1Z9',
-    String contactEmail = 'support@fciseller.com',
+    String storeGst = SellerConfig.gstin,
+    String contactEmail = SellerConfig.supportEmail,
   }) async {
     final pdf = pw.Document();
 
     final resolvedStoreName = (storeName != null && storeName.trim().isNotEmpty)
         ? storeName.trim()
-        : (order.sellerName.trim().isNotEmpty ? order.sellerName.trim() : 'FCI SELLER');
+        : (order.sellerName.trim().isNotEmpty ? order.sellerName.trim() : SellerConfig.name);
     final resolvedStoreAddress = (storeAddress != null && storeAddress.trim().isNotEmpty)
         ? storeAddress.trim()
         : (order.sellerAddress.trim().isNotEmpty
             ? order.sellerAddress.trim()
-            : 'Plot No. 42, Sector 18, Commercial Hub, Navi Mumbai, MH - 400705');
+            : SellerConfig.address);
     final resolvedStoreContact = (storeContact != null && storeContact.trim().isNotEmpty)
         ? storeContact.trim()
-        : (order.sellerContact.trim().isNotEmpty ? order.sellerContact.trim() : '+91 9876543210');
+        : (order.sellerContact.trim().isNotEmpty ? order.sellerContact.trim() : SellerConfig.contactNumber);
 
     final formattedDate = () {
       try {
@@ -65,9 +66,14 @@ class InvoiceGenerator {
                       ),
                     ),
                     pw.SizedBox(height: 4),
-                    pw.Text(resolvedStoreAddress, style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
-                    pw.Text('Contact: $resolvedStoreContact', style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
-                    pw.Text('GSTIN: $storeGst | Support: $contactEmail', style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
+                    pw.Text('GSTIN: $storeGst', style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey800)),
+                    pw.Text('Support: $contactEmail', style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey800)),
+                    pw.Container(
+                      width: 250,
+                      child: pw.Text('Address: $resolvedStoreAddress', style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey800)),
+                    ),
+                    if (resolvedStoreContact.isNotEmpty)
+                      pw.Text('Contact: $resolvedStoreContact', style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey800)),
                   ],
                 ),
                 pw.Column(
