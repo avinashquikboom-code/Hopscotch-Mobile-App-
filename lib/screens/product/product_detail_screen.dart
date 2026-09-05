@@ -23,6 +23,7 @@ import 'package:dio/dio.dart';
 
 import 'package:hopscotch/widgets/reward_badge_card.dart';
 import 'package:hopscotch/constants/app_urls.dart';
+import 'package:hopscotch/screens/product/review_submission_screen.dart';
 
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
@@ -1182,17 +1183,18 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    '${l10n.customerReviews} (${fetchedReviews.length})',
-                                    style: TextStyle(
-                                      fontSize: responsive.fontSize16,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppTheme.textPrimaryColor,
-                                    ),
-                                  ),
-                                  if (product.rating > 0)
-                                    Row(
-                                      children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        '${l10n.customerReviews} (${fetchedReviews.length})',
+                                        style: TextStyle(
+                                          fontSize: responsive.fontSize16,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppTheme.textPrimaryColor,
+                                        ),
+                                      ),
+                                      if (product.rating > 0) ...[
+                                        const SizedBox(width: 8),
                                         Icon(
                                           Icons.star_rounded,
                                           color: AppTheme.accentColor,
@@ -1208,7 +1210,27 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                           ),
                                         ),
                                       ],
+                                    ],
+                                  ),
+                                  TextButton.icon(
+                                    onPressed: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => ReviewSubmissionScreen(
+                                            productId: widget.productId,
+                                            productName: product.title,
+                                            productImageUrl: product.imageUrl,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(Icons.rate_review_outlined, size: 16),
+                                    label: const Text('Write a Review', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: AppTheme.primaryColor,
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                     ),
+                                  ),
                                 ],
                               ),
                               SizedBox(
@@ -1225,12 +1247,12 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                   ),
                                 ),
                                 error: (_, __) => fetchedReviews.isEmpty
-                                    ? _buildEmptyReviewsBox(responsive)
+                                    ? _buildEmptyReviewsBox(responsive, product)
                                     : _buildReviewsList(fetchedReviews, responsive),
                                 data: (reviews) {
                                   final list = reviews.isNotEmpty ? reviews : fetchedReviews;
                                   if (list.isEmpty) {
-                                    return _buildEmptyReviewsBox(responsive);
+                                    return _buildEmptyReviewsBox(responsive, product);
                                   }
                                   return _buildReviewsList(list, responsive);
                                 },
@@ -1552,7 +1574,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     return 'Inclusive of all taxes';
   }
 
-  Widget _buildEmptyReviewsBox(dynamic responsive) {
+  Widget _buildEmptyReviewsBox(dynamic responsive, [ProductModel? product]) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
@@ -1579,6 +1601,29 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             style: TextStyle(
               fontSize: responsive.fontSize12,
               color: AppTheme.textLightColor,
+            ),
+          ),
+          SizedBox(height: responsive.spacing(AppTheme.spaceM)),
+          OutlinedButton.icon(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ReviewSubmissionScreen(
+                    productId: widget.productId,
+                    productName: product?.title ?? 'Product',
+                    productImageUrl: product?.imageUrl,
+                  ),
+                ),
+              );
+            },
+            icon: const Icon(Icons.rate_review_outlined, size: 16),
+            label: const Text('Write the First Review'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.primaryColor,
+              side: const BorderSide(color: AppTheme.primaryColor),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
           ),
         ],

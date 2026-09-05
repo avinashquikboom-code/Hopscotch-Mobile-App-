@@ -19,10 +19,15 @@ class OrderNotifier extends StateNotifier<AsyncValue<List<OrderModel>>> {
   }
 
   /// Fetch the authenticated user's orders from the backend.
-  Future<void> fetchOrders({String? status}) async {
+  Future<void> fetchOrders({String? status, String? fromDate, String? toDate}) async {
     state = const AsyncValue.loading();
     try {
-      final response = await _api.getOrders(limit: 50, status: status);
+      final response = await _api.getOrders(
+        limit: 50,
+        status: status,
+        fromDate: fromDate,
+        toDate: toDate,
+      );
       final json = response.data;
       // Backend returns { orders: [...], pagination: {...} }
       final rawList = json['orders'] ?? json['data']?['orders'] ?? json['data'] ?? [];

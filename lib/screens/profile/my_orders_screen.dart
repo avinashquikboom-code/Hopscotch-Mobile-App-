@@ -20,6 +20,7 @@ class MyOrdersScreen extends ConsumerStatefulWidget {
 
 class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
   String _selectedFilter = 'ALL'; // ALL, PROCESSING, SHIPPED, DELIVERED, CANCELLED
+  String _selectedDateFilter = 'ALL'; // ALL, TODAY, 7_DAYS, 30_DAYS
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase().trim()) {
@@ -49,28 +50,50 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
   }
 
   List<OrderModel> _filterOrders(List<OrderModel> orders) {
-    if (_selectedFilter == 'ALL') return orders;
-    return orders.where((o) {
-      final st = o.status.toUpperCase().trim();
-      switch (_selectedFilter) {
-        case 'PROCESSING':
-          return st == 'PENDING' ||
-              st == 'PROCESSING' ||
-              st == 'CONFIRMED' ||
-              st == 'PAID' ||
-              st == 'CREATED' ||
-              st == 'ORDER_PLACED' ||
-              st == 'PLACED';
-        case 'SHIPPED':
-          return st == 'SHIPPED' || st == 'OUT_FOR_DELIVERY' || st == 'IN_TRANSIT';
-        case 'DELIVERED':
-          return st == 'DELIVERED' || st == 'COMPLETED';
-        case 'CANCELLED':
-          return st == 'CANCELLED' || st == 'REFUNDED';
-        default:
-          return st == _selectedFilter;
-      }
-    }).toList();
+    var result = orders;
+    if (_selectedFilter != 'ALL') {
+      result = result.where((o) {
+        final st = o.status.toUpperCase().trim();
+        switch (_selectedFilter) {
+          case 'PROCESSING':
+            return st == 'PENDING' ||
+                st == 'PROCESSING' ||
+                st == 'CONFIRMED' ||
+                st == 'PAID' ||
+                st == 'CREATED' ||
+                st == 'ORDER_PLACED' ||
+                st == 'PLACED';
+          case 'SHIPPED':
+            return st == 'SHIPPED' || st == 'OUT_FOR_DELIVERY' || st == 'IN_TRANSIT';
+          case 'DELIVERED':
+            return st == 'DELIVERED' || st == 'COMPLETED';
+          case 'CANCELLED':
+            return st == 'CANCELLED' || st == 'REFUNDED';
+          default:
+            return st == _selectedFilter;
+        }
+      }).toList();
+    }
+
+    if (_selectedDateFilter != 'ALL') {
+      final now = DateTime.now();
+      result = result.where((o) {
+        if (o.orderDate.isEmpty) return true;
+        try {
+          final dt = DateTime.parse(o.orderDate).toLocal();
+          if (_selectedDateFilter == 'TODAY') {
+            return dt.year == now.year && dt.month == now.month && dt.day == now.day;
+          } else if (_selectedDateFilter == '7_DAYS') {
+            return dt.isAfter(now.subtract(const Duration(days: 7)));
+          } else if (_selectedDateFilter == '30_DAYS') {
+            return dt.isAfter(now.subtract(const Duration(days: 30)));
+          }
+        } catch (_) {}
+        return true;
+      }).toList();
+    }
+
+    return result;
   }
 
   @override
@@ -115,15 +138,15 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
       ),
       body: Column(
         children: [
-          // Filter Tabs Row - Improved Design
+          // Filter Tabs Row - Status Filters
           Container(
-            height: 60,
+            height: 56,
             color: Colors.transparent,
             padding: EdgeInsets.fromLTRB(
               responsive.spacing(AppTheme.spaceL),
               responsive.spacing(AppTheme.spaceM),
               responsive.spacing(AppTheme.spaceL),
-              responsive.spacing(AppTheme.spaceM),
+              responsive.spacing(6),
             ),
             child: ListView(
               scrollDirection: Axis.horizontal,
@@ -138,6 +161,31 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
                 _buildFilterChip('DELIVERED', 'Delivered', colorScheme, responsive),
                 SizedBox(width: responsive.spacing(8)),
                 _buildFilterChip('CANCELLED', 'Cancelled', colorScheme, responsive),
+              ],
+            ),
+          ),
+
+          // Date Filter Row - Issue 21
+          Container(
+            height: 42,
+            color: Colors.transparent,
+            padding: EdgeInsets.fromLTRB(
+              responsive.spacing(AppTheme.spaceL),
+              0,
+              responsive.spacing(AppTheme.spaceL),
+              responsive.spacing(8),
+            ),
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              children: [
+                _buildDateFilterChip('ALL', 'All Dates', colorScheme, responsive),
+                SizedBox(width: responsive.spacing(8)),
+                _buildDateFilterChip('TODAY', 'Today', colorScheme, responsive),
+                SizedBox(width: responsive.spacing(8)),
+                _buildDateFilterChip('7_DAYS', 'Last 7 Days', colorScheme, responsive),
+                SizedBox(width: responsive.spacing(8)),
+                _buildDateFilterChip('30_DAYS', 'Last 30 Days', colorScheme, responsive),
               ],
             ),
           ),
@@ -196,10 +244,44 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
                   onRefresh: () => ref.read(orderProvider.notifier).fetchOrders(),
                   child: ListView.separated(
                     padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
-                    itemCount: orders.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 16),
+                    itemCount: orders.length + 1,
+                    separatorBuilder: (_, idx) => SizedBox(height: idx == 0 ? 12 : 16),
                     itemBuilder: (context, index) {
-                      final order = orders[index];
+                      if (index == 0) {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'TOTAL ORDERS: ${orders.length}',
+                              style: TextStyle(
+                                fontSize: responsive.fontSize11,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.6,
+                                color: colorScheme.onSurface.withValues(alpha: 0.6),
+                              ),
+                            ),
+                            if (_selectedFilter != 'ALL' || _selectedDateFilter != 'ALL')
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _selectedFilter = 'ALL';
+                                    _selectedDateFilter = 'ALL';
+                                  });
+                                },
+                                child: Text(
+                                  'Reset Filters',
+                                  style: TextStyle(
+                                    fontSize: responsive.fontSize11,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.primaryColor,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        );
+                      }
+
+                      final order = orders[index - 1];
                       final statusColor = _getStatusColor(order.status);
 
                       return GestureDetector(
@@ -253,7 +335,7 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              'Order #${order.id}',
+                                              'Order #${order.displayOrderId}',
                                               style: TextStyle(
                                                 fontSize: responsive.fontSize13,
                                                 fontWeight: FontWeight.w800,
@@ -578,6 +660,53 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
                   : (isDark ? colorScheme.onSurface : AppTheme.primaryColor),
               fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
               fontSize: responsive.fontSize11,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateFilterChip(String value, String label, ColorScheme colorScheme, ResponsiveText responsive) {
+    final isSelected = _selectedDateFilter == value;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          setState(() => _selectedDateFilter = value);
+        },
+        borderRadius: BorderRadius.circular(10),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: EdgeInsets.symmetric(
+            horizontal: responsive.spacing(12),
+            vertical: responsive.spacing(4),
+          ),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppTheme.primaryColor.withValues(alpha: isDark ? 0.25 : 0.12)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected
+                  ? AppTheme.primaryColor
+                  : colorScheme.outline.withValues(alpha: isDark ? 0.25 : 0.15),
+              width: 1.2,
+            ),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                color: isSelected
+                    ? AppTheme.primaryColor
+                    : colorScheme.onSurface.withValues(alpha: 0.7),
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                fontSize: responsive.fontSize11,
+              ),
             ),
           ),
         ),

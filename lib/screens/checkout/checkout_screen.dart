@@ -19,6 +19,7 @@ import 'package:hopscotch/providers/coupon_provider.dart';
 import 'package:hopscotch/providers/gift_wrap_provider.dart';
 import 'package:hopscotch/providers/loyalty_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:hopscotch/constants/seller_constants.dart';
 
 const List<String> _kDefaultCountries = [
   'India',
@@ -116,7 +117,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   Timer? _razorpayTimeoutTimer;
 
   String? _selectedAddressId;
-  bool _showItemSummary = false;
+  bool _showItemSummary = true;
 
   // ── Custom Seller Info (Manual Entry) ──────────────────────────────────
   String? _customSellerName;
@@ -174,38 +175,22 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     });
   }
 
-  /// Manual seller details only — no API/settings defaults on checkout.
+  /// Default seller details to store config, allow custom overrides
   Map<String, String> _effectiveSellerDetails() => {
-        'name': _customSellerName?.trim() ?? '',
-        'contact': _customSellerContact?.trim() ?? '',
-        'address': _customSellerAddress?.trim() ?? '',
+        'name': (_customSellerName != null && _customSellerName!.trim().isNotEmpty)
+            ? _customSellerName!.trim()
+            : SellerConfig.name,
+        'contact': (_customSellerContact != null && _customSellerContact!.trim().isNotEmpty)
+            ? _customSellerContact!.trim()
+            : SellerConfig.contactNumber,
+        'address': (_customSellerAddress != null && _customSellerAddress!.trim().isNotEmpty)
+            ? _customSellerAddress!.trim()
+            : SellerConfig.address,
       };
 
-  bool _isSellerDetailsComplete() {
-    final seller = _effectiveSellerDetails();
-    return seller['name']!.isNotEmpty &&
-        seller['contact']!.isNotEmpty &&
-        seller['address']!.isNotEmpty;
-  }
+  bool _isSellerDetailsComplete() => true;
 
-  bool _validateSellerDetails() {
-    if (_isSellerDetailsComplete()) return true;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text(
-          'Please add Seller & Fulfillment details (name, contact, and address) before placing your order.',
-        ),
-        backgroundColor: Colors.orange.shade800,
-        behavior: SnackBarBehavior.floating,
-        action: SnackBarAction(
-          label: 'ADD',
-          textColor: Colors.white,
-          onPressed: () => _showEditSellerDialog(),
-        ),
-      ),
-    );
-    return false;
-  }
+  bool _validateSellerDetails() => true;
 
   void _showEditSellerDialog() {
     final nameCtrl = TextEditingController(text: _customSellerName ?? '');
@@ -1268,16 +1253,21 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     String? subtitle,
     Color? color,
     String? badgeText,
+    bool isEnabled = true,
   }) {
     final isSelected = _selectedPayment == name;
     final themeColor = color ?? AppTheme.primaryColor;
 
     return GestureDetector(
-      onTap: () {
-        HapticFeedback.selectionClick();
-        setState(() => _selectedPayment = name);
-      },
-      child: AnimatedContainer(
+      onTap: isEnabled
+          ? () {
+              HapticFeedback.selectionClick();
+              setState(() => _selectedPayment = name);
+            }
+          : null,
+      child: Opacity(
+        opacity: isEnabled ? 1.0 : 0.45,
+        child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
         curve: Curves.easeInOut,
         padding: const EdgeInsets.all(16),
@@ -1406,8 +1396,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _priceRow(
     ResponsiveText responsive,
@@ -2161,15 +2152,43 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               badgeText: 'FASTEST',
                             ),
                             const SizedBox(height: 12),
-                            _buildPaymentOption(
-                              context,
-                              responsive,
-                              colorScheme,
-                              'Cash on Delivery',
-                              Icons.payments_rounded,
-                              subtitle:
-                                  'Pay via Cash / UPI upon order delivery at door',
-                              color: const Color(0xFF047857),
+                            Builder(
+                              builder: (context) {
+                                final isCodAllowed = !cart.any((item) {
+                                  final p = item.product;
+                                  return (p as dynamic).isCodAllowed == false || (p as dynamic).codAllowed == false;
+                                });
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _buildPaymentOption(
+                                      context,
+                                      responsive,
+                                      colorScheme,
+                                      'Cash on Delivery',
+                                      Icons.payments_rounded,
+                                      subtitle: isCodAllowed
+                                          ? 'Pay via Cash / UPI upon order delivery at door'
+                                          : 'Unavailable: one or more items requires online payment',
+                                      color: const Color(0xFF047857),
+                                      isEnabled: isCodAllowed,
+                                      badgeText: isCodAllowed ? null : 'DISABLED',
+                                    ),
+                                    if (!isCodAllowed)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 8, left: 4),
+                                        child: Text(
+                                          '⚠️ Cash on Delivery is disabled because an item in your cart requires online payment.',
+                                          style: TextStyle(
+                                            fontSize: responsive.fontSize10,
+                                            color: Colors.amber.shade800,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                );
+                              },
                             ),
                           ],
                         ),
@@ -2304,12 +2323,82 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      Text(
-                                        '${item.quantity} × ${currency.formatPrice(item.product.price)}',
-                                        style: TextStyle(
-                                          fontSize: responsive.fontSize11,
-                                          color: colorScheme.onSurface
-                                              .withValues(alpha: 0.6),
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: colorScheme.outline
+                                                .withValues(alpha: 0.25),
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(6),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            InkWell(
+                                              onTap: item.quantity > 1
+                                                  ? () => cartNotifier.updateQuantity(
+                                                        item.id,
+                                                        item.quantity - 1,
+                                                      )
+                                                  : null,
+                                              borderRadius:
+                                                  const BorderRadius.horizontal(
+                                                left: Radius.circular(5),
+                                              ),
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 6,
+                                                  vertical: 2,
+                                                ),
+                                                child: Icon(
+                                                  Icons.remove,
+                                                  size: 13,
+                                                  color: item.quantity > 1
+                                                      ? colorScheme.onSurface
+                                                      : Colors.grey,
+                                                ),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                horizontal: 6,
+                                              ),
+                                              child: Text(
+                                                '${item.quantity}',
+                                                style: TextStyle(
+                                                  fontSize:
+                                                      responsive.fontSize11,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: colorScheme.onSurface,
+                                                ),
+                                              ),
+                                            ),
+                                            InkWell(
+                                              onTap: () => cartNotifier.updateQuantity(
+                                                item.id,
+                                                item.quantity + 1,
+                                              ),
+                                              borderRadius:
+                                                  const BorderRadius.horizontal(
+                                                right: Radius.circular(5),
+                                              ),
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 6,
+                                                  vertical: 2,
+                                                ),
+                                                child: Icon(
+                                                  Icons.add,
+                                                  size: 13,
+                                                  color: colorScheme.onSurface,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                       const SizedBox(width: 12),

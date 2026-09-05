@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:hopscotch/constants/seller_constants.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/widgets/toast_notification.dart';
@@ -47,27 +49,50 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     {
       'icon': Icons.phone_outlined,
       'title': 'Call Us',
-      'subtitle': '+1 (800) 123-4567',
+      'subtitle': SellerConfig.contactNumber,
       'color': Colors.green,
     },
     {
       'icon': Icons.email_outlined,
       'title': 'Email',
-      'subtitle': 'fashioncityinidia18@gmail.com',
+      'subtitle': SellerConfig.supportEmail,
       'color': Colors.blue,
     },
     {
       'icon': Icons.location_on_outlined,
       'title': 'Visit Store',
-      'subtitle': 'Find nearest location',
+      'subtitle': '${SellerConfig.city}, ${SellerConfig.state}',
       'color': Colors.orange,
     },
   ];
 
-  void _handleContactOption(String title) {
+  Future<void> _handleContactOption(String title) async {
+    if (title == 'Call Us') {
+      final phone = SellerConfig.contactNumber.replaceAll(' ', '').replaceAll('-', '');
+      final uri = Uri.parse('tel:$phone');
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+        return;
+      }
+    } else if (title == 'Email') {
+      final uri = Uri.parse('mailto:${SellerConfig.supportEmail}');
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+        return;
+      }
+    } else if (title == 'Visit Store') {
+      final query = Uri.encodeComponent(SellerConfig.address);
+      final uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$query');
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        return;
+      }
+    }
+
+    if (!mounted) return;
     ToastNotification.show(
       context,
-      message: 'Opening $title...',
+      message: 'Support: ${SellerConfig.supportEmail}',
       isError: false,
     );
   }

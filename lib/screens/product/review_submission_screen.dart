@@ -13,14 +13,14 @@ import 'package:hopscotch/repositories/product_repository.dart';
 ///   {'productId': String, 'orderId': String, 'productName': String, 'productImageUrl': String?}
 class ReviewSubmissionScreen extends ConsumerStatefulWidget {
   final String productId;
-  final String orderId;
+  final String? orderId;
   final String productName;
   final String? productImageUrl;
 
   const ReviewSubmissionScreen({
     super.key,
     required this.productId,
-    required this.orderId,
+    this.orderId,
     required this.productName,
     this.productImageUrl,
   });
@@ -106,7 +106,8 @@ class _ReviewSubmissionScreenState
             'title': _titleController.text.trim(),
           if (_commentController.text.trim().isNotEmpty)
             'comment': _commentController.text.trim(),
-          'orderId': int.tryParse(widget.orderId),
+          if (widget.orderId != null && widget.orderId!.isNotEmpty)
+            'orderId': int.tryParse(widget.orderId!),
         },
       );
 

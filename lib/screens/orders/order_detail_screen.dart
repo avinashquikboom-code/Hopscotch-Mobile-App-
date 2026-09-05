@@ -15,6 +15,8 @@ import 'package:hopscotch/utils/navigation_utils.dart';
 import 'package:hopscotch/utils/invoice_generator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:hopscotch/constants/seller_constants.dart';
 
 class OrderDetailScreen extends ConsumerStatefulWidget {
   final OrderModel? order;
@@ -489,7 +491,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                         children: [
                           Expanded(
                             child: Text(
-                              '#${order.id}',
+                              '#${order.displayOrderId}',
                               style: TextStyle(
                                 fontSize: responsive.fontSize20,
                                 fontWeight: FontWeight.w900,
@@ -501,7 +503,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                           ),
                           GestureDetector(
                             onTap: () {
-                              Clipboard.setData(ClipboardData(text: order.id));
+                              Clipboard.setData(ClipboardData(text: order.displayOrderId));
                               HapticFeedback.lightImpact();
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
@@ -853,6 +855,135 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                       ),
                       const SizedBox(height: 16),
 
+                      // ── SHIPMENT & TRACKING DETAILS (Issues 18, 19, 20) ──
+                      _buildCard(
+                        isDark: isDark,
+                        colorScheme: colorScheme,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildSectionHeader(
+                              icon: Icons.local_shipping_rounded,
+                              label: 'SHIPMENT & TRACKING DETAILS',
+                              colorScheme: colorScheme,
+                              responsive: responsive,
+                            ),
+                            const SizedBox(height: 14),
+                            // Courier Partner
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Courier Partner:',
+                                  style: TextStyle(
+                                    fontSize: responsive.fontSize12,
+                                    color: colorScheme.onSurface.withValues(alpha: 0.7),
+                                  ),
+                                ),
+                                Text(
+                                  order.courierName?.isNotEmpty == true
+                                      ? order.courierName!
+                                      : 'Express Logistics',
+                                  style: TextStyle(
+                                    fontSize: responsive.fontSize13,
+                                    fontWeight: FontWeight.bold,
+                                    color: colorScheme.onSurface,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            // AWB Number with 1-tap Copy
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'AWB / Tracking #:',
+                                  style: TextStyle(
+                                    fontSize: responsive.fontSize12,
+                                    color: colorScheme.onSurface.withValues(alpha: 0.7),
+                                  ),
+                                ),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      (order.awbNumber ?? order.trackingNumber)?.isNotEmpty == true
+                                          ? (order.awbNumber ?? order.trackingNumber)!
+                                          : 'Pending Generation',
+                                      style: TextStyle(
+                                        fontSize: responsive.fontSize12,
+                                        fontWeight: FontWeight.w700,
+                                        fontFamily: 'monospace',
+                                        color: (order.awbNumber ?? order.trackingNumber)?.isNotEmpty == true
+                                            ? colorScheme.onSurface
+                                            : colorScheme.onSurface.withValues(alpha: 0.5),
+                                      ),
+                                    ),
+                                    if ((order.awbNumber ?? order.trackingNumber)?.isNotEmpty == true) ...[
+                                      const SizedBox(width: 8),
+                                      GestureDetector(
+                                        onTap: () {
+                                          final awb = (order.awbNumber ?? order.trackingNumber)!;
+                                          Clipboard.setData(ClipboardData(text: awb));
+                                          HapticFeedback.lightImpact();
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('AWB Number copied to clipboard! 📋'),
+                                              behavior: SnackBarBehavior.floating,
+                                              backgroundColor: AppTheme.primaryColor,
+                                            ),
+                                          );
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                                            borderRadius: BorderRadius.circular(6),
+                                            border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.3)),
+                                          ),
+                                          child: const Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(Icons.copy_rounded, size: 10, color: AppTheme.primaryColor),
+                                              SizedBox(width: 3),
+                                              Text('COPY', style: TextStyle(color: AppTheme.primaryColor, fontSize: 9, fontWeight: FontWeight.bold)),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ],
+                            ),
+                            // Direct Courier Track Button (Issue 20)
+                            if ((order.awbNumber ?? order.trackingNumber)?.isNotEmpty == true) ...[
+                              const SizedBox(height: 14),
+                              SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton.icon(
+                                  onPressed: () => _openCourierTracking(
+                                    order.courierName ?? '',
+                                    (order.awbNumber ?? order.trackingNumber)!,
+                                    order.trackingUrl,
+                                  ),
+                                  icon: const Icon(Icons.open_in_new_rounded, size: 16),
+                                  label: const Text('Track Package on Courier Website'),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: AppTheme.primaryColor,
+                                    side: const BorderSide(color: AppTheme.primaryColor),
+                                    padding: const EdgeInsets.symmetric(vertical: 10),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
                       // ── SELLER / BUSINESS DETAILS ──
                       _buildCard(
                         isDark: isDark,
@@ -875,18 +1006,18 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        order.sellerName.trim().isNotEmpty ? order.sellerName : 'FCI Seller Retail Pvt. Ltd.',
+                                        order.sellerName.trim().isNotEmpty ? order.sellerName : SellerConfig.name,
                                         style: TextStyle(fontSize: responsive.fontSize14, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        'Contact: ${order.sellerContact.trim().isNotEmpty ? order.sellerContact : "+91 9876543210"}',
+                                        'Contact: ${order.sellerContact.trim().isNotEmpty ? order.sellerContact : SellerConfig.contactNumber}',
                                         style: TextStyle(fontSize: responsive.fontSize12, fontWeight: FontWeight.w500, color: colorScheme.onSurface.withValues(alpha: 0.7)),
                                       ),
-                                      if (order.sellerAddress.trim().isNotEmpty) ...[
+                                      if (order.sellerAddress.trim().isNotEmpty || SellerConfig.address.isNotEmpty) ...[
                                         const SizedBox(height: 4),
                                         Text(
-                                          'Address: ${order.sellerAddress}',
+                                          'Address: ${order.sellerAddress.trim().isNotEmpty ? order.sellerAddress : SellerConfig.address}',
                                           style: TextStyle(fontSize: responsive.fontSize12, fontWeight: FontWeight.w500, color: colorScheme.onSurface.withValues(alpha: 0.7)),
                                         ),
                                       ],
@@ -1110,5 +1241,37 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
         );
       }),
     );
+  }
+
+  Future<void> _openCourierTracking(String courier, String awb, String? directUrl) async {
+    String url = directUrl ?? '';
+    if (url.isEmpty || !url.startsWith('http')) {
+      final c = courier.toLowerCase();
+      if (c.contains('delhivery')) {
+        url = 'https://www.delhivery.com/track/package/$awb';
+      } else if (c.contains('bluedart')) {
+        url = 'https://www.bluedart.com/tracking?handler=tnt&action=custtrack&trackid=$awb';
+      } else if (c.contains('dtdc')) {
+        url = 'https://www.dtdc.in/tracking/shipment-tracking.asp?trkType=awb&strCnno=$awb';
+      } else if (c.contains('xpressbees')) {
+        url = 'https://www.xpressbees.com/track?isAwb=true&trackid=$awb';
+      } else if (c.contains('india post') || c.contains('speed post')) {
+        url = 'https://www.indiapost.gov.in/_layouts/15/dpt.cpt.trackconsignment/tracking.aspx';
+      } else if (c.contains('shiprocket')) {
+        url = 'https://shiprocket.co/tracking/$awb';
+      } else {
+        url = 'https://www.google.com/search?q=${Uri.encodeComponent('$courier tracking $awb')}';
+      }
+    }
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open tracking URL')),
+        );
+      }
+    }
   }
 }

@@ -10,11 +10,15 @@ class OrdersApi {
     int page = 1,
     int limit = 20,
     String? status,
+    String? fromDate,
+    String? toDate,
   }) async {
     return await _apiService.get('/api/orders', queryParameters: {
       'page': page,
       'limit': limit,
       if (status != null) 'status': status,
+      if (fromDate != null) 'fromDate': fromDate,
+      if (toDate != null) 'toDate': toDate,
     });
   }
   

@@ -173,7 +173,7 @@ class AppTheme {
       fontFamily: GoogleFonts.plusJakartaSans().fontFamily,
       scaffoldBackgroundColor: backgroundColor,
       colorScheme: const ColorScheme(
-        brightness: Brightness.light,
+        brightness:       Brightness.light,
         primary:          primaryColor,
         onPrimary:        Colors.white,
         secondary:        secondaryColor,
@@ -185,6 +185,11 @@ class AppTheme {
         surface:          surfaceColor,
         onSurface:        textPrimaryColor,
         outline:          borderColor,
+      ),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: primaryColor,
+        selectionColor: primaryColor.withValues(alpha: 0.25),
+        selectionHandleColor: primaryColor,
       ),
       textTheme: textTheme,
       cardTheme: CardThemeData(
@@ -368,6 +373,11 @@ class AppTheme {
         surface:     AppColors.darkSurface,
         onSurface:   AppColors.darkTextPrimary,
         outline:     AppColors.darkBorder,
+      ),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: AppColors.darkPrimary,
+        selectionColor: AppColors.darkPrimary.withValues(alpha: 0.35),
+        selectionHandleColor: AppColors.darkPrimary,
       ),
       textTheme: textTheme,
       cardTheme: CardThemeData(
