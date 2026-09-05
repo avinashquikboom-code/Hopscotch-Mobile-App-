@@ -941,7 +941,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 color: AppTheme.primaryColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.card_giftcard_rounded,
                 color: AppTheme.primaryColor,
                 size: 22,

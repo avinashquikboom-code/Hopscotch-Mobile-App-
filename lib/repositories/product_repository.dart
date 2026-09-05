@@ -575,13 +575,13 @@ class ProductRepository {
       final result = await fetchProductPage(
         filters: ProductListFilters(categoryId: categoryIdOrName),
         page: 1,
-        limit: 100,
+        limit: listingPageSize,
       );
       if (result.products.isNotEmpty) return result.products;
 
       final allPages = await _fetchProductsWithQuery(
         {'categoryId': categoryIdOrName},
-        paginate: true,
+        paginate: false,
       );
       if (allPages.isNotEmpty) return allPages;
     } catch (e) {

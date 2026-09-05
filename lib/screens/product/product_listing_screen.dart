@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
-import 'package:hopscotch/repositories/product_repository.dart';
 import 'package:hopscotch/widgets/product_card.dart';
 import 'package:hopscotch/widgets/skeleton_loaders.dart';
 import 'package:hopscotch/models/product_model.dart';
 import 'package:hopscotch/utils/navigation_utils.dart';
 import 'package:hopscotch/widgets/vertical_product_feed.dart';
+import 'package:hopscotch/providers/product_list_provider.dart';
 import 'package:remixicon/remixicon.dart';
 
 class ProductListingScreen extends ConsumerStatefulWidget {
@@ -35,14 +35,6 @@ class ProductListingScreen extends ConsumerStatefulWidget {
 class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
   final ScrollController _scrollController = ScrollController();
 
-  List<ProductModel> _products = [];
-  bool _isInitialLoading = true;
-  bool _isLoadingMore = false;
-  bool _hasMore = true;
-  int _currentPage = 0;
-  int _totalCount = 0;
-  String? _error;
-
   String _sortBy = 'Recommended';
   String? _selectedSize;
   String? _selectedColor;
@@ -52,7 +44,6 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
-    _loadFirstPage();
   }
 
   @override
@@ -61,68 +52,55 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
     super.dispose();
   }
 
+  ProductListingParams _currentParams() {
+    String apiSort = 'newest';
+    switch (_sortBy) {
+      case 'LowToHigh':
+        apiSort = 'price_asc';
+        break;
+      case 'HighToLow':
+        apiSort = 'price_desc';
+        break;
+      case 'Rating':
+        apiSort = 'rating';
+        break;
+      case 'Recommended':
+      default:
+        apiSort = 'newest';
+    }
+
+    return ProductListingParams(
+      categoryId: widget.categoryId,
+      subCategoryId: widget.subCategoryId,
+      subcategory: widget.subcategory,
+      filter: widget.filter,
+      sort: apiSort,
+    );
+  }
+
   void _scrollListener() {
     if (!_scrollController.hasClients) return;
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      _loadMoreProducts();
+      final params = _currentParams();
+      ref.read(paginatedProductsProvider(params).notifier).loadMore();
     }
-  }
-
-  ProductListFilters _buildApiFilters() {
-    String? catId;
-    if (widget.subCategoryId != null && widget.subCategoryId!.isNotEmpty) {
-      catId = widget.subCategoryId;
-    } else if (widget.categoryId != null && widget.categoryId!.isNotEmpty) {
-      catId = widget.categoryId;
-    }
-
-    String sort = 'newest';
-    switch (_sortBy) {
-      case 'LowToHigh':
-        sort = 'price_asc';
-        break;
-      case 'HighToLow':
-        sort = 'price_desc';
-        break;
-      case 'Rating':
-        sort = 'rating';
-        break;
-      case 'Recommended':
-      default:
-        sort = 'newest';
-    }
-
-    final filterVal = widget.filter?.toLowerCase();
-    bool? trending;
-    bool? newArrival;
-    if (filterVal == 'trending' || filterVal == 'trending_products') {
-      trending = true;
-      if (_sortBy == 'Recommended') sort = 'popular';
-    } else if (filterVal == 'new' ||
-        filterVal == 'new_arrivals' ||
-        filterVal == 'newarrivals') {
-      newArrival = true;
-    } else if (filterVal == 'top_rated' && _sortBy == 'Recommended') {
-      sort = 'rating';
-    }
-
-    return ProductListFilters(
-      categoryId: catId,
-      isTrending: trending,
-      isNewArrival: newArrival,
-      sort: sort,
-    );
   }
 
   List<ProductModel> _applyLocalFilters(List<ProductModel> items) {
     var result = List<ProductModel>.from(items);
 
     if (_selectedSize != null) {
-      result = result.where((p) => p.sizes.contains(_selectedSize!)).toList();
+      final target = _selectedSize!.trim().toLowerCase();
+      result = result
+          .where((p) => p.sizes.any((s) => s.trim().toLowerCase() == target))
+          .toList();
     }
     if (_selectedColor != null) {
-      result = result.where((p) => p.colors.contains(_selectedColor!)).toList();
+      final target = _selectedColor!.trim().toLowerCase();
+      result = result
+          .where((p) => p.colors.any((c) => c.trim().toLowerCase() == target))
+          .toList();
     }
 
     if (_sortBy == 'Recommended') {
@@ -134,66 +112,20 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
     return result;
   }
 
-  Future<void> _loadFirstPage() async {
-    setState(() {
-      _isInitialLoading = true;
-      _error = null;
-      _products = [];
-      _currentPage = 0;
-      _hasMore = true;
-      _totalCount = 0;
-    });
-
-    await _fetchPage(1, reset: true);
-  }
-
-  Future<void> _fetchPage(int page, {bool reset = false}) async {
-    try {
-      final repo = ref.read(productRepositoryProvider);
-      final result = await repo.fetchProductPage(
-        filters: _buildApiFilters(),
-        page: page,
-      );
-
-      if (!mounted) return;
-
-      setState(() {
-        if (reset) {
-          _products = result.products;
-        } else {
-          final existingIds = _products.map((p) => p.id).toSet();
-          for (final p in result.products) {
-            if (!existingIds.contains(p.id)) {
-              _products.add(p);
-            }
-          }
-        }
-        _currentPage = page;
-        _hasMore = result.hasMore;
-        _totalCount = result.total;
-        _isInitialLoading = false;
-        _isLoadingMore = false;
-        _error = null;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _isInitialLoading = false;
-        _isLoadingMore = false;
-        if (reset) _error = e.toString();
-      });
-    }
-  }
-
-  void _loadMoreProducts() {
-    if (_isLoadingMore || !_hasMore || _isInitialLoading) return;
-
-    setState(() => _isLoadingMore = true);
-    _fetchPage(_currentPage + 1);
-  }
-
-  void _showFilterSortSheet() {
+  void _showFilterSortSheet(List<ProductModel> rawProducts) {
     final responsive = context.responsive;
+
+    // Dynamically derive sizes from the loaded products for this category
+    final loadedSizes = rawProducts
+        .expand((p) => p.sizes)
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toSet()
+        .toList();
+    final sizesToShow = loadedSizes.isNotEmpty
+        ? loadedSizes
+        : const ['XS', 'S', 'M', 'L', 'XL'];
+
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFFF8FAFC),
@@ -295,7 +227,7 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                     Wrap(
                       spacing: responsive.spacing(8),
                       runSpacing: responsive.spacing(8),
-                      children: ['XS', 'S', 'M', 'L', 'XL'].map((sz) {
+                      children: sizesToShow.map((sz) {
                         return _buildChip(
                           label: sz,
                           isSelected: _selectedSize == sz,
@@ -323,7 +255,6 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                                 });
                               });
                               context.pop();
-                              _loadFirstPage();
                             },
                             child: Text(
                               'Reset All',
@@ -336,7 +267,6 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                           child: ElevatedButton(
                             onPressed: () {
                               context.pop();
-                              _loadFirstPage();
                             },
                             child: Text(
                               'Apply',
@@ -403,9 +333,12 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
-    final displayProducts = _applyLocalFilters(_products);
-    final countLabel = _totalCount > 0
-        ? '$_totalCount Items'
+    final params = _currentParams();
+    final listingState = ref.watch(paginatedProductsProvider(params));
+
+    final displayProducts = _applyLocalFilters(listingState.products);
+    final countLabel = listingState.total > 0
+        ? '${listingState.total} Items'
         : '${displayProducts.length} Items';
 
     String headerTitle = widget.categoryName.trim();
@@ -464,13 +397,15 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
           ),
           IconButton(
             icon: Icon(Icons.tune_rounded, size: responsive.iconSize(24)),
-            onPressed: _showFilterSortSheet,
+            onPressed: () => _showFilterSortSheet(listingState.products),
           ),
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: _loadFirstPage,
-        child: _isInitialLoading
+        onRefresh: () async {
+          await ref.read(paginatedProductsProvider(params).notifier).refresh();
+        },
+        child: listingState.isLoading
             ? GridView.builder(
                 padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceXL)),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -484,7 +419,7 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                 itemCount: 6,
                 itemBuilder: (context, index) => const ProductCardSkeleton(),
               )
-            : _error != null
+            : listingState.hasError
                 ? ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     children: [
@@ -492,10 +427,24 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                       Center(
                         child: Column(
                           children: [
-                            const Text('Failed to load products'),
-                            const SizedBox(height: 12),
+                            Icon(
+                              Icons.error_outline_rounded,
+                              size: responsive.iconSize(64),
+                              color: AppTheme.errorColor,
+                            ),
+                            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
+                            Text(
+                              'Unable to load products',
+                              style: TextStyle(
+                                fontSize: responsive.fontSize20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: responsive.spacing(AppTheme.spaceS)),
                             ElevatedButton(
-                              onPressed: _loadFirstPage,
+                              onPressed: () => ref
+                                  .read(paginatedProductsProvider(params).notifier)
+                                  .refresh(),
                               child: const Text('Retry'),
                             ),
                           ],
@@ -528,6 +477,29 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
+                                SizedBox(
+                                  height: responsive.spacing(AppTheme.spaceS),
+                                ),
+                                Text(
+                                  'Try modifying your filters or sort choices.',
+                                  style: TextStyle(
+                                    fontSize: responsive.fontSize14,
+                                    color: AppTheme.textSecondaryColor,
+                                  ),
+                                ),
+                                if (_selectedSize != null ||
+                                    _selectedColor != null) ...[
+                                  const SizedBox(height: 16),
+                                  OutlinedButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _selectedSize = null;
+                                        _selectedColor = null;
+                                      });
+                                    },
+                                    child: const Text('Reset Filters'),
+                                  ),
+                                ],
                               ],
                             ),
                           ),
@@ -551,7 +523,8 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                                   ),
                                 ),
                                 GestureDetector(
-                                  onTap: _showFilterSortSheet,
+                                  onTap: () =>
+                                      _showFilterSortSheet(listingState.products),
                                   child: Row(
                                     children: [
                                       Text(
@@ -583,7 +556,8 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                                 ? VerticalProductFeed(
                                     products: displayProducts,
                                     scrollController: _scrollController,
-                                    loadingExtra: _isLoadingMore ? 2 : 0,
+                                    loadingExtra:
+                                        listingState.isLoadingMore ? 2 : 0,
                                     onTap: (product) => safeNavigate(
                                       context,
                                       '/product/${product.id}?heroTagPrefix=listing',
@@ -598,20 +572,20 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                                         SliverGridDelegateWithFixedCrossAxisCount(
                                       crossAxisCount:
                                           MediaQuery.of(context).size.width <
-                                              600
-                                          ? 2
-                                          : (MediaQuery.of(context)
-                                                      .size
-                                                      .width <
-                                                  900
-                                              ? 3
-                                              : 5),
+                                                  600
+                                              ? 2
+                                              : (MediaQuery.of(context)
+                                                          .size
+                                                          .width <
+                                                      900
+                                                  ? 3
+                                                  : 5),
                                       mainAxisSpacing: AppTheme.spaceL,
                                       crossAxisSpacing: AppTheme.spaceL,
                                       childAspectRatio: 0.58,
                                     ),
                                     itemCount: displayProducts.length +
-                                        (_isLoadingMore ? 2 : 0),
+                                        (listingState.isLoadingMore ? 2 : 0),
                                     itemBuilder: (context, index) {
                                       if (index >= displayProducts.length) {
                                         return const ProductCardSkeleton();

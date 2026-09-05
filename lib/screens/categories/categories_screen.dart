@@ -6,6 +6,7 @@ import 'package:hopscotch/repositories/category_repository.dart';
 import 'package:hopscotch/models/category_model.dart';
 import 'package:hopscotch/repositories/cart_wishlist_repository.dart';
 import 'package:hopscotch/repositories/product_repository.dart';
+import 'package:hopscotch/models/product_model.dart';
 import 'package:hopscotch/utils/navigation_utils.dart';
 import 'package:hopscotch/constants/app_urls.dart';
 
@@ -47,6 +48,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
           ProductRepository.clearCache();
           ref.invalidate(allCategoriesProvider);
           ref.invalidate(allProductsProvider);
+          ref.invalidate(categoryProductsProvider);
         },
         child: categoriesAsync.when(
           data: (categories) {
@@ -56,23 +58,27 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
 
           final selectedCategory = categories[_selectedCategoryIndex < categories.length ? _selectedCategoryIndex : 0];
           
-          // Get products from backend API for fallback / direct product binding
+          // Watch direct category products from backend API
+          final catProductsAsync = ref.watch(categoryProductsProvider(selectedCategory.id));
+          final directProducts = catProductsAsync.asData?.value ?? [];
           final allProducts = productsAsync.asData?.value ?? [];
-          final categoryProducts = allProducts.where((p) {
-            final targetId = selectedCategory.id.trim().toLowerCase();
-            final targetName = selectedCategory.name.trim().toLowerCase();
-            final pCatId = p.categoryId.trim().toLowerCase();
-            final pParentCatId = (p.parentCategoryId ?? '').trim().toLowerCase();
-            final pSubCatId = (p.subCategoryId ?? '').trim().toLowerCase();
-            final pSubName = p.subcategory.trim().toLowerCase();
-            final pSubCatName = (p.subCategoryName ?? '').trim().toLowerCase();
+          final categoryProducts = directProducts.isNotEmpty
+              ? List<ProductModel>.from(directProducts)
+              : allProducts.where((p) {
+                  final targetId = selectedCategory.id.trim().toLowerCase();
+                  final targetName = selectedCategory.name.trim().toLowerCase();
+                  final pCatId = p.categoryId.trim().toLowerCase();
+                  final pParentCatId = (p.parentCategoryId ?? '').trim().toLowerCase();
+                  final pSubCatId = (p.subCategoryId ?? '').trim().toLowerCase();
+                  final pSubName = p.subcategory.trim().toLowerCase();
+                  final pSubCatName = (p.subCategoryName ?? '').trim().toLowerCase();
 
-            return pCatId == targetId ||
-                   pParentCatId == targetId ||
-                   pSubCatId == targetId ||
-                   pSubName == targetName ||
-                   pSubCatName == targetName;
-          }).toList();
+                  return pCatId == targetId ||
+                         pParentCatId == targetId ||
+                         pSubCatId == targetId ||
+                         pSubName == targetName ||
+                         pSubCatName == targetName;
+                }).toList();
 
           // Sort category products so storefront New Arrival products appear first!
           categoryProducts.sort((a, b) {
