@@ -30,6 +30,7 @@ class AuthApi {
         'deviceId': deviceId,
         'sessionId': sessionId,
         'keepMeSignedIn': keepMeSignedIn,
+        'deviceType': 'mobile',
       },
     );
     
@@ -98,6 +99,7 @@ class AuthApi {
         'deviceId': deviceId,
         'sessionId': sessionId,
         'keepMeSignedIn': keepMeSignedIn,
+        'deviceType': 'mobile',
         'profileImage': await MultipartFile.fromFile(
           profileImage.path,
           filename: profileImage.path.split('/').last,
@@ -119,6 +121,7 @@ class AuthApi {
           'deviceId': deviceId,
           'sessionId': sessionId,
           'keepMeSignedIn': keepMeSignedIn,
+          'deviceType': 'mobile',
         },
       );
     }
