@@ -103,7 +103,7 @@ class TermsScreen extends StatelessWidget {
             SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
             _buildTermsSection(context,
               'Contact Us',
-              'For questions about these Terms of Service, please contact:\n\nEmail: legal@fciseller.com\nPhone: +91 1800-123-4567',
+              'For questions about these Terms of Service, please contact:\n\nEmail: fashioncityinidia18@gmail.com\nPhone: +91 96015 11596',
             ),
           ],
         ),

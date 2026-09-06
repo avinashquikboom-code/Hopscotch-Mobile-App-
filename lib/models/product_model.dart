@@ -227,6 +227,8 @@ class ProductModel {
   final double margin;
 
   String get name => title;
+  int get stock =>
+      variants.isNotEmpty ? variants.fold(0, (sum, v) => sum + v.stock) : 999;
 
   const ProductModel({
     required this.id,

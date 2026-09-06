@@ -79,11 +79,17 @@ class ConfigRepository {
             final name = (data['sellerName'] ?? data['siteName'] ?? '').toString();
             final phone = (data['sellerContactNumber'] ?? data['contactPhone'] ?? '').toString();
             final address = (data['sellerAddress'] ?? data['warehouseAddress'] ?? '').toString();
-            if (name.isNotEmpty || phone.isNotEmpty || address.isNotEmpty) {
+            final email = (data['sellerEmail'] ?? data['contactEmail'] ?? '').toString();
+            final city = (data['sellerCity'] ?? '').toString();
+            final state = (data['sellerState'] ?? '').toString();
+            if (name.isNotEmpty || phone.isNotEmpty || address.isNotEmpty || email.isNotEmpty) {
               return {
                 'sellerName': name,
                 'sellerContactNumber': phone,
                 'sellerAddress': address,
+                'sellerEmail': email,
+                'sellerCity': city,
+                'sellerState': state,
               };
             }
           }
@@ -96,6 +102,9 @@ class ConfigRepository {
       'sellerName': '',
       'sellerContactNumber': '',
       'sellerAddress': '',
+      'sellerEmail': '',
+      'sellerCity': '',
+      'sellerState': '',
     };
   }
 }

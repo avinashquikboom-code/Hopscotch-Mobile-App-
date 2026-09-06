@@ -127,7 +127,8 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
   }
 
   void updateQuantity(String cartItemId, int quantity) {
-    if (quantity <= 0) {
+    if (quantity < 0) return; // NEVER allow negative numbers
+    if (quantity == 0) {
       removeFromCart(cartItemId);
       return;
     }

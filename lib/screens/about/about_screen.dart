@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:hopscotch/constants/seller_constants.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 
@@ -160,13 +162,22 @@ class AboutScreen extends StatelessWidget {
             _buildContactItem(
               context,
               Icons.email_outlined,
-              'fashioncityinidia18@gmail.com',
+              SellerConfig.supportEmail,
+              onTap: () async {
+                final uri = Uri.parse('mailto:${SellerConfig.supportEmail}');
+                if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+              },
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceM)),
             _buildContactItem(
               context,
               Icons.phone_outlined,
-              '+91 1800-123-4567',
+              SellerConfig.contactNumber,
+              onTap: () async {
+                final phone = SellerConfig.contactNumber.replaceAll(' ', '').replaceAll('-', '');
+                final uri = Uri.parse('tel:$phone');
+                if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+              },
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceM)),
             _buildContactItem(
@@ -259,7 +270,7 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContactItem(BuildContext context, IconData icon, String text) {
+  Widget _buildContactItem(BuildContext context, IconData icon, String text, {VoidCallback? onTap}) {
     final responsive = context.responsive;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBg = isDark
@@ -272,28 +283,35 @@ class AboutScreen extends StatelessWidget {
         ? Theme.of(context).colorScheme.onSurface
         : AppTheme.textPrimaryColor;
 
-    return Container(
-      padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceM)),
-      decoration: BoxDecoration(
-        color: cardBg,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(AppTheme.radiusM),
-        border: Border.all(color: cardBorder, width: 1.5),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            color: AppTheme.primaryColor,
-            size: responsive.iconSize(20),
+        child: Container(
+          padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceM)),
+          decoration: BoxDecoration(
+            color: cardBg,
+            borderRadius: BorderRadius.circular(AppTheme.radiusM),
+            border: Border.all(color: cardBorder, width: 1.5),
           ),
-          SizedBox(width: responsive.spacing(AppTheme.spaceM)),
-          Text(
-            text,
-            style: responsive.bodyMedium.copyWith(
-              color: primaryTextColor,
-            ),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                color: AppTheme.primaryColor,
+                size: responsive.iconSize(20),
+              ),
+              SizedBox(width: responsive.spacing(AppTheme.spaceM)),
+              Text(
+                text,
+                style: responsive.bodyMedium.copyWith(
+                  color: primaryTextColor,
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:hopscotch/constants/seller_constants.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/widgets/custom_button.dart';
@@ -113,7 +115,11 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     context,
                     Icons.email_outlined,
                     'Email',
-                    'fashioncityinidia18@gmail.com',
+                    SellerConfig.supportEmail,
+                    onTap: () async {
+                      final uri = Uri.parse('mailto:${SellerConfig.supportEmail}');
+                      if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    },
                   ),
                 ),
                 SizedBox(width: responsive.spacing(AppTheme.spaceM)),
@@ -122,7 +128,12 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     context,
                     Icons.phone_outlined,
                     'Phone',
-                    '+91 1800-123-4567',
+                    SellerConfig.contactNumber,
+                    onTap: () async {
+                      final phone = SellerConfig.contactNumber.replaceAll(' ', '').replaceAll('-', '');
+                      final uri = Uri.parse('tel:$phone');
+                      if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    },
                   ),
                 ),
               ],
@@ -132,7 +143,12 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
               context,
               Icons.location_on_outlined,
               'Address',
-              '123 Fashion Street, Mumbai, Maharashtra 400001',
+              SellerConfig.address,
+              onTap: () async {
+                final query = Uri.encodeComponent(SellerConfig.address);
+                final uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$query');
+                if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+              },
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
             // Contact Form
@@ -321,8 +337,9 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     BuildContext context,
     IconData icon,
     String title,
-    String value,
-  ) {
+    String value, {
+    VoidCallback? onTap,
+  }) {
     final responsive = context.responsive;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBg = isDark
@@ -335,39 +352,46 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
         ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)
         : AppTheme.textLightColor;
 
-    return Container(
-      padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceM)),
-      decoration: BoxDecoration(
-        color: cardBg,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(AppTheme.radiusM),
-        border: Border.all(color: cardBorder, width: 1.5),
-        boxShadow: isDark ? null : AppTheme.softShadow,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            icon,
-            color: AppTheme.primaryColor,
-            size: responsive.iconSize(24),
+        child: Container(
+          padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceM)),
+          decoration: BoxDecoration(
+            color: cardBg,
+            borderRadius: BorderRadius.circular(AppTheme.radiusM),
+            border: Border.all(color: cardBorder, width: 1.5),
+            boxShadow: isDark ? null : AppTheme.softShadow,
           ),
-          SizedBox(height: responsive.spacing(AppTheme.spaceS)),
-          Text(
-            title,
-            style: responsive.bodySmall.copyWith(
-              color: lightTextColor,
-              letterSpacing: 0.5,
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                icon,
+                color: AppTheme.primaryColor,
+                size: responsive.iconSize(24),
+              ),
+              SizedBox(height: responsive.spacing(AppTheme.spaceS)),
+              Text(
+                title,
+                style: responsive.bodySmall.copyWith(
+                  color: lightTextColor,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              SizedBox(height: responsive.spacing(2)),
+              Text(
+                value,
+                style: responsive.bodyMedium.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: isDark ? Theme.of(context).colorScheme.onSurface : null,
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: responsive.spacing(2)),
-          Text(
-            value,
-            style: responsive.bodyMedium.copyWith(
-              fontWeight: FontWeight.w500,
-              color: isDark ? Theme.of(context).colorScheme.onSurface : null,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

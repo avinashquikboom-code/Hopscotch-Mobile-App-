@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:hopscotch/constants/seller_constants.dart';
+import 'package:hopscotch/repositories/config_repository.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/widgets/toast_notification.dart';
 
-class HelpCenterScreen extends StatefulWidget {
+class HelpCenterScreen extends ConsumerStatefulWidget {
   const HelpCenterScreen({super.key});
 
   @override
-  State<HelpCenterScreen> createState() => _HelpCenterScreenState();
+  ConsumerState<HelpCenterScreen> createState() => _HelpCenterScreenState();
 }
 
-class _HelpCenterScreenState extends State<HelpCenterScreen> {
+class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
   int? _expandedFaqIndex;
 
   final List<Map<String, String>> _faqs = [
@@ -39,60 +41,53 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     },
   ];
 
-  final List<Map<String, dynamic>> _contactOptions = [
-    {
-      'icon': Icons.chat_bubble_outline,
-      'title': 'Live Chat',
-      'subtitle': 'Chat with our support team',
-      'color': AppTheme.primaryColor,
-    },
-    {
-      'icon': Icons.phone_outlined,
-      'title': 'Call Us',
-      'subtitle': SellerConfig.contactNumber,
-      'color': Colors.green,
-    },
-    {
-      'icon': Icons.email_outlined,
-      'title': 'Email',
-      'subtitle': SellerConfig.supportEmail,
-      'color': Colors.blue,
-    },
-    {
-      'icon': Icons.location_on_outlined,
-      'title': 'Visit Store',
-      'subtitle': '${SellerConfig.city}, ${SellerConfig.state}',
-      'color': Colors.orange,
-    },
-  ];
-
-  Future<void> _handleContactOption(String title) async {
+  Future<void> _handleContactOption(
+    String title, {
+    required String phoneNum,
+    required String emailAddr,
+    required String addressText,
+  }) async {
     if (title == 'Call Us') {
-      final phone = SellerConfig.contactNumber.replaceAll(' ', '').replaceAll('-', '');
+      final phone = phoneNum.replaceAll(' ', '').replaceAll('-', '');
       final uri = Uri.parse('tel:$phone');
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
-        return;
-      }
+      try {
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+          return;
+        } else {
+          await launchUrl(uri);
+          return;
+        }
+      } catch (_) {}
     } else if (title == 'Email') {
-      final uri = Uri.parse('mailto:${SellerConfig.supportEmail}');
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
-        return;
-      }
+      final uri = Uri.parse('mailto:$emailAddr');
+      try {
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+          return;
+        } else {
+          await launchUrl(uri);
+          return;
+        }
+      } catch (_) {}
     } else if (title == 'Visit Store') {
-      final query = Uri.encodeComponent(SellerConfig.address);
+      final query = Uri.encodeComponent(addressText);
       final uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$query');
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-        return;
-      }
+      try {
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+          return;
+        } else {
+          await launchUrl(uri);
+          return;
+        }
+      } catch (_) {}
     }
 
     if (!mounted) return;
     ToastNotification.show(
       context,
-      message: 'Support: ${SellerConfig.supportEmail}',
+      message: 'Support: $emailAddr | Tel: $phoneNum',
       isError: false,
     );
   }
@@ -101,6 +96,57 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
   Widget build(BuildContext context) {
     final responsive = context.responsive;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final sellerInfoAsync = ref.watch(apiSellerInfoProvider);
+    final sellerData = sellerInfoAsync.valueOrNull;
+
+    final sellerPhone = (sellerData?['sellerContactNumber']?.trim().isNotEmpty == true)
+        ? sellerData!['sellerContactNumber']!.trim()
+        : SellerConfig.contactNumber;
+
+    final sellerEmail = (sellerData?['sellerEmail']?.trim().isNotEmpty == true)
+        ? sellerData!['sellerEmail']!.trim()
+        : SellerConfig.supportEmail;
+
+    final sellerAddress = (sellerData?['sellerAddress']?.trim().isNotEmpty == true)
+        ? sellerData!['sellerAddress']!.trim()
+        : SellerConfig.address;
+
+    final sellerCity = (sellerData?['sellerCity']?.trim().isNotEmpty == true)
+        ? sellerData!['sellerCity']!.trim()
+        : SellerConfig.city;
+
+    final sellerState = (sellerData?['sellerState']?.trim().isNotEmpty == true)
+        ? sellerData!['sellerState']!.trim()
+        : SellerConfig.state;
+
+    final List<Map<String, dynamic>> contactOptions = [
+      {
+        'icon': Icons.chat_bubble_outline,
+        'title': 'Live Chat',
+        'subtitle': 'Chat with our support team',
+        'color': AppTheme.primaryColor,
+      },
+      {
+        'icon': Icons.phone_outlined,
+        'title': 'Call Us',
+        'subtitle': sellerPhone,
+        'color': Colors.green,
+      },
+      {
+        'icon': Icons.email_outlined,
+        'title': 'Email',
+        'subtitle': sellerEmail,
+        'color': Colors.blue,
+      },
+      {
+        'icon': Icons.location_on_outlined,
+        'title': 'Visit Store',
+        'subtitle': '$sellerCity, $sellerState',
+        'color': Colors.orange,
+      },
+    ];
+
     return Scaffold(
       backgroundColor: isDark ? Theme.of(context).colorScheme.surface : const Color(0xFFF8FAFC),
       appBar: AppBar(
@@ -159,29 +205,39 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                 crossAxisSpacing: responsive.spacing(12),
                 mainAxisSpacing: responsive.spacing(12),
               ),
-              itemCount: _contactOptions.length,
+              itemCount: contactOptions.length,
               itemBuilder: (context, index) {
-                final option = _contactOptions[index];
+                final option = contactOptions[index];
+                final optionTitle = option['title'] as String;
+                final optionSubtitle = option['subtitle'] as String;
+                final optionColor = option['color'] as Color;
+                final optionIcon = option['icon'] as IconData;
+
                 return Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    onTap: () => _handleContactOption(option['title']),
+                    onTap: () => _handleContactOption(
+                      optionTitle,
+                      phoneNum: sellerPhone,
+                      emailAddr: sellerEmail,
+                      addressText: sellerAddress,
+                    ),
                     borderRadius: BorderRadius.circular(18),
                     child: Container(
                       decoration: BoxDecoration(
                         color: isDark
                             ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.8)
-                            : option['color'].withValues(alpha: 0.04),
+                            : optionColor.withValues(alpha: 0.04),
                         borderRadius: BorderRadius.circular(18),
                         border: Border.all(
-                          color: option['color'].withValues(alpha: 0.15),
+                          color: optionColor.withValues(alpha: 0.15),
                           width: 1.5,
                         ),
                         boxShadow: isDark
                             ? null
                             : [
                                 BoxShadow(
-                                  color: option['color'].withValues(alpha: 0.08),
+                                  color: optionColor.withValues(alpha: 0.08),
                                   blurRadius: 12,
                                   offset: const Offset(0, 4),
                                 ),
@@ -193,12 +249,12 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                           Container(
                             padding: EdgeInsets.all(responsive.spacing(12)),
                             decoration: BoxDecoration(
-                              color: option['color'].withValues(alpha: 0.12),
+                              color: optionColor.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(14),
                             ),
                             child: Icon(
-                              option['icon'],
-                              color: option['color'],
+                              optionIcon,
+                              color: optionColor,
                               size: responsive.iconSize(28),
                             ),
                           ),
@@ -206,7 +262,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                           Padding(
                             padding: EdgeInsets.symmetric(horizontal: responsive.spacing(8)),
                             child: Text(
-                              option['title'],
+                              optionTitle,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: responsive.fontSize12,
@@ -220,7 +276,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                             child: Padding(
                               padding: EdgeInsets.symmetric(horizontal: responsive.spacing(6)),
                               child: Text(
-                                option['subtitle'],
+                                optionSubtitle,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(

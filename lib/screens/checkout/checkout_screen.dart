@@ -18,6 +18,7 @@ import 'package:hopscotch/repositories/profile_repository.dart';
 import 'package:hopscotch/providers/coupon_provider.dart';
 import 'package:hopscotch/providers/gift_wrap_provider.dart';
 import 'package:hopscotch/providers/loyalty_provider.dart';
+import 'package:hopscotch/providers/checkout_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:hopscotch/constants/seller_constants.dart';
 
@@ -172,6 +173,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     _initRazorpay();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _autoFillDefaultAddress();
+      final cart = ref.read(cartProvider);
+      ref.read(checkoutProvider.notifier).initFromCart(cart);
     });
   }
 
@@ -446,6 +449,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     _zipController.dispose();
     _phoneController.dispose();
     try {
+      ref.read(checkoutProvider.notifier).reset();
+    } catch (_) {}
+    try {
       _razorpay.clear();
       dev.log('Razorpay instance cleared on widget dispose', name: 'Razorpay');
     } catch (_) {}
@@ -453,8 +459,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   double _calculateFinalTotalPayable() {
-    final cart = ref.read(cartProvider);
-    final cartNotifier = ref.read(cartProvider.notifier);
+    final checkoutState = ref.read(checkoutProvider);
+    if (checkoutState.totalQuantity == 0) return 0.0;
+
     final giftWrapConfig =
         ref.read(giftWrapConfigProvider).valueOrNull ??
         const GiftWrapConfig(enabled: true, charge: 49.0);
@@ -463,9 +470,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     double giftWrappingCost = giftWrapConfig.charge;
     double customGiftWrapSum = 0.0;
     bool hasCustomGiftWrap = false;
-    for (final item in cart) {
-      if (item.product.isGiftWrapAvailable && item.product.giftWrapCharge > 0) {
-        customGiftWrapSum += item.product.giftWrapCharge;
+    for (final item in checkoutState.items) {
+      if (item.quantity > 0 &&
+          item.product.isGiftWrapAvailable &&
+          item.product.giftWrapCharge > 0) {
+        customGiftWrapSum += (item.product.giftWrapCharge * item.quantity);
         hasCustomGiftWrap = true;
       }
     }
@@ -473,17 +482,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       giftWrappingCost = customGiftWrapSum;
     }
 
-    final giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled)
+    final giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled && checkoutState.totalQuantity > 0)
         ? giftWrappingCost
         : 0.0;
     final discount = ref
         .read(appliedCouponProvider.notifier)
-        .calculateDiscount(cartNotifier.subtotal);
+        .calculateDiscount(checkoutState.subtotal);
     final rawTotalPayable =
-        (cartNotifier.subtotal -
+        (checkoutState.subtotal -
                 discount +
-                cartNotifier.shippingFee +
-                cartNotifier.exclusiveTaxAmount +
+                checkoutState.shippingFee +
+                checkoutState.exclusiveTaxAmount +
                 giftWrapCharge)
             .clamp(0.0, double.infinity);
     return (rawTotalPayable * 100.0).roundToDouble() / 100.0;
@@ -497,7 +506,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     );
     _cancelRazorpayTimeout();
 
-    final cart = ref.read(cartProvider);
+    final checkoutState = ref.read(checkoutProvider);
+    final orderItems = checkoutState.activeOrderItems;
+    if (orderItems.isEmpty) return;
     final cartNotifier = ref.read(cartProvider.notifier);
     final address =
         '${_firstNameController.text} ${_lastNameController.text}, '
@@ -536,10 +547,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final order = await ref
           .read(orderProvider.notifier)
           .placeOrder(
-            items: cart,
-            subtotal: cartNotifier.subtotal,
-            shippingFee: cartNotifier.shippingFee,
-            taxAmount: cartNotifier.taxAmount,
+            items: orderItems,
+            subtotal: checkoutState.subtotal,
+            shippingFee: checkoutState.shippingFee,
+            taxAmount: checkoutState.taxAmount,
             totalAmount: finalTotal,
             address: address,
             addressId: (int.tryParse(_selectedAddressId ?? '') != null)
@@ -561,6 +572,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         name: 'Razorpay',
       );
       cartNotifier.clearCart();
+      ref.read(checkoutProvider.notifier).reset();
       if (mounted) context.go('/order-success?orderId=${order.id}');
     } catch (e, stackTrace) {
       dev.log(
@@ -631,14 +643,27 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   Future<void> _openRazorpay() async {
+    final checkoutState = ref.read(checkoutProvider);
+    if (checkoutState.totalQuantity <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please select at least 1 quantity.'),
+          backgroundColor: Colors.orange.shade800,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+      return;
+    }
     if (!_validateSellerDetails()) return;
-    final cart = ref.read(cartProvider);
-    if (cart.isEmpty) {
-      dev.log('Cart is empty, aborting Razorpay checkout', name: 'Razorpay');
+    final orderItems = checkoutState.activeOrderItems;
+    if (orderItems.isEmpty) {
+      dev.log('No items with quantity > 0, aborting Razorpay checkout', name: 'Razorpay');
       return;
     }
 
-    final cartNotifier = ref.read(cartProvider.notifier);
     final giftWrapConfig =
         ref.read(giftWrapConfigProvider).valueOrNull ??
         const GiftWrapConfig(enabled: true, charge: 49.0);
@@ -647,9 +672,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     double giftWrappingCost = giftWrapConfig.charge;
     double customGiftWrapSum = 0.0;
     bool hasCustomGiftWrap = false;
-    for (final item in cart) {
-      if (item.product.isGiftWrapAvailable && item.product.giftWrapCharge > 0) {
-        customGiftWrapSum += item.product.giftWrapCharge;
+    for (final item in checkoutState.items) {
+      if (item.quantity > 0 &&
+          item.product.isGiftWrapAvailable &&
+          item.product.giftWrapCharge > 0) {
+        customGiftWrapSum += (item.product.giftWrapCharge * item.quantity);
         hasCustomGiftWrap = true;
       }
     }
@@ -657,23 +684,23 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       giftWrappingCost = customGiftWrapSum;
     }
 
-    final giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled)
+    final giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled && checkoutState.totalQuantity > 0)
         ? giftWrappingCost
         : 0.0;
     final appliedCoupon = ref.read(appliedCouponProvider);
     final discount = ref
         .read(appliedCouponProvider.notifier)
-        .calculateDiscount(cartNotifier.subtotal);
+        .calculateDiscount(checkoutState.subtotal);
     final rawTotalPayable =
-        (cartNotifier.subtotal -
+        (checkoutState.subtotal -
         discount +
-        cartNotifier.shippingFee +
-        cartNotifier.exclusiveTaxAmount +
+        checkoutState.shippingFee +
+        checkoutState.exclusiveTaxAmount +
         giftWrapCharge);
     final totalAmount = (rawTotalPayable * 100.0).roundToDouble() / 100.0;
 
     dev.log(
-      'Initiating Razorpay checkout: itemsCount=${cart.length}, subtotal=₹${cartNotifier.subtotal}, discount=₹$discount, shipping=₹${cartNotifier.shippingFee}, tax=₹${cartNotifier.taxAmount}, giftWrap=₹$giftWrapCharge => totalAmount=₹$totalAmount',
+      'Initiating Razorpay checkout: itemsCount=${orderItems.length}, subtotal=₹${checkoutState.subtotal}, discount=₹$discount, shipping=₹${checkoutState.shippingFee}, tax=₹${checkoutState.taxAmount}, giftWrap=₹$giftWrapCharge => totalAmount=₹$totalAmount',
       name: 'Razorpay',
     );
 
@@ -694,7 +721,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           .read(paymentRepositoryProvider)
           .createRazorpayOrder(
             amount: totalAmount,
-            cartItems: cart,
+            cartItems: orderItems,
             couponCode: appliedCoupon?.code,
             discountAmount: discount,
             giftWrap: isGiftWrapped,
@@ -729,7 +756,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           'key': keyId,
           'amount': amount,
           'name': 'FCI Seller',
-          'description': '${cart.length} item(s) purchase',
+          'description': '${orderItems.length} item(s) purchase',
           'retry': {'enabled': true, 'max_count': 2},
           'send_sms_hash': true,
           if (razorpayOrderId != null && razorpayOrderId.isNotEmpty)
@@ -810,6 +837,21 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   // ── Place order ─────────────────────────────────────────────────────────
   Future<void> _handlePlaceOrder() async {
+    final checkoutState = ref.read(checkoutProvider);
+    if (checkoutState.totalQuantity <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please select at least 1 quantity.'),
+          backgroundColor: Colors.orange.shade800,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+      return;
+    }
+
     if (!_formKey.currentState!.validate()) return;
     if (!_validateSellerDetails()) return;
     final cart = ref.read(cartProvider);
@@ -840,13 +882,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final isGiftWrapped = ref.read(isGiftWrappedProvider);
       final seller = _effectiveSellerDetails();
       final loyaltyState = ref.read(loyaltyProvider);
+      final orderItems = checkoutState.activeOrderItems;
+
       final order = await ref
           .read(orderProvider.notifier)
           .placeOrder(
-            items: cart,
-            subtotal: cartNotifier.subtotal,
-            shippingFee: cartNotifier.shippingFee,
-            taxAmount: cartNotifier.taxAmount,
+            items: orderItems,
+            subtotal: checkoutState.subtotal,
+            shippingFee: checkoutState.shippingFee,
+            taxAmount: checkoutState.taxAmount,
             totalAmount: _calculateFinalTotalPayable(),
             address: address,
             addressId: (int.tryParse(_selectedAddressId ?? '') != null)
@@ -862,6 +906,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           );
 
       cartNotifier.clearCart();
+      ref.read(checkoutProvider.notifier).reset();
 
       ref
           .read(notificationProvider.notifier)
@@ -1546,19 +1591,27 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   Widget build(BuildContext context) {
     final responsive = context.responsive;
     final cart = ref.watch(cartProvider);
-    final cartNotifier = ref.read(cartProvider.notifier);
+    final checkoutState = ref.watch(checkoutProvider);
+    final checkoutNotifier = ref.read(checkoutProvider.notifier);
     final currency = ref.watch(currencyProvider);
     final giftWrapConfig =
         ref.watch(giftWrapConfigProvider).valueOrNull ??
         const GiftWrapConfig(enabled: true, charge: 49.0);
     final isGiftWrapped = ref.watch(isGiftWrappedProvider);
 
+    // Display items initialized with quantity 0
+    final displayItems = checkoutState.isInitialized
+        ? checkoutState.items
+        : cart.map((i) => i.copyWith(quantity: 0)).toList();
+
     double giftWrappingCost = giftWrapConfig.charge;
     double customGiftWrapSum = 0.0;
     bool hasCustomGiftWrap = false;
-    for (final item in cart) {
-      if (item.product.isGiftWrapAvailable && item.product.giftWrapCharge > 0) {
-        customGiftWrapSum += item.product.giftWrapCharge;
+    for (final item in displayItems) {
+      if (item.quantity > 0 &&
+          item.product.isGiftWrapAvailable &&
+          item.product.giftWrapCharge > 0) {
+        customGiftWrapSum += (item.product.giftWrapCharge * item.quantity);
         hasCustomGiftWrap = true;
       }
     }
@@ -1566,20 +1619,22 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       giftWrappingCost = customGiftWrapSum;
     }
 
-    final double giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled)
+    final double giftWrapCharge = (isGiftWrapped && giftWrapConfig.enabled && checkoutState.totalQuantity > 0)
         ? giftWrappingCost
         : 0.0;
     final appliedCoupon = ref.watch(appliedCouponProvider);
     final couponDiscount = ref
         .read(appliedCouponProvider.notifier)
-        .calculateDiscount(cartNotifier.subtotal);
-    final totalPayable =
-        (cartNotifier.subtotal -
+        .calculateDiscount(checkoutState.subtotal);
+    final rawTotalPayable = checkoutState.totalQuantity == 0
+        ? 0.0
+        : (checkoutState.subtotal -
                 couponDiscount +
-                cartNotifier.shippingFee +
-                cartNotifier.exclusiveTaxAmount +
+                checkoutState.shippingFee +
+                checkoutState.exclusiveTaxAmount +
                 giftWrapCharge)
             .clamp(0.0, double.infinity);
+    final totalPayable = (rawTotalPayable * 100.0).roundToDouble() / 100.0;
     final countriesAsync = ref.watch(apiCountriesProvider);
     final apiList = countriesAsync.value
         ?.map((c) => c['name']?.toString() ?? '')
@@ -2237,9 +2292,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               height: 60,
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
-                                itemCount: cart.length,
+                                itemCount: displayItems.length,
                                 itemBuilder: (context, idx) {
-                                  final item = cart[idx];
+                                  final item = displayItems[idx];
                                   return Container(
                                     margin: const EdgeInsets.only(right: 10),
                                     child: Stack(
@@ -2301,9 +2356,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               const SizedBox(height: 14),
                               const Divider(height: 1),
                               const SizedBox(height: 10),
-                              ...cart.map((item) {
+                              ...displayItems.map((item) {
                                 final itemTotal =
                                     item.product.price * item.quantity;
+                                final maxStock = item.product.stock;
+                                final canDecrement = item.quantity > 0;
+                                final canIncrement = maxStock <= 0 || item.quantity < maxStock;
+
                                 return Padding(
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 6,
@@ -2336,11 +2395,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             InkWell(
-                                              onTap: item.quantity > 1
-                                                  ? () => cartNotifier.updateQuantity(
-                                                        item.id,
-                                                        item.quantity - 1,
-                                                      )
+                                              onTap: canDecrement
+                                                  ? () {
+                                                      HapticFeedback.lightImpact();
+                                                      checkoutNotifier.decrement(item.id);
+                                                    }
                                                   : null,
                                               borderRadius:
                                                   const BorderRadius.horizontal(
@@ -2355,9 +2414,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                                 child: Icon(
                                                   Icons.remove,
                                                   size: 13,
-                                                  color: item.quantity > 1
+                                                  color: canDecrement
                                                       ? colorScheme.onSurface
-                                                      : Colors.grey,
+                                                      : colorScheme.outline.withValues(alpha: 0.3),
                                                 ),
                                               ),
                                             ),
@@ -2377,10 +2436,20 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                               ),
                                             ),
                                             InkWell(
-                                              onTap: () => cartNotifier.updateQuantity(
-                                                item.id,
-                                                item.quantity + 1,
-                                              ),
+                                              onTap: canIncrement
+                                                  ? () {
+                                                      HapticFeedback.lightImpact();
+                                                      checkoutNotifier.increment(item.id);
+                                                    }
+                                                  : () {
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(
+                                                          content: Text('Only $maxStock available in stock'),
+                                                          duration: const Duration(seconds: 1),
+                                                          behavior: SnackBarBehavior.floating,
+                                                        ),
+                                                      );
+                                                    },
                                               borderRadius:
                                                   const BorderRadius.horizontal(
                                                 right: Radius.circular(5),
@@ -2394,7 +2463,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                                 child: Icon(
                                                   Icons.add,
                                                   size: 13,
-                                                  color: colorScheme.onSurface,
+                                                  color: canIncrement
+                                                      ? colorScheme.onSurface
+                                                      : colorScheme.outline.withValues(alpha: 0.3),
                                                 ),
                                               ),
                                             ),
@@ -2424,7 +2495,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               responsive,
                               colorScheme,
                               'Subtotal',
-                              currency.formatPrice(cartNotifier.subtotal),
+                              currency.formatPrice(checkoutState.subtotal),
                             ),
                             if (couponDiscount > 0) ...[
                               const SizedBox(height: 10),
@@ -2461,11 +2532,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               responsive,
                               colorScheme,
                               'Delivery Charge',
-                              currency.formatPrice(cartNotifier.shippingFee),
+                              currency.formatPrice(checkoutState.shippingFee),
                             ),
                             const SizedBox(height: 10),
-                            if (cartNotifier.taxBreakdown.length > 1) ...[
-                              for (final item in cartNotifier.taxBreakdown) ...[
+                            if (checkoutState.taxBreakdown.length > 1) ...[
+                              for (final item in checkoutState.taxBreakdown) ...[
                                 const SizedBox(height: 6),
                                 _priceRow(
                                   responsive,
@@ -2476,34 +2547,27 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                   ),
                                 ),
                               ],
-                            ] else if (cartNotifier
+                            ] else if (checkoutState
                                 .taxBreakdown
                                 .isNotEmpty) ...[
                               _priceRow(
                                 responsive,
                                 colorScheme,
-                                cartNotifier.taxBreakdown.first['name'] as String,
+                                checkoutState.taxBreakdown.first['name'] as String,
                                 currency.formatPrice(
-                                  cartNotifier.taxBreakdown.first['taxAmount']
+                                  checkoutState.taxBreakdown.first['taxAmount']
                                       as double,
                                 ),
-                              ),
-                            ] else if (cartNotifier.taxAmount > 0) ...[
-                              _priceRow(
-                                responsive,
-                                colorScheme,
-                                'Taxes',
-                                currency.formatPrice(cartNotifier.taxAmount),
                               ),
                             ] else ...[
                               _priceRow(
                                 responsive,
                                 colorScheme,
                                 'Taxes',
-                                currency.formatPrice(cartNotifier.taxAmount),
+                                currency.formatPrice(checkoutState.taxAmount),
                               ),
                             ],
-                            if (isGiftWrapped && giftWrapConfig.enabled) ...[
+                            if (isGiftWrapped && giftWrapConfig.enabled && checkoutState.totalQuantity > 0) ...[
                               const SizedBox(height: 10),
                               _priceRow(
                                 responsive,
@@ -2611,12 +2675,34 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         Expanded(
                           flex: 4,
                           child: GestureDetector(
-                            onTap: _isPlacingOrder ? null : _handlePlaceOrder,
+                            onTap: _isPlacingOrder
+                                ? null
+                                : () {
+                                    if (checkoutState.totalQuantity <= 0) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: const Text(
+                                            'Please select at least 1 quantity.',
+                                          ),
+                                          backgroundColor:
+                                              Colors.orange.shade800,
+                                          behavior: SnackBarBehavior.floating,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                      );
+                                      return;
+                                    }
+                                    _handlePlaceOrder();
+                                  },
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
                               height: 54,
                               decoration: BoxDecoration(
-                                gradient: _isPlacingOrder
+                                gradient: (_isPlacingOrder ||
+                                        checkoutState.totalQuantity <= 0)
                                     ? null
                                     : const LinearGradient(
                                         colors: [
@@ -2626,13 +2712,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                         begin: Alignment.centerLeft,
                                         end: Alignment.centerRight,
                                       ),
-                                color: _isPlacingOrder
-                                    ? AppTheme.primaryColor.withValues(
-                                        alpha: 0.5,
-                                      )
+                                color: (_isPlacingOrder ||
+                                        checkoutState.totalQuantity <= 0)
+                                    ? (isDark
+                                        ? Colors.grey.shade800
+                                        : Colors.grey.shade400)
                                     : null,
                                 borderRadius: BorderRadius.circular(16),
-                                boxShadow: _isPlacingOrder
+                                boxShadow: (_isPlacingOrder ||
+                                        checkoutState.totalQuantity <= 0)
                                     ? null
                                     : [
                                         BoxShadow(

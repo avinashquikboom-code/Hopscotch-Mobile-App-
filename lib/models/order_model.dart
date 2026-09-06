@@ -1,3 +1,4 @@
+import 'package:hopscotch/constants/seller_constants.dart';
 import 'package:hopscotch/models/cart_item_model.dart';
 
 class OrderModel {
@@ -13,8 +14,9 @@ class OrderModel {
   final String? awbNumber;
   final String? courierName;
   final String? trackingUrl;
-  final double taxAmount;
+  final String? invoiceUrl;
   final double subtotal;
+  final double taxAmount;
   final double shippingFee;
   final bool giftWrapped;
   final double giftWrapCharge;
@@ -32,7 +34,7 @@ class OrderModel {
     return '#ORD-$id';
   }
 
-  const OrderModel({
+  OrderModel({
     required this.id,
     this.orderNumber,
     required this.items,
@@ -45,14 +47,15 @@ class OrderModel {
     this.awbNumber,
     this.courierName,
     this.trackingUrl,
-    this.taxAmount = 0.0,
+    this.invoiceUrl,
     this.subtotal = 0.0,
+    this.taxAmount = 0.0,
     this.shippingFee = 0.0,
     this.giftWrapped = false,
     this.giftWrapCharge = 0.0,
-    this.sellerName = 'FCI Seller Retail Pvt. Ltd.',
-    this.sellerContact = '+91 9876543210',
-    this.sellerAddress = '',
+    this.sellerName = SellerConfig.name,
+    this.sellerContact = SellerConfig.contactNumber,
+    this.sellerAddress = SellerConfig.address,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -70,9 +73,9 @@ class OrderModel {
     final isGiftWrapped = json['giftWrapped'] == true || json['gift_wrapped'] == true;
     final giftWrapCharge = _asDouble(json['giftWrapCharge'] ?? json['gift_wrap_charge']);
 
-    final sellerName = (json['sellerNameSnapshot'] ?? json['sellerName'] ?? json['seller_name'] ?? 'FCI Seller Retail Pvt. Ltd.').toString();
-    final sellerContact = (json['sellerContactSnapshot'] ?? json['sellerContact'] ?? json['seller_contact'] ?? json['sellerContactNumber'] ?? '+91 9876543210').toString();
-    final sellerAddress = (json['sellerAddressSnapshot'] ?? json['sellerAddress'] ?? json['seller_address'] ?? '').toString();
+    final sellerName = (json['sellerNameSnapshot'] ?? json['sellerName'] ?? json['seller_name'] ?? SellerConfig.name).toString();
+    final sellerContact = (json['sellerContactSnapshot'] ?? json['sellerContact'] ?? json['seller_contact'] ?? json['sellerContactNumber'] ?? SellerConfig.contactNumber).toString();
+    final sellerAddress = (json['sellerAddressSnapshot'] ?? json['sellerAddress'] ?? json['seller_address'] ?? SellerConfig.address).toString();
 
     final parsedTotal = json['totalAmount'] is num
         ? (json['totalAmount'] as num).toDouble()

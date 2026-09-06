@@ -8,5 +8,5 @@ class SellerConfig {
   static const String state = 'Gujarat';
   static const String pincode = '380007';
   static const String country = 'India';
-  static const String contactNumber = '+91 9876543210';
+  static const String contactNumber = '+91 96015 11596';
 }
