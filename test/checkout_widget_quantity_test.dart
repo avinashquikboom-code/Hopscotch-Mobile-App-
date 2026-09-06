@@ -103,7 +103,7 @@ void main() {
 
     // 1. Initial quantity must be 0
     expect(find.text('Qty: 0'), findsOneWidget);
-    expect(find.text('Total: ₹0'), findsOneWidget);
+    expect(find.text('Total: ₹0.00'), findsOneWidget);
 
     // 2. Minus button must be disabled (IconButton with onPressed: null has no tap handling)
     final minusButton = tester.widget<IconButton>(find.byKey(const Key('minus_btn')));
@@ -119,7 +119,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Qty: 1'), findsOneWidget);
-    expect(find.text('Total: ₹500'), findsOneWidget);
+    expect(find.text('Total: ₹500.00'), findsOneWidget);
 
     // Minus button must now be enabled
     final minusButtonEnabled = tester.widget<IconButton>(find.byKey(const Key('minus_btn')));
@@ -130,7 +130,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Qty: 0'), findsOneWidget);
-    expect(find.text('Total: ₹0'), findsOneWidget);
+    expect(find.text('Total: ₹0.00'), findsOneWidget);
 
     final minusButtonDisabledAgain =
         tester.widget<IconButton>(find.byKey(const Key('minus_btn')));
