@@ -30,7 +30,7 @@ void main() {
       shippingCharge: 40.0,
     );
 
-    final cartItem = CartItemModel(
+    const cartItem = CartItemModel(
       id: 'cart_item_1',
       product: testProduct,
       quantity: 1, // entered from cart with qty 1

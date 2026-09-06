@@ -29,7 +29,7 @@ void main() {
       ],
     );
 
-    final cartItem = CartItemModel(
+    const cartItem = CartItemModel(
       id: 'item_1',
       product: testProduct,
       quantity: 1,
