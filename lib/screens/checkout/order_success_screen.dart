@@ -94,6 +94,11 @@ class _OrderSuccessScreenState extends ConsumerState<OrderSuccessScreen>
     final responsive = context.responsive;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    final orderAsync = ref.watch(orderDetailProvider(widget.orderId));
+    final order = orderAsync.valueOrNull;
+    final isCod = order?.paymentMethod.toUpperCase() == 'COD' ||
+        order?.paymentMethod.toLowerCase() == 'cash on delivery';
+
     const primaryColor = AppTheme.primaryColor;
     const Color successColor = Color(0xFF10B981);
     final cardBgColor = isDark ? const Color(0xFF1E293B) : Colors.white;
@@ -197,7 +202,7 @@ class _OrderSuccessScreenState extends ConsumerState<OrderSuccessScreen>
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              'PAYMENT CONFIRMED',
+                              isCod ? 'ORDER CONFIRMED (COD)' : 'PAYMENT CONFIRMED',
                               style: TextStyle(
                                 color: successColor,
                                 fontWeight: FontWeight.w700,
@@ -440,7 +445,11 @@ class _OrderSuccessScreenState extends ConsumerState<OrderSuccessScreen>
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        'Online Payment / Cash on Delivery',
+                                        isCod
+                                            ? 'Cash on Delivery'
+                                            : (order != null && order.paymentMethod.isNotEmpty
+                                                ? (order.paymentMethod == 'RAZORPAY' ? 'Online Payment (Razorpay)' : order.paymentMethod)
+                                                : 'Cash on Delivery / Online'),
                                         style: TextStyle(
                                           color: textColor,
                                           fontSize: responsive.fontSize13,
@@ -565,6 +574,23 @@ class _OrderSuccessScreenState extends ConsumerState<OrderSuccessScreen>
                                   behavior: SnackBarBehavior.floating,
                                 ),
                               );
+                            }
+                          },
+                        ),
+                      ),
+
+                      SizedBox(height: responsive.spacing(12)),
+
+                      SizedBox(
+                        height: responsive.spacing(54),
+                        width: double.infinity,
+                        child: CustomButton(
+                          text: 'VIEW ORDER DETAILS',
+                          onPressed: () {
+                            if (widget.orderId.isNotEmpty) {
+                              context.go('/order-detail?id=${widget.orderId}');
+                            } else {
+                              context.go('/my-orders');
                             }
                           },
                         ),

@@ -225,8 +225,10 @@ class ProductModel {
   final bool allowEarning;
   final String appliedRuleType;
   final double margin;
+  final bool isCodAllowed;
 
   String get name => title;
+  bool get codAllowed => isCodAllowed;
   int get stock =>
       variants.isNotEmpty ? variants.fold(0, (sum, v) => sum + v.stock) : 999;
 
@@ -267,6 +269,7 @@ class ProductModel {
     this.allowRedemption = true,
     this.allowEarning = true,
     this.appliedRuleType = 'GLOBAL',
+    this.isCodAllowed = true,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -500,6 +503,15 @@ class ProductModel {
       allowEarning: _asBool(json['allowEarning'] ?? json['allow_earning'] ?? json['allowRewardEarning'], true),
       appliedRuleType: _asString(json['appliedRuleType'] ?? json['applied_rule_type'], 'GLOBAL'),
       margin: _asDouble(json['margin'] ?? json['maxMargin'] ?? json['max_margin'] ?? json['margin_ceiling']),
+      isCodAllowed: _asBool(
+        json['isCodAllowed'] ??
+            json['is_cod_allowed'] ??
+            json['codAllowed'] ??
+            json['cod_allowed'] ??
+            json['allowCod'] ??
+            json['allow_cod'],
+        true,
+      ),
     );
   }
 
@@ -532,6 +544,8 @@ class ProductModel {
       'taxType': taxType,
       'hsnCode': hsnCode,
       'shippingCharge': shippingCharge,
+      'isCodAllowed': isCodAllowed,
+      'codAllowed': isCodAllowed,
     };
   }
 
@@ -568,6 +582,7 @@ class ProductModel {
     double? taxPercent,
     String? taxType,
     String? hsnCode,
+    bool? isCodAllowed,
   }) {
     return ProductModel(
       id: id ?? this.id,
@@ -592,6 +607,7 @@ class ProductModel {
       taxPercent: taxPercent ?? this.taxPercent,
       taxType: taxType ?? this.taxType,
       hsnCode: hsnCode ?? this.hsnCode,
+      isCodAllowed: isCodAllowed ?? this.isCodAllowed,
     );
   }
 

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hopscotch/api/orders_api.dart';
 import 'package:hopscotch/constants/seller_constants.dart';
@@ -114,6 +115,23 @@ class OrderNotifier extends StateNotifier<AsyncValue<List<OrderModel>>> {
       await fetchOrders();
       return newOrder;
     } catch (e) {
+      if (e is DioException && e.response != null) {
+        final resData = e.response?.data;
+        String? serverMsg;
+        if (resData is Map) {
+          serverMsg = resData['message']?.toString() ?? resData['error']?.toString();
+        }
+        final statusCode = e.response?.statusCode;
+        if (statusCode == 401) {
+          throw Exception('Your session has expired. Please log in again.');
+        } else if (statusCode == 400 && serverMsg != null && serverMsg.isNotEmpty) {
+          throw Exception(serverMsg);
+        } else if (serverMsg != null && serverMsg.isNotEmpty) {
+          throw Exception(serverMsg);
+        } else {
+          throw Exception('Unable to place your order right now. Please try again.');
+        }
+      }
       // Create local fallback if offline/guest mode
       final itemsSubtotal = items?.fold<double>(
             0.0,

@@ -99,7 +99,11 @@ class OrderModel {
       orderDate: (json['orderDate'] ?? json['createdAt'] ?? json['created_at'] ?? '').toString(),
       status: (json['status'] ?? 'Pending').toString(),
       shippingAddress: _parseAddress(json['shippingAddress'] ?? json['address']),
-      paymentMethod: (json['paymentMethod'] ?? json['payment_method'] ?? '').toString(),
+      paymentMethod: (json['paymentMethod'] ??
+              json['payment_method'] ??
+              (json['payment'] is Map ? json['payment']['method'] : null) ??
+              '')
+          .toString(),
       trackingNumber: awbNumber ?? (json['trackingNumber'] as String? ?? json['tracking_number'] as String?),
       awbNumber: awbNumber,
       courierName: courierName,

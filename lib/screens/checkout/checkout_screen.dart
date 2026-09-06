@@ -109,7 +109,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   String _selectedCountry = 'India';
 
   // ── Payment ─────────────────────────────────────────────────────────────
-  String _selectedPayment = 'Razorpay';
+  String _selectedPayment = 'RAZORPAY';
   bool _isPlacingOrder = false;
   String? _paymentProcessingStep;
 
@@ -857,20 +857,28 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final cart = ref.read(cartProvider);
     if (cart.isEmpty) return;
 
-    if (_selectedPayment == 'Razorpay') {
+    if (_selectedPayment == 'RAZORPAY' || _selectedPayment == 'Razorpay') {
       _openRazorpay();
       return;
     }
 
+    final canonicalPaymentMethod = (_selectedPayment == 'Cash on Delivery' || _selectedPayment == 'COD')
+        ? 'COD'
+        : _selectedPayment;
+
     setState(() {
       _isPlacingOrder = true;
-      _paymentProcessingStep = 'AUTHENTICATING BILLING KEY...';
+      _paymentProcessingStep = canonicalPaymentMethod == 'COD'
+          ? 'CREATING ORDER...'
+          : 'AUTHENTICATING BILLING KEY...';
     });
-    await Future.delayed(const Duration(milliseconds: 900));
+    await Future.delayed(const Duration(milliseconds: 600));
     if (mounted) {
-      setState(() => _paymentProcessingStep = 'PROCESSING PAYMENT...');
+      setState(() => _paymentProcessingStep = canonicalPaymentMethod == 'COD'
+          ? 'CONFIRMING CASH ON DELIVERY...'
+          : 'PROCESSING PAYMENT...');
     }
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(const Duration(milliseconds: 600));
 
     try {
       final cartNotifier = ref.read(cartProvider.notifier);
@@ -896,7 +904,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             addressId: (int.tryParse(_selectedAddressId ?? '') != null)
                 ? _selectedAddressId
                 : null,
-            paymentMethod: _selectedPayment,
+            paymentMethod: canonicalPaymentMethod,
             giftWrap: isGiftWrapped,
             sellerName: seller['name'],
             sellerContact: seller['contact'],
@@ -924,9 +932,21 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       if (mounted) context.go('/order-success?orderId=${order.id}');
     } catch (e) {
       if (mounted) {
+        final message = e.toString().replaceFirst('Exception: ', '');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to place order: $e'),
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline_rounded, color: Colors.white, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    message,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -1295,19 +1315,21 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     ColorScheme colorScheme,
     String name,
     IconData icon, {
+    String? value,
     String? subtitle,
     Color? color,
     String? badgeText,
     bool isEnabled = true,
   }) {
-    final isSelected = _selectedPayment == name;
+    final paymentValue = value ?? name;
+    final isSelected = _selectedPayment == paymentValue || _selectedPayment == name;
     final themeColor = color ?? AppTheme.primaryColor;
 
     return GestureDetector(
       onTap: isEnabled
           ? () {
               HapticFeedback.selectionClick();
-              setState(() => _selectedPayment = name);
+              setState(() => _selectedPayment = paymentValue);
             }
           : null,
       child: Opacity(
@@ -2201,6 +2223,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               colorScheme,
                               'Razorpay',
                               Icons.bolt_rounded,
+                              value: 'RAZORPAY',
                               subtitle:
                                   'Instant UPI (Google Pay, PhonePe), Cards & NetBanking',
                               color: const Color(0xFF0D9488),
@@ -2209,10 +2232,20 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             const SizedBox(height: 12),
                             Builder(
                               builder: (context) {
-                                final isCodAllowed = !cart.any((item) {
-                                  final p = item.product;
-                                  return (p as dynamic).isCodAllowed == false || (p as dynamic).codAllowed == false;
-                                });
+                                final isCodAllowed = !cart.any((item) => item.product.isCodAllowed == false);
+                                final isSingleProduct = cart.length == 1;
+                                final codUnavailableMessage = isSingleProduct
+                                    ? 'Cash on Delivery is not available for this product.'
+                                    : 'Cash on Delivery is not available for one or more products in your cart.';
+
+                                if (!isCodAllowed && (_selectedPayment == 'COD' || _selectedPayment == 'Cash on Delivery')) {
+                                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                                    if (mounted) {
+                                      setState(() => _selectedPayment = 'RAZORPAY');
+                                    }
+                                  });
+                                }
+
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -2222,9 +2255,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                       colorScheme,
                                       'Cash on Delivery',
                                       Icons.payments_rounded,
+                                      value: 'COD',
                                       subtitle: isCodAllowed
                                           ? 'Pay via Cash / UPI upon order delivery at door'
-                                          : 'Unavailable: one or more items requires online payment',
+                                          : codUnavailableMessage,
                                       color: const Color(0xFF047857),
                                       isEnabled: isCodAllowed,
                                       badgeText: isCodAllowed ? null : 'DISABLED',
@@ -2233,7 +2267,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                       Padding(
                                         padding: const EdgeInsets.only(top: 8, left: 4),
                                         child: Text(
-                                          '⚠️ Cash on Delivery is disabled because an item in your cart requires online payment.',
+                                          '⚠️ $codUnavailableMessage',
                                           style: TextStyle(
                                             fontSize: responsive.fontSize10,
                                             color: Colors.amber.shade800,
@@ -2797,7 +2831,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                             MainAxisAlignment.center,
                                         children: [
                                           Icon(
-                                            _selectedPayment == 'Razorpay'
+                                            (_selectedPayment == 'Razorpay' ||
+                                                    _selectedPayment == 'RAZORPAY')
                                                 ? Icons.lock_rounded
                                                 : Icons.check_circle_rounded,
                                             size: 18,
@@ -2805,7 +2840,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                           ),
                                           const SizedBox(width: 8),
                                           Text(
-                                            _selectedPayment == 'Razorpay'
+                                            (_selectedPayment == 'Razorpay' ||
+                                                    _selectedPayment == 'RAZORPAY')
                                                 ? 'PAY NOW'
                                                 : 'PLACE ORDER',
                                             style: const TextStyle(
