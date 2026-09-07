@@ -53,7 +53,7 @@ class _LanguageSelectionScreenState
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(40),
                         child: Image.asset(
-                          'assets/images/logo.png',
+                          'assets/images/app_logo.jpeg',
                           width: responsive.spacing(64),
                           height: responsive.spacing(64),
                           fit: BoxFit.contain,
