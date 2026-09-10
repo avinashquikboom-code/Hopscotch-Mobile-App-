@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hopscotch/models/cart_item_model.dart';
+import 'package:hopscotch/repositories/cart_wishlist_repository.dart';
 
 class CheckoutState {
   final List<CartItemModel> items;
@@ -143,89 +144,122 @@ class CheckoutState {
   List<CartItemModel> get activeOrderItems =>
       items.where((item) => item.quantity > 0).toList();
 
-  bool get canPlaceOrder => totalQuantity > 0;
+  bool get canPlaceOrder => totalQuantity > 0 && items.isNotEmpty;
 }
 
 class CheckoutNotifier extends StateNotifier<CheckoutState> {
-  CheckoutNotifier() : super(const CheckoutState());
+  final Ref? _ref;
+
+  CheckoutNotifier([this._ref]) : super(const CheckoutState());
 
   /// Initialize checkout items from cart.
-  /// Every item starts at quantity 0 per checkout requirement.
+  /// Quantities always start at cart quantity (minimum 1, never 0).
   void initFromCart(List<CartItemModel> cartItems) {
     if (cartItems.isEmpty) {
       state = const CheckoutState(items: [], isInitialized: true);
       return;
     }
-    // Set all initial quantities to 0
+    // Items must initialize to their cart quantity (strictly >= 1, never 0)
     final checkoutItems = cartItems
-        .map((item) => item.copyWith(quantity: 0))
+        .where((item) => item.quantity > 0)
+        .map((item) => item.copyWith(
+              quantity: item.quantity > 0 ? item.quantity : 1,
+            ))
         .toList();
     state = CheckoutState(items: checkoutItems, isInitialized: true);
   }
 
   /// Increment quantity with stock limit check.
-  /// 0 -> 1 -> 2 -> 3 -> ...
+  /// 1 -> 2 -> 3 -> 4 -> 5 ...
   void increment(String itemId) {
-    state = state.copyWith(
-      items: [
-        for (final item in state.items)
-          if (item.id == itemId)
-            _incrementItem(item)
-          else
-            item,
-      ],
-    );
-  }
+    final itemIndex = state.items.indexWhere((i) => i.id == itemId);
+    if (itemIndex == -1) return;
 
-  CartItemModel _incrementItem(CartItemModel item) {
+    final item = state.items[itemIndex];
     final maxStock = item.product.stock;
     if (maxStock > 0 && item.quantity >= maxStock) {
-      return item; // respect inventory limit
+      return; // respect inventory limit
     }
-    return item.copyWith(quantity: item.quantity + 1);
+
+    final newQty = item.quantity + 1;
+    state = state.copyWith(
+      items: [
+        for (int i = 0; i < state.items.length; i++)
+          if (i == itemIndex)
+            state.items[i].copyWith(quantity: newQty)
+          else
+            state.items[i],
+      ],
+    );
+
+    // Sync with Riverpod cartProvider
+    _ref?.read(cartProvider.notifier).updateQuantity(itemId, newQty);
   }
 
-  /// Decrement quantity down to 0, never negative.
-  /// 4 -> 3 -> 2 -> 1 -> 0.
-  /// At 0: does not decrease further.
+  /// Decrement quantity down to 0.
+  /// 5 -> 4 -> 3 -> 2 -> 1 -> 0.
+  /// When quantity reaches 0:
+  /// THE PRODUCT MUST BE REMOVED FROM THE CART/CHECKOUT.
+  /// Do NOT leave [ − ] 0 [ + ] inside the Order Summary.
   void decrement(String itemId) {
-    state = state.copyWith(
-      items: [
-        for (final item in state.items)
-          if (item.id == itemId)
-            _decrementItem(item)
-          else
-            item,
-      ],
-    );
-  }
+    final itemIndex = state.items.indexWhere((i) => i.id == itemId);
+    if (itemIndex == -1) return;
 
-  CartItemModel _decrementItem(CartItemModel item) {
-    if (item.quantity <= 0) {
-      return item.copyWith(quantity: 0);
+    final item = state.items[itemIndex];
+    if (item.quantity <= 1) {
+      // Remove product immediately when reaching 0
+      removeItem(itemId);
+    } else {
+      final newQty = item.quantity - 1;
+      state = state.copyWith(
+        items: [
+          for (int i = 0; i < state.items.length; i++)
+            if (i == itemIndex)
+              state.items[i].copyWith(quantity: newQty)
+            else
+              state.items[i],
+        ],
+      );
+      // Sync with Riverpod cartProvider
+      _ref?.read(cartProvider.notifier).updateQuantity(itemId, newQty);
     }
-    final newQty = item.quantity - 1;
-    return item.copyWith(quantity: newQty < 0 ? 0 : newQty);
   }
 
-  /// Explicit set quantity with clamping [0, maxStock].
+  /// Remove item immediately from checkout and cart.
+  void removeItem(String itemId) {
+    state = state.copyWith(
+      items: state.items.where((item) => item.id != itemId).toList(),
+    );
+    // Sync with Riverpod cartProvider
+    _ref?.read(cartProvider.notifier).removeFromCart(itemId);
+  }
+
+  /// Explicit set quantity with clamping [1, maxStock].
+  /// Quantity <= 0 removes item.
   void setQuantity(String itemId, int quantity) {
-    if (quantity < 0) quantity = 0;
+    if (quantity <= 0) {
+      removeItem(itemId);
+      return;
+    }
+    final itemIndex = state.items.indexWhere((i) => i.id == itemId);
+    if (itemIndex == -1) return;
+
+    final item = state.items[itemIndex];
+    final maxStock = item.product.stock;
+    final clamped = maxStock > 0 ? quantity.clamp(1, maxStock) : quantity;
+
     state = state.copyWith(
       items: [
-        for (final item in state.items)
-          if (item.id == itemId)
-            _setItemQuantity(item, quantity)
+        for (int i = 0; i < state.items.length; i++)
+          if (i == itemIndex)
+            state.items[i].copyWith(quantity: clamped)
           else
-            item,
+            state.items[i],
       ],
     );
-  }
 
-  CartItemModel _setItemQuantity(CartItemModel item, int qty) {
-    final maxStock = item.product.stock;
-    final clamped = maxStock > 0 ? qty.clamp(0, maxStock) : (qty < 0 ? 0 : qty);
-    return item.copyWith(quantity: clamped);
+    // Sync with Riverpod cartProvider
+    _ref?.read(cartProvider.notifier).updateQuantity(itemId, clamped);
   }
 
   void reset() {
@@ -235,5 +269,5 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
 
 final checkoutProvider =
     StateNotifierProvider<CheckoutNotifier, CheckoutState>((ref) {
-  return CheckoutNotifier();
+  return CheckoutNotifier(ref);
 });

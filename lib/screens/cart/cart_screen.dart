@@ -874,6 +874,17 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             padding: const EdgeInsets.all(4),
                             constraints: const BoxConstraints(),
                             onPressed: () {
+                              final maxStock = item.product.stock;
+                              if (maxStock > 0 && item.quantity >= maxStock) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Only $maxStock available in stock'),
+                                    duration: const Duration(seconds: 1),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                                return;
+                              }
                               HapticFeedback.lightImpact();
                               cartNotifier.updateQuantity(
                                 item.id,

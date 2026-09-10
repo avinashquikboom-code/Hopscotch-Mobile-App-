@@ -78,6 +78,7 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
         final List<dynamic> list = jsonDecode(raw);
         state = list
             .map((item) => CartItemModel.fromJson(Map<String, dynamic>.from(item as Map)))
+            .where((item) => item.quantity > 0)
             .toList();
       }
     } catch (_) {}
@@ -100,6 +101,11 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
         item.selectedImage == selectedImage);
 
     if (existingIndex != -1) {
+      final currentItem = state[existingIndex];
+      final maxStock = product.stock;
+      if (maxStock > 0 && currentItem.quantity >= maxStock) {
+        return; // Respect inventory limit
+      }
       state = [
         for (int i = 0; i < state.length; i++)
           if (i == existingIndex)
@@ -127,14 +133,20 @@ class CartNotifier extends StateNotifier<List<CartItemModel>> {
   }
 
   void updateQuantity(String cartItemId, int quantity) {
-    if (quantity < 0) return; // NEVER allow negative numbers
-    if (quantity == 0) {
+    if (quantity <= 0) {
       removeFromCart(cartItemId);
       return;
     }
     state = [
       for (final item in state)
-        if (item.id == cartItemId) item.copyWith(quantity: quantity) else item
+        if (item.id == cartItemId)
+          item.copyWith(
+            quantity: (item.product.stock > 0 && quantity > item.product.stock)
+                ? item.product.stock
+                : quantity,
+          )
+        else
+          item
     ];
     _saveToPrefs();
   }

@@ -659,8 +659,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     }
     if (!_validateSellerDetails()) return;
     final orderItems = checkoutState.activeOrderItems;
-    if (orderItems.isEmpty) {
+    if (orderItems.isEmpty || checkoutState.totalQuantity <= 0) {
       dev.log('No items with quantity > 0, aborting Razorpay checkout', name: 'Razorpay');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please select at least 1 quantity.'),
+          backgroundColor: Colors.orange.shade800,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
       return;
     }
 
@@ -838,7 +848,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   // ── Place order ─────────────────────────────────────────────────────────
   Future<void> _handlePlaceOrder() async {
     final checkoutState = ref.read(checkoutProvider);
-    if (checkoutState.totalQuantity <= 0) {
+    if (checkoutState.totalQuantity <= 0 || checkoutState.items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please select at least 1 quantity.'),
@@ -1621,10 +1631,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         const GiftWrapConfig(enabled: true, charge: 49.0);
     final isGiftWrapped = ref.watch(isGiftWrappedProvider);
 
-    // Display items initialized with quantity 0
+    // Display items initialized with active quantity (minimum 1)
     final displayItems = checkoutState.isInitialized
         ? checkoutState.items
-        : cart.map((i) => i.copyWith(quantity: 0)).toList();
+        : cart;
 
     double giftWrappingCost = giftWrapConfig.charge;
     double customGiftWrapSum = 0.0;
@@ -1682,7 +1692,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    if (cart.isEmpty) {
+    if (cart.isEmpty || (checkoutState.isInitialized && checkoutState.items.isEmpty)) {
       return Scaffold(
         appBar: AppBar(title: const Text('CHECKOUT')),
         body: Center(
@@ -2709,10 +2719,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         Expanded(
                           flex: 4,
                           child: GestureDetector(
-                            onTap: _isPlacingOrder
+                            onTap: (_isPlacingOrder ||
+                                    checkoutState.totalQuantity <= 0 ||
+                                    checkoutState.items.isEmpty)
                                 ? null
                                 : () {
-                                    if (checkoutState.totalQuantity <= 0) {
+                                    if (checkoutState.totalQuantity <= 0 ||
+                                        checkoutState.items.isEmpty) {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
                                           content: const Text(
@@ -2736,7 +2749,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               height: 54,
                               decoration: BoxDecoration(
                                 gradient: (_isPlacingOrder ||
-                                        checkoutState.totalQuantity <= 0)
+                                        checkoutState.totalQuantity <= 0 ||
+                                        checkoutState.items.isEmpty)
                                     ? null
                                     : const LinearGradient(
                                         colors: [
@@ -2747,14 +2761,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                         end: Alignment.centerRight,
                                       ),
                                 color: (_isPlacingOrder ||
-                                        checkoutState.totalQuantity <= 0)
+                                        checkoutState.totalQuantity <= 0 ||
+                                        checkoutState.items.isEmpty)
                                     ? (isDark
                                         ? Colors.grey.shade800
                                         : Colors.grey.shade400)
                                     : null,
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: (_isPlacingOrder ||
-                                        checkoutState.totalQuantity <= 0)
+                                        checkoutState.totalQuantity <= 0 ||
+                                        checkoutState.items.isEmpty)
                                     ? null
                                     : [
                                         BoxShadow(

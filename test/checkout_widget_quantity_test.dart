@@ -7,7 +7,7 @@ import 'package:hopscotch/providers/checkout_provider.dart';
 import 'package:hopscotch/providers/currency_provider.dart';
 
 void main() {
-  testWidgets('Checkout Stepper UI test: starts at 0, minus disabled at 0, increments to 1',
+  testWidgets('Checkout Stepper UI test: starts at 1, increments to 2, removes item at 0',
       (WidgetTester tester) async {
     const testProduct = ProductModel(
       id: 'prod_1',
@@ -51,8 +51,15 @@ void main() {
                 final checkoutState = ref.watch(checkoutProvider);
                 final checkoutNotifier = ref.read(checkoutProvider.notifier);
                 final currency = ref.watch(currencyProvider);
+
+                if (checkoutState.items.isEmpty) {
+                  return const Center(
+                    child: Text('Your cart is empty', key: Key('empty_cart_text')),
+                  );
+                }
+
                 final item = checkoutState.items.first;
-                final canDecrement = item.quantity > 0;
+                final canDecrement = item.quantity >= 1;
                 final maxStock = item.product.stock;
                 final canIncrement = maxStock <= 0 || item.quantity < maxStock;
 
@@ -101,40 +108,35 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    // 1. Initial quantity must be 0
-    expect(find.text('Qty: 0'), findsOneWidget);
-    expect(find.text('Total: ₹0.00'), findsOneWidget);
+    // 1. Initial quantity must be 1, never 0
+    expect(find.text('Qty: 1'), findsOneWidget);
+    expect(find.text('Total: ₹500.00'), findsOneWidget);
 
-    // 2. Minus button must be disabled (IconButton with onPressed: null has no tap handling)
+    // 2. Minus button must be enabled at quantity 1
     final minusButton = tester.widget<IconButton>(find.byKey(const Key('minus_btn')));
-    expect(minusButton.onPressed, isNull, reason: 'Minus must be disabled at quantity 0');
+    expect(minusButton.onPressed, isNotNull, reason: 'Minus must be enabled at quantity 1');
 
-    // 3. Try tapping Pay Now at quantity 0 -> shows snackbar
-    await tester.tap(find.byKey(const Key('order_btn')));
-    await tester.pumpAndSettle();
-    expect(find.text('Please select at least 1 quantity.'), findsOneWidget);
-
-    // 4. Tap plus button -> 0 -> 1
+    // 3. Tap plus button -> 1 -> 2
     await tester.tap(find.byKey(const Key('plus_btn')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Qty: 2'), findsOneWidget);
+    expect(find.text('Total: ₹1000.00'), findsOneWidget);
+
+    // 4. Tap minus button -> 2 -> 1
+    await tester.tap(find.byKey(const Key('minus_btn')));
     await tester.pumpAndSettle();
 
     expect(find.text('Qty: 1'), findsOneWidget);
     expect(find.text('Total: ₹500.00'), findsOneWidget);
 
-    // Minus button must now be enabled
-    final minusButtonEnabled = tester.widget<IconButton>(find.byKey(const Key('minus_btn')));
-    expect(minusButtonEnabled.onPressed, isNotNull, reason: 'Minus must be enabled at quantity 1');
-
-    // 5. Tap minus button -> 1 -> 0
+    // 5. Tap minus button at 1 -> REMOVE PRODUCT IMMEDIATELY
     await tester.tap(find.byKey(const Key('minus_btn')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Qty: 0'), findsOneWidget);
-    expect(find.text('Total: ₹0.00'), findsOneWidget);
-
-    final minusButtonDisabledAgain =
-        tester.widget<IconButton>(find.byKey(const Key('minus_btn')));
-    expect(minusButtonDisabledAgain.onPressed, isNull,
-        reason: 'Minus must be disabled again at quantity 0');
+    // 6. Product is removed, empty state shown, never [ - ] 0 [ + ]
+    expect(find.byKey(const Key('empty_cart_text')), findsOneWidget);
+    expect(find.byKey(const Key('qty_text')), findsNothing);
+    expect(find.text('Qty: 0'), findsNothing);
   });
 }
