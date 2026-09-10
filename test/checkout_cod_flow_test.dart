@@ -174,8 +174,9 @@ void main() {
       () {
         String resolveMethod(String selected) {
           if (selected == 'Cash on Delivery' || selected == 'COD') return 'COD';
-          if (selected == 'Razorpay' || selected == 'RAZORPAY')
+          if (selected == 'Razorpay' || selected == 'RAZORPAY') {
             return 'RAZORPAY';
+          }
           return selected;
         }
 

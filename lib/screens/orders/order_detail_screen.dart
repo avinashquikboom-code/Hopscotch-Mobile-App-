@@ -125,8 +125,9 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
     if (clean.isEmpty) return 'ONLINE PAYMENT';
     final upper = clean.replaceAll('_', ' ').toUpperCase();
     if (upper == 'RAZORPAY') return 'RAZORPAY';
-    if (upper == 'COD' || upper == 'CASH ON DELIVERY')
+    if (upper == 'COD' || upper == 'CASH ON DELIVERY') {
       return 'CASH ON DELIVERY';
+    }
     return upper;
   }
 

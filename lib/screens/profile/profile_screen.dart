@@ -517,14 +517,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     children: [
                       _buildOptionTile(
                         context: context,
-                        icon: Icons.account_balance_wallet_outlined,
-                        title: 'My Wallet',
-                        subtitle: 'Top up balance & view wallet transactions',
-                        onTap: () => context.push('/wallet'),
-                      ),
-                      const Divider(height: 1),
-                      _buildOptionTile(
-                        context: context,
                         icon: Icons.stars_rounded,
                         title: 'Reward Points Hub',
                         subtitle: 'View available points & conversion rate',
@@ -577,6 +569,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         title: l10n.orderHistory,
                         subtitle: l10n.orderHistoryDesc,
                         onTap: () => context.push('/my-orders'),
+                      ),
+                      const Divider(height: 1),
+                      _buildOptionTile(
+                        context: context,
+                        icon: Icons.account_balance_wallet_outlined,
+                        title: 'My Wallet',
+                        subtitle: 'Top up balance & view wallet transactions',
+                        onTap: () => context.push('/wallet'),
                       ),
                       const Divider(height: 1),
                       _buildOptionTile(

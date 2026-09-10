@@ -130,7 +130,7 @@ void main() {
       expect(pdfBytes.length, greaterThan(2000));
 
       // Save PDF to artifact directory for visual inspection and verification
-      final artifactPdfPath = '/Users/avinashsanjaymagar/.gemini/antigravity-ide/brain/3823807e-4a6b-46a8-9515-afb91d0c1a58/fashion_city_invoice.pdf';
+      const artifactPdfPath = '/Users/avinashsanjaymagar/.gemini/antigravity-ide/brain/3823807e-4a6b-46a8-9515-afb91d0c1a58/fashion_city_invoice.pdf';
       final pdfFile = File(artifactPdfPath);
       await pdfFile.writeAsBytes(pdfBytes);
       expect(pdfFile.existsSync(), isTrue);

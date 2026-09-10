@@ -252,85 +252,95 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
                 final faq = _faqs[index];
                 final isExpanded = _expandedFaqIndex == index;
 
-                return Material(
-                  color: isDark
-                      ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.8)
-                      : Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  child: Container(
-                    decoration: BoxDecoration(
+                return Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: isExpanded && !isDark
+                        ? [
+                            BoxShadow(
+                              color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Material(
+                    color: isDark
+                        ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.8)
+                        : Colors.white,
+                    shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
+                      side: BorderSide(
                         color: isExpanded
                             ? AppTheme.primaryColor.withValues(alpha: 0.3)
                             : Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
                         width: 1.5,
                       ),
-                      boxShadow: isExpanded && !isDark
-                          ? [
-                              BoxShadow(
-                                color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ]
-                          : null,
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(15),
+                    clipBehavior: Clip.antiAlias,
+                    child: Theme(
+                      data: Theme.of(context).copyWith(
+                        dividerColor: Colors.transparent,
+                      ),
                       child: ExpansionTile(
-                      tilePadding: EdgeInsets.symmetric(
-                        horizontal: responsive.spacing(16),
-                        vertical: responsive.spacing(12),
-                      ),
-                      childrenPadding: EdgeInsets.fromLTRB(
-                        responsive.spacing(16),
-                        0,
-                        responsive.spacing(16),
-                        responsive.spacing(16),
-                      ),
-                      collapsedBackgroundColor: Colors.transparent,
-                      backgroundColor: Colors.transparent,
-                      title: Text(
-                        faq['question']!,
-                        style: TextStyle(
-                          fontSize: responsive.fontSize13,
-                          fontWeight: FontWeight.w700,
-                          color: Theme.of(context).colorScheme.onSurface,
+                        key: PageStorageKey<String>('faq_$index'),
+                        shape: const Border(),
+                        collapsedShape: const Border(),
+                        tilePadding: EdgeInsets.symmetric(
+                          horizontal: responsive.spacing(16),
+                          vertical: responsive.spacing(12),
                         ),
-                      ),
-                      trailing: AnimatedRotation(
-                        duration: const Duration(milliseconds: 300),
-                        turns: isExpanded ? 0.5 : 0.0,
-                        child: Icon(
-                          Icons.expand_more_rounded,
-                          color: isExpanded ? AppTheme.primaryColor : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                          size: responsive.iconSize(24),
+                        childrenPadding: EdgeInsets.fromLTRB(
+                          responsive.spacing(16),
+                          0,
+                          responsive.spacing(16),
+                          responsive.spacing(16),
                         ),
-                      ),
-                      onExpansionChanged: (expanded) {
-                        setState(() {
-                          _expandedFaqIndex = expanded ? index : null;
-                        });
-                      },
-                      children: [
-                        Divider(
-                          height: responsive.spacing(12),
-                          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
-                        ),
-                        Text(
-                          faq['answer']!,
+                        collapsedBackgroundColor: Colors.transparent,
+                        backgroundColor: Colors.transparent,
+                        title: Text(
+                          faq['question']!,
                           style: TextStyle(
-                            fontSize: responsive.fontSize12,
-                            height: 1.6,
-                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                            fontSize: responsive.fontSize13,
+                            fontWeight: FontWeight.w700,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
-                      ],
+                        trailing: AnimatedRotation(
+                          duration: const Duration(milliseconds: 300),
+                          turns: isExpanded ? 0.5 : 0.0,
+                          child: Icon(
+                            Icons.expand_more_rounded,
+                            color: isExpanded
+                                ? AppTheme.primaryColor
+                                : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                            size: responsive.iconSize(24),
+                          ),
+                        ),
+                        onExpansionChanged: (expanded) {
+                          setState(() {
+                            _expandedFaqIndex = expanded ? index : null;
+                          });
+                        },
+                        children: [
+                          Divider(
+                            height: responsive.spacing(12),
+                            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
+                          ),
+                          Text(
+                            faq['answer']!,
+                            style: TextStyle(
+                              fontSize: responsive.fontSize12,
+                              height: 1.6,
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
+                );
               },
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
