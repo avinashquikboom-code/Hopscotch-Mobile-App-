@@ -47,6 +47,8 @@ subprojects {
         }
     }
     tasks.withType<JavaCompile>().configureEach {
+        options.isWarnings = false
+        options.isDeprecation = false
         options.compilerArgs.addAll(listOf("-Xlint:-options", "-Xlint:-deprecation", "-nowarn"))
     }
     if (project.state.executed) {

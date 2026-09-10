@@ -7,7 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
-import 'package:gallery_saver_plus/gallery_saver.dart';
+import 'package:gal/gal.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 import 'package:hopscotch/providers/currency_provider.dart';
@@ -291,17 +291,20 @@ $shareUrl
             await tempFile.writeAsBytes(response.data!);
 
             // Save to gallery from local file
-            final success = await GallerySaver.saveImage(
-              tempFilePath,
-              albumName: 'FCISeller',
-            );
+            try {
+              await Gal.putImage(
+                tempFilePath,
+                album: 'FCISeller',
+              );
+              savedCount++;
+            } catch (saveErr) {
+              print('Failed to save to gallery: $saveErr');
+            }
 
             // Clean up temp file
             if (await tempFile.exists()) {
               await tempFile.delete();
             }
-
-            if (success ?? false) savedCount++;
           }
         } catch (e) {
           // Continue with next image if one fails
