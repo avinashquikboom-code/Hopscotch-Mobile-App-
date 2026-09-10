@@ -1195,96 +1195,102 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                               responsive: responsive,
                             ),
                             const SizedBox(height: 14),
-                            // Courier Partner
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Courier Partner:',
-                                  style: TextStyle(
-                                    fontSize: responsive.fontSize12,
-                                    color: colorScheme.onSurface.withValues(
-                                      alpha: 0.7,
-                                    ),
+                            if ((order.awbNumber ?? order.trackingNumber)?.isNotEmpty != true) ...[
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: colorScheme.outline.withValues(alpha: 0.15),
                                   ),
                                 ),
-                                Text(
-                                  order.courierName?.isNotEmpty == true
-                                      ? order.courierName!
-                                      : 'Express Logistics',
-                                  style: TextStyle(
-                                    fontSize: responsive.fontSize13,
-                                    fontWeight: FontWeight.bold,
-                                    color: colorScheme.onSurface,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            // AWB Number with 1-tap Copy
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'AWB / Tracking #:',
-                                  style: TextStyle(
-                                    fontSize: responsive.fontSize12,
-                                    color: colorScheme.onSurface.withValues(
-                                      alpha: 0.7,
-                                    ),
-                                  ),
-                                ),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
+                                child: Row(
                                   children: [
-                                    Text(
-                                      (order.awbNumber ?? order.trackingNumber)
-                                                  ?.isNotEmpty ==
-                                              true
-                                          ? (order.awbNumber ??
-                                                order.trackingNumber)!
-                                          : 'Pending Generation',
-                                      style: TextStyle(
-                                        fontSize: responsive.fontSize12,
-                                        fontWeight: FontWeight.w700,
-                                        fontFamily: 'monospace',
-                                        color:
-                                            (order.awbNumber ??
-                                                        order.trackingNumber)
-                                                    ?.isNotEmpty ==
-                                                true
-                                            ? colorScheme.onSurface
-                                            : colorScheme.onSurface.withValues(
-                                                alpha: 0.5,
-                                              ),
+                                    Icon(
+                                      Icons.info_outline_rounded,
+                                      size: 16,
+                                      color: colorScheme.onSurface.withValues(alpha: 0.6),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'Tracking information will be available after shipment.',
+                                        style: TextStyle(
+                                          fontSize: responsive.fontSize12,
+                                          color: colorScheme.onSurface.withValues(alpha: 0.75),
+                                        ),
                                       ),
                                     ),
-                                    if ((order.awbNumber ??
-                                                order.trackingNumber)
-                                            ?.isNotEmpty ==
-                                        true) ...[
+                                  ],
+                                ),
+                              ),
+                            ] else ...[
+                              // Courier Partner
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Shipping Company:',
+                                    style: TextStyle(
+                                      fontSize: responsive.fontSize12,
+                                      color: colorScheme.onSurface.withValues(
+                                        alpha: 0.7,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    order.courierName?.isNotEmpty == true
+                                        ? order.courierName!
+                                        : 'Standard Courier',
+                                    style: TextStyle(
+                                      fontSize: responsive.fontSize13,
+                                      fontWeight: FontWeight.bold,
+                                      color: colorScheme.onSurface,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              // AWB Number with 1-tap Copy
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'AWB / Tracking #:',
+                                    style: TextStyle(
+                                      fontSize: responsive.fontSize12,
+                                      color: colorScheme.onSurface.withValues(
+                                        alpha: 0.7,
+                                      ),
+                                    ),
+                                  ),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        (order.awbNumber ?? order.trackingNumber)!,
+                                        style: TextStyle(
+                                          fontSize: responsive.fontSize12,
+                                          fontWeight: FontWeight.w700,
+                                          fontFamily: 'monospace',
+                                          color: colorScheme.onSurface,
+                                        ),
+                                      ),
                                       const SizedBox(width: 8),
                                       GestureDetector(
                                         onTap: () {
-                                          final awb =
-                                              (order.awbNumber ??
-                                              order.trackingNumber)!;
-                                          Clipboard.setData(
-                                            ClipboardData(text: awb),
-                                          );
+                                          final awb = (order.awbNumber ?? order.trackingNumber)!;
+                                          Clipboard.setData(ClipboardData(text: awb));
                                           HapticFeedback.lightImpact();
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                                const SnackBar(
-                                                  content: Text(
-                                                    'AWB Number copied to clipboard! 📋',
-                                                  ),
-                                                  behavior:
-                                                      SnackBarBehavior.floating,
-                                                  backgroundColor:
-                                                      AppTheme.primaryColor,
-                                                ),
-                                              );
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('AWB Number copied to clipboard! 📋'),
+                                              behavior: SnackBarBehavior.floating,
+                                              backgroundColor: AppTheme.primaryColor,
+                                            ),
+                                          );
                                         },
                                         child: Container(
                                           padding: const EdgeInsets.symmetric(
@@ -1292,14 +1298,10 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                                             vertical: 3,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: AppTheme.primaryColor
-                                                .withValues(alpha: 0.1),
-                                            borderRadius: BorderRadius.circular(
-                                              6,
-                                            ),
+                                            color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                                            borderRadius: BorderRadius.circular(6),
                                             border: Border.all(
-                                              color: AppTheme.primaryColor
-                                                  .withValues(alpha: 0.3),
+                                              color: AppTheme.primaryColor.withValues(alpha: 0.3),
                                             ),
                                           ),
                                           child: const Row(
@@ -1324,15 +1326,11 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                                         ),
                                       ),
                                     ],
-                                  ],
-                                ),
-                              ],
-                            ),
-                            // Direct Courier Track Button (Issue 20)
-                            if ((order.awbNumber ?? order.trackingNumber)
-                                    ?.isNotEmpty ==
-                                true) ...[
+                                  ),
+                                ],
+                              ),
                               const SizedBox(height: 14),
+                              // Track Shipment Button
                               SizedBox(
                                 width: double.infinity,
                                 child: OutlinedButton.icon(
@@ -1346,7 +1344,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                                     size: 16,
                                   ),
                                   label: const Text(
-                                    'Track Package on Courier Website',
+                                    'Track Shipment',
                                   ),
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: AppTheme.primaryColor,
@@ -1822,7 +1820,17 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
     String awb,
     String? directUrl,
   ) async {
-    String url = directUrl ?? '';
+    final cleanAwb = awb.trim();
+    final cleanDirectUrl = directUrl?.trim();
+    if (cleanAwb.isEmpty && (cleanDirectUrl == null || cleanDirectUrl.isEmpty)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tracking information is not available yet.')),
+        );
+      }
+      return;
+    }
+    String url = cleanDirectUrl ?? '';
     if (url.isEmpty || !url.startsWith('http')) {
       final c = courier.toLowerCase();
       if (c.contains('delhivery')) {

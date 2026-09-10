@@ -167,7 +167,9 @@ class InvoiceGenerator {
                         pw.Text('PAYMENT INFORMATION:', style: const pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.teal900)),
                         pw.SizedBox(height: 4),
                         pw.Text('Method: ${order.paymentMethod}', style: const pw.TextStyle(fontSize: 8)),
-                        if (order.trackingNumber != null && order.trackingNumber!.isNotEmpty)
+                        if (order.awbNumber != null && order.awbNumber!.isNotEmpty)
+                          pw.Text('AWB / Tracking #: ${order.awbNumber}${order.courierName != null && order.courierName!.isNotEmpty ? ' (${order.courierName})' : ''}', style: const pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))
+                        else if (order.trackingNumber != null && order.trackingNumber!.isNotEmpty)
                           pw.Text('Tracking #: ${order.trackingNumber}', style: const pw.TextStyle(fontSize: 8)),
                         pw.Text('Gateway: SSL 256-bit Encrypted', style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
                       ],

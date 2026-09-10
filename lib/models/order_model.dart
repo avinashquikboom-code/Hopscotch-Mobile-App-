@@ -92,10 +92,11 @@ class OrderModel {
         ? (totalAmount - subtotal - rawTax - giftWrapCharge)
         : rawShipping;
 
+    final rawShipment = json['shipment'] is Map ? (json['shipment'] as Map) : null;
     final orderNumber = (json['orderNumber'] ?? json['order_number'] ?? json['orderId'])?.toString();
-    final awbNumber = (json['awbNumber'] ?? json['awb_number'] ?? json['trackingNumber'] ?? json['tracking_number'] ?? json['awb'])?.toString();
-    final courierName = (json['courierName'] ?? json['courier_name'] ?? json['courier'])?.toString();
-    final trackingUrl = json['trackingUrl']?.toString();
+    final awbNumber = (json['awbNumber'] ?? json['awb_number'] ?? json['trackingNumber'] ?? json['tracking_number'] ?? json['awb'] ?? rawShipment?['awb'] ?? rawShipment?['awbNumber'] ?? rawShipment?['trackingNumber'])?.toString();
+    final courierName = (json['courierName'] ?? json['courier_name'] ?? json['courier'] ?? json['shippingCompany'] ?? rawShipment?['courier'] ?? rawShipment?['courierName'] ?? rawShipment?['shippingCompany'])?.toString();
+    final trackingUrl = (json['trackingUrl'] ?? rawShipment?['trackingUrl'])?.toString();
 
     return OrderModel(
       id: (json['id'] ?? json['_id'] ?? '').toString(),
