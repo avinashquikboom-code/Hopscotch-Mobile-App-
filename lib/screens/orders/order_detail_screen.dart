@@ -1275,7 +1275,6 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                                           fontSize: responsive.fontSize12,
                                           fontWeight: FontWeight.w700,
                                           fontFamily: 'monospace',
-                                          color: colorScheme.onSurface,
                                         ),
                                       ),
                                       const SizedBox(width: 8),
@@ -1286,7 +1285,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                                           HapticFeedback.lightImpact();
                                           ScaffoldMessenger.of(context).showSnackBar(
                                             const SnackBar(
-                                              content: Text('AWB Number copied to clipboard! 📋'),
+                                              content: Text('AWB copied'),
                                               behavior: SnackBarBehavior.floating,
                                               backgroundColor: AppTheme.primaryColor,
                                             ),

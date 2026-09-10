@@ -638,9 +638,11 @@ class AppPages {
         path: AppRoutes.trackOrder,
         pageBuilder: (context, state) {
           final orderId = state.pathParameters['orderId'] ?? 'ORD-000000';
+          final extra = state.extra;
+          final order = extra is OrderModel ? extra : null;
           return CustomTransitionPage(
             key: _pageKey(state),
-            child: TrackOrderScreen(orderId: orderId),
+            child: TrackOrderScreen(orderId: orderId, initialOrder: order),
             transitionDuration: const Duration(milliseconds: 400),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return SlideTransition(
