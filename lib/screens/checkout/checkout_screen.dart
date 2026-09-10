@@ -765,7 +765,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         final options = <String, dynamic>{
           'key': keyId,
           'amount': amount,
-          'name': 'FCI Seller',
+          'name': 'Fashion City India Ltd',
           'description': '${orderItems.length} item(s) purchase',
           'retry': {'enabled': true, 'max_count': 2},
           'send_sms_hash': true,
