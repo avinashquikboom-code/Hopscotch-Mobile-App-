@@ -69,8 +69,8 @@ flutter {
     source = "../.."
 }
 
-tasks.withType<JavaCompile> {
-    options.compilerArgs.add("-Xlint:-deprecation")
+tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs.addAll(listOf("-Xlint:-options", "-Xlint:-deprecation", "-nowarn"))
 }
 
 dependencies {

@@ -46,6 +46,9 @@ subprojects {
             }
         }
     }
+    tasks.withType<JavaCompile>().configureEach {
+        options.compilerArgs.addAll(listOf("-Xlint:-options", "-Xlint:-deprecation", "-nowarn"))
+    }
     if (project.state.executed) {
         configureAndroid()
     } else {
