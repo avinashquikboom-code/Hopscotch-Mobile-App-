@@ -19,7 +19,14 @@ class SellerConfig {
         lower == 'fci seller' ||
         lower == 'fci-seller' ||
         lower == 'fciseller' ||
-        lower == 'fci ecommerce') {
+        lower == 'fci ecommerce' ||
+        lower == 'fashion city' ||
+        lower == 'fashion city india' ||
+        lower == 'fashion city india ltd' ||
+        lower == 'fci seller retail pvt. ltd.' ||
+        RegExp(r'\bfci\b', caseSensitive: false).hasMatch(trimmed) ||
+        lower.startsWith('fci ') ||
+        lower.endsWith(' fci')) {
       return name;
     }
     return trimmed;
