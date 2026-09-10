@@ -76,6 +76,11 @@ class AppUrls {
   static String contentComments(int id) => '/api/v1/mobile/content/$id/comments';
   static String addContentComment(int id) => '/api/v1/mobile/content/$id/comment';
   static String deleteContentComment(int commentId) => '/api/v1/mobile/content/comments/$commentId';
+
+  // Legal & Policies
+  static const String policyCategories = '/api/v1/policy-categories';
+  static const String policies = '/api/v1/policies';
+  static String policyBySlug(String slug) => '/api/v1/policies/$slug';
 }
 
 

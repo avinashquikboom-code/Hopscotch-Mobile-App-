@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hopscotch/providers/policy_provider.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 
-class PrivacyPolicyScreen extends StatelessWidget {
+class PrivacyPolicyScreen extends ConsumerWidget {
   const PrivacyPolicyScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final responsive = context.responsive;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor = isDark
@@ -15,6 +17,8 @@ class PrivacyPolicyScreen extends StatelessWidget {
     final lightTextColor = isDark
         ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)
         : AppTheme.textLightColor;
+
+    final policyAsync = ref.watch(policyDetailProvider('privacy-policy'));
 
     return Scaffold(
       backgroundColor: isDark
@@ -30,68 +34,135 @@ class PrivacyPolicyScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Privacy Policy',
-              style: TextStyle(
-                fontSize: responsive.fontSize24,
-                fontWeight: FontWeight.bold,
-                color: primaryTextColor,
-              ),
-            ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceS)),
-            Text(
-              'Last updated: January 2024',
-              style: responsive.bodySmall.copyWith(
-                color: lightTextColor,
-              ),
-            ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
-            _buildPolicySection(context,
-              'Information We Collect',
-              'We collect information you provide directly to us, such as when you create an account, make a purchase, or communicate with us. This includes:\n\n• Personal information (name, email, phone, address)\n• Payment information (processed securely)\n• Shopping preferences and order history\n• Device and usage information',
-            ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-            _buildPolicySection(context,
-              'How We Use Your Information',
-              'We use the information we collect to:\n\n• Process and fulfill your orders\n• Send you order confirmations and updates\n• Provide customer support\n• Personalize your shopping experience\n• Send promotional communications (with your consent)\n• Improve our services and develop new features',
-            ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-            _buildPolicySection(context,
-              'Information Sharing',
-              'We do not sell your personal information. We may share your information with:\n\n• Service providers who assist in operating our business\n• Shipping partners to deliver your orders\n• Payment processors to process transactions\n• When required by law or to protect our rights',
-            ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-            _buildPolicySection(context,
-              'Data Security',
-              'We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. This includes:\n\n• SSL encryption for data transmission\n• Secure payment processing\n• Regular security audits\n• Access controls and authentication',
-            ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-            _buildPolicySection(context,
-              'Your Rights',
-              'You have the right to:\n\n• Access your personal information\n• Correct inaccurate information\n• Request deletion of your information\n• Opt-out of marketing communications\n• Object to processing of your information',
-            ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-            _buildPolicySection(context,
-              'Cookies and Tracking',
-              'We use cookies and similar technologies to:\n\n• Remember your preferences\n• Analyze website traffic\n• Personalize content and ads\n• You can control cookies through your browser settings',
-            ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-            _buildPolicySection(context,
-              'Changes to This Policy',
-              'We may update this privacy policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the "Last updated" date.',
-            ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
-            _buildPolicySection(context,
-              'Contact Us',
-              'If you have any questions about this Privacy Policy, please contact us at:\n\nEmail: fashioncityinidia18@gmail.com\nPhone: +91 96015 11596',
-            ),
-          ],
+      body: policyAsync.when(
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppTheme.primaryColor),
         ),
+        error: (err, _) => _buildFallbackContent(context, responsive, primaryTextColor, lightTextColor),
+        data: (policy) {
+          if (policy == null || policy.content.isEmpty) {
+            return _buildFallbackContent(context, responsive, primaryTextColor, lightTextColor);
+          }
+
+          final updatedStr = policy.updatedAt != null
+              ? 'Last updated: ${policy.updatedAt!.day}/${policy.updatedAt!.month}/${policy.updatedAt!.year}'
+              : 'Official Privacy Policy';
+
+          return RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(policyDetailProvider('privacy-policy'));
+            },
+            color: AppTheme.primaryColor,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+              padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    policy.title,
+                    style: TextStyle(
+                      fontSize: responsive.fontSize24,
+                      fontWeight: FontWeight.bold,
+                      color: primaryTextColor,
+                    ),
+                  ),
+                  SizedBox(height: responsive.spacing(AppTheme.spaceS)),
+                  Text(
+                    updatedStr,
+                    style: responsive.bodySmall.copyWith(
+                      color: lightTextColor,
+                    ),
+                  ),
+                  SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.8)
+                          : AppTheme.surfaceColor,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusL),
+                      border: Border.all(
+                        color: isDark
+                            ? Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)
+                            : AppTheme.borderColor,
+                        width: 1.5,
+                      ),
+                      boxShadow: isDark ? null : AppTheme.softShadow,
+                    ),
+                    child: Text(
+                      policy.plainTextContent,
+                      style: responsive.bodyMedium.copyWith(
+                        color: isDark
+                            ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8)
+                            : AppTheme.textSecondaryColor,
+                        height: 1.65,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildFallbackContent(
+    BuildContext context,
+    dynamic responsive,
+    Color primaryTextColor,
+    Color lightTextColor,
+  ) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Privacy Policy',
+            style: TextStyle(
+              fontSize: responsive.fontSize24,
+              fontWeight: FontWeight.bold,
+              color: primaryTextColor,
+            ),
+          ),
+          SizedBox(height: responsive.spacing(AppTheme.spaceS)),
+          Text(
+            'Official Store Policy',
+            style: responsive.bodySmall.copyWith(
+              color: lightTextColor,
+            ),
+          ),
+          SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+          _buildPolicySection(
+            context,
+            'Information We Collect',
+            'Fashion City India Ltd collects personal details provided during order checkout, account registration, and customer service requests, including your name, delivery address, contact details, and transaction references.',
+          ),
+          SizedBox(height: responsive.spacing(AppTheme.spaceL)),
+          _buildPolicySection(
+            context,
+            'How We Use Your Information',
+            'Your data is utilized strictly to fulfill orders, coordinate couriers, provide shipment tracking notifications, prevent fraud, and assist with returns or exchanges.',
+          ),
+          SizedBox(height: responsive.spacing(AppTheme.spaceL)),
+          _buildPolicySection(
+            context,
+            'Data Protection & Security',
+            'We implement standard encryption (TLS/SSL) and restricted databases to safeguard your personal credentials. We do not sell or monetize personal customer details.',
+          ),
+          SizedBox(height: responsive.spacing(AppTheme.spaceL)),
+          _buildPolicySection(
+            context,
+            'Contact & Grievance Redressal',
+            'Fashion City India Ltd\nF/7 Jethabhai Park, Narayan Nagar Road, Paldi, Ahmedabad, Gujarat - 380007, India\nGSTIN: 24GUKPS9446A1ZA\nEmail: fashioncityinidia18@gmail.com\nPhone: +91 96015 11596',
+          ),
+          SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+        ],
       ),
     );
   }
@@ -110,6 +181,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
         : AppTheme.textSecondaryColor;
 
     return Container(
+      width: double.infinity,
       padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
       decoration: BoxDecoration(
         color: cardBg,

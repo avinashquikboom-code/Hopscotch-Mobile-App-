@@ -1240,14 +1240,20 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                                       ),
                                     ),
                                   ),
-                                  Text(
-                                    order.courierName?.isNotEmpty == true
-                                        ? order.courierName!
-                                        : 'Standard Courier',
-                                    style: TextStyle(
-                                      fontSize: responsive.fontSize13,
-                                      fontWeight: FontWeight.bold,
-                                      color: colorScheme.onSurface,
+                                  const SizedBox(width: 8),
+                                  Flexible(
+                                    child: Text(
+                                      order.courierName?.isNotEmpty == true
+                                          ? order.courierName!
+                                          : 'Standard Courier',
+                                      textAlign: TextAlign.end,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: responsive.fontSize13,
+                                        fontWeight: FontWeight.bold,
+                                        color: colorScheme.onSurface,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -1258,7 +1264,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    'AWB / Tracking #:',
+                                    'AWB Number',
                                     style: TextStyle(
                                       fontSize: responsive.fontSize12,
                                       color: colorScheme.onSurface.withValues(
@@ -1266,65 +1272,72 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
                                       ),
                                     ),
                                   ),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        (order.awbNumber ?? order.trackingNumber)!,
-                                        style: TextStyle(
-                                          fontSize: responsive.fontSize12,
-                                          fontWeight: FontWeight.w700,
-                                          fontFamily: 'monospace',
+                                  const SizedBox(width: 8),
+                                  Flexible(
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            (order.awbNumber ?? order.trackingNumber)!,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontSize: responsive.fontSize12,
+                                              fontWeight: FontWeight.w700,
+                                              fontFamily: 'monospace',
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      GestureDetector(
-                                        onTap: () {
-                                          final awb = (order.awbNumber ?? order.trackingNumber)!;
-                                          Clipboard.setData(ClipboardData(text: awb));
-                                          HapticFeedback.lightImpact();
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(
-                                              content: Text('AWB copied'),
-                                              behavior: SnackBarBehavior.floating,
-                                              backgroundColor: AppTheme.primaryColor,
-                                            ),
-                                          );
-                                        },
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 3,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                                            borderRadius: BorderRadius.circular(6),
-                                            border: Border.all(
-                                              color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                                            ),
-                                          ),
-                                          child: const Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(
-                                                Icons.copy_rounded,
-                                                size: 10,
-                                                color: AppTheme.primaryColor,
+                                        const SizedBox(width: 8),
+                                        GestureDetector(
+                                          onTap: () {
+                                            final awb = (order.awbNumber ?? order.trackingNumber)!;
+                                            Clipboard.setData(ClipboardData(text: awb));
+                                            HapticFeedback.lightImpact();
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(
+                                                content: Text('AWB copied'),
+                                                behavior: SnackBarBehavior.floating,
+                                                backgroundColor: AppTheme.primaryColor,
                                               ),
-                                              SizedBox(width: 3),
-                                              Text(
-                                                'COPY',
-                                                style: TextStyle(
+                                            );
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 3,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                                              borderRadius: BorderRadius.circular(6),
+                                              border: Border.all(
+                                                color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                                              ),
+                                            ),
+                                            child: const Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  Icons.copy_rounded,
+                                                  size: 10,
                                                   color: AppTheme.primaryColor,
-                                                  fontSize: 9,
-                                                  fontWeight: FontWeight.bold,
                                                 ),
-                                              ),
-                                            ],
+                                                SizedBox(width: 3),
+                                                Text(
+                                                  'COPY',
+                                                  style: TextStyle(
+                                                    color: AppTheme.primaryColor,
+                                                    fontSize: 9,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),

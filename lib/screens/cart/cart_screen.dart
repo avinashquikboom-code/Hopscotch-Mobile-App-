@@ -365,7 +365,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             child: ElevatedButton(
                               onPressed: () {
                                 HapticFeedback.lightImpact();
-                                context.go('/checkout');
+                                context.push('/checkout');
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.primaryColor,

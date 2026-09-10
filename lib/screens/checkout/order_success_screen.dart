@@ -105,9 +105,15 @@ class _OrderSuccessScreenState extends ConsumerState<OrderSuccessScreen>
     final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
     final subtextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
 
-    return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-      body: SafeArea(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        context.go('/my-orders');
+      },
+      child: Scaffold(
+        backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        body: SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           padding: EdgeInsets.symmetric(
@@ -588,7 +594,7 @@ class _OrderSuccessScreenState extends ConsumerState<OrderSuccessScreen>
                           text: 'VIEW ORDER DETAILS',
                           onPressed: () {
                             if (widget.orderId.isNotEmpty) {
-                              context.go('/order-detail?id=${widget.orderId}');
+                              context.push('/order-detail?id=${widget.orderId}');
                             } else {
                               context.go('/my-orders');
                             }
@@ -606,7 +612,7 @@ class _OrderSuccessScreenState extends ConsumerState<OrderSuccessScreen>
                           isOutlined: true,
                           onPressed: () {
                             if (widget.orderId.isNotEmpty) {
-                              context.go('/track-order/${widget.orderId}');
+                              context.push('/track-order/${widget.orderId}');
                             } else {
                               context.go('/my-orders');
                             }
@@ -621,7 +627,7 @@ class _OrderSuccessScreenState extends ConsumerState<OrderSuccessScreen>
                         width: double.infinity,
                         child: CustomButton(
                           text: 'CONTINUE SHOPPING',
-                          onPressed: () => context.go('/'),
+                          onPressed: () => context.go('/home'),
                           isOutlined: true,
                         ),
                       ),
@@ -635,8 +641,9 @@ class _OrderSuccessScreenState extends ConsumerState<OrderSuccessScreen>
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildStepRow({
     required dynamic responsive,

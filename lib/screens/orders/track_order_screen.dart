@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hopscotch/models/order_model.dart';
 import 'package:hopscotch/repositories/order_repository.dart';
 import 'package:hopscotch/theme/app_theme.dart';
@@ -93,6 +94,16 @@ class _TrackOrderScreenState extends ConsumerState<TrackOrderScreen>
           ),
         ),
         centerTitle: true,
+        leading: IconButton(
+          icon: Icon(Icons.adaptive.arrow_back, size: responsive.iconSize(20)),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/my-orders');
+            }
+          },
+        ),
       ),
       body: isLoading
           ? const Center(
@@ -336,12 +347,18 @@ class _TrackOrderScreenState extends ConsumerState<TrackOrderScreen>
                     color: AppTheme.textSecondaryColor,
                   ),
                 ),
-                Text(
-                  courier.isNotEmpty ? courier : 'Standard Logistics',
-                  style: TextStyle(
-                    fontSize: responsive.fontSize13,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.textPrimaryColor,
+                SizedBox(width: responsive.spacing(8)),
+                Flexible(
+                  child: Text(
+                    courier.isNotEmpty ? courier : 'Standard Logistics',
+                    textAlign: TextAlign.end,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: responsive.fontSize13,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimaryColor,
+                    ),
                   ),
                 ),
               ],
@@ -358,66 +375,73 @@ class _TrackOrderScreenState extends ConsumerState<TrackOrderScreen>
                     color: AppTheme.textSecondaryColor,
                   ),
                 ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      awb,
-                      style: TextStyle(
-                        fontSize: responsive.fontSize13,
-                        fontWeight: FontWeight.w700,
-                        fontFamily: 'monospace',
-                        color: AppTheme.textPrimaryColor,
+                SizedBox(width: responsive.spacing(8)),
+                Flexible(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          awb,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: responsive.fontSize13,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'monospace',
+                            color: AppTheme.textPrimaryColor,
+                          ),
+                        ),
                       ),
-                    ),
-                    SizedBox(width: responsive.spacing(8)),
-                    InkWell(
-                      onTap: () {
-                        Clipboard.setData(ClipboardData(text: awb));
-                        HapticFeedback.lightImpact();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('AWB copied'),
-                            behavior: SnackBarBehavior.floating,
-                            backgroundColor: AppTheme.primaryColor,
-                          ),
-                        );
-                      },
-                      borderRadius: BorderRadius.circular(AppTheme.radiusS),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: responsive.spacing(8),
-                          vertical: responsive.spacing(4),
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(AppTheme.radiusS),
-                          border: Border.all(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.copy_rounded,
-                              size: responsive.iconSize(11),
-                              color: AppTheme.primaryColor,
+                      SizedBox(width: responsive.spacing(8)),
+                      InkWell(
+                        onTap: () {
+                          Clipboard.setData(ClipboardData(text: awb));
+                          HapticFeedback.lightImpact();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('AWB copied'),
+                              behavior: SnackBarBehavior.floating,
+                              backgroundColor: AppTheme.primaryColor,
                             ),
-                            SizedBox(width: responsive.spacing(4)),
-                            Text(
-                              'Copy',
-                              style: TextStyle(
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(AppTheme.radiusS),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: responsive.spacing(8),
+                            vertical: responsive.spacing(4),
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusS),
+                            border: Border.all(
+                              color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.copy_rounded,
+                                size: responsive.iconSize(11),
                                 color: AppTheme.primaryColor,
-                                fontSize: responsive.fontSize10,
-                                fontWeight: FontWeight.bold,
                               ),
-                            ),
-                          ],
+                              SizedBox(width: responsive.spacing(4)),
+                              Text(
+                                'Copy',
+                                style: TextStyle(
+                                  color: AppTheme.primaryColor,
+                                  fontSize: responsive.fontSize10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),

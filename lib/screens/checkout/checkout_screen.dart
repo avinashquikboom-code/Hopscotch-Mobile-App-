@@ -573,7 +573,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       );
       cartNotifier.clearCart();
       ref.read(checkoutProvider.notifier).reset();
-      if (mounted) context.go('/order-success?orderId=${order.id}');
+      _navigateToOrderSuccess(order.id);
     } catch (e, stackTrace) {
       dev.log(
         'Error completing order after Razorpay success: $e',
@@ -845,8 +845,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     }
   }
 
+  void _navigateToOrderSuccess(String orderId) {
+    if (!mounted) return;
+    if (context.canPop()) {
+      context.pushReplacement('/order-success?orderId=$orderId');
+    } else {
+      context.go('/order-success?orderId=$orderId');
+    }
+  }
+
   // ── Place order ─────────────────────────────────────────────────────────
   Future<void> _handlePlaceOrder() async {
+    if (_isPlacingOrder) return;
     final checkoutState = ref.read(checkoutProvider);
     if (checkoutState.totalQuantity <= 0 || checkoutState.items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -880,15 +890,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       _isPlacingOrder = true;
       _paymentProcessingStep = canonicalPaymentMethod == 'COD'
           ? 'CREATING ORDER...'
-          : 'AUTHENTICATING BILLING KEY...';
+          : 'PROCESSING PAYMENT...';
     });
-    await Future.delayed(const Duration(milliseconds: 600));
-    if (mounted) {
-      setState(() => _paymentProcessingStep = canonicalPaymentMethod == 'COD'
-          ? 'CONFIRMING CASH ON DELIVERY...'
-          : 'PROCESSING PAYMENT...');
-    }
-    await Future.delayed(const Duration(milliseconds: 600));
 
     try {
       final cartNotifier = ref.read(cartProvider.notifier);
@@ -935,11 +938,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             type: 'order',
           );
 
-      if (mounted) {
-        setState(() => _paymentProcessingStep = 'ORDER PLACED SUCCESSFULLY ✨');
-      }
-      await Future.delayed(const Duration(milliseconds: 1000));
-      if (mounted) context.go('/order-success?orderId=${order.id}');
+      _navigateToOrderSuccess(order.id);
     } catch (e) {
       if (mounted) {
         final message = e.toString().replaceFirst('Exception: ', '');

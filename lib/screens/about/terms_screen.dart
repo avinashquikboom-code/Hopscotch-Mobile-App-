@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hopscotch/providers/policy_provider.dart';
 import 'package:hopscotch/theme/app_theme.dart';
 import 'package:hopscotch/utils/responsive_text.dart';
 
-class TermsScreen extends StatelessWidget {
+class TermsScreen extends ConsumerWidget {
   const TermsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final responsive = context.responsive;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor = isDark
@@ -15,6 +17,8 @@ class TermsScreen extends StatelessWidget {
     final lightTextColor = isDark
         ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)
         : AppTheme.textLightColor;
+
+    final policyAsync = ref.watch(policyDetailProvider('terms-and-conditions'));
 
     return Scaffold(
       backgroundColor: isDark
@@ -30,83 +34,141 @@ class TermsScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Terms of Service',
-              style: TextStyle(
-                fontSize: responsive.fontSize24,
-                fontWeight: FontWeight.bold,
-                color: primaryTextColor,
-              ),
-            ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceS)),
-            Text(
-              'Last updated: January 2024',
-              style: responsive.bodySmall.copyWith(
-                color: lightTextColor,
-              ),
-            ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
-            _buildTermsSection(context,
-              'Acceptance of Terms',
-              'By accessing and using FCI Seller, you accept and agree to be bound by the terms and provisions of this agreement. If you do not agree to abide by these terms, please do not use our service.',
-            ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-            _buildTermsSection(context,
-              'Account Registration',
-              'To access certain features of our service, you must register for an account. You agree to:\n\n• Provide accurate and complete information\n• Maintain the security of your account\n• Notify us of unauthorized access\n• Be responsible for all activities under your account',
-            ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-            _buildTermsSection(context,
-              'Products and Services',
-              'We strive to display accurate product information. However:\n\n• Colors may vary slightly due to monitor settings\n• Product measurements are approximate\n• We reserve the right to modify prices\n• Availability is subject to change',
-            ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-            _buildTermsSection(context,
-              'Orders and Payment',
-              'By placing an order, you agree to:\n\n• Provide valid payment information\n• Pay all charges for your purchases\n• Accept our cancellation and return policies\n• Confirm order details before submission',
-            ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-            _buildTermsSection(context,
-              'Shipping and Delivery',
-              'Shipping times are estimates and not guaranteed. We are not liable for:\n\n• Delays caused by shipping carriers\n• Lost or stolen packages after delivery\n• Customs delays for international orders',
-            ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-            _buildTermsSection(context,
-              'Returns and Refunds',
-              'Our return policy allows:\n\n• Returns within 30 days of delivery\n• Items must be unworn with original tags\n• Refunds processed within 7-10 business days\n• Shipping costs non-refundable',
-            ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-            _buildTermsSection(context,
-              'User Conduct',
-              'You agree not to:\n\n• Use the service for illegal purposes\n• Interfere with the operation of the service\n• Attempt to gain unauthorized access\n• Post harmful or inappropriate content',
-            ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-            _buildTermsSection(context,
-              'Intellectual Property',
-              'All content on our platform is protected by intellectual property laws. You may not:\n\n• Copy, modify, or distribute our content\n• Use our trademarks without permission\n• Reverse engineer our technology',
-            ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-            _buildTermsSection(context,
-              'Limitation of Liability',
-              'To the fullest extent permitted by law, we shall not be liable for:\n\n• Indirect, incidental, or consequential damages\n• Loss of profits or data\n• Service interruptions\n• Third-party actions or products',
-            ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceL)),
-            _buildTermsSection(context,
-              'Governing Law',
-              'These terms shall be governed by and construed in accordance with the laws of India. Any disputes shall be resolved in the courts of Mumbai, Maharashtra.',
-            ),
-            SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
-            _buildTermsSection(context,
-              'Contact Us',
-              'For questions about these Terms of Service, please contact:\n\nEmail: fashioncityinidia18@gmail.com\nPhone: +91 96015 11596',
-            ),
-          ],
+      body: policyAsync.when(
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppTheme.primaryColor),
         ),
+        error: (err, _) => _buildFallbackContent(context, responsive, primaryTextColor, lightTextColor),
+        data: (policy) {
+          if (policy == null || policy.content.isEmpty) {
+            return _buildFallbackContent(context, responsive, primaryTextColor, lightTextColor);
+          }
+
+          final updatedStr = policy.updatedAt != null
+              ? 'Last updated: ${policy.updatedAt!.day}/${policy.updatedAt!.month}/${policy.updatedAt!.year}'
+              : 'Official Terms of Service';
+
+          return RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(policyDetailProvider('terms-and-conditions'));
+            },
+            color: AppTheme.primaryColor,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+              padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    policy.title,
+                    style: TextStyle(
+                      fontSize: responsive.fontSize24,
+                      fontWeight: FontWeight.bold,
+                      color: primaryTextColor,
+                    ),
+                  ),
+                  SizedBox(height: responsive.spacing(AppTheme.spaceS)),
+                  Text(
+                    updatedStr,
+                    style: responsive.bodySmall.copyWith(
+                      color: lightTextColor,
+                    ),
+                  ),
+                  SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.8)
+                          : AppTheme.surfaceColor,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusL),
+                      border: Border.all(
+                        color: isDark
+                            ? Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)
+                            : AppTheme.borderColor,
+                        width: 1.5,
+                      ),
+                      boxShadow: isDark ? null : AppTheme.softShadow,
+                    ),
+                    child: Text(
+                      policy.plainTextContent,
+                      style: responsive.bodyMedium.copyWith(
+                        color: isDark
+                            ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8)
+                            : AppTheme.textSecondaryColor,
+                        height: 1.65,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildFallbackContent(
+    BuildContext context,
+    dynamic responsive,
+    Color primaryTextColor,
+    Color lightTextColor,
+  ) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Terms of Service',
+            style: TextStyle(
+              fontSize: responsive.fontSize24,
+              fontWeight: FontWeight.bold,
+              color: primaryTextColor,
+            ),
+          ),
+          SizedBox(height: responsive.spacing(AppTheme.spaceS)),
+          Text(
+            'Official Terms and Conditions',
+            style: responsive.bodySmall.copyWith(
+              color: lightTextColor,
+            ),
+          ),
+          SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+          _buildTermsSection(
+            context,
+            'Acceptance of Terms',
+            'By accessing and using the Fashion City India Ltd platform, you accept and agree to be bound by these Terms and Conditions. If you do not agree to abide by these terms, please do not use our service.',
+          ),
+          SizedBox(height: responsive.spacing(AppTheme.spaceL)),
+          _buildTermsSection(
+            context,
+            'Account Registration',
+            'To access certain features of our service, you must register for an account. You agree to provide accurate and complete information, maintain account credentials securely, and notify us of unauthorized access.',
+          ),
+          SizedBox(height: responsive.spacing(AppTheme.spaceL)),
+          _buildTermsSection(
+            context,
+            'Products, Pricing & Availability',
+            'All prices listed are in Indian Rupees (INR) and inclusive of applicable Goods and Services Tax (GSTIN: 24GUKPS9446A1ZA). We reserve the right to correct typographical pricing errors.',
+          ),
+          SizedBox(height: responsive.spacing(AppTheme.spaceL)),
+          _buildTermsSection(
+            context,
+            'Governing Law & Jurisdiction',
+            'These terms shall be governed by and construed in accordance with the laws of India. Any disputes shall be subject to the exclusive jurisdiction of the courts in Ahmedabad, Gujarat, India.',
+          ),
+          SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+          _buildTermsSection(
+            context,
+            'Contact Information',
+            'Fashion City India Ltd\nF/7 Jethabhai Park, Narayan Nagar Road, Paldi, Ahmedabad, Gujarat - 380007, India\nEmail: fashioncityinidia18@gmail.com\nPhone: +91 96015 11596',
+          ),
+          SizedBox(height: responsive.spacing(AppTheme.spaceXL)),
+        ],
       ),
     );
   }
@@ -125,6 +187,7 @@ class TermsScreen extends StatelessWidget {
         : AppTheme.textSecondaryColor;
 
     return Container(
+      width: double.infinity,
       padding: EdgeInsets.all(responsive.spacing(AppTheme.spaceL)),
       decoration: BoxDecoration(
         color: cardBg,
