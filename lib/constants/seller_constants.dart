@@ -1,6 +1,6 @@
 class SellerConfig {
-  static const String name = 'FCI';
-  static const String legalName = 'FCI';
+  static const String name = 'Fashion City India Ltd';
+  static const String legalName = 'Fashion City India Ltd';
   static const String gstin = '24GUKPS9446A1ZA';
   static const String supportEmail = 'fashioncityinidia18@gmail.com';
   static const String address = 'F/7 Jethabhai Park, Narayan Nagar Road, Paldi, Ahmedabad, Gujarat - 380007, India';

@@ -73,7 +73,13 @@ class OrderModel {
     final isGiftWrapped = json['giftWrapped'] == true || json['gift_wrapped'] == true;
     final giftWrapCharge = _asDouble(json['giftWrapCharge'] ?? json['gift_wrap_charge']);
 
-    final sellerName = (json['sellerNameSnapshot'] ?? json['sellerName'] ?? json['seller_name'] ?? SellerConfig.name).toString();
+    final rawSellerName = (json['sellerNameSnapshot'] ?? json['sellerName'] ?? json['seller_name'])?.toString();
+    final sellerName = (rawSellerName != null &&
+            rawSellerName.trim().isNotEmpty &&
+            rawSellerName.trim() != 'FCI' &&
+            rawSellerName.trim() != 'FCI Seller')
+        ? rawSellerName.trim()
+        : SellerConfig.name;
     final sellerContact = (json['sellerContactSnapshot'] ?? json['sellerContact'] ?? json['seller_contact'] ?? json['sellerContactNumber'] ?? SellerConfig.contactNumber).toString();
     final sellerAddress = (json['sellerAddressSnapshot'] ?? json['sellerAddress'] ?? json['seller_address'] ?? SellerConfig.address).toString();
 

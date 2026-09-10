@@ -9,8 +9,8 @@ import 'package:intl/intl.dart';
 import 'package:hopscotch/constants/seller_constants.dart';
 
 class InvoiceGenerator {
-  /// Generates and previews/prints/downloads a PDF invoice for a given order.
-  static Future<void> generateAndDownloadInvoice({
+  /// Builds and returns the raw PDF document bytes for a given order.
+  static Future<Uint8List> buildInvoicePdfBytes({
     required OrderModel order,
     String? storeName,
     String? storeAddress,
@@ -20,9 +20,14 @@ class InvoiceGenerator {
   }) async {
     final pdf = pw.Document();
 
-    final resolvedStoreName = (storeName != null && storeName.trim().isNotEmpty)
+    final rawStoreName = (storeName != null && storeName.trim().isNotEmpty)
         ? storeName.trim()
-        : (order.sellerName.trim().isNotEmpty ? order.sellerName.trim() : SellerConfig.name);
+        : order.sellerName.trim();
+    final resolvedStoreName = (rawStoreName.isNotEmpty &&
+            rawStoreName != 'FCI' &&
+            rawStoreName != 'FCI Seller')
+        ? rawStoreName
+        : SellerConfig.name;
     final resolvedStoreAddress = (storeAddress != null && storeAddress.trim().isNotEmpty)
         ? storeAddress.trim()
         : (order.sellerAddress.trim().isNotEmpty
@@ -246,7 +251,7 @@ class InvoiceGenerator {
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
-                pw.Text('Thank you for shopping with FCI Seller!', style: const pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.teal900)),
+                pw.Text('Thank you for shopping with $resolvedStoreName!', style: const pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.teal900)),
                 pw.Text('Computer-generated tax invoice. No signature required.', style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey700)),
               ],
             ),
@@ -255,7 +260,26 @@ class InvoiceGenerator {
       ),
     );
 
-    final bytes = await pdf.save();
+    return await pdf.save();
+  }
+
+  /// Generates and previews/prints/downloads a PDF invoice for a given order.
+  static Future<void> generateAndDownloadInvoice({
+    required OrderModel order,
+    String? storeName,
+    String? storeAddress,
+    String? storeContact,
+    String storeGst = SellerConfig.gstin,
+    String contactEmail = SellerConfig.supportEmail,
+  }) async {
+    final bytes = await buildInvoicePdfBytes(
+      order: order,
+      storeName: storeName,
+      storeAddress: storeAddress,
+      storeContact: storeContact,
+      storeGst: storeGst,
+      contactEmail: contactEmail,
+    );
     final cleanId = order.displayOrderId.replaceAll(RegExp(r'[^0-9A-Za-z]'), '');
     final fileName = 'Invoice_$cleanId.pdf';
 
