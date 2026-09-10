@@ -57,9 +57,10 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
     final targetId = widget.order?.id ?? widget.orderId;
     if (targetId == null || targetId.isEmpty) return;
 
-    if (widget.order != null && widget.order!.shippingAddress.isNotEmpty) {
-      _detailedOrder = widget.order;
-    }
+    // Do NOT pre-populate _detailedOrder with widget.order here.
+    // widget.order comes from the orders list and may be stale (fetched before
+    // the Admin shipped the order). We always fetch fresh data from the API.
+    // The stale widget.order is only used as a UI fallback during loading (line 400).
 
     setState(() {
       _isLoading = true;
@@ -71,34 +72,50 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen>
       final response = await ordersApi.getOrderById(targetId);
       final body = response.data;
 
+      // Backend returns: { success: true, message: "...", data: <orderObject> }
+      // Handle all possible wrapping shapes defensively.
       Map<String, dynamic>? orderData;
       if (body is Map<String, dynamic>) {
         if (body['order'] is Map<String, dynamic>) {
+          // Shape: { order: {...} }
           orderData = body['order'] as Map<String, dynamic>;
         } else if (body['data'] is Map<String, dynamic>) {
           final innerData = body['data'] as Map<String, dynamic>;
+          // Shape: { data: { order: {...} } }  OR  { data: {...orderFields...} }
           orderData = innerData['order'] is Map<String, dynamic>
               ? innerData['order'] as Map<String, dynamic>
               : innerData;
         } else {
+          // Shape: { ...orderFields... } (rare, flat response)
           orderData = body;
         }
       }
 
-      if (mounted) {
+      if (orderData != null && mounted) {
+        final freshOrder = OrderModel.fromJson(orderData);
         setState(() {
-          _detailedOrder = OrderModel.fromJson(orderData!);
+          _detailedOrder = freshOrder;
           _isLoading = false;
         });
         _animController.forward(from: 0);
+        // Also refresh the orders list provider so the list view stays current
+        // (e.g., status badge, AWB visible when user goes back to list).
+        ref.read(orderProvider.notifier).fetchOrders();
       } else if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+          // Fall back to widget.order only if we got no usable data
+          if (_detailedOrder == null && widget.order != null) {
+            _detailedOrder = widget.order;
+          }
+        });
         _animController.forward(from: 0);
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _isLoading = false;
+          // Fall back to widget.order on network error so the screen is not blank
           if (_detailedOrder == null && widget.order != null) {
             _detailedOrder = widget.order;
           } else if (_detailedOrder == null) {
