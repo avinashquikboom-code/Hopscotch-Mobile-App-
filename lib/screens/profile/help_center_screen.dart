@@ -213,83 +213,16 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
                 final optionColor = option['color'] as Color;
                 final optionIcon = option['icon'] as IconData;
 
-                return Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () => _handleContactOption(
-                      optionTitle,
-                      phoneNum: sellerPhone,
-                      emailAddr: sellerEmail,
-                      addressText: sellerAddress,
-                    ),
-                    borderRadius: BorderRadius.circular(18),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.8)
-                            : optionColor.withValues(alpha: 0.04),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(
-                          color: optionColor.withValues(alpha: 0.15),
-                          width: 1.5,
-                        ),
-                        boxShadow: isDark
-                            ? null
-                            : [
-                                BoxShadow(
-                                  color: optionColor.withValues(alpha: 0.08),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(responsive.spacing(12)),
-                            decoration: BoxDecoration(
-                              color: optionColor.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: Icon(
-                              optionIcon,
-                              color: optionColor,
-                              size: responsive.iconSize(28),
-                            ),
-                          ),
-                          SizedBox(height: responsive.spacing(12)),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: responsive.spacing(8)),
-                            child: Text(
-                              optionTitle,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: responsive.fontSize12,
-                                fontWeight: FontWeight.w800,
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: responsive.spacing(4)),
-                          Expanded(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: responsive.spacing(6)),
-                              child: Text(
-                                optionSubtitle,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: responsive.fontSize10,
-                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                return SupportCard(
+                  icon: optionIcon,
+                  title: optionTitle,
+                  description: optionSubtitle,
+                  color: optionColor,
+                  onTap: () => _handleContactOption(
+                    optionTitle,
+                    phoneNum: sellerPhone,
+                    emailAddr: sellerEmail,
+                    addressText: sellerAddress,
                   ),
                 );
               },
@@ -319,31 +252,33 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
                 final faq = _faqs[index];
                 final isExpanded = _expandedFaqIndex == index;
 
-                return Container(
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.8)
-                        : Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isExpanded
-                          ? AppTheme.primaryColor.withValues(alpha: 0.3)
-                          : Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
-                      width: 1.5,
+                return Material(
+                  color: isDark
+                      ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.8)
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isExpanded
+                            ? AppTheme.primaryColor.withValues(alpha: 0.3)
+                            : Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+                        width: 1.5,
+                      ),
+                      boxShadow: isExpanded && !isDark
+                          ? [
+                              BoxShadow(
+                                color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ]
+                          : null,
                     ),
-                    boxShadow: isExpanded && !isDark
-                        ? [
-                            BoxShadow(
-                              color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ]
-                        : null,
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: ExpansionTile(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: ExpansionTile(
                       tilePadding: EdgeInsets.symmetric(
                         horizontal: responsive.spacing(16),
                         vertical: responsive.spacing(12),
@@ -394,11 +329,130 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
                       ],
                     ),
                   ),
-                );
+                ),
+              );
               },
             ),
             SizedBox(height: responsive.spacing(AppTheme.spaceXXL)),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A consistent, properly aligned support card for the Help Center.
+///
+/// Ensures identical icon container dimensions, horizontal and vertical centering,
+/// and consistent spacing across all 4 support cards (Live Chat, Call Us, Email, Visit Store).
+class SupportCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String description;
+  final Color color;
+  final VoidCallback onTap;
+
+  const SupportCard({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final responsive = context.responsive;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: responsive.spacing(10),
+            vertical: responsive.spacing(14),
+          ),
+          decoration: BoxDecoration(
+            color: isDark
+                ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.8)
+                : color.withValues(alpha: 0.04),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: color.withValues(alpha: 0.15),
+              width: 1.5,
+            ),
+            boxShadow: isDark
+                ? null
+                : [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.08),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // ── ICON CONTAINER ──
+              Container(
+                width: responsive.spacing(48),
+                height: responsive.spacing(48),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(responsive.spacing(14)),
+                ),
+                child: Icon(
+                  icon,
+                  color: color,
+                  size: responsive.iconSize(26),
+                ),
+              ),
+              SizedBox(height: responsive.spacing(10)),
+              // ── TITLE ──
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: responsive.spacing(4)),
+                child: Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: responsive.fontSize12,
+                    fontWeight: FontWeight.w800,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              SizedBox(height: responsive.spacing(4)),
+              // ── DESCRIPTION ──
+              SizedBox(
+                height: responsive.spacing(28),
+                child: Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: responsive.spacing(4)),
+                    child: Text(
+                      description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: responsive.fontSize10,
+                        height: 1.25,
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
