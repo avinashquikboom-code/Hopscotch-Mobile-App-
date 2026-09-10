@@ -9,4 +9,20 @@ class SellerConfig {
   static const String pincode = '380007';
   static const String country = 'India';
   static const String contactNumber = '+91 96015 11596';
+
+  static String normalizeSellerName(String? raw) {
+    if (raw == null) return name;
+    final trimmed = raw.trim();
+    final lower = trimmed.toLowerCase();
+    if (trimmed.isEmpty ||
+        lower == 'fci' ||
+        lower == 'fci seller' ||
+        lower == 'fci-seller' ||
+        lower == 'fciseller' ||
+        lower == 'fci ecommerce') {
+      return name;
+    }
+    return trimmed;
+  }
 }
+

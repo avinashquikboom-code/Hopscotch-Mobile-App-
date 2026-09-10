@@ -21,6 +21,18 @@ void main() {
       );
     });
 
+    test('SellerConfig.normalizeSellerName handles case variants and trims', () {
+      expect(SellerConfig.normalizeSellerName('fci'), equals('Fashion City India Ltd'));
+      expect(SellerConfig.normalizeSellerName('FCI'), equals('Fashion City India Ltd'));
+      expect(SellerConfig.normalizeSellerName('  fci  '), equals('Fashion City India Ltd'));
+      expect(SellerConfig.normalizeSellerName('FCI Seller'), equals('Fashion City India Ltd'));
+      expect(SellerConfig.normalizeSellerName('fci seller'), equals('Fashion City India Ltd'));
+      expect(SellerConfig.normalizeSellerName('fci-seller'), equals('Fashion City India Ltd'));
+      expect(SellerConfig.normalizeSellerName('fciseller'), equals('Fashion City India Ltd'));
+      expect(SellerConfig.normalizeSellerName(null), equals('Fashion City India Ltd'));
+      expect(SellerConfig.normalizeSellerName(''), equals('Fashion City India Ltd'));
+    });
+
     test('OrderModel normalizes legacy "FCI" seller name snapshot', () {
       final jsonWithFci = {
         'id': '1001',

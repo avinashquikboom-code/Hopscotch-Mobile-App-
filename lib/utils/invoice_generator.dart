@@ -23,11 +23,7 @@ class InvoiceGenerator {
     final rawStoreName = (storeName != null && storeName.trim().isNotEmpty)
         ? storeName.trim()
         : order.sellerName.trim();
-    final resolvedStoreName = (rawStoreName.isNotEmpty &&
-            rawStoreName != 'FCI' &&
-            rawStoreName != 'FCI Seller')
-        ? rawStoreName
-        : SellerConfig.name;
+    final resolvedStoreName = SellerConfig.normalizeSellerName(rawStoreName);
     final resolvedStoreAddress = (storeAddress != null && storeAddress.trim().isNotEmpty)
         ? storeAddress.trim()
         : (order.sellerAddress.trim().isNotEmpty
@@ -129,6 +125,27 @@ class InvoiceGenerator {
                     child: pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
+                        pw.Text('SOLD BY (SELLER DETAILS)', style: const pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.teal900)),
+                        pw.SizedBox(height: 4),
+                        pw.Text(resolvedStoreName, style: const pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+                        pw.Text(resolvedStoreAddress, style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey800)),
+                        pw.Text('GSTIN: $storeGst', style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey800)),
+                        pw.Text('Support: $contactEmail', style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey800)),
+                      ],
+                    ),
+                  ),
+                ),
+                pw.SizedBox(width: 8),
+                pw.Expanded(
+                  child: pw.Container(
+                    padding: const pw.EdgeInsets.all(10),
+                    decoration: pw.BoxDecoration(
+                      color: PdfColors.grey100,
+                      borderRadius: pw.BorderRadius.circular(6),
+                    ),
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
                         pw.Text('SHIPPED TO:', style: const pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.teal900)),
                         pw.SizedBox(height: 4),
                         pw.Text(order.shippingAddress.isNotEmpty ? order.shippingAddress : 'Customer Shipping Address', style: const pw.TextStyle(fontSize: 8)),
@@ -136,7 +153,7 @@ class InvoiceGenerator {
                     ),
                   ),
                 ),
-                pw.SizedBox(width: 12),
+                pw.SizedBox(width: 8),
                 pw.Expanded(
                   child: pw.Container(
                     padding: const pw.EdgeInsets.all(10),
