@@ -251,16 +251,21 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
                         return Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'TOTAL ORDERS: ${orders.length}',
-                              style: TextStyle(
-                                fontSize: responsive.fontSize11,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.6,
-                                color: colorScheme.onSurface.withValues(alpha: 0.6),
+                            Expanded(
+                              child: Text(
+                                'TOTAL ORDERS: ${orders.length}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: responsive.fontSize11,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.6,
+                                  color: colorScheme.onSurface.withValues(alpha: 0.6),
+                                ),
                               ),
                             ),
-                            if (_selectedFilter != 'ALL' || _selectedDateFilter != 'ALL')
+                            if (_selectedFilter != 'ALL' || _selectedDateFilter != 'ALL') ...[
+                              SizedBox(width: responsive.spacing(8)),
                               GestureDetector(
                                 onTap: () {
                                   setState(() {
@@ -277,6 +282,7 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
                                   ),
                                 ),
                               ),
+                            ],
                           ],
                         );
                       }
@@ -310,51 +316,12 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Header Row - Order ID & Status
+                              // Header - Order ID & Status (Responsive Layout)
                               Padding(
                                 padding: EdgeInsets.all(responsive.spacing(14)),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                          padding: EdgeInsets.all(responsive.spacing(8)),
-                                          decoration: BoxDecoration(
-                                            color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                                            borderRadius: BorderRadius.circular(10),
-                                          ),
-                                          child: const Icon(
-                                            Icons.local_mall_outlined,
-                                            size: 18,
-                                            color: AppTheme.primaryColor,
-                                          ),
-                                        ),
-                                        SizedBox(width: responsive.spacing(10)),
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Order #${order.displayOrderId}',
-                                              style: TextStyle(
-                                                fontSize: responsive.fontSize13,
-                                                fontWeight: FontWeight.w800,
-                                                color: colorScheme.onSurface,
-                                              ),
-                                            ),
-                                            SizedBox(height: responsive.spacing(2)),
-                                            Text(
-                                              order.orderDate,
-                                              style: TextStyle(
-                                                fontSize: responsive.fontSize10,
-                                                color: colorScheme.onSurface.withValues(alpha: 0.5),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                    Container(
+                                child: LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    final statusBadge = Container(
                                       padding: EdgeInsets.symmetric(
                                         horizontal: responsive.spacing(10),
                                         vertical: responsive.spacing(6),
@@ -378,19 +345,130 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
                                             ),
                                           ),
                                           SizedBox(width: responsive.spacing(6)),
-                                          Text(
-                                            order.status.toUpperCase(),
-                                            style: TextStyle(
-                                              color: statusColor,
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: responsive.fontSize10,
-                                              letterSpacing: 0.3,
+                                          Flexible(
+                                            child: Text(
+                                              order.status.toUpperCase(),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                color: statusColor,
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: responsive.fontSize10,
+                                                letterSpacing: 0.3,
+                                              ),
                                             ),
                                           ),
                                         ],
                                       ),
-                                    ),
-                                  ],
+                                    );
+
+                                    final orderIconAndInfo = Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          padding: EdgeInsets.all(responsive.spacing(8)),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                          child: const Icon(
+                                            Icons.local_mall_outlined,
+                                            size: 18,
+                                            color: AppTheme.primaryColor,
+                                          ),
+                                        ),
+                                        SizedBox(width: responsive.spacing(10)),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Order #${order.displayOrderId}',
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontSize: responsive.fontSize13,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: colorScheme.onSurface,
+                                                ),
+                                              ),
+                                              SizedBox(height: responsive.spacing(2)),
+                                              Text(
+                                                order.orderDate,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontSize: responsive.fontSize10,
+                                                  color: colorScheme.onSurface.withValues(alpha: 0.5),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    );
+
+                                    // On narrow cards (< 340px width), stack status below header to preserve Order ID readability
+                                    if (constraints.maxWidth < 340) {
+                                      return Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          orderIconAndInfo,
+                                          SizedBox(height: responsive.spacing(10)),
+                                          statusBadge,
+                                        ],
+                                      );
+                                    }
+
+                                    // On wider screens, place status beside order info with safe Expanded constraints
+                                    return Row(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          padding: EdgeInsets.all(responsive.spacing(8)),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                          child: const Icon(
+                                            Icons.local_mall_outlined,
+                                            size: 18,
+                                            color: AppTheme.primaryColor,
+                                          ),
+                                        ),
+                                        SizedBox(width: responsive.spacing(10)),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Order #${order.displayOrderId}',
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontSize: responsive.fontSize13,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: colorScheme.onSurface,
+                                                ),
+                                              ),
+                                              SizedBox(height: responsive.spacing(2)),
+                                              Text(
+                                                order.orderDate,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontSize: responsive.fontSize10,
+                                                  color: colorScheme.onSurface.withValues(alpha: 0.5),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(width: responsive.spacing(10)),
+                                        statusBadge,
+                                      ],
+                                    );
+                                  },
                                 ),
                               ),
 
@@ -510,13 +588,12 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
                                 color: colorScheme.outline.withValues(alpha: isDark ? 0.1 : 0.08),
                               ),
 
-                              // Footer - Amount & Action
+                              // Footer - Amount & Action (Responsive Layout)
                               Padding(
                                 padding: EdgeInsets.all(responsive.spacing(14)),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
+                                child: LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    final totalAmountWidget = Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
@@ -530,6 +607,8 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
                                         SizedBox(height: responsive.spacing(4)),
                                         Text(
                                           currency.formatPrice(order.totalAmount),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
                                             fontSize: responsive.fontSize16,
                                             fontWeight: FontWeight.w900,
@@ -537,61 +616,96 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
                                           ),
                                         ),
                                       ],
-                                    ),
-                                    Row(
-                                      children: [
-                                        if (_isCancellable(order.status))
-                                          Container(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: responsive.spacing(8),
-                                              vertical: responsive.spacing(4),
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: AppTheme.errorColor.withValues(alpha: 0.1),
-                                              borderRadius: BorderRadius.circular(8),
-                                            ),
-                                            child: Text(
-                                              'Cancellable',
-                                              style: TextStyle(
-                                                fontSize: responsive.fontSize10,
-                                                fontWeight: FontWeight.w700,
-                                                color: AppTheme.errorColor,
-                                              ),
+                                    );
+
+                                    final cancellableBadge = Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: responsive.spacing(8),
+                                        vertical: responsive.spacing(4),
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.errorColor.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        'Cancellable',
+                                        style: TextStyle(
+                                          fontSize: responsive.fontSize10,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppTheme.errorColor,
+                                        ),
+                                      ),
+                                    );
+
+                                    final viewButton = Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: responsive.spacing(12),
+                                        vertical: responsive.spacing(6),
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            'View',
+                                            style: TextStyle(
+                                              fontSize: responsive.fontSize12,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppTheme.primaryColor,
                                             ),
                                           ),
-                                        if (_isCancellable(order.status)) SizedBox(width: responsive.spacing(8)),
-                                        Container(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: responsive.spacing(12),
-                                            vertical: responsive.spacing(6),
+                                          SizedBox(width: responsive.spacing(4)),
+                                          Icon(
+                                            Icons.arrow_forward_ios_rounded,
+                                            size: responsive.iconSize(12),
+                                            color: AppTheme.primaryColor,
                                           ),
-                                          decoration: BoxDecoration(
-                                            color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                                            borderRadius: BorderRadius.circular(8),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
+                                        ],
+                                      ),
+                                    );
+
+                                    // If narrow space (< 280px), adapt arrangement so buttons and amount never overflow
+                                    if (constraints.maxWidth < 280) {
+                                      return Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                             children: [
-                                              Text(
-                                                'View',
-                                                style: TextStyle(
-                                                  fontSize: responsive.fontSize12,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: AppTheme.primaryColor,
-                                                ),
-                                              ),
-                                              SizedBox(width: responsive.spacing(4)),
-                                              Icon(
-                                                Icons.arrow_forward_ios_rounded,
-                                                size: responsive.iconSize(12),
-                                                color: AppTheme.primaryColor,
-                                              ),
+                                              Expanded(child: totalAmountWidget),
+                                              SizedBox(width: responsive.spacing(8)),
+                                              viewButton,
                                             ],
                                           ),
+                                          if (_isCancellable(order.status)) ...[
+                                            SizedBox(height: responsive.spacing(8)),
+                                            cancellableBadge,
+                                          ],
+                                        ],
+                                      );
+                                    }
+
+                                    return Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(child: totalAmountWidget),
+                                        SizedBox(width: responsive.spacing(8)),
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            if (_isCancellable(order.status)) ...[
+                                              cancellableBadge,
+                                              SizedBox(width: responsive.spacing(8)),
+                                            ],
+                                            viewButton,
+                                          ],
                                         ),
                                       ],
-                                    ),
-                                  ],
+                                    );
+                                  },
                                 ),
                               ),
                             ],
